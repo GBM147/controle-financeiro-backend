@@ -644,10 +644,8 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 
 const client = new Client({
-    authStrategy: new LocalAuth(),
     puppeteer: {
-        // Ignora o download e usa o Chrome oficial do seu computador!
-        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
 client.on('qr', (qr) => {
