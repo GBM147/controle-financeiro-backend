@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Acesso - Financeiro Pro</title>
+    <style>
+        :root {
+            --bg-principal: #121212; --bg-card: #1e1e1e; --texto-principal: #f8f9fa;
+            --texto-mutated: #a0a0a0; --borda: #333333; --cor-destaque: #3b82f6; --cor-sucesso: #10b981;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-principal); color: var(--texto-principal); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+        
+        .auth-container { background: var(--bg-card); width: 100%; max-width: 400px; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid var(--borda); position: relative; overflow: hidden; }
+        
+        h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: var(--texto-mutated); }
+        .form-group input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--borda); background: var(--bg-principal); color: var(--texto-principal); font-size: 1rem; box-sizing: border-box; transition: 0.3s; }
+        .form-group input:focus { outline: none; border-color: var(--cor-destaque); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+        
+        .btn-submit { width: 100%; padding: 12px; background: var(--cor-destaque); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        .toggle-link { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--texto-mutated); }
+        .toggle-link span { color: var(--cor-destaque); cursor: pointer; font-weight: bold; }
+        .toggle-link span:hover { text-decoration: underline; }
+
+        /* Esconde o form de cadastro inicialmente */
+        #form-cadastro { display: none; }
+        #form-escolha-validacao {
+    display: none; /* Começa escondido */
+    background: #1a1a1a; /* Cor do seu fundo */
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    
+    <div id="form-login">
+        <h2>Bem-vindo de volta</h2>
+        <div class="form-group">
+            <label>CPF ou E-mail</label>
+            <input type="text" id="login-identificacao" placeholder="Digite seu CPF ou E-mail">
+        </div>
+        <div class="form-group">
+            <label>Senha</label>
+            <input type="password" id="login-senha" placeholder="********">
+        </div>
+        <button class="btn-submit" onclick="fazerLogin()">Entrar</button>
+        <div class="toggle-link">
+            Ainda não tem conta? <span onclick="alternarForms('cadastro')">Criar uma agora</span>
+        </div>
+    </div>
+
+    <div id="form-cadastro" style="display: none;">
+        <h2>Criar Conta</h2>
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Nome</label>
+                <input type="text" id="cad-nome" placeholder="João">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Sobrenome</label>
+                <input type="text" id="cad-sobrenome" placeholder="Silva">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>CPF</label>
+            <input type="text" id="cad-cpf" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
+        </div>
+        <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" id="cad-email" placeholder="joao@email.com">
+        </div>
+        <div class="form-group">
+            <label>Telefone</label>
+            <input type="text" id="cad-telefone" placeholder="(00) 00000-0000" maxlength="15" oninput="mascaraTelefone(this)">
+        </div>
+        <div class="form-group">
+            <label>Senha</label>
+            <input type="password" id="cad-senha" placeholder="Mínimo 8 caracteres">
+            <small style="color: var(--texto-mutated); font-size: 0.7rem;">
+                Deve conter letras maiúsculas, minúsculas e números.
+            </small>
+        </div>
+        <button class="btn-submit" onclick="registrarUsuario()" style="background: var(--cor-sucesso);">Registrar e Validar E-mail</button>
+        <div class="toggle-link">
+            Já tem uma conta? <span onclick="alternarForms('login')">Fazer login</span>
+        </div>
+    </div>
+
+    <div id="form-escolha-validacao" style="display: none; text-align: center;">
+        <h2 style="color: white; margin-bottom: 20px;">Como deseja validar?</h2>
+        <p style="color: #ccc; margin-bottom: 20px;">Enviaremos um código de 6 dígitos para o seu contato.</p>
+        <button class="btn-submit" onclick="enviarCodigo('email')" style="margin-bottom: 10px;">📧 Receber por E-mail</button>
+        <button class="btn-submit" onclick="enviarCodigo('whatsapp')" style="background: #25d366;">📱 Receber por WhatsApp</button>
+        <input type="hidden" id="temp-user-id">
+    </div>
+
+    <div id="form-validar-codigo" style="display: none; text-align: center;">
+        <h2 style="color: white; margin-bottom: 10px;">Código de Verificação</h2>
+        <p style="color: #ccc; margin-bottom: 15px;">Insira os 6 dígitos que recebeu:</p>
+        <div class="form-group">
+            <input type="text" id="codigo-input" placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; font-weight: bold;">
+        </div>
+        <button class="btn-submit" onclick="verificarCodigo()">Validar Agora</button>
+    </div>
+
+</div>
+
+    <script>
+        function mascaraTelefone(input) {
+    // Remove tudo que não é número
+    let v = input.value.replace(/\D/g, "");
+    
+    // Aplica a máscara (XX) XXXXX-XXXX
+    v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+    v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+    
+    input.value = v;
+}
+        // Função para alternar entre as telas de Login e Cadastro
+        function alternarForms(tela) {
+            document.getElementById('form-login').style.display = tela === 'login' ? 'block' : 'none';
+            document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
+        }
+
+        // Máscara simples para CPF em tempo real
+        function mascaraCPF(input) {
+            let v = input.value.replace(/\D/g, ""); // Remove tudo o que não é dígito
+            v = v.replace(/(\d{3})(\d)/, "$1.$2"); // Coloca ponto entre o 3º e 4º dígitos
+            v = v.replace(/(\d{3})(\d)/, "$1.$2"); // Coloca ponto entre o 6º e 7º dígitos
+            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2"); // Coloca traço antes dos últimos 2 dígitos
+            input.value = v;
+        }
+
+        function fazerLogin() {
+            alert("A rota do Node.js para Login será implementada aqui!");
+        }
+
+async function registrarUsuario() {
+    // 1. Mapeamos os elementos do HTML (em vez de pegar só os valores)
+    const inputs = {
+        nome: document.getElementById('cad-nome'),
+        sobrenome: document.getElementById('cad-sobrenome'),
+        cpf: document.getElementById('cad-cpf'),
+        email: document.getElementById('cad-email'),
+        telefone: document.getElementById('cad-telefone'),
+        senha: document.getElementById('cad-senha')
+    };
+
+    let camposVazios = false;
+
+    // 2. Limpar erros antigos e verificar quem está vazio
+    for (const key in inputs) {
+        // Reseta a borda para a cor padrão (cinza escuro)
+        inputs[key].style.border = "1px solid #333"; 
+        
+        // Se o valor, sem espaços, estiver vazio, pinta de vermelho
+        if (!inputs[key].value.trim()) {
+            inputs[key].style.border = "1px solid red";
+            camposVazios = true;
+        }
+    }
+
+    // 3. Trava: Se algum campo ficou vazio, para tudo aqui
+    if (camposVazios) {
+        return alert("Todos os campos devem ser preenchidos. Por favor, verifique os campos destacados em vermelho.");
+    }
+
+    // 4. Se tudo estiver preenchido, pegamos os valores reais
+    const nome = inputs.nome.value.trim();
+    const sobrenome = inputs.sobrenome.value.trim();
+    const cpf = inputs.cpf.value.trim();
+    const email = inputs.email.value.trim();
+    const telefone = inputs.telefone.value.trim();
+    const senha = inputs.senha.value;
+
+    // 5. Trava da Senha (com borda vermelha também!)
+    const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!regexSenha.test(senha)) {
+        inputs.senha.style.border = "1px solid red"; // Destaca a senha
+        return alert("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.");
+    }
+
+    try {
+        const resposta = await fetch('/cadastro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, sobrenome, cpf, email, telefone, senha })
+        });
+        
+        const json = await resposta.json();
+
+        if (json.success) {
+            document.getElementById('form-cadastro').style.display = 'none';
+            document.getElementById('form-escolha-validacao').style.display = 'block';
+            document.getElementById('temp-user-id').value = json.userId;
+        } else {
+            alert("Erro: " + json.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Falha na comunicação com o servidor.");
+    }
+}
+async function enviarCodigo(canal) {
+    const userId = document.getElementById('temp-user-id').value;
+    
+    // Mostra que o processo começou
+    alert("Enviando código via " + canal + "...");
+
+    const resposta = await fetch('/enviar-codigo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, canal })
+    });
+
+    const json = await resposta.json();
+    if (json.success) {
+        document.getElementById('form-escolha-validacao').style.display = 'none';
+        document.getElementById('form-validar-codigo').style.display = 'block';
+    } else {
+        alert("Erro ao enviar código: " + json.message);
+    }
+}
+async function verificarCodigo() {
+    const userId = document.getElementById('temp-user-id').value;
+    const codigoDigitado = document.getElementById('codigo-input').value.trim();
+
+    if (codigoDigitado.length !== 6) {
+        return alert("Por favor, insira o código completo de 6 dígitos.");
+    }
+
+    try {
+        const resposta = await fetch('/validar-codigo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, codigo: codigoDigitado })
+        });
+
+        const json = await resposta.json();
+
+        if (json.success) {
+            alert("Conta validada com sucesso! Bem-vindo(a)!");
+            // Redireciona para o painel principal após o sucesso
+            window.location.href = '/conectar.html'; 
+        } else {
+            alert("Erro: " + json.message); // Ex: Código incorreto
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Falha na comunicação com o servidor.");
+    }
+    
+}
+    </script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Central de Notificações</title>
+    <style>
+        :root {
+            --bg-principal: #f8f9fa; --bg-card: #ffffff; --texto-principal: #212529;
+            --texto-mutated: #6c757d; --borda: #ced4da; --sombra: rgba(0, 0, 0, 0.05);
+            --cor-destaque: #007bff; --cor-alerta: #fd7e14;
+        }
+
+        .dark-theme {
+            --bg-principal: #121212; --bg-card: #1e1e1e; --texto-principal: #f8f9fa;
+            --texto-mutated: #a0a0a0; --borda: #333333; --sombra: rgba(0, 0, 0, 0.4);
+            --cor-destaque: #3b82f6; --cor-alerta: #f59e0b;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg-principal); color: var(--texto-principal); padding: 20px; max-width: 800px; margin: 0 auto; transition: 0.3s; }
+        
+        .cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-voltar { text-decoration: none; color: var(--cor-destaque); font-weight: bold; font-size: 1.1rem; }
+        
+        .card { background: var(--bg-card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px var(--sombra); border: 1px solid var(--borda); margin-bottom: 25px; }
+        .card h2 { margin-top: 0; font-size: 1.3rem; border-bottom: 1px solid var(--borda); padding-bottom: 10px; margin-bottom: 20px; }
+
+        .ajuste-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+        .ajuste-row label { font-weight: 600; }
+        .ajuste-row input[type="range"] { flex: 1; min-width: 150px; cursor: pointer; }
+        .porcentagem-display { font-size: 1.5rem; font-weight: bold; color: var(--cor-destaque); min-width: 80px; text-align: right; }
+
+        .alerta-item { background: var(--bg-principal); border-left: 4px solid var(--cor-alerta); padding: 15px; margin-bottom: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .alerta-item.lida { border-left-color: var(--borda); opacity: 0.7; }
+        .alerta-texto { font-size: 0.95rem; line-height: 1.4; }
+        .alerta-data { font-size: 0.8rem; color: var(--texto-mutated); margin-top: 5px; }
+        
+        .btn-acao { padding: 8px 15px; border-radius: 6px; background: var(--cor-destaque); color: white; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-acao:hover { opacity: 0.8; }
+        .btn-lida { background: transparent; border: 1px solid var(--borda); color: var(--texto-principal); }
+    </style>
+</head>
+<body>
+
+    <div class="cabecalho">
+        <a href="dashboard.html" class="btn-voltar">← Voltar ao Dashboard</a>
+        <h1>Central de Notificações 🔔</h1>
+    </div>
+
+<div class="card">
+        <h2>Editor de Gatilhos por Categoria</h2>
+        <div id="editor-container">
+            </div>
+    </div>
+
+    <script>
+        async function carregarEditor() {
+            const res = await fetch('/metas-resumo'); // Reutiliza a rota anterior
+            const metas = await res.json();
+            const container = document.getElementById('editor-container');
+            container.innerHTML = '';
+
+            metas.forEach(m => {
+                container.innerHTML += `
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
+                        <span style="flex:1;">${m.categoria}</span>
+                        <input type="number" id="limite-${m.categoria}" value="${m.limite}" style="width:70px;">
+                        <input type="range" id="alerta-${m.categoria}" value="${m.percentual_alerta || 80}" min="10" max="100">
+                        <button onclick="salvarAlteracao('${m.categoria}')" class="btn-acao">Salvar</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function salvarAlteracao(categoria) {
+            const valor_limite = document.getElementById(`limite-${categoria}`).value;
+            const percentual_alerta = document.getElementById(`alerta-${categoria}`).value;
+            
+            await fetch('/atualizar-meta-alerta', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ categoria, valor_limite, percentual_alerta })
+            });
+            alert("Regra de alerta atualizada!");
+        }
+
+        carregarEditor();
+        // Sincroniza o tema escuro se o usuário tiver ativado no painel principal
+        if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-theme');
+
+        async function carregarPreferencias() {
+            const res = await fetch('/configuracoes-alerta');
+            const data = await res.json();
+            document.getElementById('range-percentual').value = data.percentual_alerta;
+            atualizarDisplay();
+        }
+
+        function atualizarDisplay() {
+            const val = document.getElementById('range-percentual').value;
+            document.getElementById('valor-percentual').innerText = val + '%';
+        }
+
+        async function salvarPreferencias() {
+            const percentual = document.getElementById('range-percentual').value;
+            await fetch('/configuracoes-alerta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ percentual })
+            });
+        }
+
+        async function carregarAlertas() {
+            const res = await fetch('/alertas');
+            const alertas = await res.json();
+            const container = document.getElementById('lista-alertas');
+            container.innerHTML = '';
+
+            if (alertas.length === 0) {
+                container.innerHTML = '<p style="color: var(--texto-mutated); text-align: center;">Tudo tranquilo! Nenhum limite estourado recentemente.</p>';
+                return;
+            }
+
+            alertas.forEach(alerta => {
+                const dataFormatada = new Date(alerta.data_criacao).toLocaleString('pt-BR');
+                const div = document.createElement('div');
+                div.className = `alerta-item ${alerta.lida ? 'lida' : ''}`;
+                
+                let btnHtml = alerta.lida 
+                    ? `<span style="font-size: 0.8rem; color: var(--texto-mutated);">Visto</span>` 
+                    : `<button class="btn-acao btn-lida" onclick="marcarComoLida(${alerta.id})">✔ Marcar Lida</button>`;
+
+                div.innerHTML = `
+                    <div>
+                        <div class="alerta-texto">${alerta.mensagem}</div>
+                        <div class="alerta-data">${dataFormatada}</div>
+                    </div>
+                    <div>${btnHtml}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function marcarComoLida(id) {
+            await fetch('/alertas/marcar-lida', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            carregarAlertas(); // Recarrega a lista
+        }
+
+        carregarPreferencias();
+        carregarAlertas();
+    </script>
+</body>
+</html>

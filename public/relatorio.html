@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório Mensal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --bg-principal: #121212; --bg-card: #1e1e1e; --texto-principal: #f8f9fa; --cor-destaque: #3b82f6; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-principal); color: var(--texto-principal); padding: 20px; max-width: 800px; margin: 0 auto;}
+        .card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
+        input, select { padding: 10px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 6px; }
+        .btn-acao { padding: 10px 20px; background: var(--cor-destaque); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-acao:hover { opacity: 0.8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
+        th { color: #a0a0a0; }
+    </style>
+</head>
+<body>
+
+    <h1>Relatórios Financeiros</h1>
+    <a href="dashboard.html" style="color: var(--cor-destaque);">← Voltar ao Dashboard</a>
+
+    <div class="card">
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="mes-ref">
+                <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+                <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+                <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+            <input type="number" id="ano-ref" value="2026" style="width: 80px;">
+            
+            <button class="btn-acao" onclick="gerarRelatorio()">Gerar Relatório</button>
+            <button class="btn-acao" onclick="baixarPDF()" style="background: #28a745;">Baixar PDF 📄</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div id="resultado-relatorio">
+            <p style="color: #a0a0a0; text-align: center;">Escolha o mês e o ano e clique em "Gerar Relatório".</p>
+        </div>
+    </div>
+
+    <script>
+        let dadosRelatorio = [];
+
+        async function gerarRelatorio() {
+            const mes = document.getElementById('mes-ref').value;
+            const ano = document.getElementById('ano-ref').value;
+
+            try {
+                const res = await fetch(`/relatorio-mensal?mes=${mes}&ano=${ano}`);
+                dadosRelatorio = await res.json();
+                
+                const container = document.getElementById('resultado-relatorio');
+                
+                if (dadosRelatorio.length === 0) {
+                    container.innerHTML = `<p style="text-align: center;">Nenhum dado encontrado para ${mes}/${ano}.</p>`;
+                    return;
+                }
+
+                let html = `<h3>Relatório: ${mes}/${ano}</h3><table><thead><tr><th>Categoria</th><th>Tipo</th><th>Valor</th></tr></thead><tbody>`;
+                
+                dadosRelatorio.forEach(item => {
+                    html += `<tr><td>${item.categoria}</td><td>${item.tipo}</td><td>R$ ${Math.abs(item.total_movimentado).toFixed(2)}</td></tr>`;
+                });
+                
+                container.innerHTML = html + '</tbody></table>';
+            } catch (error) {
+                alert("Erro ao carregar relatório.");
+            }
+        }
+
+        function baixarPDF() {
+            if (dadosRelatorio.length === 0) return alert("Gere o relatório antes de baixar!");
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título personalizado
+            doc.setFontSize(18);
+            doc.text("Relatorio Financeiro", 14, 20);
+            doc.setFontSize(12);
+            doc.text("Exportado em: " + new Date().toLocaleDateString(), 14, 28);
+            
+            doc.autoTable({
+                head: [['Categoria', 'Tipo', 'Valor']],
+                body: dadosRelatorio.map(i => [
+                    i.categoria, 
+                    i.tipo, 
+                    (i.tipo === 'CREDIT' ? '+ ' : '- ') + 'R$ ' + Math.abs(i.total_movimentado).toFixed(2)
+                ]),
+                startY: 35,
+                // Estilização estilo Dashboard
+                theme: 'striped',
+                headStyles: { fillColor: [30, 30, 30], textColor: [255, 255, 255] }, // Cabeçalho escuro
+                didParseCell: function(data) {
+                    // Pinta de verde se for Crédito, vermelho se for Débito
+                    if (data.column.index === 1 && data.cell.section === 'body') {
+                        data.cell.styles.textColor = data.cell.raw === 'CREDIT' ? [40, 167, 69] : [220, 53, 69];
+                    }
+                }
+            });
+            
+            doc.save('relatorio-financeiro.pdf');
+        }
+    </script>
+</body>
+</html>

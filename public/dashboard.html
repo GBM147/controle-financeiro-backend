@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Controlador Financeiro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-principal: #f8f9fa; --bg-card: #ffffff; --texto-principal: #212529;
+            --texto-mutated: #6c757d; --borda: #ced4da; --sombra: rgba(0, 0, 0, 0.05);
+            --cor-receita: #28a745; --cor-despesa: #dc3545; --cor-destaque: #007bff;
+        }
+
+        .dark-theme {
+            --bg-principal: #121212; --bg-card: #1e1e1e; --texto-principal: #f8f9fa;
+            --texto-mutated: #a0a0a0; --borda: #333333; --sombra: rgba(0, 0, 0, 0.4);
+            --cor-receita: #2ea043; --cor-despesa: #f85149; --cor-destaque: #3b82f6;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg-principal); color: var(--texto-principal); padding: 20px; transition: background 0.3s ease, color 0.3s ease; position: relative; }
+        h1 { font-size: 1.8rem; margin-bottom: 20px; max-width: 80%; }
+
+        /* --- NOVO MENU SANDUÍCHE (CANTO SUPERIOR DIREITO) --- */
+        .menu-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .hamburger-btn {
+            background: var(--bg-card);
+            color: var(--texto-principal);
+            border: 1px solid var(--borda);
+            padding: 10px 14px;
+            font-size: 1.3rem;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px var(--sombra);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hamburger-btn:hover { background: var(--bg-principal); }
+        
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--sombra);
+            min-width: 160px;
+            overflow: hidden;
+        }
+        .dropdown-menu.show { display: block; }
+        
+        .menu-item {
+            width: 100%;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            color: var(--texto-principal);
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: left;
+            box-sizing: border-box;
+            display: block;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .menu-item:hover { background: var(--sombra); }
+
+        /* Estrutura dos Cards e Painéis */
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .card { background: var(--bg-card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px var(--sombra); border: 1px solid var(--borda); }
+        .card h3 { color: var(--texto-mutated); font-size: 0.9rem; margin: 0; }
+        .card p { font-size: 1.5rem; font-weight: bold; margin: 10px 0 0; }
+
+        .painel-ajustes { background: var(--bg-card); padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 6px var(--sombra); border: 1px solid var(--borda); margin-bottom: 20px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        .grupo-ajuste { display: flex; flex-direction: column; gap: 5px; }
+        .grupo-ajuste label { font-size: 0.85rem; color: var(--texto-principal); font-weight: 600; }
+        .grupo-ajuste select, .grupo-ajuste input { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--borda); background: var(--bg-card); color: var(--texto-principal); font-size: 0.9rem; cursor: pointer; }
+        
+        .btn-acao { padding: 8px 15px; border-radius: 6px; background: var(--cor-destaque); color: white; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-acao:hover { opacity: 0.8; }
+
+        .chart-container { background: var(--bg-card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px var(--sombra); border: 1px solid var(--borda); margin: 0 auto; transition: max-width 0.3s ease; max-width: 650px; display: flex; flex-direction: column; height: 450px; }
+        .chart-container.hibrido { flex-direction: row; max-width: 100% !important; gap: 20px; }
+        
+        @media (max-width: 768px) {
+            .chart-container.hibrido { flex-direction: column; height: auto; min-height: 800px; }
+            .grafico-wrapper, .container-tabela { width: 100% !important; height: 400px !important; }
+        }
+
+        .grafico-wrapper { flex: 1; width: 100%; position: relative; }
+        .container-tabela { flex: 1; overflow-y: auto; width: 100%; border-radius: 8px; border: 1px solid var(--borda); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid var(--borda); }
+        th { font-weight: 600; color: var(--texto-mutated); top: 0; position: sticky; background: var(--bg-card); z-index: 10; }
+        tr:hover { background: var(--sombra); }
+    </style>
+</head>
+<body>
+
+    <div class="menu-container">
+        <button class="hamburger-btn" onclick="toggleMenu(event)">&#9776;</button>
+        <div class="dropdown-menu" id="dropdownMenu">
+            <button class="menu-item" onclick="alternarTema()">🌓 Alternar Tema</button>
+            <a href="notificacoes.html" class="menu-item">🔔 Notificações</a>
+            <a href="relatorio.html" class="menu-item">📊 Relatório Mensal</a>
+            <a href="metas.html" class="menu-item">🎯 Gestão de Metas</a>
+        </div>
+    </div>
+
+    <h1>Controle Financeiro</h1>
+
+    <div class="grid-cards">
+        <div class="card"><h3>Total Recebido (Entradas)</h3><p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p></div>
+        <div class="card"><h3>Total Gasto (Saídas)</h3><p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p></div>
+        <div class="card"><h3>Balanço Líquido</h3><p id="saldo-liquido">R$ 0,00</p></div>
+    </div>
+
+    <div class="painel-ajustes">
+        <div class="grupo-ajuste">
+            <label for="select-tipo">Exibição de Dados</label>
+            <select id="select-tipo" onchange="renderizarVisualizacao()">
+                <option value="table">Apenas Tabela</option>
+                <option value="both-doughnut" selected>Tabela + Rosca</option>
+            </select>
+        </div>
+        <div class="grupo-ajuste" style="border-left: 2px solid var(--borda); padding-left: 15px;">
+            <label>Controle de Gastos</label>
+            <div style="display: flex; gap: 8px;">
+                <select id="meta-categoria" style="width: 140px;">
+                    <option value="" disabled selected>Categoria...</option>
+                    <option value="Alimentação">Alimentação</option>
+<option value="Habitação">Habitação</option>
+<option value="Transporte">Transporte</option>
+<option value="Eletricidade / Luz">Eletricidade / Luz</option>
+<option value="Telecomunicações / Internet">Telecomunicações / Internet</option>
+<option value="Pagamento de Fatura">Pagamento de Fatura</option>
+<option value="Pagamento de Boleto">Pagamento de Boleto</option>
+<option value="Streaming de Vídeo">Streaming de Vídeo</option>
+<option value="Streaming de Música">Streaming de Música</option>
+<option value="Academia e Fitness">Academia e Fitness</option>
+<option value="Saúde">Saúde</option>
+<option value="Educação">Educação</option>
+<option value="Supermercado">Supermercado</option>
+<option value="Restaurantes">Restaurantes</option>
+<option value="Salário">Salário</option>
+<option value="Lazer">Lazer</option>
+<option value="Outros">Outros</option>
+                </select>
+                <input type="number" id="meta-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
+                <button class="btn-acao" onclick="salvarMeta()">Gravar</button>
+                <button class="btn-acao" onclick="removerMeta()" style="background: var(--texto-mutated);" title="Remover limite desta categoria">Sem Limite</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="painel-ajustes" style="border-left: 4px solid var(--cor-destaque); background: var(--bg-card);">
+        <h3 style="margin: 0; font-size: 1rem; color: var(--texto-principal);">Lançamento Rápido</h3>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
+            <input type="text" id="manual-desc" placeholder="Descrição (ex: Restaurante)" style="flex: 2; min-width: 150px;">
+            <input type="number" id="manual-valor" placeholder="Valor (R$)" style="flex: 1; min-width: 90px;" step="0.01">
+            <select id="manual-tipo" style="flex: 1;">
+                <option value="DEBIT">Despesa</option>
+                <option value="CREDIT">Receita</option>
+            </select>
+            <select id="manual-cat" style="flex: 1;">
+    <option value="" disabled selected>Categoria...</option>
+    <option value="Alimentação">Alimentação</option>
+    <option value="Habitação">Habitação</option>
+    <option value="Transporte">Transporte</option>
+    <option value="Eletricidade / Luz">Eletricidade / Luz</option>
+    <option value="Telecomunicações / Internet">Telecomunicações / Internet</option>
+    <option value="Pagamento de Fatura">Pagamento de Fatura</option>
+    <option value="Pagamento de Boleto">Pagamento de Boleto</option>
+    <option value="Streaming de Vídeo">Streaming de Vídeo</option>
+    <option value="Streaming de Música">Streaming de Música</option>
+    <option value="Academia e Fitness">Academia e Fitness</option>
+    <option value="Saúde">Saúde</option>
+    <option value="Educação">Educação</option>
+    <option value="Supermercado">Supermercado</option>
+    <option value="Restaurantes">Restaurantes</option>
+    <option value="Salário">Salário</option>
+    <option value="Lazer">Lazer</option>
+    <option value="Outros">Outros</option>
+</select>
+            <input type="date" id="manual-data" style="flex: 1;">
+            <button class="btn-acao" onclick="salvarLancamentoManual()" style="flex: 1; background: var(--cor-receita);">Adicionar</button>
+        </div>
+    </div>
+
+    <div class="chart-container" id="container-do-grafico">
+        <div class="container-tabela" id="minhaTabelaContainer" style="display: none;">
+            <table>
+                <thead>
+                    <tr><th>Categoria</th><th>Valor Movimentado</th><th>Orçamento (Progresso)</th></tr>
+                </thead>
+                <tbody id="corpo-tabela"></tbody>
+            </table>
+        </div>
+        <div class="grafico-wrapper" id="wrapper-do-grafico" style="display: none;">
+            <canvas id="meuGrafico"></canvas>
+        </div>
+    </div>
+
+<script>
+        // --- 1. TEMA ESCURO (Lembrar escolha) ---
+        if (localStorage.getItem('tema') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
+        let meuChart = null;
+        let dadosAPI = [];
+
+        // Preenche a data de hoje no lançamento rápido para facilitar
+        const inputData = document.getElementById('manual-data');
+        if (inputData) inputData.valueAsDate = new Date();
+
+        // --- 2. MENU SANDUÍCHE E TEMA ---
+        function toggleMenu(event) {
+            event.stopPropagation();
+            document.getElementById('dropdownMenu').classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            const menu = document.getElementById('dropdownMenu');
+            if (menu && menu.classList.contains('show')) {
+                menu.classList.remove('show');
+            }
+        }
+
+        function alternarTema() { 
+            document.body.classList.toggle('dark-theme'); 
+            const modoEscuroAtivo = document.body.classList.contains('dark-theme');
+            localStorage.setItem('tema', modoEscuroAtivo ? 'dark' : 'light');
+            renderizarVisualizacao(); 
+        }
+
+        // --- 3. CARREGAR E DESENHAR DADOS ---
+        async function carregarDados() {
+            try {
+                const res = await fetch('/resumo-financeiro');
+                const json = await res.json();
+                
+                dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
+                
+                atualizarResumoFinanceiro();
+                // atualizarDropdownCategorias();
+                renderizarVisualizacao();
+            } catch (err) { 
+                console.error("Erro ao carregar dados:", err); 
+            }
+        }
+
+        function atualizarDropdownCategorias() {
+            const selectMeta = document.getElementById('meta-categoria');
+            if (!selectMeta) return;
+
+            selectMeta.innerHTML = '<option value="" disabled selected>Categoria...</option>';
+            
+            const categoriasUnicas = [...new Set(dadosAPI.map(i => i.categoria).filter(c => c))];
+const categorias = [
+    "Alimentação", "Habitação", "Transporte", "Eletricidade / Luz", 
+    "Telecomunicações / Internet", "Pagamento de Fatura", "Pagamento de Boleto", 
+    "Streaming de Vídeo", "Streaming de Música", "Academia e Fitness", 
+    "Saúde", "Educação", "Supermercado", "Restaurantes", "Salário", "Lazer", "Outros"
+];
+            
+            categoriasPadrao.forEach(padrao => {
+                if (!categoriasUnicas.includes(padrao)) categoriasUnicas.push(padrao);
+            });
+
+            categoriasUnicas.forEach(cat => {
+                selectMeta.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+        }
+
+        function atualizarResumoFinanceiro() {
+            let ent = 0, sai = 0;
+            dadosAPI.forEach(item => {
+                let v = parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, ''));
+                if (!isNaN(v)) {
+                    if (item.tipo === 'CREDIT') ent += v; else sai += v;
+                }
+            });
+            document.getElementById('total-entradas').innerText = `R$ ${ent.toFixed(2)}`;
+            document.getElementById('total-saidas').innerText = `R$ ${sai.toFixed(2)}`;
+            document.getElementById('saldo-liquido').innerText = `R$ ${(ent - sai).toFixed(2)}`;
+        }
+
+        function renderizarVisualizacao() {
+            const tipo = document.getElementById('select-tipo').value;
+            const containerPai = document.getElementById('container-do-grafico');
+            const tabelaDiv = document.getElementById('minhaTabelaContainer');
+            const graficoDiv = document.getElementById('wrapper-do-grafico');
+            const corpoTabela = document.getElementById('corpo-tabela');
+
+            const isHibrido = tipo.includes('both');
+            const showTable = tipo === 'table' || isHibrido;
+            const showChart = tipo !== 'table';
+
+            // Arruma o layout lado a lado
+            if (containerPai) {
+                if (isHibrido) containerPai.classList.add('hibrido');
+                else containerPai.classList.remove('hibrido');
+            }
+
+            if (tabelaDiv) tabelaDiv.style.display = showTable ? 'block' : 'none';
+            if (graficoDiv) graficoDiv.style.display = showChart ? 'block' : 'none';
+
+            // Constrói a Tabela
+            if (showTable && corpoTabela) {
+                corpoTabela.innerHTML = ''; 
+                if (dadosAPI.length === 0) {
+                    corpoTabela.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 30px;">Sem dados registrados.</td></tr>`;
+                } else {
+                    dadosAPI.forEach(item => {
+                        const isCredit = item.tipo === 'CREDIT';
+                        const valorLimpo = Math.abs(parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, '')));
+                        const cor = isCredit ? 'var(--cor-receita)' : 'var(--cor-despesa)';
+                        const sinal = isCredit ? '+' : '-';
+                        
+                        corpoTabela.innerHTML += `
+                            <tr>
+                                <td style="font-weight: 600;">${item.categoria || 'Sem Categoria'}</td>
+                                <td style="color: ${cor}; font-weight: bold;">${sinal} R$ ${valorLimpo.toFixed(2)}</td>
+                                <td style="color: var(--texto-mutated); font-size: 0.85rem;">-</td>
+                            </tr>
+                        `;
+                    });
+                }
+            }
+
+            // Constrói o Gráfico
+            if (showChart) {
+                if (meuChart) meuChart.destroy();
+                const ctx = document.getElementById('meuGrafico').getContext('2d');
+                meuChart = new Chart(ctx, {
+                    type: tipo === 'both-doughnut' ? 'doughnut' : tipo,
+                    data: {
+                        labels: dadosAPI.map(i => i.categoria || 'Outros'),
+                        datasets: [{ 
+                            label: 'Valores',
+                            data: dadosAPI.map(i => Math.abs(parseFloat(String(i.total_movimentado || i.valor || 0).replace(/[R$\s+\-]/g, '')))), 
+                            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] 
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+
+        // --- 4. FUNÇÕES DOS BOTÕES (Lançar e Metas) ---
+        async function salvarLancamentoManual() {
+            const descricao = document.getElementById('manual-desc').value;
+            const valor = document.getElementById('manual-valor').value;
+            const tipo = document.getElementById('manual-tipo').value;
+            const categoria = document.getElementById('manual-cat').value;
+            const data_transacao = document.getElementById('manual-data').value;
+
+            if (!descricao || !valor || !data_transacao) return alert("Preencha todos os campos!");
+
+            try {
+                const resposta = await fetch('/transacao-manual', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ descricao, valor: parseFloat(valor), tipo, categoria, data_transacao })
+                });
+                const jsonRetorno = await resposta.json();
+                if (jsonRetorno.success) {
+                    document.getElementById('manual-desc').value = '';
+                    document.getElementById('manual-valor').value = '';
+                    carregarDados(); // Recarrega a tabela na hora!
+                } else { alert("Erro no servidor."); }
+            } catch (error) { alert("Falha na comunicação."); }
+        }
+
+        async function salvarMeta() {
+            const categoria = document.getElementById('meta-categoria').value;
+            const valor = document.getElementById('meta-valor').value;
+            if (!categoria || !valor) return alert("Selecione uma categoria e digite o valor limite.");
+            
+            try {
+                await fetch('/metas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categoria, valor_limite: parseFloat(valor) })
+                });
+                document.getElementById('meta-valor').value = '';
+                carregarDados();
+                alert("Meta salva com sucesso!");
+            } catch (error) { alert("Erro ao salvar o orçamento."); }
+        }
+
+        async function removerMeta() {
+            const categoria = document.getElementById('meta-categoria').value;
+            if (!categoria) return alert("Selecione uma categoria primeiro.");
+            try {
+                await fetch('/metas', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categoria })
+                });
+                document.getElementById('meta-valor').value = '';
+                carregarDados();
+                alert("Meta removida!");
+            } catch (error) { alert("Erro ao remover o limite."); }
+        }
+
+        // --- 5. LIGAR O MOTOR ---
+        carregarDados();
+    </script>
