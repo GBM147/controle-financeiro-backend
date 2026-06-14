@@ -29,10 +29,12 @@ const db = mysql.createConnection({
 });
 // --- CONFIGURAÇÃO DO CARTEIRO (NODEMAILER) ---
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com', // ou o host do seu e-mail
+    port: 465,
+    secure: true,
     auth: {
-        user: 'parkermoraes14@gmail.com', // Colocaremos o seu Gmail aqui
-        pass: 'niem mpuf jehm bhmj'     // Colocaremos a senha de App aqui
+        user: process.env.EMAIL_USER, // Isto vai buscar o que colocou no Render
+        pass: process.env.EMAIL_PASS  // A Senha de App que mencionámos
     }
 });
 
