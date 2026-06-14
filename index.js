@@ -640,23 +640,23 @@ app.post('/validar-codigo', (req, res) => {
     });
 });
 // --- CONFIGURAÇÃO DO WHATSAPP WEB ---
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
+// const { Client, LocalAuth } = require('whatsapp-web.js');
+// const qrcode = require('qrcode-terminal');
 
-const client = new Client({
-    puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    }
-});
-client.on('qr', (qr) => {
+// const client = new Client({
+//    puppeteer: {
+//      args: ['--no-sandbox', '--disable-setuid-sandbox']
+//    }
+// });
+// client.on('qr', (qr) => {
     // Quando o servidor iniciar, vai gerar o QR Code no terminal
-    qrcode.generate(qr, { small: true });
-    console.log('🤖 Escaneie o QR Code acima com o seu WhatsApp para conectar!');
-});
+ //   qrcode.generate(qr, { small: true });
+ // console.log('🤖 Escaneie o QR Code acima com o seu WhatsApp para conectar!');
+// });
 
-client.on('ready', () => {
-    console.log('✅ WhatsApp conectado com sucesso! Servidor pronto.');
-});
+// client.on('ready', () => {
+ //   console.log('✅ WhatsApp conectado com sucesso! Servidor pronto.');
+ //;
 
 client.initialize();
 // ------------------------------------
