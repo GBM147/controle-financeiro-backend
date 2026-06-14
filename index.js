@@ -658,7 +658,7 @@ app.post('/validar-codigo', (req, res) => {
  //   console.log('✅ WhatsApp conectado com sucesso! Servidor pronto.');
  //;
 
-client.initialize();
+// client.initialize();
 // ------------------------------------
 // 4. Liga o servidor
 app.listen(3000, () => console.log('🚀 Servidor rodando limpo em http://localhost:3000'));
