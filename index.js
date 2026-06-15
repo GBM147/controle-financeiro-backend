@@ -550,28 +550,30 @@ app.post('/atualizar-meta-alerta', async (req, res) => {
     );
     res.json({ success: true });
 });
-// Rota de Login
+// Rota de Login Corrigida
 app.post('/login', async (req, res) => {
-    const { identificacao, senha } = req.body; // identificacao pode ser CPF ou e-mail
+    const { identificacao, senha } = req.body;
 
     const sql = "SELECT * FROM usuarios WHERE email = ? OR cpf = ?";
     db.query(sql, [identificacao, identificacao], async (err, results) => {
-        if (err || results.length === 0) return res.status(401).json({ message: 'Usuário não encontrado.' });
+        if (err || results.length === 0) {
+            return res.status(401).json({ success: false, message: 'Usuário não encontrado.' });
+        }
 
         const usuario = results[0];
         
-        // Comparar senha digitada com a hash do banco
+        // Compara a senha
         const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
-        if (!senhaValida) return res.status(401).json({ message: 'Senha incorreta.' });
+        if (!senhaValida) {
+            return res.status(401).json({ success: false, message: 'Senha incorreta.' });
+        }
 
-        // Se senha ok, vamos pedir o código de verificação
-        res.json({ success: true, message: 'Senha correta. Insira o código de verificação.' });
-        // Na sua rota /cadastro, certifique-se que o retorno final seja:
-res.json({ 
-    success: true, 
-    message: 'Cadastro realizado! Agora valide sua conta.',
-    userId: results.insertId // Isso envia o ID do novo usuário criado
-});
+        // SUCESSO: Devolve o ID do usuário para usarmos na tela de validação!
+        res.json({ 
+            success: true, 
+            userId: usuario.id, 
+            message: 'Senha correta. Insira o código de verificação.' 
+        });
     });
 });
 // rota de verificação
