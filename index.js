@@ -608,28 +608,6 @@ app.post('/verificar-conta', (req, res) => {
         });
     });
 });
-// --- ROTA PARA DISPARAR O CÓDIGO ---
-app.post('/enviar-codigo', (req, res) => {
-    const { userId, canal } = req.body;
-
-    // 1. Gerar código aleatório de 6 dígitos
-    const codigo = Math.floor(100000 + Math.random() * 900000);
-
-    // 2. Atualizar o token no banco de dados para esse usuário
-    db.query("UPDATE usuarios SET token_verificacao = ? WHERE id = ?", [codigo, userId], (err) => {
-        if (err) return res.status(500).json({ success: false, message: 'Erro ao gerar token.' });
-
-        if (canal === 'email') {
-            // Lógica do Nodemailer que já configuramos
-            // transporter.sendMail(...)
-            res.json({ success: true, message: 'Código enviado por e-mail.' });
-        } else if (canal === 'whatsapp') {
-            // Aqui entra a integração com API (ex: Z-API ou Twilio)
-            console.log(`Simulação: WhatsApp enviado com código ${codigo}`);
-            res.json({ success: true, message: 'Código enviado via WhatsApp.' });
-        }
-    });
-});
 // --- ROTA PARA VALIDAR O CÓDIGO ---
 app.post('/validar-codigo', (req, res) => {
     const { userId, codigo } = req.body;
