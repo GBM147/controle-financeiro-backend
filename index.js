@@ -100,7 +100,7 @@ app.post('/enviar-codigo', async (req, res) => {
             const usuario = rows[0];
 
             const mailOptions = {
-                from: 'parkermoraes14@gmail.com',
+                from: 'guardianofbudgetmoney@gmail.com',
                 to: usuario.email,
                 subject: 'Código de Confirmação - Financeiro Pro',
                 html: `<h2>Olá, ${usuario.nome}!</h2>

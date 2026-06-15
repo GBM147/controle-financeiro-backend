@@ -139,9 +139,40 @@
             input.value = v;
         }
 
-        function fazerLogin() {
-            alert("A rota do Node.js para Login será implementada aqui!");
+function fazerLogin() {
+    // 1. Captura o que você digitou usando os placeholders da sua tela
+    const emailCpf = document.querySelector('input[placeholder="CPF ou E-mail"]').value;
+    const senha = document.querySelector('input[placeholder="Senha"]').value;
+
+    if (!emailCpf || !senha) {
+        alert("Por favor, preencha o e-mail/CPF e a senha.");
+        return;
+    }
+
+    // 2. Envia os dados para a sua rota do Node.js
+    fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        // O seu backend está programado para receber "identificacao" e "senha"
+        body: JSON.stringify({ identificacao: emailCpf, senha: senha }) 
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 3. Se a senha bater certo, viaja para a tela do código!
+            window.location.href = 'conectar.html'; 
+        } else {
+            // Se a senha estiver errada, o backend avisa
+            alert(data.message || 'E-mail ou senha incorretos.');
         }
+    })
+    .catch(error => {
+        console.error('Erro de conexão:', error);
+        alert('Erro ao tentar conectar com o servidor.');
+    });
+}
 
 async function registrarUsuario() {
     // 1. Mapeamos os elementos do HTML (em vez de pegar só os valores)
