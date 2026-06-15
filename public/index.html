@@ -150,7 +150,7 @@ function fazerLogin() {
     }
 
     // Envia para o servidor
-    fetch('/login', {
+fetch('/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -160,8 +160,16 @@ function fazerLogin() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Sucesso! Vai para a tela de validar o código
-            window.location.href = 'conectar.html'; 
+            // 1. Guardamos o ID do usuário na memória para poder pedir o envio do código a seguir
+            localStorage.setItem('userIdAtual', data.userId);
+
+            // 2. Escondemos o formulário de login
+            document.getElementById('form-login').style.display = 'none';
+            
+            // 3. Mostramos a tela de "Como deseja validar?" 
+            // ATENÇÃO: Substitua 'form-validacao' pelo ID correto da sua div de envio de código!
+            document.getElementById('form-validacao').style.display = 'block'; 
+            
         } else {
             alert(data.message || 'E-mail ou senha incorretos.');
         }
