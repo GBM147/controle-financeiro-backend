@@ -27,12 +27,19 @@ const db = mysql.createConnection({
         rejectUnauthorized: false
     }
 });
-// --- CONFIGURAÇÃO DO CARTEIRO (NODEMAILER) CORRIGIDA ---
+// --- CONFIGURAÇÃO DO CARTEIRO (NODEMAILER) FURA-BLOQUEIO ---
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // Esta palavra mágica configura hosts, portas e evita o problema do IPv6 automaticamente
+    host: 'smtp.gmail.com',
+    port: 587, // Mudamos para a porta 587 (menos bloqueada em nuvens)
+    secure: false, // IMPORTANTE: tem de ser 'false' quando usamos a porta 587
+    requireTLS: true, // Força a criptografia de segurança
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        // Ignora certificados super-restritos que bloqueiam o Render
+        rejectUnauthorized: false 
     }
 });
 
