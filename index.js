@@ -27,14 +27,12 @@ const db = mysql.createConnection({
         rejectUnauthorized: false
     }
 });
-// --- CONFIGURAÇÃO DO CARTEIRO (NODEMAILER) ---
+// --- CONFIGURAÇÃO DO CARTEIRO (NODEMAILER) CORRIGIDA ---
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com', // ou o host do seu e-mail
-    port: 465,
-    secure: true,
+    service: 'gmail', // Esta palavra mágica configura hosts, portas e evita o problema do IPv6 automaticamente
     auth: {
-        user: process.env.EMAIL_USER, // Isto vai buscar o que colocou no Render
-        pass: process.env.EMAIL_PASS  // A Senha de App que mencionámos
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
