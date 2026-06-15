@@ -140,31 +140,29 @@
         }
 
 function fazerLogin() {
-    // 1. Captura o que você digitou usando os placeholders da sua tela
-    const emailCpf = document.querySelector('input[placeholder="CPF ou E-mail"]').value;
-    const senha = document.querySelector('input[placeholder="Senha"]').value;
+    // Agora sim! Os IDs exatos que estão na sua linha 48 e 52:
+    const emailCpf = document.getElementById('login-identificacao').value;
+    const senha = document.getElementById('login-senha').value;
 
     if (!emailCpf || !senha) {
         alert("Por favor, preencha o e-mail/CPF e a senha.");
         return;
     }
 
-    // 2. Envia os dados para a sua rota do Node.js
+    // Envia para o servidor
     fetch('/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        // O seu backend está programado para receber "identificacao" e "senha"
         body: JSON.stringify({ identificacao: emailCpf, senha: senha }) 
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // 3. Se a senha bater certo, viaja para a tela do código!
+            // Sucesso! Vai para a tela de validar o código
             window.location.href = 'conectar.html'; 
         } else {
-            // Se a senha estiver errada, o backend avisa
             alert(data.message || 'E-mail ou senha incorretos.');
         }
     })
