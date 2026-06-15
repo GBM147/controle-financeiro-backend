@@ -46,6 +46,21 @@ db.connect((err) => {
     console.log('📦 Ligado à base de dados MySQL com sucesso!');
 });
 // ---------------------------------------
+// --- ROTA SECRETA PARA ATUALIZAR O BANCO DE DADOS ---
+app.get('/atualizar-banco', (req, res) => {
+    const sql = "ALTER TABLE usuarios ADD COLUMN token_verificacao VARCHAR(10), ADD COLUMN verificado TINYINT(1) DEFAULT 0;";
+    
+    db.query(sql, (err, results) => {
+        if (err) {
+            // Se der erro porque a coluna já existe, ele avisa
+            if (err.code === 'ER_DUP_FIELDNAME') {
+                return res.send("As colunas já existem! O banco já está pronto.");
+            }
+            return res.send("Erro ao alterar o banco: " + err.message);
+        }
+        res.send("✅ Banco de dados atualizado com sucesso! As gavetas do token foram criadas.");
+    });
+});
 // --- ROTA DE CADASTRO DE USUÁRIO ---
 // --- ROTA 1: APENAS CADASTRO ---
 app.post('/cadastro', async (req, res) => {
