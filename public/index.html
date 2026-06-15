@@ -160,15 +160,15 @@ fetch('/login', {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // 1. Guardamos o ID do usuário na memória para poder pedir o envio do código a seguir
+            // 1. Guardamos o ID do usuário para o envio do e-mail saber quem ele é (Linha 102)
+            document.getElementById('temp-user-id').value = data.userId;
             localStorage.setItem('userIdAtual', data.userId);
 
-            // 2. Escondemos o formulário de login
+            // 2. Escondemos o formulário de login 
             document.getElementById('form-login').style.display = 'none';
             
-            // 3. Mostramos a tela de "Como deseja validar?" 
-            // ATENÇÃO: Substitua 'form-validacao' pelo ID correto da sua div de envio de código!
-            document.getElementById('form-validacao').style.display = 'block'; 
+            // 3. Mostramos a tela de "Como deseja validar?" (A sua linha 97!)
+            document.getElementById('form-escolha-validacao').style.display = 'block'; 
             
         } else {
             alert(data.message || 'E-mail ou senha incorretos.');
