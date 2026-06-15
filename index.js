@@ -663,4 +663,10 @@ app.post('/validar-codigo', (req, res) => {
 // client.initialize();
 // ------------------------------------
 // 4. Liga o servidor
-app.listen(3000, () => console.log('🚀 Servidor rodando limpo em http://localhost:3000'));
+// Define a porta dinâmica do Render ou a 3000 se estiver no seu PC
+const PORT = process.env.PORT || 3000; 
+
+// O '0.0.0.0' é a chave mágica que o Render pede na documentação
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Servidor rodando perfeitamente na porta ${PORT}`);
+});
