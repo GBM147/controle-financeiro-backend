@@ -6,8 +6,8 @@ const cors = require('cors');
 const { PluggyClient } = require('pluggy-sdk');
 const cron = require('node-cron');
 const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
-
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 // 1. Inicializamos o servidor PRIMEIRO
 const app = express();
 
@@ -97,79 +97,61 @@ app.post('/cadastro', async (req, res) => {
 });
 
 // --- ROTA 2: GERAR E ENVIAR O CÓDIGO ---
-app.post('/enviar-codigo', async (req, res) => {
+app.post('/enviar-codigo', (req, res) => {
     const { userId, canal } = req.body;
 
-    try {
-        // 1. Gerar o código de verificação de 6 dígitos
-        const token = Math.floor(100000 + Math.random() * 900000).toString();
+    // 1. Gera código seguro de 6 dígitos
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // 2. Atualiza o banco de dados do utilizador com o código gerado
-        await db.promise().query("UPDATE usuarios SET token_verificacao = ? WHERE id = ?", [token, userId]);
+    // 2. Guarda o código no banco de dados
+    db.query("UPDATE usuarios SET token_verificacao = ? WHERE id = ?", [codigo, userId], (err) => {
+        if (err) {
+            console.error("Erro ao salvar token:", err);
+            return res.status(500).json({ success: false, message: 'Erro interno ao gerar código.' });
+        }
 
-        // 3. Verifica o canal e envia a mensagem
         if (canal === 'email') {
-            
-            // Vai buscar o e-mail e o nome do utilizador ao banco
-            const [rows] = await db.promise().query("SELECT nome, email FROM usuarios WHERE id = ?", [userId]);
-            
-            if (rows.length === 0) {
-                return res.status(404).json({ success: false, message: 'Utilizador não encontrado.' });
-            }
-            
-            const usuario = rows[0];
-
-            const mailOptions = {
-                from: 'guardianofbudgetmoney@gmail.com',
-                to: usuario.email,
-                subject: 'Código de Confirmação - Financeiro Pro',
-                html: `<h2>Olá, ${usuario.nome}!</h2>
-                       <p>Bem-vindo ao Financeiro Pro. O teu código de verificação é:</p>
-                       <h1 style="color: #3b82f6; letter-spacing: 5px;">${token}</h1>
-                       <p>Insere este código no sistema para ativar a tua conta.</p>`
-            };
-
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    console.error("Erro ao enviar email:", error);
-                    return res.status(500).json({ success: false, message: 'Erro ao enviar o e-mail.' });
+            // 3. Busca o e-mail real do usuário no banco
+            db.query("SELECT email, nome FROM usuarios WHERE id = ?", [userId], async (err, results) => {
+                if (err || results.length === 0) {
+                    return res.status(404).json({ success: false, message: 'Usuário não encontrado no banco.' });
                 }
-                res.json({ success: true, message: 'Código enviado por e-mail.' });
+
+                const usuario = results[0];
+
+                try {
+                    // 4. Dispara o e-mail via Resend
+                    const { data, error } = await resend.emails.send({
+                        from: 'GBM Financeiro <onboarding@resend.dev>', // Substitua pelo seu domínio oficial após verificar no Resend
+                        to: usuario.email,
+                        subject: 'GBM - Seu Código de Acesso',
+                        html: `
+                            <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
+                                <h2 style="color: #c89f53;">Guardian of Budget & Money</h2>
+                                <p>Olá, ${usuario.nome}. Seu código de verificação é:</p>
+                                <h1 style="letter-spacing: 5px; color: #10b981; background: #111c2e; padding: 15px; border-radius: 8px; display: inline-block;">
+                                    ${codigo}
+                                </h1>
+                                <p style="color: #8a9ba8; font-size: 12px;">Se você não solicitou este acesso, ignore este e-mail.</p>
+                            </div>
+                        `
+                    });
+
+                    if (error) {
+                        console.error("Erro da API Resend:", error);
+                        return res.status(500).json({ success: false, message: 'Falha no provedor de e-mail.' });
+                    }
+
+                    res.json({ success: true, message: 'Código enviado com sucesso!' });
+                } catch (apiError) {
+                    console.error("Erro crítico no disparo:", apiError);
+                    res.status(500).json({ success: false, message: 'Erro na integração de e-mail.' });
+                }
             });
-
-} else if (canal === 'whatsapp') {
-            
-            // 1. Busca o nome e o telefone do usuário no banco de dados
-            const [rows] = await db.promise().query("SELECT nome, telefone FROM usuarios WHERE id = ?", [userId]);
-            
-            if (rows.length === 0) {
-                return res.status(404).json({ success: false, message: 'Utilizador não encontrado.' });
-            }
-            
-            const usuario = rows[0];
-
-            // 2. Limpa a formatação (remove os parênteses e traços que o usuário digitou)
-            let telefoneLimpo = usuario.telefone.replace(/\D/g, ''); 
-            
-            // 3. Monta o número no padrão da API (55 = Brasil + número + @c.us)
-            const numeroWhatsApp = "55" + telefoneLimpo + "@c.us";
-
-            // 4. Dispara a mensagem
-            try {
-                const mensagem = `Olá, *${usuario.nome}*! Bem-vindo ao Financeiro Pro.\n\nO seu código de verificação é: *${token}*`;
-                await client.sendMessage(numeroWhatsApp, mensagem);
-                res.json({ success: true, message: 'Código enviado via WhatsApp.' });
-            } catch (errZap) {
-                console.error("Erro ao enviar WhatsApp:", errZap);
-                res.status(500).json({ success: false, message: 'Falha ao enviar WhatsApp. O servidor está conectado?' });
-      }
-    } // <- Esta chave fecha o "else if" do WhatsApp
-
-} catch (error) {
-    // 👇 ESTE É O BLOCO QUE TINHA SIDO APAGADO!
-    console.error("Erro no envio de código:", error);
-    res.status(500).json({ success: false, message: 'Erro ao processar o envio.' });
-}
+        } else if (canal === 'whatsapp') {
+            res.json({ success: false, message: 'Integração com WhatsApp ainda não configurada para lançamento.' });
+        }
+    });
 });
 // 2. Middlewares (Configurações essenciais)
 app.use(cors());
