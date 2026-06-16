@@ -7,14 +7,19 @@ const { PluggyClient } = require('pluggy-sdk');
 const cron = require('node-cron');
 const bcrypt = require('bcrypt');
 const { Resend } = require('resend');
+
+// Inicializamos a API de Email (Resend)
 const resend = new Resend(process.env.RESEND_API_KEY);
-// 1. Inicializamos o servidor PRIMEIRO
+
+// 1. Inicializamos o servidor Express
 const app = express();
 
-// 2. LIGAMOS OS TRADUTORES IMEDIATAMENTE A SEGUIR
+// 2. Middlewares (Configurações essenciais centralizadas)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+// Isso faz o servidor ler e entregar automaticamente os seus ficheiros HTML/CSS da pasta public
+app.use(express.static('public')); 
 
 // --- LIGAÇÃO À BASE DE DADOS MYSQL ---
 const db = mysql.createConnection({
@@ -27,21 +32,6 @@ const db = mysql.createConnection({
         rejectUnauthorized: false
     }
 });
-// --- CONFIGURAÇÃO DO CARTEIRO (NODEMAILER) FURA-BLOQUEIO ---
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587, // Mudamos para a porta 587 (menos bloqueada em nuvens)
-    secure: false, // IMPORTANTE: tem de ser 'false' quando usamos a porta 587
-    requireTLS: true, // Força a criptografia de segurança
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        // Ignora certificados super-restritos que bloqueiam o Render
-        rejectUnauthorized: false 
-    }
-});
 
 db.connect((err) => {
     if (err) {
@@ -50,6 +40,7 @@ db.connect((err) => {
     }
     console.log('📦 Ligado à base de dados MySQL com sucesso!');
 });
+
 // ---------------------------------------
 // --- ROTA SECRETA PARA ATUALIZAR O BANCO DE DADOS ---
 app.get('/atualizar-banco', (req, res) => {
@@ -57,7 +48,6 @@ app.get('/atualizar-banco', (req, res) => {
     
     db.query(sql, (err, results) => {
         if (err) {
-            // Se der erro porque a coluna já existe, ele avisa
             if (err.code === 'ER_DUP_FIELDNAME') {
                 return res.send("As colunas já existem! O banco já está pronto.");
             }
@@ -66,25 +56,20 @@ app.get('/atualizar-banco', (req, res) => {
         res.send("✅ Banco de dados atualizado com sucesso! As gavetas do token foram criadas.");
     });
 });
-// --- ROTA DE CADASTRO DE USUÁRIO ---
-// --- ROTA 1: APENAS CADASTRO ---
+
+// --- ROTA 1: CADASTRO DE USUÁRIO ---
 app.post('/cadastro', async (req, res) => {
     const { nome, sobrenome, cpf, email, telefone, senha } = req.body;
 
     try {
-        // 1. Encriptar a palavra-passe
         const salt = await bcrypt.genSalt(10);
         const senhaHash = await bcrypt.hash(senha, salt);
         const cpfLimpo = cpf.replace(/\D/g, '');
         const cpfMascarado = crypto.createHash('sha256').update(cpfLimpo).digest('hex');
 
-        // 2. Guardar no Banco de Dados MySQL (Sem o token por enquanto)
         const sql = `INSERT INTO usuarios (nome, sobrenome, cpf, email, telefone, senha_hash) VALUES (?, ?, ?, ?, ?, ?)`;
-        
-        // O "result" captura o ID gerado pelo banco
         const [result] = await db.promise().query(sql, [nome, sobrenome, cpf, email, telefone, senhaHash]);
 
-        // 3. Responde com sucesso e envia o userId para o Frontend
         res.json({ success: true, userId: result.insertId, message: 'Cadastro realizado!' });
 
     } catch (error) {
@@ -96,20 +81,16 @@ app.post('/cadastro', async (req, res) => {
     }
 });
 
-// --- ROTA 2: GERAR E ENVIAR O CÓDIGO ---
-// --- ROTA PARA DISPARAR O CÓDIGO (RESEND + ASYNC/AWAIT) ---
+// --- ROTA 2: GERAR E ENVIAR O CÓDIGO (RESEND + ASYNC/AWAIT) ---
 app.post('/enviar-codigo', async (req, res) => {
     const { userId, canal } = req.body;
 
     try {
-        // 1. Gera código seguro de 6 dígitos
         const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // 2. Guarda o código no banco de dados (Usando a sua estrutura original de promise)
         await db.promise().query("UPDATE usuarios SET token_verificacao = ? WHERE id = ?", [codigo, userId]);
 
         if (canal === 'email') {
-            // 3. Busca o e-mail real do usuário no banco
             const [rows] = await db.promise().query("SELECT email, nome FROM usuarios WHERE id = ?", [userId]);
 
             if (rows.length === 0) {
@@ -118,9 +99,8 @@ app.post('/enviar-codigo', async (req, res) => {
 
             const usuario = rows[0];
 
-            // 4. Dispara o e-mail via Resend
             const { data, error } = await resend.emails.send({
-                from: 'GBM Financeiro <onboarding@resend.dev>', // Seu domínio do Resend
+                from: 'GBM Financeiro <onboarding@resend.dev>',
                 to: usuario.email,
                 subject: 'GBM - Seu Código de Acesso',
                 html: `
@@ -140,11 +120,9 @@ app.post('/enviar-codigo', async (req, res) => {
                 return res.status(500).json({ success: false, message: 'Falha no provedor de e-mail.' });
             }
 
-            // 5. Devolve o sucesso para a tela de vidro avançar!
             res.json({ success: true, message: 'Código enviado com sucesso!' });
 
         } else if (canal === 'whatsapp') {
-            // Mantendo a porta aberta para o futuro
             res.json({ success: false, message: 'Integração com WhatsApp aguardando lançamento.' });
         }
 
@@ -153,16 +131,10 @@ app.post('/enviar-codigo', async (req, res) => {
         res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
     }
 });
-// 2. Middlewares (Configurações essenciais)
-app.use(cors());
-app.use(express.json());
-// Isso faz o servidor ler e entregar automaticamente o seu index.html
-app.use(express.static('public')); 
 
-// --- ATENÇÃO: COLE AQUI AS SUAS CHAVES ATUALIZADAS ---
+// --- CHAVES E CLIENTE PLUGGY ---
 const MEU_CLIENT_ID = '52941af5-8efd-4b45-af03-3e515e24e8e6';
 const MEU_CLIENT_SECRET = 'e0b21d54-0564-4040-ae45-70cff7abad6b';
-// -----------------------------------------------------
 
 const pluggyClient = new PluggyClient({
     clientId: MEU_CLIENT_ID,
@@ -172,27 +144,24 @@ const pluggyClient = new PluggyClient({
 // --- ROTA PARA O WIDGET DO OPEN FINANCE (PLUGGY) ---
 app.get('/api/pluggy/token', async (req, res) => {
     try {
-        // Pede à Pluggy um token único para abrir o widget
         const tokenResponse = await pluggyClient.createConnectToken();
-        
-        // Devolve o token formatado corretamente para o seu painel
         res.json({ accessToken: tokenResponse.accessToken });
     } catch (error) {
         console.error("Erro ao gerar token da Pluggy:", error);
         res.status(500).json({ success: false, message: 'Erro ao ligar ao Open Finance.' });
     }
 });
+
 // --- ROTA DEFINITIVA COM GRAVAÇÃO NO BANCO DE DADOS (MySQL) ---
 app.post('/dados-bancarios', async (req, res) => {
     const { itemId } = req.body;
-    const usuarioId = 1; // ID padrão do utilizador do sistema
+    const usuarioId = 1; 
     console.log("⏳ A extrair dados do Open Finance e a gravar no MySQL... Item ID:", itemId);
 
     try {
-        // 1. Busca as contas bancárias ligadas a este Item na Pluggy
         const contas = await pluggyClient.fetchAccounts(itemId);
         let todasTransacoes = [];
-    const dicionarioCategorias = {
+        const dicionarioCategorias = {
             "Housing": "Habitação",
             "Food": "Alimentação",
             "Electricity": "Eletricidade / Luz",
@@ -208,11 +177,10 @@ app.post('/dados-bancarios', async (req, res) => {
             "Transportation": "Transporte",
             "Health": "Saúde",
             "Education": "Educação"
-            // Pode ir adicionando mais conforme for descobrindo!
         };
+        
         if (contas.results && contas.results.length > 0) {
             
-            // --- BLOCO 1: GRAVA OU ATUALIZA AS CONTAS NO MYSQL ---
             for (const conta of contas.results) {
                 const sqlConta = `
                     INSERT INTO contas_bancarias (usuario_id, conta_id_pluggy, item_id_pluggy, nome_instituicao, tipo_conta, saldo) 
@@ -221,20 +189,13 @@ app.post('/dados-bancarios', async (req, res) => {
                 `;
                 
                 await db.promise().query(sqlConta, [
-                    usuarioId, 
-                    conta.id, 
-                    itemId, 
-                    conta.name, 
-                    conta.type, 
-                    conta.balance
+                    usuarioId, conta.id, itemId, conta.name, conta.type, conta.balance
                 ]);
                 console.log(`✅ Conta "${conta.name}" sincronizada no MySQL.`);
             }
 
-            // 2. Captura a primeira conta para extrair o extrato via API V2 (Bypass)
             const primeiraContaId = contas.results[0].id;
             
-            // A) Gera a chave temporária (API Key)
             const authReq = await fetch('https://api.pluggy.ai/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -245,7 +206,6 @@ app.post('/dados-bancarios', async (req, res) => {
             });
             const { apiKey } = await authReq.json();
 
-            // B) Busca as transações diretamente na Rota V2
             const urlV2 = `https://api.pluggy.ai/v2/transactions?accountId=${primeiraContaId}`;
             const respostaV2 = await fetch(urlV2, {
                 method: 'GET',
@@ -258,11 +218,9 @@ app.post('/dados-bancarios', async (req, res) => {
             const extrato = await respostaV2.json();
             todasTransacoes = extrato.results || [];
 
-            // --- BLOCO 2: GRAVA AS TRANSAÇÕES NO MYSQL ---
             if (todasTransacoes.length > 0) {
                 let transacoesGravadas = 0;
 
-                // Descobre o ID interno da conta que acabou de ser atualizada no banco
                 const [contasLocalizadas] = await db.promise().query(
                     'SELECT id FROM contas_bancarias WHERE conta_id_pluggy = ?', 
                     [primeiraContaId]
@@ -271,7 +229,6 @@ app.post('/dados-bancarios', async (req, res) => {
                 if (contasLocalizadas.length > 0) {
                     const contaInternaId = contasLocalizadas[0].id;
 
-                    // 🧹 A FAXINA: Apaga as transações antigas da Pluggy antes de inserir as novas (evita duplicatas e limpa o inglês)
                     await db.promise().query('DELETE FROM transacoes WHERE conta_id = ? AND transacao_id_pluggy IS NOT NULL', [contaInternaId]);
 
                     for (const transacao of todasTransacoes) {
@@ -280,18 +237,11 @@ app.post('/dados-bancarios', async (req, res) => {
                             VALUES (?, ?, ?, ?, ?, ?, ?)
                         `;
                         
-                        // Formata a data e aplica a tradução do dicionário
                         const dataFormatada = new Date(transacao.date).toISOString().split('T')[0];
                         const categoriaTraduzida = dicionarioCategorias[transacao.category] || transacao.category || 'Outros';
                         
                         await db.promise().query(sqlTransacao, [
-                            contaInternaId,
-                            transacao.id,
-                            transacao.description,
-                            transacao.amount,
-                            transacao.type,
-                            categoriaTraduzida,
-                            dataFormatada
+                            contaInternaId, transacao.id, transacao.description, transacao.amount, transacao.type, categoriaTraduzida, dataFormatada
                         ]);
                         transacoesGravadas++;
                     }
@@ -300,7 +250,6 @@ app.post('/dados-bancarios', async (req, res) => {
             }
         }
 
-        // 3. Devolve a resposta de sucesso e os dados para o Dashboard
         res.json({ 
             success: true, 
             contas: contas.results, 
@@ -319,7 +268,6 @@ app.get('/resumo-financeiro', async (req, res) => {
     try {
         const { mes, ano } = req.query;
 
-        // O SQL agora puxa t.tipo para diferenciarmos Crédito e Débito
         let sql = `
             SELECT 
                 t.categoria, 
@@ -347,7 +295,6 @@ app.get('/resumo-financeiro', async (req, res) => {
             params.push(ano);
         }
 
-        // Agrupamos pela categoria E pelo tipo (garantindo que não mistura receita com despesa)
         sql += ` GROUP BY t.categoria, t.tipo ORDER BY total_movimentado ASC;`;
         
         const [rows] = await db.promise().query(sql, params);
@@ -359,12 +306,12 @@ app.get('/resumo-financeiro', async (req, res) => {
         res.status(500).json({ status: 'error', message: 'Falha ao processar resumo financeiro' });
     }
 });
+
 // --- NOVA ROTA: SALVAR/ATUALIZAR METAS DO USUÁRIO ---
 app.post('/metas', async (req, res) => {
     try {
         const { categoria, valor_limite } = req.body;
         
-        // Se a categoria já tem meta, ele atualiza; se não, ele insere.
         const sql = `
             INSERT INTO metas (categoria, valor_limite) 
             VALUES (?, ?) 
@@ -380,12 +327,11 @@ app.post('/metas', async (req, res) => {
         res.status(500).json({ error: 'Falha ao salvar meta' });
     }
 });
+
 // --- NOVA ROTA: REMOVER LIMITE (TORNAR GASTO FIXO / SEM LIMITE) ---
 app.delete('/metas', async (req, res) => {
     try {
         const { categoria } = req.body;
-        
-        // Apaga a regra do banco de dados para aquela categoria específica
         await db.promise().query('DELETE FROM metas WHERE categoria = ?', [categoria]);
         
         console.log(`🗑️ Limite removido. A categoria [${categoria}] agora é um gasto fixo.`);
@@ -395,19 +341,17 @@ app.delete('/metas', async (req, res) => {
         res.status(500).json({ error: 'Falha ao remover meta' });
     }
 });
-//  LANÇAMENTO MANUAL (CAIXA FÍSICO / OUTRAS RECEITAS) ---
+
+// --- LANÇAMENTO MANUAL ---
 app.post('/transacao-manual', async (req, res) => {
     try {
         const { descricao, valor, tipo, categoria, data_transacao } = req.body;
 
-        // 1. Gera um ID único falso para não quebrar a regra de chave única do MySQL
         const transacaoIdGerado = 'MANUAL_' + Date.now();
 
-        // 2. Pega a primeira conta que existir no banco para atrelar a transação
         const [contas] = await db.promise().query('SELECT id FROM contas_bancarias LIMIT 1');
         const contaInternaId = contas.length > 0 ? contas[0].id : 1; 
 
-        // 3. Regra de ouro financeira: Débitos têm de entrar no banco como negativos!
         const valorFinal = tipo === 'DEBIT' ? -Math.abs(valor) : Math.abs(valor);
 
         const sql = `INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao)
@@ -424,16 +368,12 @@ app.post('/transacao-manual', async (req, res) => {
         res.status(500).json({ error: 'Falha ao processar lançamento.' });
     }
 });
-// --- AUTOMAÇÃO: SINCRONIZAÇÃO SILENCIOSA (BACKGROUND JOB) ---
 
-// Função isolada que faz o trabalho pesado
+// --- AUTOMAÇÃO: SINCRONIZAÇÃO SILENCIOSA (BACKGROUND JOB) ---
 async function sincronizarPluggySilencioso() {
     console.log('🤖 [CRON] Iniciando sincronização automática com a Pluggy...');
     try {
-        // OPÇÃO A: Cole aqui dentro a mesma lógica do seu app.post('/dados-bancarios')
-        // OPÇÃO B: Faça um fetch (requisição interna) para a sua própria rota, simulando o clique do usuário:
         await fetch('http://localhost:3000/dados-bancarios', { method: 'POST' });
-
         console.log('✅ [CRON] Dados financeiros atualizados com sucesso no MySQL!');
         await auditarMetas();
     } catch (error) {
@@ -442,27 +382,21 @@ async function sincronizarPluggySilencioso() {
 }
 
 // --- AGENDAMENTO DO ROBÔ ---
-// O Cron usa uma sintaxe de 5 asteriscos: Minuto | Hora | Dia (Mês) | Mês | Dia (Semana)
-
-// Para o ambiente de PRODUÇÃO (Rodar todos os dias às 04:00 da manhã):
 cron.schedule('0 4 * * *', () => {
     sincronizarPluggySilencioso();
 }, {
     scheduled: true,
-    timezone: "America/Sao_Paulo" // Garante que respeite o fuso horário correto
+    timezone: "America/Sao_Paulo"
 });
 
 // =======================================================
 // --- MÓDULO DE NOTIFICAÇÕES E AUDITORIA DE METAS ---
 // =======================================================
-
-// Função que varre os gastos e gera os alertas
 async function auditarMetas() {
     try {
         const [prefs] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
         const percentualAlerta = prefs.length > 0 ? prefs[0].percentual_alerta : 80;
 
-        // Puxa o total gasto no mês atual cruzado com a meta
         const sql = `
             SELECT t.categoria, SUM(t.valor) as total_gasto, m.valor_limite
             FROM transacoes t
@@ -480,7 +414,6 @@ async function auditarMetas() {
             if (porcentagemAtual >= percentualAlerta) {
                 const msg = `Atenção: Você atingiu ${porcentagemAtual.toFixed(1)}% do seu limite de R$ ${limite.toFixed(2)} na categoria ${item.categoria}.`;
                 
-                // Evita criar o mesmo alerta repetido no mesmo dia
                 const [check] = await db.promise().query(
                     'SELECT id FROM alertas WHERE categoria = ? AND DATE(data_criacao) = CURRENT_DATE()', 
                     [item.categoria]
@@ -497,7 +430,6 @@ async function auditarMetas() {
     }
 }
 
-// Rotas para a Página de Notificações
 app.get('/configuracoes-alerta', async (req, res) => {
     const [rows] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
     res.json(rows[0] || { percentual_alerta: 80 });
@@ -519,19 +451,21 @@ app.post('/alertas/marcar-lida', async (req, res) => {
     await db.promise().query('UPDATE alertas SET lida = TRUE WHERE id = ?', [id]);
     res.json({ success: true });
 });
+
 app.get('/relatorio-mensal', async (req, res) => {
-    const { mes, ano } = req.query; // Recebe o mês/ano que o usuário escolheu
+    const { mes, ano } = req.query; 
     
-const sql = `
-    SELECT categoria, tipo, IFNULL(SUM(valor), 0) as total_movimentado
-    FROM transacoes
-    WHERE MONTH(data_transacao) = ? AND YEAR(data_transacao) = ?
-    GROUP BY categoria, tipo
-`;
+    const sql = `
+        SELECT categoria, tipo, IFNULL(SUM(valor), 0) as total_movimentado
+        FROM transacoes
+        WHERE MONTH(data_transacao) = ? AND YEAR(data_transacao) = ?
+        GROUP BY categoria, tipo
+    `;
     
     const [rows] = await db.promise().query(sql, [mes, ano]);
     res.json(rows);
 });
+
 app.get('/metas-resumo', async (req, res) => {
     const sql = `
         SELECT m.categoria, m.valor_limite as limite, 
@@ -544,6 +478,7 @@ app.get('/metas-resumo', async (req, res) => {
     const [rows] = await db.promise().query(sql);
     res.json(rows);
 });
+
 app.post('/atualizar-meta-alerta', async (req, res) => {
     const { categoria, valor_limite, percentual_alerta } = req.body;
     await db.promise().query(
@@ -552,7 +487,8 @@ app.post('/atualizar-meta-alerta', async (req, res) => {
     );
     res.json({ success: true });
 });
-// Rota de Login Corrigida
+
+// --- ROTA DE LOGIN ---
 app.post('/login', async (req, res) => {
     const { identificacao, senha } = req.body;
 
@@ -564,13 +500,11 @@ app.post('/login', async (req, res) => {
 
         const usuario = results[0];
         
-        // Compara a senha
         const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
         if (!senhaValida) {
             return res.status(401).json({ success: false, message: 'Senha incorreta.' });
         }
 
-        // SUCESSO: Devolve o ID do usuário para usarmos na tela de validação!
         res.json({ 
             success: true, 
             userId: usuario.id, 
@@ -578,7 +512,8 @@ app.post('/login', async (req, res) => {
         });
     });
 });
-// rota de verificação
+
+// --- ROTA DE VERIFICAÇÃO ---
 app.post('/verificar-conta', (req, res) => {
     const { userId, codigoDigitado } = req.body;
 
@@ -588,18 +523,17 @@ app.post('/verificar-conta', (req, res) => {
             return res.status(400).json({ success: false, message: 'Código inválido!' });
         }
 
-        // Se o código bateu, marcamos como verificado
         db.query("UPDATE usuarios SET verificado = 1 WHERE id = ?", [userId], (err) => {
             if (err) return res.status(500).json({ success: false, message: 'Erro ao ativar conta.' });
             res.json({ success: true, message: 'Conta ativada com sucesso!' });
         });
     });
 });
+
 // --- ROTA PARA VALIDAR O CÓDIGO ---
 app.post('/validar-codigo', (req, res) => {
     const { userId, codigo } = req.body;
 
-    // Vai buscar o código guardado no banco de dados para este utilizador
     db.query("SELECT token_verificacao FROM usuarios WHERE id = ?", [userId], (err, results) => {
         if (err) return res.status(500).json({ success: false, message: 'Erro no servidor.' });
 
@@ -609,46 +543,21 @@ app.post('/validar-codigo', (req, res) => {
 
         const codigoNoBanco = results[0].token_verificacao;
 
-        // Compara o código digitado com o que está guardado
         if (codigo === codigoNoBanco) {
-            // Se bater certo, atualiza o utilizador para "verificado" e limpa o token
             db.query("UPDATE usuarios SET token_verificacao = NULL WHERE id = ?", [userId], (updateErr) => {
                 if (updateErr) console.error("Erro ao limpar token:", updateErr);
                 
                 res.json({ success: true, message: 'Conta validada com sucesso!' });
             });
         } else {
-            // Se errar o código
             res.status(400).json({ success: false, message: 'Código de verificação incorreto.' });
         }
     });
 });
-// --- CONFIGURAÇÃO DO WHATSAPP WEB ---
-// const { Client, LocalAuth } = require('whatsapp-web.js');
-// const qrcode = require('qrcode-terminal');
 
-// const client = new Client({
-//    puppeteer: {
-//      args: ['--no-sandbox', '--disable-setuid-sandbox']
-//    }
-// });
-// client.on('qr', (qr) => {
-    // Quando o servidor iniciar, vai gerar o QR Code no terminal
- //   qrcode.generate(qr, { small: true });
- // console.log('🤖 Escaneie o QR Code acima com o seu WhatsApp para conectar!');
-// });
-
-// client.on('ready', () => {
- //   console.log('✅ WhatsApp conectado com sucesso! Servidor pronto.');
- //;
-
-// client.initialize();
-// ------------------------------------
 // 4. Liga o servidor
-// Define a porta dinâmica do Render ou a 3000 se estiver no seu PC
 const PORT = process.env.PORT || 3000; 
 
-// O '0.0.0.0' é a chave mágica que o Render pede na documentação
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando perfeitamente na porta ${PORT}`);
 });
