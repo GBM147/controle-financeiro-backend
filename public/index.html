@@ -113,21 +113,24 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
     border: 1px solid var(--borda);
 }
 #form-validar-codigo { display: none; text-align: center; }
-/* Posicionando o Rodapé */
-.rodape-logo {
-    position: absolute;
-    bottom: 30px; 
+.topo-logo {
     text-align: center;
+    margin-bottom: 25px; /* Dá um respiro entre o logo e a caixa de vidro */
+    z-index: 10; /* Garante que fica sempre por cima do fundo */
 }
 
-.rodape-logo img {
-    max-width: 250px; 
+.topo-logo img {
+    max-width: 180px; /* Tamanho elegante para o topo */
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    /* Se usar uma imagem sem fundo (PNG), essa sombra dá um efeito 3D flutuante lindo: */
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6));
 }
     </style>
 </head>
 <body>
+    <div class="topo-logo">
+    <img src="logo-transparente.jpg" alt="Guardian of Budget & Money">
+</div>
 
 <div class="auth-container">
     
@@ -209,9 +212,7 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
         <button class="btn-submit" onclick="verificarCodigo()">Validar Agora</button>
         
     </div> </div>
-<div class="rodape-logo">
-    <img src="logo transparente.jpg" alt="Guardian of Budget & Money">
-</div>
+
 
     <script>
         function mascaraTelefone(input) {
