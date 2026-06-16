@@ -56,6 +56,18 @@ app.get('/atualizar-banco', (req, res) => {
         res.send("✅ Banco de dados atualizado com sucesso! As gavetas do token foram criadas.");
     });
 });
+// --- ROTA SECRETA PARA CORRIGIR A TABELA DE CONTAS ---
+app.get('/corrigir-contas', async (req, res) => {
+    try {
+        await db.promise().query("ALTER TABLE contas_bancarias ADD COLUMN item_id_pluggy VARCHAR(255) AFTER conta_id_pluggy;");
+        res.send("✅ Tabela contas_bancarias atualizada! A coluna item_id_pluggy foi criada.");
+    } catch (err) {
+        if (err.code === 'ER_DUP_FIELDNAME') {
+            return res.send("A coluna já existe! Tudo pronto.");
+        }
+        res.send("Erro ao alterar o banco: " + err.message);
+    }
+});
 
 // --- ROTA 1: CADASTRO DE USUÁRIO ---
 app.post('/cadastro', async (req, res) => {
