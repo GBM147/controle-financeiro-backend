@@ -101,7 +101,7 @@ app.post('/enviar-codigo', async (req, res) => {
 
             const { data, error } = await resend.emails.send({
                 from: 'GBM Financeiro <onboarding@resend.dev>',
-                to: usuario.email,
+                to: usuario.email.toLowerCase().trim(),
                 subject: 'GBM - Seu Código de Acesso',
                 html: `
                     <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
