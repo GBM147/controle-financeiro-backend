@@ -40,36 +40,6 @@ db.connect((err) => {
     }
     console.log('📦 Ligado à base de dados MySQL com sucesso!');
 });
-
-// ---------------------------------------
-// --- ROTA SECRETA PARA ATUALIZAR O BANCO DE DADOS ---
-app.get('/atualizar-banco', (req, res) => {
-    const sql = "ALTER TABLE usuarios ADD COLUMN token_verificacao VARCHAR(10), ADD COLUMN verificado TINYINT(1) DEFAULT 0;";
-    
-    db.query(sql, (err, results) => {
-        if (err) {
-            if (err.code === 'ER_DUP_FIELDNAME') {
-                return res.send("As colunas já existem! O banco já está pronto.");
-            }
-            return res.send("Erro ao alterar o banco: " + err.message);
-        }
-        res.send("✅ Banco de dados atualizado com sucesso! As gavetas do token foram criadas.");
-    });
-});
-// --- ROTA SECRETA PARA DEIXAR A TABELA DE CONTAS PERFEITA ---
-app.get('/corrigir-contas', async (req, res) => {
-    try {
-        // Vamos criar as gavetas do Nome do Banco e do Tipo de Conta de uma só vez!
-        await db.promise().query("ALTER TABLE contas_bancarias ADD COLUMN nome_instituicao VARCHAR(255), ADD COLUMN tipo_conta VARCHAR(50);");
-        res.send("✅ Tabela de contas atualizada com sucesso! Todas as gavetas estão prontas.");
-    } catch (err) {
-        if (err.code === 'ER_DUP_FIELDNAME') {
-            return res.send("As colunas já existem! O banco já está pronto.");
-        }
-        res.send("Erro ao alterar o banco: " + err.message);
-    }
-});
-
 // --- ROTA 1: CADASTRO DE USUÁRIO ---
 app.post('/cadastro', async (req, res) => {
     const { nome, sobrenome, cpf, email, telefone, senha } = req.body;
