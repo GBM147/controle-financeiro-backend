@@ -500,7 +500,7 @@ app.post('/atualizar-meta-alerta', async (req, res) => {
     res.json({ success: true });
 });
 
-// --- ROTA DE LOGIN ---
+// --- ROTA DE LOGIN CORRIGIDA (PULA VERIFICAÇÃO SE JÁ VERIFICADO) ---
 app.post('/login', async (req, res) => {
     const { identificacao, senha } = req.body;
 
@@ -517,11 +517,24 @@ app.post('/login', async (req, res) => {
             return res.status(401).json({ success: false, message: 'Senha incorreta.' });
         }
 
-        res.json({ 
-            success: true, 
-            userId: usuario.id, 
-            message: 'Senha correta. Insira o código de verificação.' 
-        });
+        // 🧠 O PULO DO GATO: O sistema agora verifica se a conta já foi ativada
+        if (usuario.verificado === 1) {
+            // Se já foi, manda um "verificado: true"
+            res.json({ 
+                success: true, 
+                verificado: true, 
+                userId: usuario.id, 
+                message: 'Login efetuado com sucesso!' 
+            });
+        } else {
+            // Se é conta nova, manda para a tela de escolher E-mail/WhatsApp
+            res.json({ 
+                success: true, 
+                verificado: false, 
+                userId: usuario.id, 
+                message: 'Conta não verificada. Insira o código.' 
+            });
+        }
     });
 });
 
