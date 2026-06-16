@@ -97,61 +97,61 @@ app.post('/cadastro', async (req, res) => {
 });
 
 // --- ROTA 2: GERAR E ENVIAR O CÓDIGO ---
-app.post('/enviar-codigo', (req, res) => {
+// --- ROTA PARA DISPARAR O CÓDIGO (RESEND + ASYNC/AWAIT) ---
+app.post('/enviar-codigo', async (req, res) => {
     const { userId, canal } = req.body;
 
-    // 1. Gera código seguro de 6 dígitos
-    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    try {
+        // 1. Gera código seguro de 6 dígitos
+        const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // 2. Guarda o código no banco de dados
-    db.query("UPDATE usuarios SET token_verificacao = ? WHERE id = ?", [codigo, userId], (err) => {
-        if (err) {
-            console.error("Erro ao salvar token:", err);
-            return res.status(500).json({ success: false, message: 'Erro interno ao gerar código.' });
-        }
+        // 2. Guarda o código no banco de dados (Usando a sua estrutura original de promise)
+        await db.promise().query("UPDATE usuarios SET token_verificacao = ? WHERE id = ?", [codigo, userId]);
 
         if (canal === 'email') {
             // 3. Busca o e-mail real do usuário no banco
-            db.query("SELECT email, nome FROM usuarios WHERE id = ?", [userId], async (err, results) => {
-                if (err || results.length === 0) {
-                    return res.status(404).json({ success: false, message: 'Usuário não encontrado no banco.' });
-                }
+            const [rows] = await db.promise().query("SELECT email, nome FROM usuarios WHERE id = ?", [userId]);
 
-                const usuario = results[0];
+            if (rows.length === 0) {
+                return res.status(404).json({ success: false, message: 'Usuário não encontrado no banco.' });
+            }
 
-                try {
-                    // 4. Dispara o e-mail via Resend
-                    const { data, error } = await resend.emails.send({
-                        from: 'GBM Financeiro <onboarding@resend.dev>', // Substitua pelo seu domínio oficial após verificar no Resend
-                        to: usuario.email,
-                        subject: 'GBM - Seu Código de Acesso',
-                        html: `
-                            <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
-                                <h2 style="color: #c89f53;">Guardian of Budget & Money</h2>
-                                <p>Olá, ${usuario.nome}. Seu código de verificação é:</p>
-                                <h1 style="letter-spacing: 5px; color: #10b981; background: #111c2e; padding: 15px; border-radius: 8px; display: inline-block;">
-                                    ${codigo}
-                                </h1>
-                                <p style="color: #8a9ba8; font-size: 12px;">Se você não solicitou este acesso, ignore este e-mail.</p>
-                            </div>
-                        `
-                    });
+            const usuario = rows[0];
 
-                    if (error) {
-                        console.error("Erro da API Resend:", error);
-                        return res.status(500).json({ success: false, message: 'Falha no provedor de e-mail.' });
-                    }
-
-                    res.json({ success: true, message: 'Código enviado com sucesso!' });
-                } catch (apiError) {
-                    console.error("Erro crítico no disparo:", apiError);
-                    res.status(500).json({ success: false, message: 'Erro na integração de e-mail.' });
-                }
+            // 4. Dispara o e-mail via Resend
+            const { data, error } = await resend.emails.send({
+                from: 'GBM Financeiro <onboarding@resend.dev>', // Seu domínio do Resend
+                to: usuario.email,
+                subject: 'GBM - Seu Código de Acesso',
+                html: `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
+                        <h2 style="color: #c89f53;">Guardian of Budget & Money</h2>
+                        <p>Olá, ${usuario.nome}. Seu código de verificação é:</p>
+                        <h1 style="letter-spacing: 5px; color: #10b981; background: #111c2e; padding: 15px; border-radius: 8px; display: inline-block;">
+                            ${codigo}
+                        </h1>
+                        <p style="color: #8a9ba8; font-size: 12px;">Se você não solicitou este acesso, ignore este e-mail.</p>
+                    </div>
+                `
             });
+
+            if (error) {
+                console.error("Erro da API Resend:", error);
+                return res.status(500).json({ success: false, message: 'Falha no provedor de e-mail.' });
+            }
+
+            // 5. Devolve o sucesso para a tela de vidro avançar!
+            res.json({ success: true, message: 'Código enviado com sucesso!' });
+
         } else if (canal === 'whatsapp') {
-            res.json({ success: false, message: 'Integração com WhatsApp ainda não configurada para lançamento.' });
+            // Mantendo a porta aberta para o futuro
+            res.json({ success: false, message: 'Integração com WhatsApp aguardando lançamento.' });
         }
-    });
+
+    } catch (erro) {
+        console.error("Erro crítico no envio do código:", erro);
+        res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
+    }
 });
 // 2. Middlewares (Configurações essenciais)
 app.use(cors());
