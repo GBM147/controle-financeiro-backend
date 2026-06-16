@@ -259,28 +259,31 @@ fetch('/login', {
         body: JSON.stringify({ identificacao: emailCpf, senha: senha }) 
     })
     .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // 1. Guardamos o ID do usuário para o envio do e-mail saber quem ele é (Linha 102)
-            document.getElementById('temp-user-id').value = data.userId;
-            localStorage.setItem('userIdAtual', data.userId);
+.then(data => {
+            if (data.success) {
+                // 1. Guardamos o ID do usuário
+                document.getElementById('temp-user-id').value = data.userId;
+                localStorage.setItem('userIdAtual', data.userId);
 
-            // 2. Escondemos o formulário de login 
-            document.getElementById('form-login').style.display = 'none';
-            
-            // 3. Mostramos a tela de "Como deseja validar?" (A sua linha 97!)
-            document.getElementById('form-escolha-validacao').style.display = 'block'; 
-            
-        } else {
-            alert(data.message || 'E-mail ou senha incorretos.');
-        }
-    })
-    .catch(error => {
-        console.error('Erro de conexão:', error);
-        alert('Erro ao tentar conectar com o servidor.');
-    });
-}
-
+                // 2. Verifica se a conta já foi ativada
+                if (data.verificado) {
+                    // 🎉 PULA A TELA DE CÓDIGO E VAI DIRETO PARA O SISTEMA!
+                    window.location.href = 'conectar.html'; 
+                } else {
+                    // 🔒 Conta nova: Esconde o login e mostra a tela para pedir o código
+                    document.getElementById('form-login').style.display = 'none';
+                    document.getElementById('form-escolha-validacao').style.display = 'block';
+                }
+            } else {
+                // O else que tinha sumido! (Se a senha estiver errada)
+                alert(data.message || 'E-mail ou senha incorretos.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro de conexão:', error);
+            alert('Erro ao tentar conectar com o servidor.');
+        });
+    }
 async function registrarUsuario() {
     // 1. Mapeamos os elementos do HTML (em vez de pegar só os valores)
     const inputs = {
