@@ -518,7 +518,7 @@ app.post('/login', async (req, res) => {
         }
 
         // 🧠 O PULO DO GATO: O sistema agora verifica se a conta já foi ativada
-        if (usuario.verificado === 1) {
+        if (usuario.verificado == 1 || usuario.verificado === true) {
             // Se já foi, manda um "verificado: true"
             res.json({ 
                 success: true, 
