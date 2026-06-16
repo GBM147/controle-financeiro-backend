@@ -5,28 +5,20 @@
     <title>Acesso - Financeiro Pro</title>
     <style>
 :root {
-    /* Fundo azul bem escuro/marinho profundo tirado das fendas do mármore */
     --bg-principal: #09101a; 
-    /* Cor do formulário (um azul-ardósia escuro e elegante) */
     --bg-card: #111c2e; 
-    /* Texto claro inspirado na parte iluminada do mármore */
     --texto-principal: #e8ecef;
-    /* Texto secundário */
     --texto-mutated: #8a9ba8; 
-    /* Bordas sutis misturando o azul com um toque metálico */
     --borda: #1f3047; 
-    /* O verde esmeralda metálico central do seu escudo */
     --cor-destaque: #205c4e; 
-    /* O verde mais vivo do topo do escudo para quando passar o mouse */
     --cor-hover: #297a66; 
-    /* Dourado para detalhes (inspirado nos reflexos dourados da imagem) */
     --cor-ouro: #c89f53; 
+    --cor-sucesso: #10b981;
 }
 
 body { 
     font-family: 'Inter', sans-serif; 
     background: var(--bg-principal); 
-    /* Criando um leve degradê no fundo para imitar a profundidade da imagem */
     background: radial-gradient(circle at top right, #111c2e 0%, #09101a 100%);
     color: var(--texto-principal); 
     height: 100vh; 
@@ -36,7 +28,44 @@ body {
     margin: 0; 
 }
 
-/* Atualização para os botões ficarem com o verde do escudo */
+/* A caixa principal que tinha sumido! */
+.auth-container { 
+    background: var(--bg-card); 
+    width: 100%; 
+    max-width: 400px; 
+    padding: 40px; 
+    border-radius: 12px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.8); /* Sombra mais forte para destacar no fundo escuro */
+    border: 1px solid var(--borda); 
+    position: relative; 
+    overflow: hidden; 
+}
+
+h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; }
+
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: var(--texto-mutated); }
+
+/* Os campos de texto com fundo azul profundo */
+.form-group input { 
+    width: 100%; 
+    padding: 12px; 
+    border-radius: 8px; 
+    border: 1px solid var(--borda); 
+    background: #060a12; 
+    color: var(--texto-principal); 
+    font-size: 1rem; 
+    box-sizing: border-box; 
+    transition: 0.3s; 
+}
+
+/* Borda dourada ao clicar no campo */
+.form-group input:focus { 
+    outline: none; 
+    border-color: var(--cor-ouro); 
+    box-shadow: 0 0 0 2px rgba(200, 159, 83, 0.2); 
+}
+
 .btn-submit { 
     width: 100%; 
     padding: 12px; 
@@ -55,21 +84,23 @@ body {
 .btn-submit:hover { 
     background: var(--cor-hover); 
     transform: translateY(-2px); 
-    box-shadow: 0 4px 12px rgba(32, 92, 78, 0.4); /* Brilho verde suave */
+    box-shadow: 0 4px 12px rgba(32, 92, 78, 0.4); 
 }
 
-/* Destacando o texto interativo com a cor dourada/ouro do mármore */
-.toggle-link span { 
-    color: var(--cor-ouro); 
-    cursor: pointer; 
-    font-weight: bold; 
-    transition: 0.2s;
-}
+.toggle-link { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--texto-mutated); }
+.toggle-link span { color: var(--cor-ouro); cursor: pointer; font-weight: bold; transition: 0.2s; }
+.toggle-link span:hover { color: #e0b769; text-decoration: none; }
 
-.toggle-link span:hover { 
-    color: #e0b769; /* Dourado mais claro ao passar o mouse */
-    text-decoration: none; 
+#form-cadastro { display: none; }
+#form-escolha-validacao {
+    display: none; 
+    background: #060a12; 
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--borda);
 }
+#form-validar-codigo { display: none; text-align: center; }
     </style>
 </head>
 <body>
@@ -94,7 +125,6 @@ body {
             Ainda não tem conta? <span onclick="alternarForms('cadastro')">Criar uma agora</span>
         </div>
     </div>
-
     <div id="form-cadastro" style="display: none;">
         <div style="text-align: center; margin-bottom: 15px;">
             <img src="logo-gbm.jpg" alt="Logo GBM" style="max-width: 150px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
