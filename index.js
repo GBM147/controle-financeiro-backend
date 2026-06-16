@@ -555,7 +555,7 @@ app.post('/verificar-conta', (req, res) => {
     });
 });
 
-// --- ROTA PARA VALIDAR O CÓDIGO ---
+// --- ROTA PARA VALIDAR O CÓDIGO (AGORA SALVA A VERIFICAÇÃO DEFINITIVA) ---
 app.post('/validar-codigo', (req, res) => {
     const { userId, codigo } = req.body;
 
@@ -569,8 +569,9 @@ app.post('/validar-codigo', (req, res) => {
         const codigoNoBanco = results[0].token_verificacao;
 
         if (codigo === codigoNoBanco) {
-            db.query("UPDATE usuarios SET token_verificacao = NULL WHERE id = ?", [userId], (updateErr) => {
-                if (updateErr) console.error("Erro ao limpar token:", updateErr);
+            // 🔥 O AJUSTE ESTÁ AQUI: Agora ele limpa o código E define verificado = 1
+            db.query("UPDATE usuarios SET token_verificacao = NULL, verificado = 1 WHERE id = ?", [userId], (updateErr) => {
+                if (updateErr) console.error("Erro ao atualizar status:", updateErr);
                 
                 res.json({ success: true, message: 'Conta validada com sucesso!' });
             });
