@@ -56,14 +56,15 @@ app.get('/atualizar-banco', (req, res) => {
         res.send("✅ Banco de dados atualizado com sucesso! As gavetas do token foram criadas.");
     });
 });
-// --- ROTA SECRETA PARA CORRIGIR A TABELA DE CONTAS ---
+// --- ROTA SECRETA PARA DEIXAR A TABELA DE CONTAS PERFEITA ---
 app.get('/corrigir-contas', async (req, res) => {
     try {
-        await db.promise().query("ALTER TABLE contas_bancarias ADD COLUMN item_id_pluggy VARCHAR(255) AFTER conta_id_pluggy;");
-        res.send("✅ Tabela contas_bancarias atualizada! A coluna item_id_pluggy foi criada.");
+        // Vamos criar as gavetas do Nome do Banco e do Tipo de Conta de uma só vez!
+        await db.promise().query("ALTER TABLE contas_bancarias ADD COLUMN nome_instituicao VARCHAR(255), ADD COLUMN tipo_conta VARCHAR(50);");
+        res.send("✅ Tabela de contas atualizada com sucesso! Todas as gavetas estão prontas.");
     } catch (err) {
         if (err.code === 'ER_DUP_FIELDNAME') {
-            return res.send("A coluna já existe! Tudo pronto.");
+            return res.send("As colunas já existem! O banco já está pronto.");
         }
         res.send("Erro ao alterar o banco: " + err.message);
     }
