@@ -491,20 +491,16 @@ app.post('/login', async (req, res) => {
         // 🧠 O PULO DO GATO: O sistema agora verifica se a conta já foi ativada
         if (usuario.verificado == 1 || usuario.verificado === true) {
             // Se já foi, manda um "verificado: true"
-            res.json({ 
+            return res.json({ 
                 success: true, 
                 verificado: true, 
                 userId: usuario.id, 
                 message: 'Login efetuado com sucesso!' 
             });
-// Resposta enviada ao frontend
-res.json({ 
-    success: true, 
-    mensagem: 'Login efetuado com sucesso!',
-});
+
         } else {
             // Se é conta nova, manda para a tela de escolher E-mail/WhatsApp
-            res.json({ 
+            return res.json({ 
                 success: true, 
                 verificado: false, 
                 userId: usuario.id, 
