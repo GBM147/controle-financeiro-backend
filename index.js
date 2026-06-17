@@ -497,17 +497,10 @@ app.post('/login', async (req, res) => {
                 userId: usuario.id, 
                 message: 'Login efetuado com sucesso!' 
             });
-            // ... (código anterior de validação de senha) ...
-
-// Nova verificação inteligente: este usuário já conectou algum banco?
-const [contas] = await conexao.query('SELECT id FROM contas_bancarias WHERE usuario_id = ?', [usuario.id]);
-const temContaConectada = contas.length > 0;
-
 // Resposta enviada ao frontend
 res.json({ 
     success: true, 
     mensagem: 'Login efetuado com sucesso!',
-    temConta: temContaConectada // <- Adicionamos este novo "sinalizador"
 });
         } else {
             // Se é conta nova, manda para a tela de escolher E-mail/WhatsApp
