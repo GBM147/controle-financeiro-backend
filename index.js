@@ -3,7 +3,6 @@ const crypto = require('crypto');
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
-const { PluggyClient } = require('pluggy-sdk');
 const cron = require('node-cron');
 const bcrypt = require('bcrypt');
 const { Resend } = require('resend');
@@ -114,138 +113,6 @@ app.post('/enviar-codigo', async (req, res) => {
         res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
     }
 });
-
-// --- CHAVES E CLIENTE PLUGGY ---
-const MEU_CLIENT_ID = '52941af5-8efd-4b45-af03-3e515e24e8e6';
-const MEU_CLIENT_SECRET = 'e0b21d54-0564-4040-ae45-70cff7abad6b';
-
-const pluggyClient = new PluggyClient({
-    clientId: MEU_CLIENT_ID,
-    clientSecret: MEU_CLIENT_SECRET,
-});
-
-// --- ROTA PARA O WIDGET DO OPEN FINANCE (PLUGGY) ---
-app.get('/api/pluggy/token', async (req, res) => {
-    try {
-        const tokenResponse = await pluggyClient.createConnectToken();
-        res.json({ accessToken: tokenResponse.accessToken });
-    } catch (error) {
-        console.error("Erro ao gerar token da Pluggy:", error);
-        res.status(500).json({ success: false, message: 'Erro ao ligar ao Open Finance.' });
-    }
-});
-
-// --- ROTA DEFINITIVA COM GRAVAÇÃO NO BANCO DE DADOS (MySQL) ---
-app.post('/dados-bancarios', async (req, res) => {
-    const { itemId } = req.body;
-    const usuarioId = 1; 
-    console.log("⏳ A extrair dados do Open Finance e a gravar no MySQL... Item ID:", itemId);
-
-    try {
-        const contas = await pluggyClient.fetchAccounts(itemId);
-        let todasTransacoes = [];
-        const dicionarioCategorias = {
-            "Housing": "Habitação",
-            "Food": "Alimentação",
-            "Electricity": "Eletricidade / Luz",
-            "Telecommunications": "Telecomunicações / Internet",
-            "Credit card payment": "Pagamento de Fatura",
-            "Video streaming": "Streaming de Vídeo",
-            "Transfer - Bank Slip": "Pagamento de Boleto",
-            "Gyms and fitness centers": "Academia e Fitness",
-            "Music streaming": "Streaming de Música",
-            "Salary": "Salário",
-            "Restaurants": "Restaurantes",
-            "Groceries": "Supermercado",
-            "Transportation": "Transporte",
-            "Health": "Saúde",
-            "Education": "Educação"
-        };
-        
-        if (contas.results && contas.results.length > 0) {
-            
-            for (const conta of contas.results) {
-                const sqlConta = `
-                    INSERT INTO contas_bancarias (usuario_id, conta_id_pluggy, item_id_pluggy, nome_instituicao, tipo_conta, saldo) 
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    ON DUPLICATE KEY UPDATE saldo = VALUES(saldo), ultima_atualizacao = CURRENT_TIMESTAMP
-                `;
-                
-                await db.promise().query(sqlConta, [
-                    usuarioId, conta.id, itemId, conta.name, conta.type, conta.balance
-                ]);
-                console.log(`✅ Conta "${conta.name}" sincronizada no MySQL.`);
-            }
-
-            const primeiraContaId = contas.results[0].id;
-            
-            const authReq = await fetch('https://api.pluggy.ai/auth', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    clientId: MEU_CLIENT_ID,
-                    clientSecret: MEU_CLIENT_SECRET
-                })
-            });
-            const { apiKey } = await authReq.json();
-
-            const urlV2 = `https://api.pluggy.ai/v2/transactions?accountId=${primeiraContaId}`;
-            const respostaV2 = await fetch(urlV2, {
-                method: 'GET',
-                headers: {
-                    'accept': 'application/json',
-                    'X-API-KEY': apiKey
-                }
-            });
-            
-            const extrato = await respostaV2.json();
-            todasTransacoes = extrato.results || [];
-
-            if (todasTransacoes.length > 0) {
-                let transacoesGravadas = 0;
-
-                const [contasLocalizadas] = await db.promise().query(
-                    'SELECT id FROM contas_bancarias WHERE conta_id_pluggy = ?', 
-                    [primeiraContaId]
-                );
-
-                if (contasLocalizadas.length > 0) {
-                    const contaInternaId = contasLocalizadas[0].id;
-
-                    await db.promise().query('DELETE FROM transacoes WHERE conta_id = ? AND transacao_id_pluggy IS NOT NULL', [contaInternaId]);
-
-                    for (const transacao of todasTransacoes) {
-                        const sqlTransacao = `
-                            INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        `;
-                        
-                        const dataFormatada = new Date(transacao.date).toISOString().split('T')[0];
-                        const categoriaTraduzida = dicionarioCategorias[transacao.category] || transacao.category || 'Outros';
-                        
-                        await db.promise().query(sqlTransacao, [
-                            contaInternaId, transacao.id, transacao.description, transacao.amount, transacao.type, categoriaTraduzida, dataFormatada
-                        ]);
-                        transacoesGravadas++;
-                    }
-                    console.log(`🚀 Sucesso! ${transacoesGravadas} transações limpas e gravadas na base de dados com as novas traduções.`);
-                }
-            }
-        }
-
-        res.json({ 
-            success: true, 
-            contas: contas.results, 
-            transacoes: todasTransacoes,
-            message: "Sincronização realizada e salva no banco com sucesso!"
-        });
-
-    } catch (error) {
-        console.error("Erro no processamento e gravação dos dados bancários:", error);
-        res.status(500).json({ success: false, error: "Falha ao processar e salvar os dados financeiros." });
-    }
-});
-
 // --- LÓGICA DE NEGÓCIO EVOLUÍDA: RECEITAS, DESPESAS E METAS ---
 app.get('/resumo-financeiro', async (req, res) => {
     try {
@@ -351,27 +218,6 @@ app.post('/transacao-manual', async (req, res) => {
         res.status(500).json({ error: 'Falha ao processar lançamento.' });
     }
 });
-
-// --- AUTOMAÇÃO: SINCRONIZAÇÃO SILENCIOSA (BACKGROUND JOB) ---
-async function sincronizarPluggySilencioso() {
-    console.log('🤖 [CRON] Iniciando sincronização automática com a Pluggy...');
-    try {
-        await fetch('http://localhost:3000/dados-bancarios', { method: 'POST' });
-        console.log('✅ [CRON] Dados financeiros atualizados com sucesso no MySQL!');
-        await auditarMetas();
-    } catch (error) {
-        console.error('❌ [CRON] Erro durante a sincronização noturna:', error);
-    }
-}
-
-// --- AGENDAMENTO DO ROBÔ ---
-cron.schedule('0 4 * * *', () => {
-    sincronizarPluggySilencioso();
-}, {
-    scheduled: true,
-    timezone: "America/Sao_Paulo"
-});
-
 // =======================================================
 // --- MÓDULO DE NOTIFICAÇÕES E AUDITORIA DE METAS ---
 // =======================================================
