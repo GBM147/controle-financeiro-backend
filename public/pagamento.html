@@ -50,8 +50,8 @@
     </div>
 
     <script>
-        const userId = localStorage.getItem('userId');
-        if(!userId) window.location.href = 'login.html';
+        const userId = localStorage.getItem('userIdAtual');
+        if(!userId) window.location.href = 'index.html';
 
         async function irParaPagamento() {
             const btn = document.getElementById('btn-action');
