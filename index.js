@@ -1,5 +1,7 @@
 require('dotenv').config();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+// O token secreto que o Render vai ler
+const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 const crypto = require('crypto');
 const express = require('express');
 const mysql = require('mysql2');
@@ -14,69 +16,70 @@ const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro
 const resend = new Resend(process.env.RESEND_API_KEY);
 // 1. Inicializamos o servidor Express
 const app = express();
-// 🔥 ROTA DO WEBHOOK DA STRIPE (TEM DE FICAR ANTES DO EXPRESS.JSON)
-app.post('/webhook-stripe', express.raw({type: 'application/json'}), async (req, res) => {
-    const sig = req.headers['stripe-signature'];
-    let event;
-
-    try {
-        // Valida se a mensagem veio mesmo da Stripe e não de um hacker
-        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    } catch (err) {
-        console.error(`❌ Erro no Webhook da Stripe: ${err.message}`);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    // Se o pagamento foi concluído com sucesso!
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        const userId = session.client_reference_id; // Recuperamos o ID do utilizador que guardámos na criação
-
-        console.log(`💰 PAGAMENTO CONFIRMADO! Liberando acesso para o usuário ID: ${userId}`);
-        
-        // Atualiza a catraca para 'pago'
-        await db.promise().query("UPDATE usuarios SET status_pagamento = 'pago' WHERE id = ?", [userId]);
-    }
-
-    res.json({ received: true });
-});
-// --- ROTA: CRIAR SESSÃO DE PAGAMENTO (STRIPE CHECKOUT) ---
-app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
+// --- ROTA: CRIAR SESSÃO DE PAGAMENTO (MERCADO PAGO) ---
+app.post('/criar-sessao-pagamento', async (req, res) => {
     const { userId } = req.body;
 
     try {
-        // Procura o email do utilizador para ele não ter de digitar de novo na Stripe
         const [rows] = await db.promise().query("SELECT email FROM usuarios WHERE id = ?", [userId]);
         if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado' });
-        
-        const usuarioEmail = rows[0].email;
-        const meuDominio = `${req.protocol}://${req.get('host')}`;
 
-        // Cria o carrinho de compras da Stripe
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'], // Adicione 'v集中_pix' se a sua conta Stripe brasileira já tiver o PIX ativo!
-            client_reference_id: userId, // Guardamos o ID para o Webhook saber quem pagou
-            customer_email: usuarioEmail,
-            line_items: [{
-                price_data: {
-                    currency: 'brl',
-                    product_data: {
-                        name: 'Acesso Premium - GBM Controlador Financeiro',
-                        description: 'Plano Mensal com Importação de OFX e Gestão de Limites',
-                    },
-                    unit_amount: 1990, // R$ 19,90 (O valor é em centavos!)
+        const meuDominio = `${req.protocol}://${req.get('host')}`;
+        const preference = new Preference(mpClient);
+
+        // Cria o carrinho no Mercado Pago
+        const resultado = await preference.create({
+            body: {
+                items: [{
+                    id: 'plano_premium',
+                    title: 'Acesso Premium - GBM Financeiro',
+                    quantity: 1,
+                    unit_price: 29.90 // Aqui o valor é direto (29.90), não em centavos como na Stripe
+                }],
+                payer: { email: rows[0].email },
+                external_reference: userId.toString(), // A NOSSA "ETIQUETA" COM O ID DO UTILIZADOR
+                back_urls: {
+                    success: `${meuDominio}/dashboard.html?pago=sucesso`,
+                    failure: `${meuDominio}/pagamento.html?status=falha`,
+                    pending: `${meuDominio}/pagamento.html?status=pendente`
                 },
-                quantity: 1,
-            }],
-            mode: 'payment', // 'payment' para cobrança única, ou 'subscription' para assinatura recorrente
-            success_url: `${meuDominio}/dashboard.html?pago=sucesso`,
-            cancel_url: `${meuDominio}/pagamento.html?status=cancelado`,
+                auto_return: 'approved',
+                notification_url: `${meuDominio}/webhook-mercadopago` // O telefone que o MP vai ligar
+            }
         });
 
-        res.json({ url: session.url }); // Devolvemos o link oficial da Stripe para o Frontend redirecionar
+        // O MP devolve um link chamado "init_point" para onde enviamos o cliente
+        res.json({ url: resultado.init_point }); 
     } catch (error) {
-        console.error("Erro ao criar sessão Stripe:", error);
+        console.error("Erro no Mercado Pago:", error);
         res.status(500).json({ error: 'Falha ao gerar gateway de pagamento.' });
+    }
+});
+
+// --- O CAIXA AUTOMÁTICO (WEBHOOK DO MERCADO PAGO) ---
+app.post('/webhook-mercadopago', async (req, res) => {
+    // O Mercado Pago exige que respondamos "Tudo OK" (200) imediatamente
+    res.sendStatus(200); 
+
+    // Ele pode mandar o ID do pagamento de duas formas, tentamos ler ambas
+    const paymentId = req.query.id || (req.body.data && req.body.data.id);
+
+    // Se houver um pagamento para investigar
+    if (paymentId && (req.body.type === 'payment' || req.body.action === 'payment.created')) {
+        try {
+            const paymentAPI = new Payment(mpClient);
+            const pagamentoInfo = await paymentAPI.get({ id: paymentId });
+
+            // Se a pessoa pagou o PIX ou o cartão passou
+            if (pagamentoInfo.status === 'approved') {
+                const userId = pagamentoInfo.external_reference; // Lemos a nossa etiqueta!
+                console.log(`💰 PAGAMENTO APROVADO! Liberando usuário ID: ${userId}`);
+                
+                await db.promise().query("UPDATE usuarios SET status_pagamento = 'pago' WHERE id = ?", [userId]);
+            }
+        } catch (err) {
+            console.error("Erro ao checar status do pagamento no MP:", err);
+        }
     }
 });
 // 2. Middlewares (Configurações essenciais centralizadas)
