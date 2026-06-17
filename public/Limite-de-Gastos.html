@@ -177,7 +177,6 @@ body {
             container.innerHTML = '';
 
             metas.forEach(m => {
-                // Removemos espaços nos nomes das categorias para não dar erro no HTML
                 const catId = m.categoria.replace(/\s+/g, '-'); 
                 const valorAtual = m.percentual_alerta || 80;
 
@@ -190,16 +189,33 @@ body {
                             <input type="number" id="limite-${catId}" value="${m.limite}" style="padding-left: 35px; width: 85px;" placeholder="0,00">
                         </div>
                         
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="range" id="alerta-${catId}" value="${valorAtual}" min="10" max="100" 
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <button onclick="ajustarSlider('${catId}', -10)" style="background:transparent; border:none; color:var(--texto-mutated); cursor:pointer; font-size:1.2rem; padding: 0 5px;">◄</button>
+                            
+                            <input type="range" id="alerta-${catId}" value="${valorAtual}" min="10" max="100" step="10" 
                                 oninput="document.getElementById('display-${catId}').innerText = this.value + '%'">
-                            <span id="display-${catId}" style="width: 40px; font-weight: bold; color: var(--cor-destaque);">${valorAtual}%</span>
+                                
+                            <button onclick="ajustarSlider('${catId}', 10)" style="background:transparent; border:none; color:var(--texto-mutated); cursor:pointer; font-size:1.2rem; padding: 0 5px;">►</button>
+                            
+                            <span id="display-${catId}" style="width: 45px; font-weight: bold; color: var(--cor-destaque); text-align: right;">${valorAtual}%</span>
                         </div>
 
                         <button onclick="salvarAlteracao('${m.categoria}', '${catId}')" class="btn-acao">Salvar</button>
                     </div>
                 `;
             });
+        }
+        // Função para fazer as setas moverem a barra de 10 em 10
+        function ajustarSlider(catId, mudanca) {
+            const slider = document.getElementById(`alerta-${catId}`);
+            let novoValor = parseInt(slider.value) + mudanca;
+            
+            // Impede que a barra ultrapasse os 100% ou caia abaixo de 10%
+            if (novoValor > 100) novoValor = 100;
+            if (novoValor < 10) novoValor = 10;
+            
+            slider.value = novoValor;
+            document.getElementById(`display-${catId}`).innerText = novoValor + '%';
         }
 
         async function salvarAlteracao(categoriaOriginal, catId) {
