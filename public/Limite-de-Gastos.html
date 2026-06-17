@@ -2,53 +2,138 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Central de Notificações</title>
+    <title>LIMITE DE GASTOS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --bg-principal: #f8f9fa; --bg-card: #ffffff; --texto-principal: #212529;
-            --texto-mutated: #6c757d; --borda: #ced4da; --sombra: rgba(0, 0, 0, 0.05);
-            --cor-destaque: #007bff; --cor-alerta: #fd7e14;
-        }
+    --cor-destaque: #2E8B57; /* Verde clássico da tela de login */
+    --texto-principal: #ffffff;
+    --texto-mutado: #b0bec5;
+    --borda: rgba(255, 255, 255, 0.15);
+}
 
-        .dark-theme {
-            --bg-principal: #121212; --bg-card: #1e1e1e; --texto-principal: #f8f9fa;
-            --texto-mutated: #a0a0a0; --borda: #333333; --sombra: rgba(0, 0, 0, 0.4);
-            --cor-destaque: #3b82f6; --cor-alerta: #f59e0b;
-        }
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 20px;
+    /* Fundo Mármore com película escura */
+    background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('fundo-marmore.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: var(--texto-principal);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-principal); color: var(--texto-principal); padding: 20px; max-width: 800px; margin: 0 auto; transition: 0.3s; }
-        
-        .cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-voltar { text-decoration: none; color: var(--cor-destaque); font-weight: bold; font-size: 1.1rem; }
-        
-        .card { background: var(--bg-card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px var(--sombra); border: 1px solid var(--borda); margin-bottom: 25px; }
-        .card h2 { margin-top: 0; font-size: 1.3rem; border-bottom: 1px solid var(--borda); padding-bottom: 10px; margin-bottom: 20px; }
+/* Container para centralizar tudo */
+.cabecalho-container, .card {
+    width: 100%;
+    max-width: 800px;
+}
 
-        .ajuste-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
-        .ajuste-row label { font-weight: 600; }
-        .ajuste-row input[type="range"] { flex: 1; min-width: 150px; cursor: pointer; }
-        .porcentagem-display { font-size: 1.5rem; font-weight: bold; color: var(--cor-destaque); min-width: 80px; text-align: right; }
+/* Estilos do Cabeçalho e Logo */
+.cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
 
-        .alerta-item { background: var(--bg-principal); border-left: 4px solid var(--cor-alerta); padding: 15px; margin-bottom: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .alerta-item.lida { border-left-color: var(--borda); opacity: 0.7; }
-        .alerta-texto { font-size: 0.95rem; line-height: 1.4; }
-        .alerta-data { font-size: 0.8rem; color: var(--texto-mutated); margin-top: 5px; }
-        
-        .btn-acao { padding: 8px 15px; border-radius: 6px; background: var(--cor-destaque); color: white; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
-        .btn-acao:hover { opacity: 0.8; }
-        .btn-lida { background: transparent; border: 1px solid var(--borda); color: var(--texto-principal); }
+.logo-gbm {
+    height: 70px;
+    filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.6));
+}
+
+.titulo-pagina {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 30px;
+    color: var(--texto-principal);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.btn-voltar {
+    text-decoration: none;
+    color: var(--texto-principal);
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--borda);
+    transition: 0.3s;
+}
+
+.btn-voltar:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* O Painel Central (Efeito Glassmorphism) */
+.card {
+    background: rgba(30, 34, 40, 0.65);
+    backdrop-filter: blur(12px); /* Desfoque do fundo */
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid var(--borda);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    border-bottom: 1px solid var(--borda);
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* Personalização dos botões de salvar para o Verde GBM */
+.btn-acao {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: var(--cor-destaque);
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    transition: 0.2s;
+}
+
+.btn-acao:hover {
+    background: #246e45; /* Verde mais escuro ao passar o rato */
+    transform: translateY(-2px);
+}
+
+/* Textos da lista do editor */
+#editor-container div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+#editor-container span {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
     </style>
 </head>
 <body>
 
+    <div class="cabecalho-container">
     <div class="cabecalho">
-        <a href="dashboard.html" class="btn-voltar">← Voltar ao Dashboard</a>
-        <h1>Central de Notificações 🔔</h1>
+        <a href="dashboard.html" class="btn-voltar">← Voltar</a>
+        <img src="logo-transparente.png" alt="Logo GBM" class="logo-gbm">
+        <div style="width: 70px;"></div> <!-- Espaçador invisível para manter o logo no centro exato -->
     </div>
-
+    <h1 class="titulo-pagina">Atenção ao Limite ⚠️</h1>
+</div>
 <div class="card">
-        <h2>Editor de Gatilhos por Categoria</h2>
+        <h2>Personalize o Limite e Quando Devemos Avisar</h2>
         <div id="editor-container">
             </div>
     </div>
