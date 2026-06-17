@@ -213,46 +213,78 @@
     </div>
 
 <script>
+    // Captura o envio do formulário de extrato OFX
+document.getElementById('form-upload-ofx').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const arquivoInput = document.getElementById('arquivo-ofx');
+    if (arquivoInput.files.length === 0) {
+        alert('Por favor, selecione um ficheiro .OFX exportado do seu banco primeiro!');
+        return;
+    }
+
+    // Prepara o arquivo dentro de um pacote de envio (FormData)
+    const formData = new FormData();
+    formData.append('file', arquivoInput.files[0]);
+
+    try {
+        // Feedback visual para o utilizador saber que o sistema está a pensar
+        const btnSubmeter = e.target.querySelector('button[type="submit"]');
+        const textoOriginal = btnSubmeter.innerText;
+        btnSubmeter.innerText = 'A processar... ⏳';
+        btnSubmeter.disabled = true;
+
+        const resposta = await fetch('/importar-ofx', {
+            method: 'POST',
+            body: formData
+        });
+        const resultado = await resposta.json();
+        // Restaura o botão
+        btnSubmeter.innerText = textoOriginal;
+        btnSubmeter.disabled = false;
+        if (resultado.success) {
+            alert(resultado.message);
+            window.location.reload(); // Recarrega o ecrã na hora para recalcular os gráficos e tabelas com os dados reais!
+        } else {
+            alert('Erro no processamento: ' + resultado.message);
+        }
+    } catch (erro) {
+        console.error('Erro ao enviar ficheiro:', erro);
+        alert('Não foi possível comunicar com o servidor financeiro.');
+    }
+});
         // --- 1. TEMA ESCURO (Lembrar escolha) ---
         if (localStorage.getItem('tema') === 'dark') {
             document.body.classList.add('dark-theme');
         }
-
         let meuChart = null;
         let dadosAPI = [];
-
         // Preenche a data de hoje no lançamento rápido para facilitar
         const inputData = document.getElementById('manual-data');
         if (inputData) inputData.valueAsDate = new Date();
-
         // --- 2. MENU SANDUÍCHE E TEMA ---
         function toggleMenu(event) {
             event.stopPropagation();
             document.getElementById('dropdownMenu').classList.toggle('show');
         }
-
         window.onclick = function(event) {
             const menu = document.getElementById('dropdownMenu');
             if (menu && menu.classList.contains('show')) {
                 menu.classList.remove('show');
             }
         }
-
         function alternarTema() { 
             document.body.classList.toggle('dark-theme'); 
             const modoEscuroAtivo = document.body.classList.contains('dark-theme');
             localStorage.setItem('tema', modoEscuroAtivo ? 'dark' : 'light');
             renderizarVisualizacao(); 
         }
-
         // --- 3. CARREGAR E DESENHAR DADOS ---
         async function carregarDados() {
             try {
                 const res = await fetch('/resumo-financeiro');
                 const json = await res.json();
-                
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
-                
                 atualizarResumoFinanceiro();
                 // atualizarDropdownCategorias();
                 renderizarVisualizacao();
@@ -260,7 +292,6 @@
                 console.error("Erro ao carregar dados:", err); 
             }
         }
-
         function atualizarDropdownCategorias() {
             const selectMeta = document.getElementById('meta-categoria');
             if (!selectMeta) return;
