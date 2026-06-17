@@ -18,7 +18,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const app = express();
 // --- ROTA: CRIAR SESSÃO DE PAGAMENTO (MERCADO PAGO) ---
 // --- ROTA: CRIAR ASSINATURA MENSAL (MERCADO PAGO) ---
-app.post('/criar-sessao-pagamento', async (req, res) => {
+app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
     const { userId } = req.body;
 
     try {
