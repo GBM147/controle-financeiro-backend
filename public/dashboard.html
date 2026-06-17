@@ -211,7 +211,24 @@
             <canvas id="meuGrafico"></canvas>
         </div>
     </div>
-
+<div class="card" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; padding: 15px 25px;">
+    <div>
+        <h3 style="margin: 0; color: var(--texto-principal);">Importar Extrato (OFX)</h3>
+        <p style="margin: 5px 0 0 0; color: var(--texto-mutated); font-size: 0.9rem;">Sincronize as suas contas com o ficheiro do banco.</p>
+    </div>
+    
+    <form id="form-upload-ofx" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
+        <input type="file" id="arquivo-ofx" name="file" accept=".ofx" style="display: none;" onchange="document.getElementById('nome-arquivo').innerText = this.files[0].name">
+        
+        <span id="nome-arquivo" style="color: var(--cor-destaque); font-size: 0.9rem; font-weight: bold;"></span>
+        
+        <button type="button" class="btn-acao" style="background: rgba(255,255,255,0.1); border: 1px solid var(--borda);" onclick="document.getElementById('arquivo-ofx').click()">
+            Selecionar Arquivo
+        </button>
+        
+        <button type="submit" class="btn-acao" style="background: #2E8B57;">Processar OFX </button>
+    </form>
+</div>
 <script>
     // Captura o envio do formulário de extrato OFX
 document.getElementById('form-upload-ofx').addEventListener('submit', async (e) => {
