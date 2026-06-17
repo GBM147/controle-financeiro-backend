@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+const { MercadoPagoConfig, PreApproval, Payment } = require('mercadopago');
 // O token secreto que o Render vai ler
 const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 const crypto = require('crypto');
@@ -17,6 +17,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // 1. Inicializamos o servidor Express
 const app = express();
 // --- ROTA: CRIAR SESSÃO DE PAGAMENTO (MERCADO PAGO) ---
+// --- ROTA: CRIAR ASSINATURA MENSAL (MERCADO PAGO) ---
 app.post('/criar-sessao-pagamento', async (req, res) => {
     const { userId } = req.body;
 
@@ -25,34 +26,28 @@ app.post('/criar-sessao-pagamento', async (req, res) => {
         if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado' });
 
         const meuDominio = `${req.protocol}://${req.get('host')}`;
-        const preference = new Preference(mpClient);
+        const preApproval = new PreApproval(mpClient);
 
-        // Cria o carrinho no Mercado Pago
-        const resultado = await preference.create({
+        // Cria a ASSINATURA (Cobrança Mensal Recorrente)
+        const resultado = await preApproval.create({
             body: {
-                items: [{
-                    id: 'plano_premium',
-                    title: 'Acesso Premium - GBM Financeiro',
-                    quantity: 1,
-                    unit_price: 29.90 // Aqui o valor é direto (29.90), não em centavos como na Stripe
-                }],
-                payer: { email: rows[0].email },
-                external_reference: userId.toString(), // A NOSSA "ETIQUETA" COM O ID DO UTILIZADOR
-                back_urls: {
-                    success: `${meuDominio}/dashboard.html?pago=sucesso`,
-                    failure: `${meuDominio}/pagamento.html?status=falha`,
-                    pending: `${meuDominio}/pagamento.html?status=pendente`
+                reason: 'Plano Premium Mensal - GBM Financeiro',
+                auto_recurring: {
+                    frequency: 1,
+                    frequency_type: 'months', // Repete a cada 1 mês
+                    transaction_amount: 19.90, // Novo valor!
+                    currency_id: 'BRL'
                 },
-                auto_return: 'approved',
-                notification_url: `${meuDominio}/webhook-mercadopago` // O telefone que o MP vai ligar
+                back_url: `${meuDominio}/dashboard.html?pago=sucesso`,
+                payer_email: rows[0].email,
+                external_reference: userId.toString()
             }
         });
 
-        // O MP devolve um link chamado "init_point" para onde enviamos o cliente
         res.json({ url: resultado.init_point }); 
     } catch (error) {
-        console.error("Erro no Mercado Pago:", error);
-        res.status(500).json({ error: 'Falha ao gerar gateway de pagamento.' });
+        console.error("Erro ao criar assinatura no MP:", error);
+        res.status(500).json({ error: 'Falha ao gerar link de assinatura.' });
     }
 });
 
