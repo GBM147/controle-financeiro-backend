@@ -262,27 +262,24 @@ fetch('/login', {
     .then(response => response.json())
 .then(data => {
             if (data.success) {
-                // 1. Guardamos o ID do usuário
-                document.getElementById('temp-user-id').value = data.userId;
-                localStorage.setItem('userIdAtual', data.userId);
+            // 1. Guardamos o ID do usuario
+            document.getElementById('temp-user-id').value = data.userId;
+            localStorage.setItem('userIdAtual', data.userId);
 
-                // 2. Verifica se a conta já foi ativada
-                if (data.verificado) {
+            // 2. Verifica se a conta já foi ativada
+            if (data.verificado) {
                 // 🚀 CHECA A CATRACA DO PAGAMENTO ANTES DE ENTRAR NO SISTEMA
-if (data.statusPagamento === 'pago') {
-    window.location.href = 'dashboard.html';
-} else {
-    window.location.href = 'pagamento.html';
-} 
+                if (data.statusPagamento === 'pago') {
+                    window.location.href = 'dashboard.html';
                 } else {
-                    // 🔒 Conta nova: Esconde o login e mostra a tela para pedir o código
-                    document.getElementById('form-login').style.display = 'none';
-                    document.getElementById('form-escolha-validacao').style.display = 'block';
+                    window.location.href = 'pagamento.html';
                 }
             } else {
-                // O else que tinha sumido! (Se a senha estiver errada)
-                alert(data.message || 'E-mail ou senha incorretos.');
+                // 🔒 Conta nova: Esconde o login e mostra a tela de código
+                document.getElementById('form-login').style.display = 'none';
+                document.getElementById('form-escolha-validacao').style.display = 'block';
             }
+        }
         })
         .catch(error => {
             console.error('Erro de conexão:', error);
