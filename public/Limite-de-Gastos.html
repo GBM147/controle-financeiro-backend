@@ -120,6 +120,37 @@ body {
     font-size: 1.1rem;
     font-weight: 500;
 }
+/* =========================================
+   ESTILIZAÇÃO DO INPUT E DO SLIDER
+   ========================================= */
+#editor-container input[type="number"], 
+#editor-container input[type="text"] {
+    background: rgba(15, 23, 42, 0.6); /* Fundo escuro translúcido */
+    border: 1px solid var(--borda);
+    color: var(--texto-principal);
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: 100px;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+/* Efeito ao clicar dentro da caixinha */
+#editor-container input[type="number"]:focus, 
+#editor-container input[type="text"]:focus {
+    border-color: var(--cor-destaque);
+    box-shadow: 0 0 10px rgba(46, 139, 87, 0.4);
+}
+
+/* Muda a cor azul do slider para o verde GBM */
+#editor-container input[type="range"] {
+    accent-color: var(--cor-destaque);
+    cursor: pointer;
+    margin: 0 15px;
+}
     </style>
 </head>
 <body>
@@ -127,7 +158,7 @@ body {
     <div class="cabecalho-container">
     <div class="cabecalho">
         <a href="dashboard.html" class="btn-voltar">← Voltar</a>
-        <img src="logo-transparente.png" alt="Logo GBM" class="logo-gbm">
+        <img src="logo-transparente.jpg" alt="Logo GBM" class="logo-gbm">
         <div style="width: 70px;"></div> <!-- Espaçador invisível para manter o logo no centro exato -->
     </div>
     <h1 class="titulo-pagina">Atenção ao Limite ⚠️</h1>
@@ -140,33 +171,47 @@ body {
 
     <script>
         async function carregarEditor() {
-            const res = await fetch('/metas-resumo'); // Reutiliza a rota anterior
+            const res = await fetch('/metas-resumo');
             const metas = await res.json();
             const container = document.getElementById('editor-container');
             container.innerHTML = '';
 
             metas.forEach(m => {
+                // Removemos espaços nos nomes das categorias para não dar erro no HTML
+                const catId = m.categoria.replace(/\s+/g, '-'); 
+                const valorAtual = m.percentual_alerta || 80;
+
                 container.innerHTML += `
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
-                        <span style="flex:1;">${m.categoria}</span>
-                        <input type="number" id="limite-${m.categoria}" value="${m.limite}" style="width:70px;">
-                        <input type="range" id="alerta-${m.categoria}" value="${m.percentual_alerta || 80}" min="10" max="100">
-                        <button onclick="salvarAlteracao('${m.categoria}')" class="btn-acao">Salvar</button>
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px; flex-wrap: wrap;">
+                        <span style="flex:1; min-width: 120px;">${m.categoria}</span>
+                        
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 10px; top: 10px; color: var(--texto-mutated);">R$</span>
+                            <input type="number" id="limite-${catId}" value="${m.limite}" style="padding-left: 35px; width: 85px;" placeholder="0,00">
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="range" id="alerta-${catId}" value="${valorAtual}" min="10" max="100" 
+                                oninput="document.getElementById('display-${catId}').innerText = this.value + '%'">
+                            <span id="display-${catId}" style="width: 40px; font-weight: bold; color: var(--cor-destaque);">${valorAtual}%</span>
+                        </div>
+
+                        <button onclick="salvarAlteracao('${m.categoria}', '${catId}')" class="btn-acao">Salvar</button>
                     </div>
                 `;
             });
         }
 
-        async function salvarAlteracao(categoria) {
-            const valor_limite = document.getElementById(`limite-${categoria}`).value;
-            const percentual_alerta = document.getElementById(`alerta-${categoria}`).value;
+        async function salvarAlteracao(categoriaOriginal, catId) {
+            const valor_limite = document.getElementById(`limite-${catId}`).value;
+            const percentual_alerta = document.getElementById(`alerta-${catId}`).value;
             
             await fetch('/atualizar-meta-alerta', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ categoria, valor_limite, percentual_alerta })
+                body: JSON.stringify({ categoria: categoriaOriginal, valor_limite, percentual_alerta })
             });
-            alert("Regra de alerta atualizada!");
+            alert("Regra gravada com sucesso!");
         }
 
         carregarEditor();
