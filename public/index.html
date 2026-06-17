@@ -268,8 +268,12 @@ fetch('/login', {
 
                 // 2. Verifica se a conta já foi ativada
                 if (data.verificado) {
-                    // 🎉 PULA A TELA DE CÓDIGO E VAI DIRETO PARA O SISTEMA!
-                    window.location.href = 'dashboard.html'; 
+                // 🚀 CHECA A CATRACA DO PAGAMENTO ANTES DE ENTRAR NO SISTEMA
+if (data.statusPagamento === 'pago') {
+    window.location.href = 'dashboard.html';
+} else {
+    window.location.href = 'pagamento.html';
+} 
                 } else {
                     // 🔒 Conta nova: Esconde o login e mostra a tela para pedir o código
                     document.getElementById('form-login').style.display = 'none';

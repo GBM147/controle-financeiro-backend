@@ -1,4 +1,5 @@
 require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const crypto = require('crypto');
 const express = require('express');
 const mysql = require('mysql2');
@@ -13,6 +14,71 @@ const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro
 const resend = new Resend(process.env.RESEND_API_KEY);
 // 1. Inicializamos o servidor Express
 const app = express();
+// 🔥 ROTA DO WEBHOOK DA STRIPE (TEM DE FICAR ANTES DO EXPRESS.JSON)
+app.post('/webhook-stripe', express.raw({type: 'application/json'}), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+        // Valida se a mensagem veio mesmo da Stripe e não de um hacker
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    } catch (err) {
+        console.error(`❌ Erro no Webhook da Stripe: ${err.message}`);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Se o pagamento foi concluído com sucesso!
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const userId = session.client_reference_id; // Recuperamos o ID do utilizador que guardámos na criação
+
+        console.log(`💰 PAGAMENTO CONFIRMADO! Liberando acesso para o usuário ID: ${userId}`);
+        
+        // Atualiza a catraca para 'pago'
+        await db.promise().query("UPDATE usuarios SET status_pagamento = 'pago' WHERE id = ?", [userId]);
+    }
+
+    res.json({ received: true });
+});
+// --- ROTA: CRIAR SESSÃO DE PAGAMENTO (STRIPE CHECKOUT) ---
+app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
+    const { userId } = req.body;
+
+    try {
+        // Procura o email do utilizador para ele não ter de digitar de novo na Stripe
+        const [rows] = await db.promise().query("SELECT email FROM usuarios WHERE id = ?", [userId]);
+        if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado' });
+        
+        const usuarioEmail = rows[0].email;
+        const meuDominio = `${req.protocol}://${req.get('host')}`;
+
+        // Cria o carrinho de compras da Stripe
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'], // Adicione 'v集中_pix' se a sua conta Stripe brasileira já tiver o PIX ativo!
+            client_reference_id: userId, // Guardamos o ID para o Webhook saber quem pagou
+            customer_email: usuarioEmail,
+            line_items: [{
+                price_data: {
+                    currency: 'brl',
+                    product_data: {
+                        name: 'Acesso Premium - GBM Controlador Financeiro',
+                        description: 'Plano Mensal com Importação de OFX e Gestão de Limites',
+                    },
+                    unit_amount: 1990, // R$ 19,90 (O valor é em centavos!)
+                },
+                quantity: 1,
+            }],
+            mode: 'payment', // 'payment' para cobrança única, ou 'subscription' para assinatura recorrente
+            success_url: `${meuDominio}/dashboard.html?pago=sucesso`,
+            cancel_url: `${meuDominio}/pagamento.html?status=cancelado`,
+        });
+
+        res.json({ url: session.url }); // Devolvemos o link oficial da Stripe para o Frontend redirecionar
+    } catch (error) {
+        console.error("Erro ao criar sessão Stripe:", error);
+        res.status(500).json({ error: 'Falha ao gerar gateway de pagamento.' });
+    }
+});
 // 2. Middlewares (Configurações essenciais centralizadas)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -360,10 +426,10 @@ app.post('/login', async (req, res) => {
         }
         // 🧠 O PULO DO GATO: O sistema agora verifica se a conta já foi ativada
         if (usuario.verificado == 1 || usuario.verificado === true) {
-            // Se já foi, manda um "verificado: true"
             return res.json({ 
                 success: true, 
                 verificado: true, 
+                statusPagamento: usuario.status_pagamento, // 🔍 ENVIAMOS O STATUS DO PAGAMENTO
                 userId: usuario.id, 
                 message: 'Login efetuado com sucesso!' 
             });

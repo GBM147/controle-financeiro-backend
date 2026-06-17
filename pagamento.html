@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso Restrito | GBM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            background: #09101a url('fundo-marmorize.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #e8ecef;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 40px; border-radius: 16px;
+            text-align: center; max-width: 450px; width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        h2 { color: #10b981; margin-bottom: 10px; font-size: 1.8rem; }
+        p { color: #8a9ba8; font-size: 1rem; line-height: 1.5; margin-bottom: 30px; }
+        .preco { font-size: 2.5rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .sub-preco { color: #8a9ba8; font-size: 0.9rem; margin-bottom: 30px; }
+        .btn-pagar {
+            background: #2E8B57; color: #fff; border: none;
+            padding: 15px 30px; font-size: 1.1rem; font-weight: 600;
+            border-radius: 8px; width: 100%; cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4);
+        }
+        .btn-pagar:hover { background: #3cb371; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="logo-transparente.png" alt="GBM Logo" style="height: 60px; margin-bottom: 20px;">
+        <h2>Quase lá! Ative sua Conta</h2>
+        <p>Para desbloquear o seu painel financeiro, lançamentos de despesas e importador automático de extratos OFX, ative o seu plano Premium.</p>
+        
+        <div class="preco">R$ 29,90</div>
+        <div class="sub-preco">Cobrança única / Acesso Mensal</div>
+
+        <button onclick="irParaPagamento()" id="btn-action" class="btn-pagar">Ativar Acesso Agora 🚀</button>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('userId');
+        if(!userId) window.location.href = 'login.html';
+
+        async function irParaPagamento() {
+            const btn = document.getElementById('btn-action');
+            btn.innerText = 'Redirecionando... ⏳';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/criar-sessao-pagamento', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userId })
+                });
+                const data = await res.json();
+                
+                if(data.url) {
+                    window.location.href = data.url; // Leva o usuário para o site seguro da Stripe
+                } else {
+                    alert('Erro ao chamar o checkout. Tente novamente.');
+                    btn.innerText = 'Ativar Acesso Agora 🚀';
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                alert('Erro na comunicação com o gateway.');
+                btn.innerText = 'Ativar Acesso Agora 🚀';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
