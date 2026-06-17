@@ -103,36 +103,6 @@
         th, td { padding: 10px 12px; border-bottom: 1px solid var(--borda); }
         th { font-weight: 600; color: var(--texto-mutated); top: 0; position: sticky; background: var(--bg-card); z-index: 10; }
         tr:hover { background: var(--sombra); }
-        /* =========================================
-   📱 RESPONSIVIDADE PARA TELEMÓVEIS
-   ========================================= */
-@media (max-width: 768px) {
-    /* Reduz o respiro lateral para aproveitar o ecrã do telemóvel */
-    body { 
-        padding: 10px; 
-    }
-
-    /* Força os contentores principais a empilharem os itens de cima para baixo */
-    .container, .linha, .row, .cards, .resumo, form, .graficos-container, .dashboard-grid {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 15px;
-    }
-
-    /* Estica os cartões, inputs, botões, tabela e gráfico para ocuparem 100% da largura */
-    .cartao, .card, input, select, button, .tabela-container, .grafico-container {
-        width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        box-sizing: border-box;
-    }
-    
-    /* Afasta um pouco o título do topo para não chocar com o menu sanduíche */
-    h1 {
-        margin-top: 40px;
-        font-size: 1.5rem;
-    }
-}
     </style>
 </head>
 <body>
