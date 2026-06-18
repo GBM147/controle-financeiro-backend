@@ -113,6 +113,15 @@
             border-radius: 0;
             border-left: 4px solid transparent;
             font-size: 1.05rem;
+            
+            /* Correções Visuais Blindadas */
+            color: var(--texto-principal) !important; /* Força a letra a ficar branca */
+            text-decoration: none !important; /* Remove o sublinhado azul feio */
+            background: transparent !important; /* Remove qualquer fundo branco padrão */
+            font-family: 'Inter', 'Montserrat', sans-serif;
+            font-weight: 600;
+            display: block; /* Garante que o link ocupa a largura toda da gaveta */
+            transition: all 0.2s ease;
         }
         
         .sidebar-content .menu-item:hover {
@@ -195,7 +204,6 @@
         <button class="fechar-btn" onclick="fecharMenuLateral()">&times;</button>
     </div>
     <div class="sidebar-content">
-        <button class="menu-item" onclick="alternarTema()">🌗 Alternar Tema</button>
         <a href="Limite-de-Gastos.html" class="menu-item">🚧 Limite de Gastos</a>
         <a href="relatorio.html" class="menu-item">📊 Relatório Mensal</a>
         <a href="metas.html" class="menu-item">🎯 Gestão de Metas</a>
