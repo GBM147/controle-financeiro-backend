@@ -478,6 +478,23 @@ app.post('/validar-codigo', (req, res) => {
         }
     });
 });
+// --- ROTA PARA EXCLUIR TRANSAÇÃO ---
+app.delete('/excluir-transacao/:id', async (req, res) => {
+    try {
+        const idTransacao = req.params.id;
+        
+        // Vai à tabela 'transacoes' e apaga a linha que tem este ID
+        const sql = 'DELETE FROM transacoes WHERE id = ?';
+        
+        // NOTA: Se você usa 'db.query' ou 'conexao.query', ajuste aqui:
+        await db.query(sql, [idTransacao]); 
+
+        res.status(200).json({ message: 'Excluído com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao excluir transação:', error);
+        res.status(500).json({ error: 'Erro ao excluir no banco de dados.' });
+    }
+});
 // 4. Liga o servidor
 const PORT = process.env.PORT || 3000; 
 app.listen(PORT, '0.0.0.0', () => {
