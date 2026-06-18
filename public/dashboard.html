@@ -501,6 +501,28 @@ const categorias = [
                 alert("Meta removida!");
             } catch (error) { alert("Erro ao remover o limite."); }
         }
+        function aplicarCoresFinanceiras() {
+            // Procura todos os textos dentro da tabela e dos cards superiores
+            const elementosValores = document.querySelectorAll('td, .card p');
+            
+            elementosValores.forEach(el => {
+                const texto = el.innerText;
+                
+                // Se o texto contiver o símbolo de dinheiro...
+                if (texto.includes('R$')) {
+                    // Se for negativo (tiver um sinal de menos)
+                    if (texto.includes('- R$') || texto.includes('R$ -') || texto.includes('-')) {
+                        el.style.color = '#ff4d4d'; // Vermelho vivo
+                        el.style.textShadow = '0 0 5px rgba(255, 77, 77, 0.3)'; // Brilho leve
+                    } 
+                    // Se for positivo (maior que zero)
+                    else if (texto !== 'R$ 0,00' && texto !== 'R$ 0') {
+                        el.style.color = '#2ecc71'; // Verde brilhante (mais claro que o fundo para leitura)
+                        el.style.textShadow = '0 0 5px rgba(46, 204, 113, 0.3)'; // Brilho leve
+                    }
+                }
+            });
+        }
 
         // --- 5. LIGAR O MOTOR ---
         carregarDados();
