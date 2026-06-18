@@ -297,7 +297,7 @@
         <div class="container-tabela" id="minhaTabelaContainer" style="display: none;">
             <table>
                 <thead>
-                    <tr><th>Categoria</th><th>Valor Movimentado</th><th>Orçamento (Progresso)</th><th style="text-align: center;">Ação</th></tr>
+                    <tr><th>Categoria</th><th>Valor Movimentado</th><th>Orçamento (Progresso)</th></tr>
                 </thead>
                 <tbody id="corpo-tabela"></tbody>
             </table>
@@ -477,11 +477,6 @@ const categorias = [
                                     <td style="font-weight: 600;">${item.categoria || 'Sem Categoria'}</td>
                                     <td style="font-weight: bold;">${sinal} R$ ${valorLimpo.toFixed(2)}</td>
                                     <td style="color: var(--texto-mutado); font-size: 0.85rem;">-</td>
-                                    <td style="text-align: center;">
-                                        <button onclick="excluirLancamento(${item.id})" style="background: transparent; border: none; cursor: pointer; font-size: 1.2rem; transition: 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" title="Excluir Lançamento">
-                                            🗑️
-                                        </button>
-                                    </td>
                                 </tr>
                             `;
                         aplicarCoresFinanceiras();
@@ -634,29 +629,6 @@ const categorias = [
             setTimeout(() => {
                 document.getElementById('menu-overlay').style.display = 'none';
             }, 200);
-        }
-        // --- FUNÇÃO PARA EXCLUIR TRANSAÇÃO ---
-        async function excluirLancamento(id) {
-            // Pergunta de segurança para evitar cliques acidentais
-            if (!confirm('⚠️ Tem a certeza que deseja excluir este lançamento? Esta ação não pode ser desfeita.')) {
-                return; // Se o cliente clicar em 'Cancelar', o código para aqui
-            }
-
-            try {
-                const res = await fetch(`/excluir-transacao/${id}`, {
-                    method: 'DELETE'
-                });
-
-                if (res.ok) {
-                    // Recarrega a página automaticamente para atualizar o gráfico e os totais
-                    window.location.reload(); 
-                } else {
-                    alert('Erro ao excluir. Tente novamente.');
-                }
-            } catch (error) {
-                console.error('Erro de conexão:', error);
-                alert('Erro ao tentar comunicar com o servidor.');
-            }
         }
 
         // --- 5. LIGAR O MOTOR ---

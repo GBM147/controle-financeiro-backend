@@ -478,20 +478,18 @@ app.post('/validar-codigo', (req, res) => {
         }
     });
 });
-// --- ROTA PARA EXCLUIR TRANSAÇÃO ---
-app.delete('/excluir-transacao/:id', async (req, res) => {
+// --- ROTA PARA DESFAZER O ÚLTIMO LANÇAMENTO ---
+app.delete('/desfazer-ultimo', async (req, res) => {
     try {
-        const idTransacao = req.params.id;
+        // Apaga a transação com o maior ID (a última que foi inserida)
+        // NOTA: Se a sua tabela tiver outro nome em vez de 'transacoes', altere aqui
+        const sql = 'DELETE FROM transacoes ORDER BY id DESC LIMIT 1';
         
-        // Vai à tabela 'transacoes' e apaga a linha que tem este ID
-        const sql = 'DELETE FROM transacoes WHERE id = ?';
-        
-        // NOTA: Se você usa 'db.query' ou 'conexao.query', ajuste aqui:
-        await db.query(sql, [idTransacao]); 
+        await db.query(sql); 
 
-        res.status(200).json({ message: 'Excluído com sucesso!' });
+        res.status(200).json({ message: 'Último lançamento desfeito com sucesso!' });
     } catch (error) {
-        console.error('Erro ao excluir transação:', error);
+        console.error('Erro ao desfazer transação:', error);
         res.status(500).json({ error: 'Erro ao excluir no banco de dados.' });
     }
 });
