@@ -290,6 +290,7 @@
 </select>
             <input type="date" id="manual-data" style="flex: 1;">
             <button class="btn-acao" onclick="salvarLancamentoManual()" style="flex: 1; background: var(--cor-receita);">Adicionar</button>
+            <button onclick="desfazerUltimo()" class="btn-acao" style="background: #ff4d4d; margin-left: 10px;" title="Apagar o último lançamento inserido">↩️ Desfazer</button>
         </div>
     </div>
 
@@ -630,7 +631,25 @@ const categorias = [
                 document.getElementById('menu-overlay').style.display = 'none';
             }, 200);
         }
+        // --- FUNÇÃO PARA DESFAZER ÚLTIMO LANÇAMENTO ---
+        async function desfazerUltimo() {
+            if (!confirm('⚠️ Tem a certeza que deseja APAGAR o ÚLTIMO lançamento que acabou de adicionar?')) {
+                return;
+            }
 
+            try {
+                const res = await fetch('/desfazer-ultimo', { method: 'DELETE' });
+
+                if (res.ok) {
+                    window.location.reload(); // Recarrega para atualizar totais e gráfico
+                } else {
+                    alert('Erro ao desfazer. Tente novamente.');
+                }
+            } catch (error) {
+                console.error('Erro de conexão:', error);
+                alert('Erro ao comunicar com o servidor.');
+            }
+        }
         // --- 5. LIGAR O MOTOR ---
         carregarDados();
     </script>
