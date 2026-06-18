@@ -103,6 +103,85 @@
         th, td { padding: 10px 12px; border-bottom: 1px solid var(--borda); }
         th { font-weight: 600; color: var(--texto-mutated); top: 0; position: sticky; background: var(--bg-card); z-index: 10; }
         tr:hover { background: var(--sombra); }
+        /* --- ESTÉTICA PREMIUM GBM --- */
+
+/* 1. O Cabeçalho */
+.gbm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #0d1117, #161b22);
+    border-bottom: 2px solid #d4af37; /* Linha dourada de separação */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.gbm-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.gbm-logo-img {
+    height: 45px;
+    filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5)); /* Brilho na logo */
+}
+
+.gbm-title {
+    font-family: 'Montserrat', 'Arial', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #d4af37; /* Dourado GBM */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+/* 2. O Menu Aumentado */
+.gbm-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid #d4af37;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #d4af37;
+    font-size: 18px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.gbm-menu-btn:hover {
+    background: rgba(212, 175, 55, 0.25);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.gbm-menu-logo {
+    height: 25px;
+}
+
+.hamburger-icon {
+    font-size: 22px;
+    margin-left: 5px;
+}
+
+/* 3. Caixas Temáticas (Efeito Vidro/Premium) */
+/* NOTA: Confirme se as classes das suas caixas se chamam .card ou .box e adicione-as aqui */
+.card, .dashboard-box, .box, .lancamento-rapido, .resumo-container {
+    background: rgba(18, 24, 30, 0.85) !important; /* Fundo escuro premium */
+    border: 1px solid #2a3d45 !important; 
+    border-top: 3px solid #d4af37 !important; /* Destaque dourado no topo de cada caixa */
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6) !important;
+    color: #e0e0e0;
+}
+
+/* Títulos dentro das caixas */
+.card h3, .dashboard-box h2, .title {
+    color: #d4af37 !important;
+}
     </style>
 </head>
 <body>
@@ -405,16 +484,41 @@ const categorias = [
                 if (meuChart) meuChart.destroy();
                 const ctx = document.getElementById('meuGrafico').getContext('2d');
                 meuChart = new Chart(ctx, {
-                    type: tipo === 'both-doughnut' ? 'doughnut' : tipo,
-                    data: {
-                        labels: dadosAPI.map(i => i.categoria || 'Outros'),
-                        datasets: [{ 
-                            label: 'Valores',
-                            data: dadosAPI.map(i => Math.abs(parseFloat(String(i.total_movimentado || i.valor || 0).replace(/[R$\s+\-]/g, '')))), 
-                            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] 
-                        }]
+                    type: 'bar', // Transforma em gráfico de colunas
+                data: {
+                    labels: dadosAPI.map(i => i.categoria || 'Outros'),
+                    datasets: [{
+                        label: 'Valor Movimentado',
+                        // Mantemos a sua lógica exata de puxar os valores
+                        data: dadosAPI.map(i => Math.abs(parseFloat(String(i.total_movimentado || i.valor).replace(',', '.')))),
+                        
+                        // Cores Premium GBM (Efeito 3D)
+                        backgroundColor: '#00b09b', // Verde Esmeralda
+                        borderColor: '#d4af37',     // Borda Dourada
+                        borderWidth: 2,
+                        borderRadius: 6,            // Arredonda o topo da barra
+                        borderSkipped: false,
+                        hoverBackgroundColor: '#d4af37' // Fica dourado ao passar o rato
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }, // Linhas de fundo suaves
+                            ticks: { color: '#d4af37', font: { weight: 'bold' } } // Texto dourado
+                        },
+                        y: { 
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+                            ticks: { color: '#d4af37' }, 
+                            beginAtZero: true 
+                        }
                     },
-                    options: { responsive: true, maintainAspectRatio: false }
+                    plugins: {
+                        legend: { display: false } // Esconde a legenda para um visual mais limpo
+                    }
+                }
                 });
             }
         }
