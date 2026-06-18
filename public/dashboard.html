@@ -508,17 +508,19 @@ const categorias = [
             
             elementosValores.forEach(el => {
                 const texto = el.innerText;
+                // Lê todo o texto da caixa (para sabermos se estamos na caixa de "Saídas")
+                const textoDoCard = el.parentElement.innerText.toLowerCase(); 
                 
                 // Se o texto contiver o símbolo de dinheiro...
                 if (texto.includes('R$')) {
-                    // Se for negativo (tiver um sinal de menos)
-                    if (texto.includes('- R$') || texto.includes('R$ -') || texto.includes('-')) {
+                    // Se for negativo (tiver sinal de menos) OU estiver dentro da caixa de "Gasto" / "Saídas"
+                    if (texto.includes('-') || textoDoCard.includes('gasto') || textoDoCard.includes('saídas') || textoDoCard.includes('saidas')) {
                         el.style.color = '#ff4d4d'; // Vermelho vivo
                         el.style.textShadow = '0 0 5px rgba(255, 77, 77, 0.3)'; // Brilho leve
                     } 
-                    // Se for positivo (maior que zero)
+                    // Se for positivo e não for zero
                     else if (texto !== 'R$ 0,00' && texto !== 'R$ 0') {
-                        el.style.color = '#2ecc71'; // Verde brilhante (mais claro que o fundo para leitura)
+                        el.style.color = '#2ecc71'; // Verde brilhante
                         el.style.textShadow = '0 0 5px rgba(46, 204, 113, 0.3)'; // Brilho leve
                     }
                 }
