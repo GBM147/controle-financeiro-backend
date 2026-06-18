@@ -18,8 +18,16 @@
             --cor-receita: #2ea043; --cor-despesa: #f85149; --cor-destaque: #3b82f6;
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-principal); color: var(--texto-principal); padding: 20px; transition: background 0.3s ease, color 0.3s ease; position: relative; }
-        h1 { font-size: 1.8rem; margin-bottom: 20px; max-width: 80%; }
+body {
+    font-family: 'Inter', 'Montserrat', sans-serif;
+    background-image: url('fundo-marmore.jpg') !important; /* Puxa o seu mármore */
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    background-position: center !important;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+}
 
         /* --- NOVO MENU SANDUÍCHE (CANTO SUPERIOR DIREITO) --- */
         .menu-container {
@@ -111,9 +119,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px 30px;
-    background: linear-gradient(135deg, #0d1117, #161b22);
-    border-bottom: 2px solid #d4af37; /* Linha dourada de separação */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    width: 100%;
+    box-sizing: border-box;
+    
+    /* Efeito Vidro Premium */
+    background: rgba(15, 20, 25, 0.65) !important; 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Borda suave, sem o risco forte amarelo */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .gbm-logo-container {
@@ -167,20 +181,28 @@
     margin-left: 5px;
 }
 
-/* 3. Caixas Temáticas (Efeito Vidro/Premium) */
-/* NOTA: Confirme se as classes das suas caixas se chamam .card ou .box e adicione-as aqui */
-.card, .dashboard-box, .box, .lancamento-rapido, .resumo-container {
-    background: rgba(18, 24, 30, 0.85) !important; /* Fundo escuro premium */
-    border: 1px solid #2a3d45 !important; 
-    border-top: 3px solid #d4af37 !important; /* Destaque dourado no topo de cada caixa */
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6) !important;
+/* Caixas com Efeito de Vidro (Glassmorphism) */
+.card, .dashboard-box, .box, .lancamento-rapido, .resumo-container, .painel-ajustes, .grid-cards > div {
+    /* Fundo translúcido (quase transparente) */
+    background: rgba(20, 25, 30, 0.5) !important; 
+    
+    /* O desfoque espelhado no fundo */
+    backdrop-filter: blur(15px) !important; 
+    -webkit-backdrop-filter: blur(15px) !important;
+    
+    /* Borda suave e branca imitando o reflexo do vidro */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.2) !important; /* Removemos as bordas amarelas pesadas */
+    
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
     color: #e0e0e0;
 }
 
-/* Títulos dentro das caixas */
+/* Garante que os títulos continuem dourados para manter o "jogo de cores" */
 .card h3, .dashboard-box h2, .title {
     color: #d4af37 !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Sombra suave para leitura sobre o vidro */
 }
     </style>
 </head>
