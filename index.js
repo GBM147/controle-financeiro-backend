@@ -478,20 +478,19 @@ app.post('/validar-codigo', (req, res) => {
         }
     });
 });
-// --- ROTA PARA DESFAZER O ÚLTIMO LANÇAMENTO ---
-app.delete('/desfazer-ultimo', async (req, res) => {
-    try {
-        // Apaga a transação com o maior ID (a última que foi inserida)
-        // NOTA: Se a sua tabela tiver outro nome em vez de 'transacoes', altere aqui
-        const sql = 'DELETE FROM transacoes ORDER BY id DESC LIMIT 1';
-        
-        await db.query(sql); 
-
+// --- ROTA PARA DESFAZER O ÚLTIMO LANÇAMENTO (VERSÃO CORRIGIDA) ---
+app.delete('/desfazer-ultimo', (req, res) => {
+    // Apaga a transação com o maior ID (a última que foi inserida)
+    const sql = 'DELETE FROM transacoes ORDER BY id DESC LIMIT 1';
+    
+    // Usando o formato de callback clássico em vez de 'await'
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Erro ao desfazer transação:', err);
+            return res.status(500).json({ error: 'Erro ao excluir no banco de dados.' });
+        }
         res.status(200).json({ message: 'Último lançamento desfeito com sucesso!' });
-    } catch (error) {
-        console.error('Erro ao desfazer transação:', error);
-        res.status(500).json({ error: 'Erro ao excluir no banco de dados.' });
-    }
+    });
 });
 // 4. Liga o servidor
 const PORT = process.env.PORT || 3000; 
