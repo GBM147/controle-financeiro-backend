@@ -179,64 +179,51 @@
             color: var(--texto-principal);
         }
         /* =========================================
-           📲 MODO CELULAR (RESPONSIVIDADE)
+           📲 MODO CELULAR (RESPONSIVIDADE) - VERSÃO LADO A LADO
            ========================================= */
         @media (max-width: 768px) {
-            /* 1. Cabeçalho mais compacto */
+            /* Cabeçalho mais compacto */
             .gbm-header { padding: 10px 15px; }
             .gbm-title { display: none; } 
             .gbm-logo-img { height: 40px !important; }
 
-            /* 2. Empilhar as Caixas de Valores */
+            /* Empilhar APENAS as Caixas de Valores (Totais) */
             .grid-cards { 
                 grid-template-columns: 1fr; 
                 gap: 15px; 
                 margin: 15px; 
             }
 
-            /* 3. A MÁGICA: Forçar a Caixa Principal e as Sub-caixas a virarem colunas */
-            .lancamento-rapido, 
-            .painel-ajustes,
-            .lancamento-rapido div, 
-            .painel-ajustes div,
-            .grupo-ajuste,
-            .grupo-ajuste div {
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: stretch !important;
-                width: 100% !important;
-                gap: 8px !important;
+            /* Mantém Lançamento e Ajustes na horizontal (lado a lado) */
+            .lancamento-rapido, .painel-ajustes {
+                flex-direction: row !important;
+                flex-wrap: wrap; /* Se não couber tudo, desce graciosamente para a linha de baixo */
+                padding: 10px !important;
+                margin: 10px !important;
+                gap: 5px !important;
             }
 
-            /* Ajuste de margem para não vazar nas laterais do ecrã */
-            .painel-ajustes, .lancamento-rapido {
-                margin: 15px !important;
-                padding: 15px !important;
-                box-sizing: border-box;
-            }
-
-            /* 4. Botões e Inputs de ponta a ponta (Tamanho ideal para toque) */
+            /* O SEGREDO AQUI: Reduzir letras e espaços internos nas caixas */
             .lancamento-rapido input, 
             .lancamento-rapido select, 
             .lancamento-rapido button,
             .painel-ajustes input,
             .painel-ajustes select,
-            .painel-ajustes button {
-                width: 100% !important;
-                margin: 0 !important;
-                box-sizing: border-box !important;
-                height: 48px !important; 
-                font-size: 16px !important; 
+            .painel-ajustes button,
+            .grupo-ajuste {
+                font-size: 0.75rem !important; /* Letra bem menor (aprox 12px) */
+                padding: 4px 8px !important; /* Tira o espaço extra em volta do texto */
+                height: 38px !important; /* Deixa as caixas mais finas */
             }
 
-            /* 5. Gráfico e Tabela */
+            /* Gráfico e Tabela */
             .chart-container { margin: 15px; padding: 10px; }
             .chart-container.hibrido {
                 flex-direction: column;
                 height: auto !important;
             }
 
-            .grafico-wrapper { height: 300px !important; margin-bottom: 20px; }
+            .grafico-wrapper { height: 250px !important; margin-bottom: 20px; }
             
             .container-tabela {
                 height: 400px !important;
