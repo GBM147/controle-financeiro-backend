@@ -194,29 +194,36 @@
                 margin: 15px; 
             }
 
-            /* 3. Lançamento Rápido e Ajustes: Tudo em Coluna (Agora afeta as sub-caixas!) */
-            .lancamento-rapido, 
-            .painel-ajustes,
-            .lancamento-rapido div { /* <-- O segredo que resolve o corte está aqui */
+            /* 3 e 4. FORÇA BRUTA: Empilhar tudo no Lançamento Rápido */
+            .lancamento-rapido {
                 display: flex !important;
                 flex-direction: column !important;
-                align-items: stretch !important;
+                height: auto !important;
                 padding: 15px !important;
-                margin: 15px !important;
-                gap: 12px !important;
-                box-sizing: border-box !important;
             }
 
-            /* 4. Botões e Inputs Gigantes (Para o Dedo) */
-            .lancamento-rapido input, 
-            .lancamento-rapido select, 
-            .lancamento-rapido button,
-            .painel-ajustes select {
+            /* Força as divs e estruturas internas a virarem coluna */
+            .lancamento-rapido form,
+            .lancamento-rapido div {
+                display: flex !important;
+                flex-direction: column !important;
                 width: 100% !important;
                 margin: 0 !important;
-                box-sizing: border-box !important; /* Vital para o input não vazar da tela */
-                height: 48px; /* Altura ideal para toque no celular */
-                font-size: 16px !important; /* Previne o zoom automático ao digitar */
+                padding: 0 !important;
+            }
+
+            /* Força os inputs e botões a ocuparem 100% da tela do celular */
+            .lancamento-rapido input, 
+            .lancamento-rapido select, 
+            .lancamento-rapido button {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                height: 50px !important; 
+                font-size: 16px !important;
+                margin-top: 10px !important; 
+                margin-left: 0 !important;
+                display: block !important;
             }
 
             /* Garante que o botão de Desfazer fique utilizável no celular */
