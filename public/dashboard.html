@@ -194,13 +194,17 @@
                 margin: 15px; 
             }
 
-            /* 3. Lançamento Rápido e Ajustes: Tudo em Coluna */
-            .lancamento-rapido, .painel-ajustes {
+            /* 3. Lançamento Rápido e Ajustes: Tudo em Coluna (Agora afeta as sub-caixas!) */
+            .lancamento-rapido, 
+            .painel-ajustes,
+            .lancamento-rapido div { /* <-- O segredo que resolve o corte está aqui */
+                display: flex !important;
                 flex-direction: column !important;
                 align-items: stretch !important;
                 padding: 15px !important;
                 margin: 15px !important;
                 gap: 12px !important;
+                box-sizing: border-box !important;
             }
 
             /* 4. Botões e Inputs Gigantes (Para o Dedo) */
@@ -210,9 +214,9 @@
             .painel-ajustes select {
                 width: 100% !important;
                 margin: 0 !important;
-                box-sizing: border-box;
+                box-sizing: border-box !important; /* Vital para o input não vazar da tela */
                 height: 48px; /* Altura ideal para toque no celular */
-                font-size: 16px !important; /* Previne que o celular dê zoom automático ao digitar */
+                font-size: 16px !important; /* Previne o zoom automático ao digitar */
             }
 
             /* Garante que o botão de Desfazer fique utilizável no celular */
