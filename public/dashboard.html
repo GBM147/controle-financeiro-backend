@@ -178,6 +178,63 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
             color: var(--texto-principal);
         }
+        /* =========================================
+           📲 MODO CELULAR (RESPONSIVIDADE)
+           ========================================= */
+        @media (max-width: 768px) {
+            /* 1. Cabeçalho mais compacto */
+            .gbm-header { padding: 10px 15px; }
+            .gbm-title { display: none; } /* Esconde o nome grande para o menu caber perfeitamente */
+            .gbm-logo-img { height: 40px !important; }
+
+            /* 2. Empilhar as Caixas de Valores (Totais) */
+            .grid-cards { 
+                grid-template-columns: 1fr; /* Força 1 coluna apenas */
+                gap: 15px; 
+                margin: 15px; 
+            }
+
+            /* 3. Lançamento Rápido e Ajustes: Tudo em Coluna */
+            .lancamento-rapido, .painel-ajustes {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 15px !important;
+                margin: 15px !important;
+                gap: 12px !important;
+            }
+
+            /* 4. Botões e Inputs Gigantes (Para o Dedo) */
+            .lancamento-rapido input, 
+            .lancamento-rapido select, 
+            .lancamento-rapido button,
+            .painel-ajustes select {
+                width: 100% !important;
+                margin: 0 !important;
+                box-sizing: border-box;
+                height: 48px; /* Altura ideal para toque no celular */
+                font-size: 16px !important; /* Previne que o celular dê zoom automático ao digitar */
+            }
+
+            /* Garante que o botão de Desfazer fique utilizável no celular */
+            .lancamento-rapido button[onclick="desfazerUltimo()"] {
+                margin-top: 5px !important;
+                margin-left: 0 !important;
+            }
+
+            /* 5. Gráfico e Tabela */
+            .chart-container { margin: 15px; padding: 10px; }
+            .chart-container.hibrido {
+                flex-direction: column;
+                height: auto !important;
+            }
+
+            .grafico-wrapper { height: 300px !important; margin-bottom: 20px; }
+            
+            .container-tabela {
+                height: 400px !important;
+                overflow-x: auto; /* Permite rolar a tabela para os lados se a tela for muito estreita */
+            }
+        }
     </style>
 </head>
 <body>
