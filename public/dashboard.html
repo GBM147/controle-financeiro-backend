@@ -333,8 +333,8 @@
             <input type="text" id="manual-desc" placeholder="Descrição (ex: Restaurante)" style="flex: 2; min-width: 150px;">
             <input type="number" id="manual-valor" placeholder="Valor (R$)" style="flex: 1; min-width: 90px;" step="0.01">
             <select id="manual-tipo" style="flex: 1;">
-                <option value="DEBIT">Despesa</option>
-                <option value="CREDIT">Receita</option>
+                <option value="Despesas">Despesa</option>
+                <option value="Receita">Receita</option>
             </select>
             <select id="manual-cat" style="flex: 1;">
     <option value="" disabled selected>Categoria...</option>
@@ -536,7 +536,7 @@ const categorias = [
                     corpoTabela.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 30px;">Sem dados registrados.</td></tr>`;
                 } else {
                     dadosAPI.forEach(item => {
-                        const isCredit = item.tipo === 'CREDIT';
+                        const isCredit = item.tipo === 'Receita';
                         const valorLimpo = Math.abs(parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, '')));
                         const cor = isCredit ? 'var(--cor-receita)' : 'var(--cor-despesa)';
                         const sinal = isCredit ? '+' : '-';
