@@ -501,7 +501,7 @@ const categorias = [
             dadosAPI.forEach(item => {
                 let v = parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, ''));
                 if (!isNaN(v)) {
-                    if (item.tipo === 'CREDIT') ent += v; else sai += v;
+                    if (item.tipo === 'Receita') ent += v; else sai += v;
                 }
             });
             document.getElementById('total-entradas').innerText = `R$ ${ent.toFixed(2)}`;
