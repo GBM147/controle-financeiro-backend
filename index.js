@@ -135,7 +135,7 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
             
             // --- A MÁGICA DA CONVERSÃO ENTRA AQUI ---
             const valorOriginal = parseFloat(tx.TRNAMT);
-            let tipo = 'Entrada'; // Assume como Receita por padrão
+            let tipo = 'Receita'; // Assume como Receita por padrão
             let valor = valorOriginal;
 
             // Se o valor for menor que zero, é uma saída de dinheiro
