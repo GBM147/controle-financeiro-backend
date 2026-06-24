@@ -126,26 +126,39 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
         const contaInternaId = contas.length > 0 ? contas[0].id : 1;
         let inseridas = 0;
         let duplicadas = 0;
+        
         // 4. Varre cada linha do extrato bancário
         for (const tx of transacoesOfx) {
             if (!tx.FITID) continue; // Pula linhas inválidas sem ID bancário
             const transacaoIdBancario = tx.FITID;
             const descricao = tx.MEMO || tx.NAME || 'Transação Eletrónica';
-            const valor = parseFloat(tx.TRNAMT);
-            const tipo = tx.TRNTYPE === 'DEBIT' ? 'DEBIT' : 'CREDIT';
-            // Categoria Inteligente por palavras-chave (Pode expandir esta lista conforme quiser!)
+            
+            // --- A MÁGICA DA CONVERSÃO ENTRA AQUI ---
+            const valorOriginal = parseFloat(tx.TRNAMT);
+            let tipo = 'Receita'; // Assume como Receita por padrão
+            let valor = valorOriginal;
+
+            // Se o valor for menor que zero, é uma saída de dinheiro
+            if (valorOriginal < 0) {
+                tipo = 'Despesa';
+                valor = Math.abs(valorOriginal); // Transforma -100 em 100
+            }
+            // ----------------------------------------
+
+            // Categoria Inteligente por palavras-chave
             let categoria = 'Outros';
             const descMinuscula = descricao.toLowerCase();
             if (descMinuscula.includes('uber') || descMinuscula.includes('99app') || descMinuscula.includes('combustivel') || descMinuscula.includes('posto')) {
                 categoria = 'Transporte';
-            } else if (descMinuscula.includes('ifood') || descMinuscula.includes('restaurante') || descMinuscula.includes('burger') || descMinuscula.includes('mcdonald')) {
+            } else if (descMinuscula.includes('ifood') || descMinuscula.includes('restaurante') || descMinuscula.includes('burger') || descMinuscula.includes('mcdonald') || descMinuscula.includes('cafe')) {
                 categoria = 'Alimentação';
             } else if (descMinuscula.includes('mercado') || descMinuscula.includes('carrefour') || descMinuscula.includes('extra')) {
                 categoria = 'Supermercado';
             } else if (descMinuscula.includes('netflix') || descMinuscula.includes('spotify') || descMinuscula.includes('prime')) {
                 categoria = 'Streaming';
             }
-            // Tratamento da Data (O padrão do OFX é YYYYMMDDHHMMSS, extraímos apenas os 8 primeiros caracteres)
+            
+            // Tratamento da Data (O padrão do OFX é YYYYMMDDHHMMSS)
             let dataFormatada = new Date().toISOString().split('T')[0];
             if (tx.DTPOSTED && tx.DTPOSTED.length >= 8) {
                 const ano = tx.DTPOSTED.substring(0, 4);
@@ -153,6 +166,7 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
                 const dia = tx.DTPOSTED.substring(6, 8);
                 dataFormatada = `${ano}-${mes}-${dia}`;
             }
+            
             // 5. Salva na base de dados. Se o transacao_id_pluggy já existir, ele simplesmente ignora para não duplicar!
             const sql = `
                 INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao)
@@ -162,6 +176,7 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
             const [resultadoInsert] = await db.promise().query(sql, [
                 contaInternaId, transacaoIdBancario, descricao, valor, tipo, categoria, dataFormatada
             ]);
+            
             // affectedRows = 1 significa nova linha. affectedRows = 0 ou 2 significa que já existia e foi ignorada.
             if (resultadoInsert.affectedRows === 1) {
                 inseridas++;
@@ -169,6 +184,7 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
                 duplicadas++;
             }
         }
+        
         // Executa o seu auditor de alertas automático para verificar se o novo extrato estourou alguma meta
         if (typeof auditarMetas === 'function') {
             await auditarMetas();
