@@ -466,8 +466,11 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 const res = await fetch('/resumo-financeiro');
                 const json = await res.json();
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
-                atualizarResumoFinanceiro();
-                // atualizarDropdownCategorias();
+                
+                // NOVO: Pega o saldo real vindo do backend
+                const saldoBanco = json.saldo_banco || 0;
+                
+                atualizarResumoFinanceiro(saldoBanco); // Passa o saldo para a função
                 renderizarVisualizacao();
             } catch (err) { 
                 console.error("Erro ao carregar dados:", err); 
@@ -496,7 +499,7 @@ const categorias = [
             });
         }
 
-        function atualizarResumoFinanceiro() {
+        function atualizarResumoFinanceiro(saldoBancoReal) {
             let ent = 0, sai = 0;
             dadosAPI.forEach(item => {
                 let v = parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, ''));
@@ -506,7 +509,19 @@ const categorias = [
             });
             document.getElementById('total-entradas').innerText = `R$ ${ent.toFixed(2)}`;
             document.getElementById('total-saidas').innerText = `R$ ${sai.toFixed(2)}`;
-            document.getElementById('saldo-liquido').innerText = `R$ ${(ent - sai).toFixed(2)}`;
+            
+            // O Balanço Líquido agora espelha O SALDO EXATO DO BANCO!
+            const elSaldo = document.getElementById('saldo-liquido');
+            elSaldo.innerText = `R$ ${saldoBancoReal.toFixed(2)}`;
+            
+            // Pinta de vermelho se estiver negativo, verde se positivo
+            if (saldoBancoReal < 0) {
+                elSaldo.style.color = '#ff4d4d';
+                elSaldo.style.textShadow = '0 0 5px rgba(255, 77, 77, 0.3)';
+            } else {
+                elSaldo.style.color = '#2ecc71';
+                elSaldo.style.textShadow = '0 0 5px rgba(46, 204, 113, 0.3)';
+            }
         }
 
         function renderizarVisualizacao() {

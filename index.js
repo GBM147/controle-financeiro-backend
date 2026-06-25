@@ -124,9 +124,17 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
         // 3. Localiza a conta do utilizador para vincular os lançamentos
         const [contas] = await db.promise().query('SELECT id FROM contas_bancarias LIMIT 1');
         const contaInternaId = contas.length > 0 ? contas[0].id : 1;
+        
+        // --- NOVO: CAPTURA O SALDO EXATO DO BANCO PELO OFX ---
+        const ledgerBal = stmtRs.LEDGERBAL || {};
+        if (ledgerBal.BALAMT) {
+            const saldoReal = parseFloat(ledgerBal.BALAMT);
+            await db.promise().query('UPDATE contas_bancarias SET saldo = ? WHERE id = ?', [saldoReal, contaInternaId]);
+        }
+        // -----------------------------------------------------
+
         let inseridas = 0;
         let duplicadas = 0;
-        
         // 4. Varre cada linha do extrato bancário
         for (const tx of transacoesOfx) {
             if (!tx.FITID) continue; // Pula linhas inválidas sem ID bancário
@@ -287,7 +295,14 @@ app.get('/resumo-financeiro', async (req, res) => {
         }
         sql += ` GROUP BY t.categoria, t.tipo ORDER BY total_movimentado ASC;`;
         const [rows] = await db.promise().query(sql, params);
-        res.json({ status: 'success', data: rows });
+        
+        // --- NOVO: PUXA O SALDO ATUALIZADO DA CONTA ---
+        const [contaDB] = await db.promise().query('SELECT saldo FROM contas_bancarias LIMIT 1');
+        const saldoDaConta = contaDB.length > 0 ? contaDB[0].saldo : 0;
+        // ----------------------------------------------
+
+        // Altere a linha do res.json para enviar o saldo_banco junto!
+        res.json({ status: 'success', data: rows, saldo_banco: saldoDaConta });
     } catch (error) {
         console.error("❌ Erro na lógica de resumo com balanço:", error);
         res.status(500).json({ status: 'error', message: 'Falha ao processar resumo financeiro' });
