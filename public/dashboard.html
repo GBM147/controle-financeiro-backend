@@ -285,10 +285,11 @@
 </header>
 
     <div class="grid-cards">
-        <div class="card"><h3>Total Recebido (Entradas)</h3><p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p></div>
-        <div class="card"><h3>Total Gasto (Saídas)</h3><p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p></div>
-        <div class="card"><h3>Balanço Líquido</h3><p id="saldo-liquido">R$ 0,00</p></div>
-    </div>
+    <div class="card"><h3>Total Recebido (Entradas)</h3><p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p></div>
+    <div class="card"><h3>Total Gasto (Saídas)</h3><p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p></div>
+    <div class="card"><h3>Resultado do Período</h3><p id="saldo-liquido">R$ 0,00</p></div>
+    <div class="card"><h3>Saldo Real da Conta 🏦</h3><p id="saldo-banco">R$ 0,00</p></div>
+</div>
 
     <div class="painel-ajustes">
         <div class="grupo-ajuste">
@@ -502,29 +503,29 @@ const categorias = [
         }
 
         function atualizarResumoFinanceiro(saldoBancoReal) {
-            let ent = 0, sai = 0;
-            dadosAPI.forEach(item => {
-                let v = parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, ''));
-                if (!isNaN(v)) {
-                    if (item.tipo === 'Receita') ent += v; else sai += v;
-                }
-            });
-            document.getElementById('total-entradas').innerText = `R$ ${ent.toFixed(2)}`;
-            document.getElementById('total-saidas').innerText = `R$ ${sai.toFixed(2)}`;
-            
-            // O Balanço Líquido agora espelha O SALDO EXATO DO BANCO!
-            const elSaldo = document.getElementById('saldo-liquido');
-            elSaldo.innerText = `R$ ${saldoBancoReal.toFixed(2)}`;
-            
-            // Pinta de vermelho se estiver negativo, verde se positivo
-            if (saldoBancoReal < 0) {
-                elSaldo.style.color = '#ff4d4d';
-                elSaldo.style.textShadow = '0 0 5px rgba(255, 77, 77, 0.3)';
-            } else {
-                elSaldo.style.color = '#2ecc71';
-                elSaldo.style.textShadow = '0 0 5px rgba(46, 204, 113, 0.3)';
-            }
+    let ent = 0, sai = 0;
+    dadosAPI.forEach(item => {
+        let v = parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, ''));
+        if (!isNaN(v)) {
+            if (item.tipo === 'Receita') ent += v; else sai += v;
         }
+    });
+    document.getElementById('total-entradas').innerText = `R$ ${ent.toFixed(2)}`;
+    document.getElementById('total-saidas').innerText = `R$ ${sai.toFixed(2)}`;
+
+    // Card 3: resultado do período (as contas batem: Entradas - Saídas)
+    const periodo = ent - sai;
+    const elPeriodo = document.getElementById('saldo-liquido');
+    elPeriodo.innerText = `R$ ${periodo.toFixed(2)}`;
+    elPeriodo.style.color = periodo < 0 ? '#ff4d4d' : '#2ecc71';
+    elPeriodo.style.textShadow = periodo < 0 ? '0 0 5px rgba(255,77,77,0.3)' : '0 0 5px rgba(46,204,113,0.3)';
+
+    // Card 4: saldo real da conta bancária (vem do LEDGERBAL do OFX)
+    const elBanco = document.getElementById('saldo-banco');
+    elBanco.innerText = `R$ ${saldoBancoReal.toFixed(2)}`;
+    elBanco.style.color = saldoBancoReal < 0 ? '#ff4d4d' : '#2ecc71';
+    elBanco.style.textShadow = saldoBancoReal < 0 ? '0 0 5px rgba(255,77,77,0.3)' : '0 0 5px rgba(46,204,113,0.3)';
+}
 
         function renderizarVisualizacao() {
             const tipo = document.getElementById('select-tipo').value;
