@@ -7,11 +7,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --cor-destaque: #2E8B57; /* Verde clássico GBM */
+            --cor-destaque: #2E8B57; 
             --texto-principal: #ffffff;
             --texto-mutado: #b0bec5;
             --borda: rgba(255, 255, 255, 0.15);
             --sombra: rgba(0, 0, 0, 0.5);
+            --cor-receita: #10b981;   
+            --cor-despesa: #ef4444;
         }
 
         body {
@@ -333,7 +335,7 @@
             <input type="text" id="manual-desc" placeholder="Descrição (ex: Restaurante)" style="flex: 2; min-width: 150px;">
             <input type="number" id="manual-valor" placeholder="Valor (R$)" style="flex: 1; min-width: 90px;" step="0.01">
             <select id="manual-tipo" style="flex: 1;">
-                <option value="Despesas">Despesa</option>
+                <option value="Despesa">Despesa</option>
                 <option value="Receita">Receita</option>
             </select>
             <select id="manual-cat" style="flex: 1;">
@@ -468,7 +470,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
                 
                 // NOVO: Pega o saldo real vindo do backend
-                const saldoBanco = json.saldo_banco || 0;
+                const saldoBanco = parseFloat(json.saldo_banco) || 0;
                 
                 atualizarResumoFinanceiro(saldoBanco); // Passa o saldo para a função
                 renderizarVisualizacao();
@@ -490,7 +492,7 @@ const categorias = [
     "Saúde", "Educação", "Supermercado", "Restaurantes", "Salário", "Lazer", "Outros"
 ];
             
-            categoriasPadrao.forEach(padrao => {
+            categorias.forEach(padrao => {
                 if (!categoriasUnicas.includes(padrao)) categoriasUnicas.push(padrao);
             });
 

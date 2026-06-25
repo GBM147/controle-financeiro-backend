@@ -344,7 +344,7 @@ app.post('/transacao-manual', async (req, res) => {
         const transacaoIdGerado = 'MANUAL_' + Date.now();
         const [contas] = await db.promise().query('SELECT id FROM contas_bancarias LIMIT 1');
         const contaInternaId = contas.length > 0 ? contas[0].id : 1; 
-        const valorFinal = tipo === 'DEBIT' ? -Math.abs(valor) : Math.abs(valor);
+        const valorFinal = Math.abs(valor);
         const sql = `INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao)
                      VALUES (?, ?, ?, ?, ?, ?, ?)`;
         await db.promise().query(sql, [contaInternaId, transacaoIdGerado, descricao, valorFinal, tipo, categoria, data_transacao]);
@@ -367,7 +367,7 @@ async function auditarMetas() {
             SELECT t.categoria, SUM(t.valor) as total_gasto, m.valor_limite
             FROM transacoes t
             JOIN metas m ON t.categoria = m.categoria
-            WHERE t.tipo = 'DEBIT' AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE()) AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
+            WHERE t.tipo = 'Despesa' AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE()) AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
             GROUP BY t.categoria, m.valor_limite
         `;
         const [gastos] = await db.promise().query(sql);
