@@ -565,22 +565,13 @@ const categorias = [
                         label: 'Valor Movimentado',
                         data: dadosAPI.map(i => Math.abs(parseFloat(String(i.total_movimentado || i.valor).replace(',', '.')))),
                         
-                        // Cores Inteligentes (Verde para Positivo, Vermelho para Negativo)
-                        backgroundColor: dadosAPI.map(i => {
-                            const valorOriginal = parseFloat(String(i.total_movimentado || i.valor).replace(',', '.'));
-                            return valorOriginal < 0 ? 'rgba(255, 77, 77, 0.8)' : 'rgba(46, 139, 87, 0.8)';
-                        }),
-                        borderColor: dadosAPI.map(i => {
-                            const valorOriginal = parseFloat(String(i.total_movimentado || i.valor).replace(',', '.'));
-                            return valorOriginal < 0 ? '#ff4d4d' : '#2E8B57';
-                        }),
+                        // Cores Inteligentes baseadas na Palavra 'Despesa'
+                        backgroundColor: dadosAPI.map(i => i.tipo === 'Despesa' ? 'rgba(255, 77, 77, 0.8)' : 'rgba(46, 139, 87, 0.8)'),
+                        borderColor: dadosAPI.map(i => i.tipo === 'Despesa' ? '#ff4d4d' : '#2E8B57'),
                         borderWidth: 1,
                         borderRadius: 6,
                         borderSkipped: false,
-                        hoverBackgroundColor: dadosAPI.map(i => {
-                            const valorOriginal = parseFloat(String(i.total_movimentado || i.valor).replace(',', '.'));
-                            return valorOriginal < 0 ? '#cc0000' : '#246e45';
-                        })
+                        hoverBackgroundColor: dadosAPI.map(i => i.tipo === 'Despesa' ? '#cc0000' : '#246e45')
                     }]
                 },
                 options: { 
