@@ -87,7 +87,58 @@
 
 
         .gbm-menu-container { position: relative; z-index: 1000; }
-        .gbm-menu-btn { display: flex; align-items: center; gap: 10px; background: rgba(46, 139, 87, 0.2) !important; border: 1px solid var(--cor-destaque) !important; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: var(--texto-principal) !important; font-size: 16px; font-weight: bold; transition: all 0.3s ease; }
+        /* Botão GBM com gradiente animado igual ao título */
+.gbm-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  /* Fundo sólido escuro (sem efeito espelhado) */
+  background-color: #0f1a2b;
+  border: 1px solid rgba(93, 138, 255, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+  /* Texto com o mesmo gradiente animado do título */
+  background-image: linear-gradient(
+    90deg,
+    #2E8B57 0%,
+    #5fffa8 25%,
+    #3d28ff 50%,
+    #655aff 75%,
+    #2E8B57 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: gbm-shine 4s linear infinite;
+
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.gbm-menu-btn:hover {
+  transform: scale(1.04);
+  border-color: #5fffa8;
+  box-shadow: 0 0 18px rgba(95, 255, 168, 0.35);
+  animation-duration: 2s;
+}
+
+/* Mantém o ícone do menu (≡) sólido, sem virar transparente */
+.gbm-menu-btn .menu-icon {
+  -webkit-text-fill-color: #e6e6e6;
+  color: #e6e6e6;
+  background: none;
+}
+
         .gbm-menu-btn:hover { background: rgba(46, 139, 87, 0.4) !important; }
         .gbm-menu-logo { height: 20px !important; width: auto !important; border-radius: 4px; }
         .hamburger-icon { font-size: 20px; }
