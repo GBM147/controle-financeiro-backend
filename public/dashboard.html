@@ -281,16 +281,31 @@
         th { font-weight: 600; color: var(--texto-mutado); top: 0; position: sticky; background: rgba(30, 34, 40, 0.9); z-index: 10; }
         tr:hover { background: rgba(255, 255, 255, 0.05); }
 
-        /* --- MAGIA DO VIDRO (GLASSMORPHISM) EM TUDO --- */
-        .card, .painel-ajustes, .chart-container, .lancamento-rapido, .resumo-container {
-            background: rgba(30, 34, 40, 0.65) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            border: 1px solid var(--borda) !important;
-            border-radius: 16px !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
-            color: var(--texto-principal);
-        }
+        /* --- BLOCOS MODERNOS (sólido escuro + borda neon, sem espelhado) --- */
+.card, .painel-ajustes, .chart-container, .lancamento-rapido, .resumo-container {
+    background: #0f1a2b !important;
+    background-image: none !important;        /* remove o mármore/espelhado */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid rgba(95, 255, 168, 0.22) !important;
+    border-radius: 14px !important;
+    box-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(95, 255, 168, 0.05) inset !important;
+    color: var(--texto-principal);
+    font-family: 'Rajdhani', sans-serif;
+}
+
+/* Hover sutil com brilho neon */
+.card:hover, .painel-ajustes:hover, .chart-container:hover,
+.lancamento-rapido:hover, .resumo-container:hover {
+    border-color: rgba(95, 255, 168, 0.45) !important;
+    box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.55),
+        0 0 14px rgba(95, 255, 168, 0.12) !important;
+    transition: all 0.25s ease;
+}
+
         /* =========================================
            📲 MODO CELULAR (RESPONSIVIDADE)
            ========================================= */
