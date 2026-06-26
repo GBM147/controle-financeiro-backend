@@ -18,6 +18,22 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const app = express();
 // --- ROTA: CRIAR SESSÃO DE PAGAMENTO (MERCADO PAGO) ---
 // --- ROTA: CRIAR ASSINATURA MENSAL (MERCADO PAGO) ---
+// Extrai o nome do estabelecimento limpando os prefixos padrão dos bancos
+function extrairPalavraChave(descricao) {
+    const chave = descricao
+        .replace(/DEBITO VISA ELECTRON BRASIL\s*/i, '')
+        .replace(/COMPRA CARTAO DEB MC\s*/i, '')
+        .replace(/PIX ENVIADO OPEN FINANCE\s*/i, '')
+        .replace(/PIX ENVIADO\s*/i, '')
+        .replace(/PIX RECEBIDO\s*/i, '')
+        .replace(/CREDITO LIBERADO PARA PIX\s*/i, '')
+        .replace(/CREDITO DE SALARIO\s*/i, '')
+        .replace(/PAGAMENTO CARTAO CREDITO BCE\s*/i, '')
+        .replace(/PAGAMENTO DE BOLETO OUTROS BANCOS\s*/i, '')
+        .replace(/\d{2}\/\d{2}\s*/g, '') // Remove datas como "10/06 "
+        .trim();
+    return chave.substring(0, 40).trim();
+}
 app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
     const { userId } = req.body;
 
@@ -124,7 +140,10 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
         // 3. Localiza a conta do utilizador para vincular os lançamentos
         const [contas] = await db.promise().query('SELECT id FROM contas_bancarias LIMIT 1');
         const contaInternaId = contas.length > 0 ? contas[0].id : 1;
-        
+        // Carrega as regras salvas pelo usuário para usar na categorização
+const [regrasUsuario] = await db.promise().query(
+    'SELECT descricao_contem, categoria FROM regras_categoria WHERE usuario_id = 1'
+);
         // --- NOVO: CAPTURA O SALDO EXATO DO BANCO PELO OFX ---
         const ledgerBal = stmtRs.LEDGERBAL || {};
         if (ledgerBal.BALAMT) {
@@ -152,10 +171,56 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
                 valor = Math.abs(valorOriginal); // Transforma -100 em 100
             }
             // ----------------------------------------
+// 1º: Verifica as regras aprendidas do usuário
+let categoria = null;
+for (const regra of regrasUsuario) {
+    if (descricao.toLowerCase().includes(regra.descricao_contem.toLowerCase())) {
+        categoria = regra.categoria;
+        break;
+    }
+}
 
-            // Categoria Inteligente — baseada nos gastos reais do extrato
-let categoria = 'Outros';
-const descMinuscula = descricao.toLowerCase();
+// 2º: Se não achou regra, aplica as keywords padrão
+if (!categoria) {
+    const descMinuscula = descricao.toLowerCase();
+    if (descMinuscula.includes('credito de salario')) {
+        categoria = 'Salário';
+    } else if (descMinuscula.includes('unicid') || descMinuscula.includes('mensalidade')) {
+        categoria = 'Educação';
+    } else if (descMinuscula.includes('pagamento cartao') || descMinuscula.includes('fatura')) {
+        categoria = 'Pagamento de Fatura';
+    } else if (descMinuscula.includes('pagamento de boleto')) {
+        categoria = 'Pagamento de Boleto';
+    } else if (descMinuscula.includes('cafe') || descMinuscula.includes('coffee') ||
+               descMinuscula.includes('servano') || descMinuscula.includes('prc ali') ||
+               descMinuscula.includes('ifood') || descMinuscula.includes('restaurante') ||
+               descMinuscula.includes('lanche') || descMinuscula.includes('padaria')) {
+        categoria = 'Alimentação';
+    } else if (descMinuscula.includes('uber') || descMinuscula.includes('99app') ||
+               descMinuscula.includes('combustivel') || descMinuscula.includes('posto')) {
+        categoria = 'Transporte';
+    } else if (descMinuscula.includes('up mobile') || descMinuscula.includes('vivo') ||
+               descMinuscula.includes('tim ') || descMinuscula.includes('claro')) {
+        categoria = 'Telecomunicações / Internet';
+    } else if (descMinuscula.includes('igreja') || descMinuscula.includes('evangelica')) {
+        categoria = 'Igreja / Doações';
+    } else if (descMinuscula.includes('bytedance') || descMinuscula.includes('netflix') ||
+               descMinuscula.includes('spotify') || descMinuscula.includes('prime')) {
+        categoria = 'Entretenimento';
+    } else if (descMinuscula.includes('mercado') || descMinuscula.includes('carrefour') ||
+               descMinuscula.includes('atacadao') || descMinuscula.includes('assai')) {
+        categoria = 'Supermercado';
+    } else if (descMinuscula.includes('juros') || descMinuscula.includes('multa') ||
+               descMinuscula.includes('iof') || descMinuscula.includes('tarifa')) {
+        categoria = 'Taxas Bancárias';
+    } else if (descMinuscula.includes('credito liberado')) {
+        categoria = 'Crédito Cartão';
+    } else if (descMinuscula.includes('pix recebido') || descMinuscula.includes('pix enviado')) {
+        categoria = 'Transferência';
+    } else {
+        categoria = 'Outros';
+    }
+}
 
 // Salário (identificado: CREDITO DE SALARIO - FUNDACAO)
 if (descMinuscula.includes('credito de salario') || descMinuscula.includes('credito salario')) {
@@ -588,6 +653,49 @@ app.delete('/desfazer-ultimo', (req, res) => {
         }
         res.status(200).json({ message: 'Último lançamento desfeito com sucesso!' });
     });
+});
+// Buscar transações individuais do mês para o modal
+app.get('/transacoes-individuais', async (req, res) => {
+    try {
+        const mes = req.query.mes || new Date().getMonth() + 1;
+        const ano = req.query.ano || new Date().getFullYear();
+        const [transacoes] = await db.promise().query(`
+            SELECT id, descricao, valor, tipo, categoria, data_transacao
+            FROM transacoes
+            WHERE MONTH(data_transacao) = ? AND YEAR(data_transacao) = ?
+            ORDER BY data_transacao DESC
+        `, [mes, ano]);
+        res.json(transacoes);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao buscar transações.' });
+    }
+});
+
+// Corrigir categoria e salvar como regra permanente
+app.post('/corrigir-categoria', async (req, res) => {
+    try {
+        const { transacaoId, descricao, novaCategoria } = req.body;
+
+        // 1. Atualiza a transação
+        await db.promise().query(
+            'UPDATE transacoes SET categoria = ? WHERE id = ?',
+            [novaCategoria, transacaoId]
+        );
+
+        // 2. Extrai a palavra-chave e salva a regra
+        const palavraChave = extrairPalavraChave(descricao);
+        if (palavraChave) {
+            await db.promise().query(`
+                INSERT INTO regras_categoria (usuario_id, descricao_contem, categoria)
+                VALUES (1, ?, ?)
+                ON DUPLICATE KEY UPDATE categoria = VALUES(categoria)
+            `, [palavraChave, novaCategoria]);
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
 });
 // 4. Liga o servidor
 const PORT = process.env.PORT || 3000; 

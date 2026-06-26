@@ -290,7 +290,18 @@
     <div class="card"><h3>Resultado do Período</h3><p id="saldo-liquido">R$ 0,00</p></div>
     <div class="card"><h3>Saldo da Conta 🏦</h3><p id="saldo-banco">R$ 0,00</p></div>
 </div>
-
+<div id="modal-transacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; overflow-y:auto;">
+    <div style="max-width:850px; margin:40px auto; background:#1e1e1e; border-radius:16px; padding:30px; border:1px solid rgba(255,255,255,0.15);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0;">📋 Gerenciar Categorias do Mês</h2>
+            <button onclick="fecharModalTransacoes()" style="background:transparent; border:none; color:white; font-size:1.5rem; cursor:pointer;">✕</button>
+        </div>
+        <p style="color:#a0a0a0; margin-bottom:20px; font-size:0.9rem;">
+            Corrija a categoria de qualquer lançamento. O sistema vai <strong style="color:white;">aprender</strong> e aplicar automaticamente nas próximas importações.
+        </p>
+        <div id="lista-transacoes-modal">Carregando...</div>
+    </div>
+</div>
     <div class="painel-ajustes">
         <div class="grupo-ajuste">
             <label for="select-tipo">Exibição de Dados</label>
@@ -398,7 +409,9 @@
             Selecionar Arquivo
         </button>
         
-        <button type="submit" class="btn-acao" style="background: #2E8B57;">Processar OFX </button>
+        <button type="submit" class="btn-acao" style="background: #2E8B57;">Processar OFX </button><button onclick="abrirModalTransacoes()" class="btn-acao" style="background: #6366f1;">
+    📋 Gerenciar Categorias
+</button>
     </form>
 </div>
 <script>
@@ -735,6 +748,107 @@ const categorias = [
                 alert('Erro ao comunicar com o servidor.');
             }
         }
+        const CATEGORIAS_DISPONIVEIS = [
+    'Alimentação', 'Transporte', 'Salário', 'Educação', 'Saúde', 'Moradia',
+    'Entretenimento', 'Telecomunicações / Internet', 'Supermercado',
+    'Igreja / Doações', 'Pagamento de Fatura', 'Pagamento de Boleto',
+    'Taxas Bancárias', 'Transferência', 'Crédito Cartão', 'Outros'
+];
+
+function categoriasOpcoes(selecionada) {
+    return CATEGORIAS_DISPONIVEIS.map(c =>
+        `<option value="${c}" ${c === selecionada ? 'selected' : ''}>${c}</option>`
+    ).join('');
+}
+
+async function abrirModalTransacoes() {
+    document.getElementById('modal-transacoes').style.display = 'block';
+    const hoje = new Date();
+    const res = await fetch(`/transacoes-individuais?mes=${hoje.getMonth() + 1}&ano=${hoje.getFullYear()}`);
+    const transacoes = await res.json();
+    const container = document.getElementById('lista-transacoes-modal');
+
+    if (transacoes.length === 0) {
+        container.innerHTML = '<p style="color:#a0a0a0; text-align:center;">Nenhuma transação este mês.</p>';
+        return;
+    }
+
+    let html = `<table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="color:#a0a0a0; font-size:0.85rem;">
+                <th style="text-align:left; padding:10px;">Data</th>
+                <th style="text-align:left; padding:10px;">Descrição</th>
+                <th style="text-align:left; padding:10px;">Valor</th>
+                <th style="text-align:left; padding:10px;">Categoria</th>
+                <th style="padding:10px;"></th>
+            </tr>
+        </thead><tbody>`;
+
+    transacoes.forEach(t => {
+        const cor = t.tipo === 'Receita' ? '#10b981' : '#ef4444';
+        const sinal = t.tipo === 'Receita' ? '+' : '-';
+        const data = new Date(t.data_transacao).toLocaleDateString('pt-BR');
+        const descEscapada = t.descricao.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+        html += `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:10px; font-size:0.8rem; color:#a0a0a0; white-space:nowrap;">${data}</td>
+                <td style="padding:10px; font-size:0.82rem; max-width:250px;">${t.descricao}</td>
+                <td style="padding:10px; font-weight:bold; color:${cor}; white-space:nowrap;">${sinal} R$ ${parseFloat(t.valor).toFixed(2)}</td>
+                <td style="padding:10px;">
+                    <select id="cat-${t.id}" style="background:#2a2a2a; border:1px solid rgba(255,255,255,0.15); color:white; padding:6px 8px; border-radius:6px; font-size:0.82rem; width:100%;">
+                        ${categoriasOpcoes(t.categoria)}
+                    </select>
+                </td>
+                <td style="padding:10px; text-align:center;">
+                    <button id="btn-${t.id}" onclick="salvarCorrecao(${t.id}, '${descEscapada}')"
+                        style="background:#2E8B57; border:none; color:white; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; transition:0.2s;">
+                        ✔
+                    </button>
+                </td>
+            </tr>`;
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+async function salvarCorrecao(transacaoId, descricao) {
+    const novaCategoria = document.getElementById(`cat-${transacaoId}`).value;
+    const btn = document.getElementById(`btn-${transacaoId}`);
+
+    btn.innerText = '...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/corrigir-categoria', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transacaoId, descricao, novaCategoria })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            btn.innerText = '✅';
+            btn.style.background = '#10b981';
+            // Atualiza o dashboard em segundo plano
+            carregarDados();
+            setTimeout(() => {
+                btn.innerText = '✔';
+                btn.style.background = '#2E8B57';
+                btn.disabled = false;
+            }, 2000);
+        }
+    } catch {
+        btn.innerText = '✖';
+        btn.style.background = '#ef4444';
+        btn.disabled = false;
+    }
+}
+
+function fecharModalTransacoes() {
+    document.getElementById('modal-transacoes').style.display = 'none';
+}
         // --- 5. LIGAR O MOTOR ---
         carregarDados();
     </script>
