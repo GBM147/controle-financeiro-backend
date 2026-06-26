@@ -345,41 +345,46 @@
         </div>
     </div>
 
-    <div class="painel-ajustes" style="border-left: 4px solid var(--cor-destaque); background: var(--bg-card);">
-        <h3 style="margin: 0; font-size: 1rem; color: var(--texto-principal);">Lançamento Rápido</h3>
-        
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
-            <input type="text" id="manual-desc" placeholder="Descrição (ex: Restaurante)" style="flex: 2; min-width: 150px;">
-            <input type="number" id="manual-valor" placeholder="Valor (R$)" style="flex: 1; min-width: 90px;" step="0.01">
-            <select id="manual-tipo" style="flex: 1;">
-                <option value="Despesa">Despesa</option>
-                <option value="Receita">Receita</option>
+    <div class="painel-ajustes" style="max-width: 260px;">
+    <div class="grupo-ajuste">
+        <label for="select-tipo">Exibição de Dados</label>
+        <select id="select-tipo" onchange="renderizarVisualizacao()">
+            <option value="table">Apenas Tabela</option>
+            <option value="both-doughnut" selected>Tabela e Gráfico</option>
+        </select>
+    </div>
+</div>
+
+<div class="painel-ajustes">
+    <div class="grupo-ajuste">
+        <label>Controle de Gastos</label>
+        <div style="display: flex; gap: 8px;">
+            <select id="meta-categoria" style="width: 140px;">
+                <option value="" disabled selected>Categoria...</option>
+                <option value="Alimentação">Alimentação</option>
+                <option value="Habitação">Habitação</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Eletricidade / Luz">Eletricidade / Luz</option>
+                <option value="Telecomunicações / Internet">Telecomunicações / Internet</option>
+                <option value="Pagamento de Fatura">Pagamento de Fatura</option>
+                <option value="Pagamento de Boleto">Pagamento de Boleto</option>
+                <option value="Streaming de Vídeo">Streaming de Vídeo</option>
+                <option value="Streaming de Música">Streaming de Música</option>
+                <option value="Academia e Fitness">Academia e Fitness</option>
+                <option value="Saúde">Saúde</option>
+                <option value="Educação">Educação</option>
+                <option value="Supermercado">Supermercado</option>
+                <option value="Restaurantes">Restaurantes</option>
+                <option value="Salário">Salário</option>
+                <option value="Lazer">Lazer</option>
+                <option value="Outros">Outros</option>
             </select>
-            <select id="manual-cat" style="flex: 1;">
-    <option value="" disabled selected>Categoria...</option>
-    <option value="Alimentação">Alimentação</option>
-    <option value="Habitação">Habitação</option>
-    <option value="Transporte">Transporte</option>
-    <option value="Eletricidade / Luz">Eletricidade / Luz</option>
-    <option value="Telecomunicações / Internet">Telecomunicações / Internet</option>
-    <option value="Pagamento de Fatura">Pagamento de Fatura</option>
-    <option value="Pagamento de Boleto">Pagamento de Boleto</option>
-    <option value="Streaming de Vídeo">Streaming de Vídeo</option>
-    <option value="Streaming de Música">Streaming de Música</option>
-    <option value="Academia e Fitness">Academia e Fitness</option>
-    <option value="Saúde">Saúde</option>
-    <option value="Educação">Educação</option>
-    <option value="Supermercado">Supermercado</option>
-    <option value="Restaurantes">Restaurantes</option>
-    <option value="Salário">Salário</option>
-    <option value="Lazer">Lazer</option>
-    <option value="Outros">Outros</option>
-</select>
-            <input type="date" id="manual-data" style="flex: 1;">
-            <button class="btn-acao" onclick="salvarLancamentoManual()" style="flex: 1; background: var(--cor-receita);">Adicionar</button>
-            <button onclick="desfazerUltimo()" class="btn-acao" style="background: #ff4d4d; margin-left: 10px;" title="Apagar o último lançamento inserido">↩️ Desfazer</button>
+            <input type="number" id="meta-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
+            <button class="btn-acao" onclick="salvarMeta()">Gravar</button>
+            <button class="btn-acao" onclick="removerMeta()" style="background: var(--texto-mutated);" title="Remover limite desta categoria">Sem Limite</button>
         </div>
     </div>
+</div>
 
     <div class="chart-container" id="container-do-grafico">
         <div class="container-tabela" id="minhaTabelaContainer" style="display: none;">

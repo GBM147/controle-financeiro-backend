@@ -2,110 +2,428 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Relatório Mensal</title>
+    <title>Relatório Mensal | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root { --bg-principal: #121212; --bg-card: #1e1e1e; --texto-principal: #f8f9fa; --cor-destaque: #3b82f6; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-principal); color: var(--texto-principal); padding: 20px; max-width: 800px; margin: 0 auto;}
-        .card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
-        input, select { padding: 10px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 6px; }
-        .btn-acao { padding: 10px 20px; background: var(--cor-destaque); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-acao:hover { opacity: 0.8; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
-        th { color: #a0a0a0; }
+        :root {
+            --cor-destaque: #2E8B57;
+            --cor-destaque-hover: #246e45;
+            --texto-principal: #ffffff;
+            --texto-mutado: #b0bec5;
+            --borda: rgba(255, 255, 255, 0.12);
+            --cor-receita: #10b981;
+            --cor-despesa: #ef4444;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(rgba(10, 18, 32, 0.88), rgba(10, 18, 32, 0.92)),
+                              url('fundo-marmore.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--texto-principal);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Cabeçalho */
+        .cabecalho-container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .cabecalho {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .logo-gbm { height: 65px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6)); }
+
+        .titulo-pagina {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0 0 25px 0;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .btn-voltar {
+            text-decoration: none;
+            color: var(--texto-principal);
+            font-weight: 600;
+            background: rgba(255,255,255,0.08);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--borda);
+            transition: 0.3s;
+            font-size: 0.9rem;
+        }
+        .btn-voltar:hover { background: rgba(255,255,255,0.18); }
+
+        /* Cards Glassmorphism */
+        .card {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(25, 32, 45, 0.65);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            padding: 25px 30px;
+            border-radius: 16px;
+            border: 1px solid var(--borda);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Seletor de período */
+        .filtros {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filtros select,
+        .filtros input[type="number"] {
+            background: rgba(10, 18, 32, 0.6);
+            border: 1px solid var(--borda);
+            color: var(--texto-principal);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+        }
+        .filtros select:focus,
+        .filtros input[type="number"]:focus {
+            border-color: var(--cor-destaque);
+            box-shadow: 0 0 10px rgba(46,139,87,0.3);
+        }
+
+        .filtros input[type="number"] { width: 75px; }
+
+        /* Botões */
+        .btn-acao {
+            padding: 10px 22px;
+            border-radius: 8px;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .btn-gerar  { background: var(--cor-destaque); color: white; }
+        .btn-gerar:hover  { background: var(--cor-destaque-hover); transform: translateY(-1px); }
+        .btn-pdf    { background: #1a56a0; color: white; }
+        .btn-pdf:hover    { background: #144588; transform: translateY(-1px); }
+
+        /* Título do resultado */
+        .resultado-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--borda);
+        }
+        .resultado-header h3 { margin: 0; font-size: 1.15rem; font-weight: 600; }
+
+        /* Resumo rápido */
+        .resumo-rapido {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .resumo-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--borda);
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            color: var(--texto-mutado);
+        }
+        .resumo-item strong { display: block; font-size: 1.05rem; margin-top: 3px; }
+
+        /* Tabela */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        thead tr { border-bottom: 2px solid rgba(255,255,255,0.1); }
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--texto-mutado);
+        }
+        td { padding: 13px 15px; font-size: 0.92rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .badge-tipo {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-receita { background: rgba(16,185,129,0.15); color: var(--cor-receita); }
+        .badge-despesa { background: rgba(239,68,68,0.15);  color: var(--cor-despesa); }
+
+        .texto-vazio {
+            text-align: center;
+            color: var(--texto-mutado);
+            padding: 30px 0;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Relatórios Financeiros</h1>
-    <a href="dashboard.html" style="color: var(--cor-destaque);">← Voltar ao Dashboard</a>
+    <div class="cabecalho-container">
+        <div class="cabecalho">
+            <a href="dashboard.html" class="btn-voltar">← Voltar</a>
+            <img src="logo-transparente.jpg" alt="Logo GBM" class="logo-gbm">
+            <div style="width: 80px;"></div>
+        </div>
+        <h1 class="titulo-pagina">Relatórios Financeiros 📊</h1>
+    </div>
 
+    <!-- Filtros -->
     <div class="card">
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <div class="filtros">
             <select id="mes-ref">
-                <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-                <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-                <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-                <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
             </select>
-            <input type="number" id="ano-ref" value="2026" style="width: 80px;">
-            
-            <button class="btn-acao" onclick="gerarRelatorio()">Gerar Relatório</button>
-            <button class="btn-acao" onclick="baixarPDF()" style="background: #28a745;">Baixar PDF 📄</button>
+            <input type="number" id="ano-ref" value="2026">
+            <button class="btn-acao btn-gerar" onclick="gerarRelatorio()">Gerar Relatório</button>
+            <button class="btn-acao btn-pdf"   onclick="baixarPDF()">Baixar PDF 📄</button>
         </div>
     </div>
 
-    <div class="card">
+    <!-- Resultado -->
+    <div class="card" id="card-resultado">
         <div id="resultado-relatorio">
-            <p style="color: #a0a0a0; text-align: center;">Escolha o mês e o ano e clique em "Gerar Relatório".</p>
+            <p class="texto-vazio">Escolha o mês e o ano e clique em "Gerar Relatório".</p>
         </div>
     </div>
 
     <script>
         let dadosRelatorio = [];
 
+        // Pré-seleciona o mês atual
+        document.getElementById('mes-ref').value = new Date().getMonth() + 1;
+
+        const NOMES_MESES = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                              'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
         async function gerarRelatorio() {
             const mes = document.getElementById('mes-ref').value;
             const ano = document.getElementById('ano-ref').value;
+            const container = document.getElementById('resultado-relatorio');
+            container.innerHTML = '<p class="texto-vazio">Carregando...</p>';
 
             try {
                 const res = await fetch(`/relatorio-mensal?mes=${mes}&ano=${ano}`);
                 dadosRelatorio = await res.json();
-                
-                const container = document.getElementById('resultado-relatorio');
-                
+
                 if (dadosRelatorio.length === 0) {
-                    container.innerHTML = `<p style="text-align: center;">Nenhum dado encontrado para ${mes}/${ano}.</p>`;
+                    container.innerHTML = `<p class="texto-vazio">Nenhum dado encontrado para ${NOMES_MESES[mes]}/${ano}.</p>`;
                     return;
                 }
 
-                let html = `<h3>Relatório: ${mes}/${ano}</h3><table><thead><tr><th>Categoria</th><th>Tipo</th><th>Valor</th></tr></thead><tbody>`;
-                
+                // Calcula totais para o resumo
+                let totalReceita = 0, totalDespesa = 0;
                 dadosRelatorio.forEach(item => {
-                    html += `<tr><td>${item.categoria}</td><td>${item.tipo}</td><td>R$ ${Math.abs(item.total_movimentado).toFixed(2)}</td></tr>`;
+                    const v = Math.abs(parseFloat(item.total_movimentado) || 0);
+                    if (item.tipo === 'Receita') totalReceita += v;
+                    else totalDespesa += v;
                 });
-                
-                container.innerHTML = html + '</tbody></table>';
+                const saldo = totalReceita - totalDespesa;
+                const corSaldo = saldo >= 0 ? 'var(--cor-receita)' : 'var(--cor-despesa)';
+
+                let html = `
+                    <div class="resultado-header">
+                        <h3>${NOMES_MESES[mes]} / ${ano}</h3>
+                        <div class="resumo-rapido">
+                            <div class="resumo-item">
+                                Entradas
+                                <strong style="color: var(--cor-receita);">R$ ${totalReceita.toFixed(2)}</strong>
+                            </div>
+                            <div class="resumo-item">
+                                Saídas
+                                <strong style="color: var(--cor-despesa);">R$ ${totalDespesa.toFixed(2)}</strong>
+                            </div>
+                            <div class="resumo-item">
+                                Saldo
+                                <strong style="color: ${corSaldo};">R$ ${saldo.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th style="text-align: right;">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                dadosRelatorio.forEach(item => {
+                    const isReceita = item.tipo === 'Receita';
+                    const cor    = isReceita ? 'var(--cor-receita)' : 'var(--cor-despesa)';
+                    const sinal  = isReceita ? '+ ' : '- ';
+                    const badge  = isReceita
+                        ? '<span class="badge-tipo badge-receita">Receita</span>'
+                        : '<span class="badge-tipo badge-despesa">Despesa</span>';
+                    const valor  = Math.abs(parseFloat(item.total_movimentado) || 0).toFixed(2);
+
+                    html += `
+                        <tr>
+                            <td style="font-weight: 500;">${item.categoria}</td>
+                            <td>${badge}</td>
+                            <td style="text-align: right; font-weight: 600; color: ${cor};">${sinal}R$ ${valor}</td>
+                        </tr>`;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+
             } catch (error) {
-                alert("Erro ao carregar relatório.");
+                container.innerHTML = '<p class="texto-vazio">Erro ao carregar o relatório. Tente novamente.</p>';
             }
         }
 
         function baixarPDF() {
-            if (dadosRelatorio.length === 0) return alert("Gere o relatório antes de baixar!");
-            
+            if (dadosRelatorio.length === 0) return alert('Gere o relatório antes de baixar!');
+
+            const mes = document.getElementById('mes-ref').value;
+            const ano = document.getElementById('ano-ref').value;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
-            // Título personalizado
-            doc.setFontSize(18);
-            doc.text("Relatorio Financeiro", 14, 20);
-            doc.setFontSize(12);
-            doc.text("Exportado em: " + new Date().toLocaleDateString(), 14, 28);
-            
+
+            // Fundo do cabeçalho
+            doc.setFillColor(15, 25, 42);
+            doc.rect(0, 0, 210, 38, 'F');
+
+            // Título
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text('GUARDIAN OF BUDGET & MONEY', 14, 15);
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(176, 190, 197);
+            doc.text(`Relatório Financeiro — ${NOMES_MESES[mes]} / ${ano}`, 14, 25);
+            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
+
+            // Calcula totais para o PDF
+            let totalReceita = 0, totalDespesa = 0;
+            dadosRelatorio.forEach(item => {
+                const v = Math.abs(parseFloat(item.total_movimentado) || 0);
+                if (item.tipo === 'Receita') totalReceita += v;
+                else totalDespesa += v;
+            });
+            const saldo = totalReceita - totalDespesa;
+
+            // Mini resumo no PDF
+            doc.setFillColor(26, 35, 50);
+            doc.rect(14, 42, 55, 18, 'F');
+            doc.rect(73, 42, 55, 18, 'F');
+            doc.rect(132, 42, 64, 18, 'F');
+
+            doc.setFontSize(8);
+            doc.setTextColor(176, 190, 197);
+            doc.text('ENTRADAS', 16, 48);
+            doc.text('SAÍDAS', 75, 48);
+            doc.text('SALDO DO PERÍODO', 134, 48);
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(16, 185, 129);
+            doc.text(`R$ ${totalReceita.toFixed(2)}`, 16, 56);
+            doc.setTextColor(239, 68, 68);
+            doc.text(`R$ ${totalDespesa.toFixed(2)}`, 75, 56);
+            doc.setTextColor(saldo >= 0 ? 16 : 239, saldo >= 0 ? 185 : 68, saldo >= 0 ? 129 : 68);
+            doc.text(`R$ ${saldo.toFixed(2)}`, 134, 56);
+
+            // Tabela
             doc.autoTable({
                 head: [['Categoria', 'Tipo', 'Valor']],
-                body: dadosRelatorio.map(i => [
-                    i.categoria, 
-                    i.tipo, 
-                    (i.tipo === 'CREDIT' ? '+ ' : '- ') + 'R$ ' + Math.abs(i.total_movimentado).toFixed(2)
-                ]),
-                startY: 35,
-                // Estilização estilo Dashboard
+                body: dadosRelatorio.map(i => {
+                    const isReceita = i.tipo === 'Receita';
+                    return [
+                        i.categoria,
+                        i.tipo,
+                        (isReceita ? '+ ' : '- ') + 'R$ ' + Math.abs(parseFloat(i.total_movimentado) || 0).toFixed(2)
+                    ];
+                }),
+                startY: 65,
                 theme: 'striped',
-                headStyles: { fillColor: [30, 30, 30], textColor: [255, 255, 255] }, // Cabeçalho escuro
+                headStyles: {
+                    fillColor: [15, 25, 42],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 10
+                },
+                alternateRowStyles: { fillColor: [245, 247, 250] },
                 didParseCell: function(data) {
-                    // Pinta de verde se for Crédito, vermelho se for Débito
-                    if (data.column.index === 1 && data.cell.section === 'body') {
-                        data.cell.styles.textColor = data.cell.raw === 'CREDIT' ? [40, 167, 69] : [220, 53, 69];
+                    if (data.cell.section === 'body') {
+                        // Coluna Tipo: badge colorido
+                        if (data.column.index === 1) {
+                            data.cell.styles.textColor =
+                                data.cell.raw === 'Receita' ? [16, 185, 129] : [239, 68, 68];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                        // Coluna Valor: cor pelo sinal
+                        if (data.column.index === 2) {
+                            data.cell.styles.textColor =
+                                String(data.cell.raw).startsWith('+') ? [16, 185, 129] : [239, 68, 68];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
                     }
-                }
+                },
+                columnStyles: { 2: { halign: 'right' } }
             });
-            
-            doc.save('relatorio-financeiro.pdf');
+
+            // Rodapé
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(176, 190, 197);
+                doc.text('Guardian of Budget & Money — Relatório Confidencial',
+                    14, doc.internal.pageSize.height - 8);
+            }
+
+            doc.save(`GBM-relatorio-${NOMES_MESES[mes]}-${ano}.pdf`);
         }
     </script>
 </body>
