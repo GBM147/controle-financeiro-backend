@@ -302,48 +302,6 @@
         <div id="lista-transacoes-modal">Carregando...</div>
     </div>
 </div>
-    <div class="painel-ajustes">
-        <div class="grupo-ajuste">
-            <label for="select-tipo">Exibição de Dados</label>
-            <select id="select-tipo" onchange="renderizarVisualizacao()">
-                <option value="table">Apenas Tabela</option>
-                <option value="both-doughnut" selected>Tabela e Gráfico</option>
-            </select>
-        </div>
-        <div class="grupo-ajuste" style="border-left: 2px solid var(--borda); padding-left: 15px;">
-            <label>Controle de Gastos</label>
-            <div style="display: flex; gap: 8px;">
-                <select id="meta-categoria" style="width: 140px;">
-                    <option value="" disabled selected>Categoria...</option>
-                    <option value="Alimentação">Alimentação</option>
-<option value="Habitação">Habitação</option>
-<option value="Transporte">Transporte</option>
-<option value="Taxas Bancárias">Taxas Bancárias</option>
-<option value="Igreja / Doações">Igreja / Doações</option>
-<option value="Entretenimento">Entretenimento</option>
-<option value="Transferência">Transferência</option>
-<option value="Crédito Cartão">Crédito Cartão</option>
-<option value="Eletricidade / Luz">Eletricidade / Luz</option>
-<option value="Telecomunicações / Internet">Telecomunicações / Internet</option>
-<option value="Pagamento de Fatura">Pagamento de Fatura</option>
-<option value="Pagamento de Boleto">Pagamento de Boleto</option>
-<option value="Streaming de Vídeo">Streaming de Vídeo</option>
-<option value="Streaming de Música">Streaming de Música</option>
-<option value="Academia e Fitness">Academia e Fitness</option>
-<option value="Saúde">Saúde</option>
-<option value="Educação">Educação</option>
-<option value="Supermercado">Supermercado</option>
-<option value="Restaurantes">Restaurantes</option>
-<option value="Salário">Salário</option>
-<option value="Lazer">Lazer</option>
-<option value="Outros">Outros</option>
-                </select>
-                <input type="number" id="meta-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
-                <button class="btn-acao" onclick="salvarMeta()">Gravar</button>
-                <button class="btn-acao" onclick="removerMeta()" style="background: var(--texto-mutated);" title="Remover limite desta categoria">Sem Limite</button>
-            </div>
-        </div>
-    </div>
 
     <div class="painel-ajustes" style="max-width: 260px;">
     <div class="grupo-ajuste">
