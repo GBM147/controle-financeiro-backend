@@ -48,7 +48,43 @@
 
         .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
         .gbm-logo-img { height: 50px !important; width: auto !important; border-radius: 8px; }
-        .gbm-title { font-family: 'Montserrat', 'Arial', sans-serif; font-size: 22px; font-weight: 700; color: var(--texto-principal) !important; text-transform: uppercase; letter-spacing: 1px; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important; }
+.gbm-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+    cursor: default;
+
+    /* Gradiente animado verde → dourado → verde */
+    background: linear-gradient(
+        90deg,
+        #2E8B57 0%,
+        #5fffa8 25%,
+        #3d28ff 50%,
+        #655aff 75%,
+        #2E8B57 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: gbm-shine 4s linear infinite;
+    transition: letter-spacing 0.3s ease, transform 0.3s ease;
+    text-shadow: none !important;
+}
+.gbm-title:hover {
+    letter-spacing: 4px;
+    transform: scale(1.03);
+    animation-duration: 1.5s; /* acelera o brilho no hover */
+}
+@keyframes gbm-shine {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
 
         .gbm-menu-container { position: relative; z-index: 1000; }
         .gbm-menu-btn { display: flex; align-items: center; gap: 10px; background: rgba(46, 139, 87, 0.2) !important; border: 1px solid var(--cor-destaque) !important; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: var(--texto-principal) !important; font-size: 16px; font-weight: bold; transition: all 0.3s ease; }
