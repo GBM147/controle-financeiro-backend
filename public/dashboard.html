@@ -303,15 +303,7 @@
     </div>
 </div>
 
-    <div class="painel-ajustes" style="max-width: 260px;">
-    <div class="grupo-ajuste">
-        <label for="select-tipo">Exibição de Dados</label>
-        <select id="select-tipo" onchange="renderizarVisualizacao()">
-            <option value="table">Apenas Tabela</option>
-            <option value="both-doughnut" selected>Tabela e Gráfico</option>
-        </select>
-    </div>
-</div>
+    
 
 <div class="painel-ajustes">
     <div class="grupo-ajuste">
@@ -343,7 +335,15 @@
         </div>
     </div>
 </div>
-
+<div class="painel-ajustes" style="max-width: 260px;">
+    <div class="grupo-ajuste">
+        <label for="select-tipo">Exibição de Dados</label>
+        <select id="select-tipo" onchange="renderizarVisualizacao()">
+            <option value="table">Apenas Tabela</option>
+            <option value="both-doughnut" selected>Tabela e Gráfico</option>
+        </select>
+    </div>
+</div>
     <div class="chart-container" id="container-do-grafico">
         <div class="container-tabela" id="minhaTabelaContainer" style="display: none;">
             <table>
