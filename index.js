@@ -47,7 +47,7 @@ app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
         // Cria a ASSINATURA (Cobrança Mensal Recorrente)
         const resultado = await preApproval.create({
             body: {
-                reason: 'Plano Premium Mensal - GBM Financeiro',
+                reason: 'Plano Mensal - GBM',
                 auto_recurring: {
                     frequency: 1,
                     frequency_type: 'months', // Repete a cada 1 mês

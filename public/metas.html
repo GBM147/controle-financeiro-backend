@@ -1,56 +1,198 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>Gestão de Metas</title>
+    <title>Gestão de Metas | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --bg-principal: #121212; --bg-card: #1e1e1e; --texto-principal: #f8f9fa;
-            --texto-mutated: #a0a0a0; --borda: #333333; --cor-receita: #10b981;
-            --cor-despesa: #ef4444; --cor-alerta: #f59e0b; --cor-poupanca: #8b5cf6;
+            --cor-destaque: #2E8B57;
+            --texto-principal: #ffffff;
+            --texto-mutado: #b0bec5;
+            --texto-mutated: #b0bec5;
+            --borda: rgba(255, 255, 255, 0.15);
+            --cor-receita: #10b981;
+            --cor-despesa: #ef4444;
+            --cor-alerta: #f59e0b;
+            --cor-poupanca: #8b5cf6;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-principal); color: var(--texto-principal); padding: 20px; max-width: 800px; margin: 0 auto; }
-        a.btn-voltar { color: #3b82f6; text-decoration: none; font-weight: bold; font-size: 1rem; margin-bottom: 20px; display: inline-block; }
-        a.btn-voltar:hover { text-decoration: underline; }
-        
-        .card { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid var(--borda); margin-top: 10px; max-width: 800px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .card h2 { margin-top: 0; border-bottom: 1px solid var(--borda); padding-bottom: 15px; margin-bottom: 25px; }
-        
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('fundo-marmore.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--texto-principal);
+            min-height: 100vh;
+        }
+
+        /* CABEÇALHO GBM */
+        .gbm-header {
+            background: transparent;
+            border-bottom: 1px solid var(--borda);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
+        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; }
+        .gbm-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            background: linear-gradient(90deg, #2E8B57 0%, #5fffa8 25%, #3d28ff 50%, #655aff 75%, #2E8B57 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            animation: gbm-shine 4s linear infinite;
+        }
+        @keyframes gbm-shine {
+            0%   { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .btn-voltar {
+            text-decoration: none;
+            color: var(--texto-principal);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: #0f1a2b;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(95, 255, 168, 0.25);
+            transition: 0.3s;
+        }
+        .btn-voltar:hover {
+            border-color: #5fffa8;
+            box-shadow: 0 0 14px rgba(95, 255, 168, 0.3);
+        }
+
+        .page-wrapper { max-width: 800px; margin: 0 auto; padding: 20px; }
+
+        .titulo-pagina {
+            font-family: 'Rajdhani', sans-serif;
+            text-align: center;
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin: 10px 0 25px 0;
+        }
+
+        /* CARD MODERNO */
+        .card {
+            background: #0f1a2b;
+            border: 1px solid rgba(95, 255, 168, 0.22);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(95, 255, 168, 0.05) inset;
+            padding: 25px 30px;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.25s ease;
+        }
+        .card:hover {
+            border-color: rgba(95, 255, 168, 0.45);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55), 0 0 14px rgba(95, 255, 168, 0.12);
+        }
+        .card h2 {
+            margin-top: 0;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--borda);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
         .meta-item { margin-bottom: 30px; }
-        .meta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1rem; }
-        .barra-container { width: 100%; height: 10px; background: var(--borda); border-radius: 5px; overflow: hidden; margin-bottom: 8px; }
+        .meta-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.5px;
+        }
+        .barra-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
         .barra-progresso { height: 100%; transition: width 0.5s ease-in-out; border-radius: 5px; }
-        .meta-footer { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--texto-mutated); }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #fff; margin-left: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .meta-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--texto-mutado);
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #fff;
+            margin-left: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 768px) {
+            .gbm-title { display: none; }
+            .gbm-logo-img { height: 40px; }
+            .card { padding: 18px; }
+        }
     </style>
 </head>
 <body>
 
-    <h1>Metas</h1>
-    <a href="dashboard.html" class="btn-voltar">← Voltar ao Dashboard</a>
+<header class="gbm-header">
+    <div class="gbm-logo-container">
+        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
+        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
+    </div>
+    <a href="dashboard.html" class="btn-voltar">← Voltar</a>
+</header>
+
+<div class="page-wrapper">
+    <h1 class="titulo-pagina">Minhas Metas 🎯</h1>
 
     <div class="card" id="lista-metas">
         <h2>Carregando suas metas...</h2>
     </div>
+</div>
 
     <script>
-        // Herda o tema escuro
-        if (localStorage.getItem('tema') === 'light') {
-            document.body.classList.remove('dark-theme'); // Se no futuro fizeres um tema claro
-        }
-
         async function carregarMetas() {
             try {
                 const res = await fetch('/metas-resumo');
                 const json = await res.json();
-                
-let metas = json.data ? json.data : (Array.isArray(json) ? json : []);
 
-// Filtra a lista para exibir APENAS as categorias de poupança
-metas = metas.filter(m => m.categoria === 'Savings' || m.categoria === 'Poupança');
+                let metas = json.data ? json.data : (Array.isArray(json) ? json : []);
+                metas = metas.filter(m => m.categoria === 'Savings' || m.categoria === 'Poupança');
 
-const container = document.getElementById('lista-metas');
+                const container = document.getElementById('lista-metas');
                 if (metas.length === 0) {
                     container.innerHTML = '<h2>Suas Metas Ativas</h2><p style="color: var(--texto-mutated);">Nenhum orçamento definido ainda. Vá ao Dashboard e crie um!</p>';
                     return;
@@ -59,34 +201,27 @@ const container = document.getElementById('lista-metas');
                 container.innerHTML = '<h2>Suas Metas Ativas</h2>';
 
                 metas.forEach(m => {
-                    // A CORREÇÃO DO ERRO ZERO: Forçamos a limpeza da string para número puro
                     const limite = parseFloat(String(m.limite || 0).replace(/[R$\s+\-]/g, ''));
                     const gasto = parseFloat(String(m.gasto || 0).replace(/[R$\s+\-]/g, ''));
-                    
+
                     let percentual = limite > 0 ? (gasto / limite) * 100 : 0;
-                    
-                    // Trava visual para a barra não sair do ecrã se passar dos 100%
-                    const larguraBarra = Math.min(percentual, 100); 
-                    
+                    const larguraBarra = Math.min(percentual, 100);
+
                     let cor = '';
                     let badge = '';
 
-                    // --- LÓGICA INTELIGENTE: É POUPANÇA OU DESPESA? ---
                     if (m.categoria === 'Savings' || m.categoria === 'Poupança') {
                         badge = '<span class="badge" style="background: var(--cor-poupanca);">Objetivo</span>';
-                        // Quanto mais, melhor:
-                        if (percentual < 50) cor = 'var(--cor-alerta)'; // Laranja (Pouco guardado)
-                        else if (percentual < 100) cor = '#3b82f6'; // Azul (No caminho)
-                        else cor = 'var(--cor-receita)'; // Verde (Meta Batida!)
+                        if (percentual < 50) cor = 'var(--cor-alerta)';
+                        else if (percentual < 100) cor = '#3b82f6';
+                        else cor = 'var(--cor-receita)';
                     } else {
                         badge = '<span class="badge" style="background: var(--texto-mutated);">Limite</span>';
-                        // Quanto mais, pior (Despesa):
-                        if (percentual < 75) cor = 'var(--cor-receita)'; // Verde (Tranquilo)
-                        else if (percentual < 100) cor = 'var(--cor-alerta)'; // Laranja (Atenção)
-                        else cor = 'var(--cor-despesa)'; // Vermelho (Estourou)
+                        if (percentual < 75) cor = 'var(--cor-receita)';
+                        else if (percentual < 100) cor = 'var(--cor-alerta)';
+                        else cor = 'var(--cor-despesa)';
                     }
 
-                    // Monta o visual de cada meta
                     container.innerHTML += `
                         <div class="meta-item">
                             <div class="meta-header">

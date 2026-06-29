@@ -1,173 +1,214 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <title>LIMITE DE GASTOS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-    --cor-destaque: #2E8B57; /* Verde clássico da tela de login */
-    --texto-principal: #ffffff;
-    --texto-mutado: #b0bec5;
-    --borda: rgba(255, 255, 255, 0.15);
-}
+            --cor-destaque: #2E8B57;
+            --texto-principal: #ffffff;
+            --texto-mutado: #b0bec5;
+            --texto-mutated: #b0bec5;
+            --borda: rgba(255, 255, 255, 0.15);
+            --cor-receita: #10b981;
+            --cor-despesa: #ef4444;
+        }
 
-body {
-    font-family: 'Inter', sans-serif;
-    margin: 0;
-    padding: 20px;
-    /* Fundo Mármore com película escura */
-    background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('fundo-marmore.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    color: var(--texto-principal);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('fundo-marmore.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--texto-principal);
+            min-height: 100vh;
+        }
 
-/* Container para centralizar tudo */
-.cabecalho-container, .card {
-    width: 100%;
-    max-width: 800px;
-}
+        /* --- CABEÇALHO GBM (igual ao dashboard) --- */
+        .gbm-header {
+            background: transparent;
+            border-bottom: 1px solid var(--borda);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
+        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; }
+        .gbm-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            background: linear-gradient(90deg, #2E8B57 0%, #5fffa8 25%, #3d28ff 50%, #655aff 75%, #2E8B57 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            animation: gbm-shine 4s linear infinite;
+        }
+        @keyframes gbm-shine {
+            0%   { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
 
-/* Estilos do Cabeçalho e Logo */
-.cabecalho {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
+        .btn-voltar {
+            text-decoration: none;
+            color: var(--texto-principal);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: #0f1a2b;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(95, 255, 168, 0.25);
+            transition: 0.3s;
+        }
+        .btn-voltar:hover {
+            border-color: #5fffa8;
+            box-shadow: 0 0 14px rgba(95, 255, 168, 0.3);
+        }
 
-.logo-gbm {
-    height: 70px;
-    filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.6));
-}
+        /* Conteúdo */
+        .page-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-.titulo-pagina {
-    text-align: center;
-    font-size: 1.8rem;
-    margin-top: 0;
-    margin-bottom: 30px;
-    color: var(--texto-principal);
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-}
+        .titulo-pagina {
+            font-family: 'Rajdhani', sans-serif;
+            text-align: center;
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin: 10px 0 25px 0;
+            color: var(--texto-principal);
+        }
 
-.btn-voltar {
-    text-decoration: none;
-    color: var(--texto-principal);
-    font-weight: bold;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--borda);
-    transition: 0.3s;
-}
+        /* --- CARD MODERNO (sólido escuro + borda neon) --- */
+        .card {
+            background: #0f1a2b;
+            border: 1px solid rgba(95, 255, 168, 0.22);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(95, 255, 168, 0.05) inset;
+            padding: 25px 30px;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.25s ease;
+        }
+        .card:hover {
+            border-color: rgba(95, 255, 168, 0.45);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55), 0 0 14px rgba(95, 255, 168, 0.12);
+        }
 
-.btn-voltar:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
+        .card h2 {
+            margin-top: 0;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--borda);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
 
-/* O Painel Central (Efeito Glassmorphism) */
-.card {
-    background: rgba(30, 34, 40, 0.65);
-    backdrop-filter: blur(12px); /* Desfoque do fundo */
-    padding: 30px;
-    border-radius: 16px;
-    border: 1px solid var(--borda);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
+        /* Botão de ação */
+        .btn-acao {
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: var(--cor-destaque);
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: 0.2s;
+        }
+        .btn-acao:hover {
+            background: #246e45;
+            transform: translateY(-2px);
+        }
 
-.card h2 {
-    margin-top: 0;
-    font-size: 1.4rem;
-    border-bottom: 1px solid var(--borda);
-    padding-bottom: 15px;
-    margin-bottom: 25px;
-    text-align: center;
-}
+        /* Itens do editor */
+        #editor-container div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        #editor-container span {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
 
-/* Personalização dos botões de salvar para o Verde GBM */
-.btn-acao {
-    padding: 10px 20px;
-    border-radius: 8px;
-    background: var(--cor-destaque);
-    color: white;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    transition: 0.2s;
-}
+        /* Inputs e slider */
+        #editor-container input[type="number"],
+        #editor-container input[type="text"] {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--borda);
+            color: var(--texto-principal);
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            width: 100px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        #editor-container input[type="number"]:focus,
+        #editor-container input[type="text"]:focus {
+            border-color: var(--cor-destaque);
+            box-shadow: 0 0 10px rgba(46, 139, 87, 0.4);
+        }
+        #editor-container input[type="range"] {
+            accent-color: var(--cor-destaque);
+            cursor: pointer;
+            margin: 0 15px;
+        }
 
-.btn-acao:hover {
-    background: #246e45; /* Verde mais escuro ao passar o rato */
-    transform: translateY(-2px);
-}
-
-/* Textos da lista do editor */
-#editor-container div {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-#editor-container span {
-    font-size: 1.1rem;
-    font-weight: 500;
-}
-/* =========================================
-   ESTILIZAÇÃO DO INPUT E DO SLIDER
-   ========================================= */
-#editor-container input[type="number"], 
-#editor-container input[type="text"] {
-    background: rgba(15, 23, 42, 0.6); /* Fundo escuro translúcido */
-    border: 1px solid var(--borda);
-    color: var(--texto-principal);
-    font-family: 'Inter', sans-serif;
-    font-size: 1.1rem;
-    padding: 8px 12px;
-    border-radius: 8px;
-    width: 100px;
-    text-align: center;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-/* Efeito ao clicar dentro da caixinha */
-#editor-container input[type="number"]:focus, 
-#editor-container input[type="text"]:focus {
-    border-color: var(--cor-destaque);
-    box-shadow: 0 0 10px rgba(46, 139, 87, 0.4);
-}
-
-/* Muda a cor azul do slider para o verde GBM */
-#editor-container input[type="range"] {
-    accent-color: var(--cor-destaque);
-    cursor: pointer;
-    margin: 0 15px;
-}
+        @media (max-width: 768px) {
+            .gbm-title { display: none; }
+            .gbm-logo-img { height: 40px; }
+            .card { padding: 18px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="cabecalho-container">
-    <div class="cabecalho">
-        <a href="dashboard.html" class="btn-voltar">← Voltar</a>
-        <img src="logo-transparente.jpg" alt="Logo GBM" class="logo-gbm">
-        <div style="width: 70px;"></div> <!-- Espaçador invisível para manter o logo no centro exato -->
+<!-- CABEÇALHO GBM -->
+<header class="gbm-header">
+    <div class="gbm-logo-container">
+        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
+        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
     </div>
+    <a href="dashboard.html" class="btn-voltar">← Voltar</a>
+</header>
+
+<div class="page-wrapper">
     <h1 class="titulo-pagina">Atenção ao Limite ⚠️</h1>
-</div>
-<div class="card">
+
+    <div class="card">
         <h2>Personalize o Limite e Quando Devemos Avisar</h2>
-        <div id="editor-container">
-            </div>
+        <div id="editor-container"></div>
     </div>
+</div>
 
     <script>
         async function carregarEditor() {
@@ -177,26 +218,26 @@ body {
             container.innerHTML = '';
 
             metas.forEach(m => {
-                const catId = m.categoria.replace(/\s+/g, '-'); 
+                const catId = m.categoria.replace(/\s+/g, '-');
                 const valorAtual = m.percentual_alerta || 80;
 
                 container.innerHTML += `
                     <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px; flex-wrap: wrap;">
                         <span style="flex:1; min-width: 120px;">${m.categoria}</span>
-                        
+
                         <div style="position: relative;">
                             <span style="position: absolute; left: 10px; top: 10px; color: var(--texto-mutated);">R$</span>
                             <input type="number" id="limite-${catId}" value="${m.limite}" style="padding-left: 35px; width: 85px;" placeholder="0,00">
                         </div>
-                        
+
                         <div style="display: flex; align-items: center; gap: 5px;">
                             <button onclick="ajustarSlider('${catId}', -10)" style="background:transparent; border:none; color:var(--texto-mutated); cursor:pointer; font-size:1.2rem; padding: 0 5px;">◄</button>
-                            
-                            <input type="range" id="alerta-${catId}" value="${valorAtual}" min="10" max="100" step="10" 
+
+                            <input type="range" id="alerta-${catId}" value="${valorAtual}" min="10" max="100" step="10"
                                 oninput="document.getElementById('display-${catId}').innerText = this.value + '%'">
-                                
+
                             <button onclick="ajustarSlider('${catId}', 10)" style="background:transparent; border:none; color:var(--texto-mutated); cursor:pointer; font-size:1.2rem; padding: 0 5px;">►</button>
-                            
+
                             <span id="display-${catId}" style="width: 45px; font-weight: bold; color: var(--cor-destaque); text-align: right;">${valorAtual}%</span>
                         </div>
 
@@ -205,15 +246,12 @@ body {
                 `;
             });
         }
-        // Função para fazer as setas moverem a barra de 10 em 10
+
         function ajustarSlider(catId, mudanca) {
             const slider = document.getElementById(`alerta-${catId}`);
             let novoValor = parseInt(slider.value) + mudanca;
-            
-            // Impede que a barra ultrapasse os 100% ou caia abaixo de 10%
             if (novoValor > 100) novoValor = 100;
             if (novoValor < 10) novoValor = 10;
-            
             slider.value = novoValor;
             document.getElementById(`display-${catId}`).innerText = novoValor + '%';
         }
@@ -221,7 +259,7 @@ body {
         async function salvarAlteracao(categoriaOriginal, catId) {
             const valor_limite = document.getElementById(`limite-${catId}`).value;
             const percentual_alerta = document.getElementById(`alerta-${catId}`).value;
-            
+
             await fetch('/atualizar-meta-alerta', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -231,72 +269,6 @@ body {
         }
 
         carregarEditor();
-        // Sincroniza o tema escuro se o usuário tiver ativado no painel principal
-        if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-theme');
-
-        async function carregarPreferencias() {
-            const res = await fetch('/configuracoes-alerta');
-            const data = await res.json();
-            document.getElementById('range-percentual').value = data.percentual_alerta;
-            atualizarDisplay();
-        }
-
-        function atualizarDisplay() {
-            const val = document.getElementById('range-percentual').value;
-            document.getElementById('valor-percentual').innerText = val + '%';
-        }
-
-        async function salvarPreferencias() {
-            const percentual = document.getElementById('range-percentual').value;
-            await fetch('/configuracoes-alerta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ percentual })
-            });
-        }
-
-        async function carregarAlertas() {
-            const res = await fetch('/alertas');
-            const alertas = await res.json();
-            const container = document.getElementById('lista-alertas');
-            container.innerHTML = '';
-
-            if (alertas.length === 0) {
-                container.innerHTML = '<p style="color: var(--texto-mutated); text-align: center;">Tudo tranquilo! Nenhum limite estourado recentemente.</p>';
-                return;
-            }
-
-            alertas.forEach(alerta => {
-                const dataFormatada = new Date(alerta.data_criacao).toLocaleString('pt-BR');
-                const div = document.createElement('div');
-                div.className = `alerta-item ${alerta.lida ? 'lida' : ''}`;
-                
-                let btnHtml = alerta.lida 
-                    ? `<span style="font-size: 0.8rem; color: var(--texto-mutated);">Visto</span>` 
-                    : `<button class="btn-acao btn-lida" onclick="marcarComoLida(${alerta.id})">✔ Marcar Lida</button>`;
-
-                div.innerHTML = `
-                    <div>
-                        <div class="alerta-texto">${alerta.mensagem}</div>
-                        <div class="alerta-data">${dataFormatada}</div>
-                    </div>
-                    <div>${btnHtml}</div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        async function marcarComoLida(id) {
-            await fetch('/alertas/marcar-lida', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            });
-            carregarAlertas(); // Recarrega a lista
-        }
-
-        carregarPreferencias();
-        carregarAlertas();
     </script>
 </body>
 </html>
