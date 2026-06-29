@@ -172,7 +172,7 @@
         <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
         <h1 class="gbm-title">Guardian Of Budget & Money</h1>
     </div>
-    <a href="dashboard.html" class="btn-voltar">← Voltar</a>
+    <a href="dashboard.html" class="btn-voltar">Voltar</a>
 </header>
 
 <div class="page-wrapper">
@@ -184,7 +184,69 @@
 </div>
 
     <script>
-       carregarMetas
+       async function carregarMetas() {
+            try {
+                const res = await fetch('/metas-resumo');
+                const json = await res.json();
+
+                let metas = json.data ? json.data : (Array.isArray(json) ? json : []);
+                
+                const despesasPadrao = ["Alimentação", "Habitação", "Transporte", "Eletricidade / Luz", "Telecomunicações / Internet", "Pagamento de Fatura", "Pagamento de Boleto", "Streaming de Vídeo", "Streaming de Música", "Academia e Fitness", "Saúde", "Educação", "Supermercado", "Restaurantes", "Salário", "Lazer", "Outros"];
+
+                // FILTRO MÁGICO INVERSO: Mantém apenas o que NÃO está na lista padrão
+                metas = metas.filter(m => m.categoria && !despesasPadrao.includes(m.categoria));
+
+                const container = document.getElementById('lista-metas');
+                
+                if (metas.length === 0) {
+                    container.innerHTML = '<h2>Minhas Metas</h2><p style="color: var(--texto-mutated);">Nenhuma meta de economia definida ainda. Vá ao Dashboard e crie um Objetivo!</p>';
+                    return;
+                }
+
+                // Usamos uma variável para construir o HTML e injetar tudo de uma vez
+                let html = '<h2>Acompanhamento de Metas 🎯</h2>';
+
+                metas.forEach(m => {
+                    const limite = parseFloat(String(m.limite || 0).replace(/[R$\s+\-]/g, ''));
+                    const gasto = parseFloat(String(m.gasto || 0).replace(/[R$\s+\-]/g, ''));
+
+                    let percentual = limite > 0 ? (gasto / limite) * 100 : 0;
+                    const larguraBarra = Math.min(percentual, 100);
+
+                    let cor = '';
+                    const badge = '<span class="badge" style="background: var(--cor-poupanca);">Objetivo 🎯</span>';
+
+                    if (percentual < 50) cor = 'var(--cor-alerta)';
+                    else if (percentual < 100) cor = '#3b82f6';
+                    else cor = 'var(--cor-receita)';
+
+                    html += `
+                        <div class="meta-item">
+                            <div class="meta-header">
+                                <div>
+                                    <strong>${m.categoria}</strong>
+                                    ${badge}
+                                </div>
+                                <strong style="color: ${cor};">${percentual.toFixed(1)}%</strong>
+                            </div>
+                            <div class="barra-container">
+                                <div class="barra-progresso" style="width: ${larguraBarra}%; background: ${cor};"></div>
+                            </div>
+                            <div class="meta-footer">
+                                <span>R$ ${gasto.toFixed(2)} de R$ ${limite.toFixed(2)}</span>
+                                <span>Guardado</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error("Erro Fatal:", error);
+                document.getElementById('lista-metas').innerHTML = '<h2 style="color: #ff4d4d;">Erro de Sistema</h2><p style="color: var(--texto-mutated);">Ocorreu uma falha ao processar os dados. Verifique a conexão.</p>';
+            }
+        }
         carregarMetas();
     </script>
 </body>
