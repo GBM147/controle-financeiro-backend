@@ -184,21 +184,21 @@
 </div>
 
     <script>
-        async function carregarMetas() {
+       async function carregarMetas() {
             try {
                 const res = await fetch('/metas-resumo');
                 const json = await res.json();
 
                 let metas = json.data ? json.data : (Array.isArray(json) ? json : []);
-                metas = metas.filter(m => m.categoria === 'Savings' || m.categoria === 'Poupança');
+                // O antigo filtro que escondia as despesas foi APAGADO aqui!
 
                 const container = document.getElementById('lista-metas');
                 if (metas.length === 0) {
-                    container.innerHTML = '<h2>Suas Metas Ativas</h2><p style="color: var(--texto-mutated);">Nenhum orçamento definido ainda. Vá ao Dashboard e crie um!</p>';
+                    container.innerHTML = '<h2>Seu Acompanhamento</h2><p style="color: var(--texto-mutated);">Nenhum limite ou meta definido ainda. Vá ao Dashboard e crie um!</p>';
                     return;
                 }
 
-                container.innerHTML = '<h2>Suas Metas Ativas</h2>';
+                container.innerHTML = '<h2>Acompanhamento de Metas & Limites</h2>';
 
                 metas.forEach(m => {
                     const limite = parseFloat(String(m.limite || 0).replace(/[R$\s+\-]/g, ''));
@@ -210,16 +210,23 @@
                     let cor = '';
                     let badge = '';
 
-                    if (m.categoria === 'Savings' || m.categoria === 'Poupança') {
-                        badge = '<span class="badge" style="background: var(--cor-poupanca);">Objetivo</span>';
-                        if (percentual < 50) cor = 'var(--cor-alerta)';
-                        else if (percentual < 100) cor = '#3b82f6';
-                        else cor = 'var(--cor-receita)';
+                    // Lista de categorias do seu Dashboard
+                    const despesasPadrao = ["Alimentação", "Habitação", "Transporte", "Eletricidade / Luz", "Telecomunicações / Internet", "Pagamento de Fatura", "Pagamento de Boleto", "Streaming de Vídeo", "Streaming de Música", "Academia e Fitness", "Saúde", "Educação", "Supermercado", "Restaurantes", "Salário", "Lazer", "Outros"];
+
+                    // LÓGICA MÁGICA: Se o nome estiver na lista acima, ele pinta como "Limite Mensal". 
+                    // Se você digitou um nome novo (ex: Viagem, Carro Novo), ele assume que é "Objetivo" e pinta de roxo!
+                    if (!despesasPadrao.includes(m.categoria)) {
+                        badge = '<span class="badge" style="background: var(--cor-poupanca);">Objetivo 🎯</span>';
+                        // Para objetivos, verde é bom (atingiu a meta)
+                        if (percentual < 50) cor = 'var(--cor-alerta)'; // Longe da meta
+                        else if (percentual < 100) cor = '#3b82f6'; // Quase lá
+                        else cor = 'var(--cor-receita)'; // Alcançou (Verde)
                     } else {
-                        badge = '<span class="badge" style="background: var(--texto-mutated);">Limite</span>';
-                        if (percentual < 75) cor = 'var(--cor-receita)';
-                        else if (percentual < 100) cor = 'var(--cor-alerta)';
-                        else cor = 'var(--cor-despesa)';
+                        badge = '<span class="badge" style="background: var(--texto-mutated);">Limite 🛑</span>';
+                        // Para limites, vermelho é mau (estourou)
+                        if (percentual < 75) cor = 'var(--cor-receita)'; // Gasto normal (Verde)
+                        else if (percentual < 100) cor = 'var(--cor-alerta)'; // Perigo (Laranja)
+                        else cor = 'var(--cor-despesa)'; // Estourou (Vermelho)
                     }
 
                     container.innerHTML += `
@@ -236,7 +243,7 @@
                             </div>
                             <div class="meta-footer">
                                 <span>R$ ${gasto.toFixed(2)} de R$ ${limite.toFixed(2)}</span>
-                                <span>${m.categoria === 'Savings' || m.categoria === 'Poupança' ? 'Guardado' : 'Gasto'}</span>
+                                <span>${!despesasPadrao.includes(m.categoria) ? 'Guardado' : 'Gasto'}</span>
                             </div>
                         </div>
                     `;
@@ -247,7 +254,6 @@
                 document.getElementById('lista-metas').innerHTML = '<p>Erro de comunicação com o servidor.</p>';
             }
         }
-
         carregarMetas();
     </script>
 </body>

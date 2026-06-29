@@ -456,6 +456,12 @@
             <input type="number" id="meta-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
             <button class="btn-acao" onclick="salvarMeta()">Gravar</button>
             <button class="btn-acao" onclick="removerMeta()" style="background: var(--texto-mutated);" title="Remover limite desta categoria">Sem Limite</button>
+        <div class="grupo-ajuste">
+        <label>Nova Meta</label>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança..." style="width: 160px;">
+            <input type="number" id="objetivo-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
+            <button class="btn-acao" onclick="salvarObjetivo()" style="background: #8b5cf6;">Adicionar Meta</button>
         </div>
     </div>
     </div>
@@ -932,6 +938,25 @@ async function salvarCorrecao(transacaoId, descricao) {
         btn.disabled = false;
     }
 }
+async function salvarObjetivo() {
+            const categoria = document.getElementById('objetivo-nome').value.trim();
+            const valor = document.getElementById('objetivo-valor').value;
+            
+            if (!categoria || !valor) return alert("Por favor, digite o nome da sua Meta (ex: Viagem) e o valor.");
+            
+            try {
+                // Reaproveitamos a API de metas que já existe e funciona perfeitamente!
+                await fetch('/metas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categoria, valor_limite: parseFloat(valor) })
+                });
+                document.getElementById('objetivo-nome').value = '';
+                document.getElementById('objetivo-valor').value = '';
+                carregarDados();
+                alert("Meta criada com sucesso! Acesse o menu lateral 'Metas' para acompanhar o seu progresso.");
+            } catch (error) { alert("Erro ao criar a meta."); }
+        }
 
 function fecharModalTransacoes() {
     document.getElementById('modal-transacoes').style.display = 'none';
