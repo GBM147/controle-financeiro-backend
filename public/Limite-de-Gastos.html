@@ -213,7 +213,14 @@
     <script>
         async function carregarEditor() {
             const res = await fetch('/metas-resumo');
-            const metas = await res.json();
+            let metas = await res.json();
+            
+            // A nossa lista oficial de limites (despesas)
+            const despesasPadrao = ["Alimentação", "Habitação", "Transporte", "Eletricidade / Luz", "Telecomunicações / Internet", "Pagamento de Fatura", "Pagamento de Boleto", "Streaming de Vídeo", "Streaming de Música", "Academia e Fitness", "Saúde", "Educação", "Supermercado", "Restaurantes", "Salário", "Lazer", "Outros"];
+
+            // FILTRO MÁGICO: Mantém APENAS o que está na lista de despesas padrão
+            metas = metas.filter(m => despesasPadrao.includes(m.categoria));
+
             const container = document.getElementById('editor-container');
             container.innerHTML = '';
 
@@ -234,7 +241,7 @@
                             <button onclick="ajustarSlider('${catId}', -10)" style="background:transparent; border:none; color:var(--texto-mutated); cursor:pointer; font-size:1.2rem; padding: 0 5px;">◄</button>
 
                             <input type="range" id="alerta-${catId}" value="${valorAtual}" min="10" max="100" step="10"
-                                oninput="document.getElementById('display-${catId}').innerText = this.value + '%'">
+                                oninput="document.getElementById('display-${catId}').innerText = this.value + '%' ">
 
                             <button onclick="ajustarSlider('${catId}', 10)" style="background:transparent; border:none; color:var(--texto-mutated); cursor:pointer; font-size:1.2rem; padding: 0 5px;">►</button>
 
