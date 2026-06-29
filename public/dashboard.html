@@ -458,7 +458,6 @@
             <button class="btn-acao" onclick="removerMeta()" style="background: var(--texto-mutated);" title="Remover limite desta categoria">Sem Limite</button>
         </div>
     </div>
-</div>
 <div class="painel-ajustes" style="max-width: 260px;">
     <div class="grupo-ajuste">
         <label for="select-tipo">Exibição de Dados</label>
@@ -760,8 +759,8 @@ const categorias = [
                 });
                 document.getElementById('meta-valor').value = '';
                 carregarDados();
-                alert("Meta salva com sucesso!");
-            } catch (error) { alert("Erro ao salvar o orçamento."); }
+                alert("Limite salvo com sucesso!");
+            } catch (error) { alert("Erro ao salvar o limite."); }
         }
 
         async function removerMeta() {
@@ -775,7 +774,7 @@ const categorias = [
                 });
                 document.getElementById('meta-valor').value = '';
                 carregarDados();
-                alert("Meta removida!");
+                alert("Limite removido!");
             } catch (error) { alert("Erro ao remover o limite."); }
         }
         function aplicarCoresFinanceiras() {
