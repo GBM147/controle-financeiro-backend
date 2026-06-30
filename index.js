@@ -316,8 +316,8 @@ app.post('/enviar-codigo', async (req, res) => {
                 return res.status(500).json({ success: false, message: 'Falha no provedor de e-mail.' });
             }
             res.json({ success: true, message: 'Código enviado com sucesso!' });
-        } else if (canal === 'whatsapp') {
-            res.json({ success: false, message: 'Integração com WhatsApp aguardando lançamento.' });
+        } else {
+            res.status(400).json({ success: false, message: 'Canal de verificação inválido.' });
         }
     } catch (erro) {
         console.error("Erro crítico no envio do código:", erro);
@@ -566,6 +566,88 @@ app.post('/validar-codigo', (req, res) => {
             res.status(400).json({ success: false, message: 'Código de verificação incorreto.' });
         }
     });
+});
+// --- ROTA: SOLICITAR RECUPERAÇÃO DE SENHA ---
+app.post('/esqueci-senha', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const [rows] = await db.promise().query("SELECT id, nome FROM usuarios WHERE email = ?", [email]);
+
+        // Resposta genérica mesmo se o e-mail não existir (evita expor quais e-mails estão cadastrados)
+        if (rows.length === 0) {
+            return res.json({ success: true, message: 'Se o e-mail existir, enviaremos um código.' });
+        }
+
+        const usuario = rows[0];
+        const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+        const expira = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+
+        await db.promise().query(
+            "UPDATE usuarios SET token_verificacao = ?, token_expira_em = ? WHERE id = ?",
+            [codigo, expira, usuario.id]
+        );
+
+        const { error } = await resend.emails.send({
+            from: 'GBM Financeiro <onboarding@resend.dev>',
+            to: email.toLowerCase().trim(),
+            subject: 'GBM - Recuperação de Senha',
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
+                    <h2 style="color: #c89f53;">Guardian of Budget & Money</h2>
+                    <p>Olá, ${usuario.nome}. Use o código abaixo para redefinir sua senha:</p>
+                    <h1 style="letter-spacing: 5px; color: #10b981; background: #111c2e; padding: 15px; border-radius: 8px; display: inline-block;">
+                        ${codigo}
+                    </h1>
+                    <p style="color: #8a9ba8; font-size: 12px;">Expira em 15 minutos. Se não foi você, ignore este e-mail.</p>
+                </div>
+            `
+        });
+
+        if (error) {
+            console.error("Erro da API Resend:", error);
+            return res.status(500).json({ success: false, message: 'Falha ao enviar e-mail.' });
+        }
+
+        res.json({ success: true, message: 'Se o e-mail existir, enviaremos um código.' });
+    } catch (erro) {
+        console.error("Erro ao solicitar recuperação:", erro);
+        res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
+    }
+});
+
+// --- ROTA: REDEFINIR SENHA COM O CÓDIGO ---
+app.post('/redefinir-senha', async (req, res) => {
+    const { email, codigo, novaSenha } = req.body;
+    try {
+        const [rows] = await db.promise().query(
+            "SELECT id, token_verificacao, token_expira_em FROM usuarios WHERE email = ?",
+            [email]
+        );
+
+        if (rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'Código inválido ou expirado.' });
+        }
+
+        const usuario = rows[0];
+        const expirado = !usuario.token_expira_em || new Date(usuario.token_expira_em) < new Date();
+
+        if (usuario.token_verificacao !== codigo || expirado) {
+            return res.status(400).json({ success: false, message: 'Código inválido ou expirado.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const novaSenhaHash = await bcrypt.hash(novaSenha, salt);
+
+        await db.promise().query(
+            "UPDATE usuarios SET senha_hash = ?, token_verificacao = NULL, token_expira_em = NULL WHERE id = ?",
+            [novaSenhaHash, usuario.id]
+        );
+
+        res.json({ success: true, message: 'Senha redefinida com sucesso!' });
+    } catch (erro) {
+        console.error("Erro ao redefinir senha:", erro);
+        res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
+    }
 });
 // --- ROTA PARA DESFAZER O ÚLTIMO LANÇAMENTO (VERSÃO CORRIGIDA) ---
 app.delete('/desfazer-ultimo', (req, res) => {

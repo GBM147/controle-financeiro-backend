@@ -152,6 +152,9 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
         <div class="toggle-link">
             Ainda não tem conta? <span onclick="alternarForms('cadastro')">Criar uma agora</span>
         </div>
+        <div class="toggle-link">
+            <span onclick="mostrarRecuperacao()">Esqueceu sua senha?</span>
+        </div>
     </div>
     <div id="form-cadastro" style="display: none;">
         <div style="text-align: center; margin-bottom: 15px;">
@@ -197,10 +200,9 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
     </div>
 
     <div id="form-escolha-validacao" style="display: none; text-align: center;">
-        <h2 style="color: white; margin-bottom: 20px;">Como deseja validar?</h2>
-        <p style="color: #ccc; margin-bottom: 20px;">Enviaremos um código de 6 dígitos para o seu contato.</p>
-        <button class="btn-submit" onclick="enviarCodigo('email')" style="margin-bottom: 10px;">📧 Receber por E-mail</button>
-        <button class="btn-submit" onclick="enviarCodigo('whatsapp')" style="background: #25d366;">📱 Receber por WhatsApp</button>
+        <h2 style="color: white; margin-bottom: 20px;">Verificação por E-mail</h2>
+        <p style="color: #ccc; margin-bottom: 20px;">Enviaremos um código de 6 dígitos para o seu e-mail.</p>
+        <button class="btn-submit" onclick="enviarCodigo('email')" style="margin-bottom: 10px;">📧 Receber Código por E-mail</button>
         <input type="hidden" id="temp-user-id">
     </div>
 
@@ -212,7 +214,35 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
         </div>
         <button class="btn-submit" onclick="verificarCodigo()">Validar Agora</button>
         
-    </div> </div>
+    </div>
+
+    <div id="form-esqueci-senha" style="display: none; text-align: center;">
+        <h2 style="color: white; margin-bottom: 10px;">Recuperar Senha</h2>
+        <p style="color: #ccc; margin-bottom: 15px;">Informe seu e-mail cadastrado:</p>
+        <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" id="recuperar-email" placeholder="joao@email.com">
+        </div>
+        <button class="btn-submit" onclick="solicitarRecuperacao()">Enviar Código</button>
+        <div class="toggle-link">
+            <span onclick="alternarForms('login')">Voltar ao login</span>
+        </div>
+    </div>
+
+    <div id="form-redefinir-senha" style="display: none; text-align: center;">
+        <h2 style="color: white; margin-bottom: 10px;">Nova Senha</h2>
+        <p style="color: #ccc; margin-bottom: 15px;">Insira o código recebido e a nova senha:</p>
+        <input type="hidden" id="temp-recuperar-email">
+        <div class="form-group">
+            <input type="text" id="redefinir-codigo" placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; font-weight: bold;">
+        </div>
+        <div class="form-group">
+            <label>Nova Senha</label>
+            <input type="password" id="redefinir-senha-nova" placeholder="Mínimo 8 caracteres">
+        </div>
+        <button class="btn-submit" onclick="redefinirSenha()">Salvar Nova Senha</button>
+    </div>
+    </div>
 
 
     <script>
@@ -401,6 +431,66 @@ async function verificarCodigo() {
         alert("Falha na comunicação com o servidor.");
     }
     
+}
+function mostrarRecuperacao() {
+    document.getElementById('form-login').style.display = 'none';
+    document.getElementById('form-esqueci-senha').style.display = 'block';
+}
+
+async function solicitarRecuperacao() {
+    const email = document.getElementById('recuperar-email').value.trim();
+    if (!email) {
+        return alert("Digite seu e-mail.");
+    }
+    try {
+        const resposta = await fetch('/esqueci-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const json = await resposta.json();
+        if (json.success) {
+            document.getElementById('temp-recuperar-email').value = email;
+            document.getElementById('form-esqueci-senha').style.display = 'none';
+            document.getElementById('form-redefinir-senha').style.display = 'block';
+            alert("Se o e-mail existir, um código foi enviado.");
+        } else {
+            alert("Erro: " + json.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Falha na comunicação com o servidor.");
+    }
+}
+
+async function redefinirSenha() {
+    const email = document.getElementById('temp-recuperar-email').value;
+    const codigo = document.getElementById('redefinir-codigo').value.trim();
+    const novaSenha = document.getElementById('redefinir-senha-nova').value;
+
+    const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!regexSenha.test(novaSenha)) {
+        return alert("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.");
+    }
+
+    try {
+        const resposta = await fetch('/redefinir-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, codigo, novaSenha })
+        });
+        const json = await resposta.json();
+        if (json.success) {
+            alert("Senha redefinida com sucesso! Faça login.");
+            document.getElementById('form-redefinir-senha').style.display = 'none';
+            document.getElementById('form-login').style.display = 'block';
+        } else {
+            alert("Erro: " + json.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Falha na comunicação com o servidor.");
+    }
 }
     </script>
 </body>
