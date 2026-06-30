@@ -249,8 +249,6 @@
 </header>
 
 <div class="page-wrapper">
-    <h1 class="titulo-pagina">Atenção ao Limite ⚠️</h1>
-
     <div class="card">
         <h2>Definir ou Ajustar Limite</h2>
         
@@ -272,6 +270,10 @@
 
             <div style="display: flex; align-items: center; gap: 10px; flex: 2; min-width: 180px;">
                 <span style="font-size: 0.9rem; color: var(--texto-mutado);">Avisar em:</span>
+                <input type="range" id="nova-meta-alerta" value="80" min="10" max="100" step="10" oninput="document.getElementById('display-novo-alerta').innerText = this.value + '%'" style="flex: 1; accent-color: var(--cor-destaque);">
+                <span id="display-novo-alerta" style="font-weight: bold; color: var(--cor-destaque); width: 45px;">80%</span>
+            </div>
+
             <button onclick="salvarNovoLimite()" class="btn-acao" style="flex: 1; min-width: 130px;">Gravar</button>
         </div>
 
@@ -331,8 +333,18 @@
                                 <span>R$ ${gasto.toFixed(2)} de R$ ${limite.toFixed(2)}</span>
                                 <span>Gasto</span>
                             </div>
+
+                            <div style="display:flex; gap:10px; align-items:center; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                                <div style="position: relative;">
+                                    <span style="position: absolute; left: 10px; top: 10px; color: var(--texto-mutated);">R$</span>
+                                    <input type="number" id="limite-${catId}" value="${limite}" style="padding-left: 35px; width: 85px;" placeholder="0,00">
                                 </div>
+
+                                <div style="display: flex; align-items: center; gap: 5px; flex: 1; min-width: 180px;">
+                                    <span style="font-size: 0.85rem; color: var(--texto-mutado);">Aviso em:</span>
                                     <input type="range" id="alerta-${catId}" value="${valorAtual}" min="10" max="100" step="10"
+                                        oninput="document.getElementById('display-${catId}').innerText = this.value + '%'">
+                                    <span id="display-${catId}" style="width: 45px; font-weight: bold; color: var(--cor-destaque); text-align: right;">${valorAtual}%</span>
                                 </div>
 
                                 <button onclick="salvarAlteracao('${m.categoria}', '${catId}')" class="btn-acao">Salvar</button>
