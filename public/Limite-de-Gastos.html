@@ -144,18 +144,17 @@
             transform: translateY(-2px);
         }
 
-        /* Itens do editor */
-        #editor-container div {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        #editor-container span {
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
+.controles-edicao {
+    display: flex; 
+    gap: 10px; 
+    align-items: center; 
+    flex-wrap: wrap; 
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
 
         /* Inputs e slider */
         #editor-container input[type="number"],
@@ -329,14 +328,14 @@
                             <div class="barra-container">
                                 <div class="barra-progresso" style="width: ${larguraBarra}%; background: ${cor};"></div>
                             </div>
-                            <div class="meta-footer" style="margin-bottom: 20px;">
+                            <div class="meta-footer">
                                 <span>R$ ${gasto.toFixed(2)} de R$ ${limite.toFixed(2)}</span>
                                 <span>Gasto</span>
                             </div>
 
-                            <div style="display:flex; gap:10px; align-items:center; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                            <div class="controles-edicao">
                                 <div style="position: relative;">
-                                    <span style="position: absolute; left: 10px; top: 10px; color: var(--texto-mutated);">R$</span>
+                                    <span style="position: absolute; left: 10px; top: 10px; color: var(--texto-mutated); font-size: 1.1rem; font-weight: 500;">R$</span>
                                     <input type="number" id="limite-${catId}" value="${limite}" style="padding-left: 35px; width: 85px;" placeholder="0,00">
                                 </div>
 
@@ -344,7 +343,7 @@
                                     <span style="font-size: 0.85rem; color: var(--texto-mutado);">Aviso em:</span>
                                     <input type="range" id="alerta-${catId}" value="${valorAtual}" min="10" max="100" step="10"
                                         oninput="document.getElementById('display-${catId}').innerText = this.value + '%'">
-                                    <span id="display-${catId}" style="width: 45px; font-weight: bold; color: var(--cor-destaque); text-align: right;">${valorAtual}%</span>
+                                    <span id="display-${catId}" style="width: 45px; font-weight: bold; color: var(--cor-destaque); text-align: right; font-size: 1.1rem;">${valorAtual}%</span>
                                 </div>
 
                                 <button onclick="salvarAlteracao('${m.categoria}', '${catId}')" class="btn-acao">Salvar</button>
