@@ -156,9 +156,12 @@ const [regrasUsuario] = await db.promise().query(
         let duplicadas = 0;
         // 4. Varre cada linha do extrato bancário
         for (const tx of transacoesOfx) {
-            if (!tx.FITID) continue; // Pula linhas inválidas sem ID bancário
-            const transacaoIdBancario = tx.FITID;
-            const descricao = tx.MEMO || tx.NAME || 'Transação Eletrónica';
+    const descricao = tx.MEMO || tx.NAME || 'Transação Eletrónica';
+    let transacaoIdBancario = tx.FITID;
+    if (!transacaoIdBancario || transacaoIdBancario === '000000') {
+        const chaveUnica = `${contaInternaId}-${tx.DTPOSTED}-${tx.TRNAMT}-${descricao}`;
+        transacaoIdBancario = crypto.createHash('md5').update(chaveUnica).digest('hex');
+    }
             
             // --- A MÁGICA DA CONVERSÃO ENTRA AQUI ---
             const valorOriginal = parseFloat(tx.TRNAMT);
