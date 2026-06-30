@@ -45,17 +45,18 @@
             z-index: 10;
         }
         .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
-        .gbm-logo-img {
-    height: 50px;
-    width: auto;
-    border-radius: 8px;
-    display: inline-block;
-    transform-origin: center center;
-    animation: spin 8s linear infinite;
+        .gbm-logo-img {    
+    height: 50px;    
+    width: auto;    
+    border-radius: 8px;    
+    display: inline-block;    
+    transform-origin: center center;    
+    animation: rolar 8s linear infinite; /* Nome da animação alterado */
 }
-@keyframes spin {
-    0%   { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+
+@keyframes rolar {
+    0% { transform: translateX(0px) rotate(0deg); }
+    100% { transform: translateX(200px) rotate(360deg); }
 }
 
         .gbm-title {

@@ -150,16 +150,18 @@
 }
 
         .gbm-menu-btn:hover { background: rgba(46, 139, 87, 0.4) !important; }
-        .gbm-menu-logo {
-    height: 20px !important;
-    width: auto !important;
-    border-radius: 4px;
-    display: inline-block;
-    transform-origin: center center;
-    transition: transform 0.8s ease-in-out;
+        .gbm-menu-logo {    
+    height: 50px;    
+    width: auto;    
+    border-radius: 8px;    
+    display: inline-block;    
+    transform-origin: center center;    
+    animation: rolar 8s linear infinite; /* Nome da animação alterado */
 }
-.gbm-menu-btn:hover .gbm-menu-logo {
-    transform: rotate(360deg);
+
+@keyframes rolar {
+    0% { transform: translateX(0px) rotate(0deg); }
+    100% { transform: translateX(200px) rotate(360deg); }
 }
 
         .hamburger-icon { font-size: 20px; }
