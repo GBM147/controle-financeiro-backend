@@ -46,7 +46,18 @@
 }
 
         .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
-        .gbm-logo-img { height: 50px !important; width: auto !important; border-radius: 8px; }
+        .gbm-logo-img {
+    height: 50px !important;
+    width: auto !important;
+    border-radius: 8px;
+    display: inline-block;
+    transform-origin: center center;
+    animation: spin 8s linear infinite;
+}
+@keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 .gbm-title {
     font-family: 'Rajdhani', sans-serif;
     font-size: 26px;
@@ -139,7 +150,14 @@
 }
 
         .gbm-menu-btn:hover { background: rgba(46, 139, 87, 0.4) !important; }
-        .gbm-menu-logo { height: 20px !important; width: auto !important; border-radius: 4px; }
+        .gbm-menu-logo {
+    height: 20px !important;
+    width: auto !important;
+    border-radius: 4px;
+    display: inline-block;
+    transform-origin: center center;
+    animation: spin 5s linear infinite;
+}
         .hamburger-icon { font-size: 20px; }
 
         /* --- MENU LATERAL (SIDEBAR TIPO GEMINI) --- */
