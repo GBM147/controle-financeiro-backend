@@ -333,12 +333,9 @@
                             </div>
 
                             <div class="controles-edicao" style="justify-content: flex-end; padding: 10px 15px;">
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <span style="font-size: 0.85rem; color: var(--texto-mutado);">Aviso configurado em:</span>
-                                    
-                                    <input type="range" value="${valorAtual}" min="10" max="100" step="10" disabled style="cursor: not-allowed; opacity: 0.8;">
-                                    
-                                    <span style="width: 45px; font-weight: bold; color: var(--cor-destaque); text-align: right; font-size: 1.1rem;">${valorAtual}%</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 0.9rem; color: var(--texto-mutado);">Aviso configurado em:</span>
+                                    <strong style="color: var(--cor-destaque); font-size: 1.1rem;">${valorAtual}%</strong>
                                 </div>
                             </div>
                         </div>
@@ -372,8 +369,8 @@
         }
 async function salvarNovoLimite() {
             const categoria = document.getElementById('nova-meta-cat').value;
-            const valor_limite = document.getElementById('nova-meta-valor').value;
-            const percentual_alerta = document.getElementById('nova-meta-alerta').value;
+            const valor_limite = parseFloat(document.getElementById('nova-meta-valor').value);
+            const percentual_alerta = parseInt(document.getElementById('nova-meta-alerta').value, 10);
 
             // Validação simples para não enviar campos vazios
             if (!categoria || !valor_limite) {
