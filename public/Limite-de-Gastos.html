@@ -370,7 +370,43 @@
             });
             alert("Regra gravada com sucesso!");
         }
+async function salvarNovoLimite() {
+            const categoria = document.getElementById('nova-meta-cat').value;
+            const valor_limite = document.getElementById('nova-meta-valor').value;
+            const percentual_alerta = document.getElementById('nova-meta-alerta').value;
 
+            // Validação simples para não enviar campos vazios
+            if (!categoria || !valor_limite) {
+                alert("Por favor, selecione uma categoria e insira um valor válido!");
+                return;
+            }
+
+            try {
+                const res = await fetch('/atualizar-meta-alerta', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ categoria, valor_limite, percentual_alerta })
+                });
+
+                if (res.ok) {
+                    alert("Novo limite gravado com sucesso!");
+                    
+                    // Limpa os campos do formulário após salvar
+                    document.getElementById('nova-meta-cat').value = "";
+                    document.getElementById('nova-meta-valor').value = "";
+                    document.getElementById('nova-meta-alerta').value = "80";
+                    document.getElementById('display-novo-alerta').innerText = "80%";
+                    
+                    // Atualiza a lista de visualização abaixo automaticamente
+                    carregarEditor();
+                } else {
+                    alert("Erro ao gravar o limite no servidor.");
+                }
+            } catch (error) {
+                console.error("Erro ao salvar:", error);
+                alert("Erro de conexão ao tentar salvar o limite.");
+            }
+        }
         carregarEditor();
     </script>
 </body>
