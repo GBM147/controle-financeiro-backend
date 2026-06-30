@@ -150,6 +150,8 @@
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(3px); /* Desfoca o site atrás do menu */
             z-index: 9998;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(8px);
         }
 
         .sidebar-menu {
@@ -158,13 +160,19 @@
             right: -320px; /* Começa escondido fora da tela à direita */
             width: 300px;
             height: 100vh;
-            background: #1a1f2b;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(20px) saturate(140%);
+            border-left: 1px solid var(--borda);
+            box-shadow: -10px 0 40px rgba(0,0,0,0.6);
+
             border-left: 1px solid var(--cor-destaque);
             box-shadow: -10px 0 30px rgba(0,0,0,0.8);
             z-index: 9999;
             transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Deslize ultra suave */
             display: flex;
             flex-direction: column;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+
         }
 
         /* A classe mágica que faz o menu entrar na tela */
@@ -198,11 +206,18 @@
         }
 
         .sidebar-content .menu-item {
-            padding: 16px 30px;
-            border-radius: 0;
-            border-left: 4px solid transparent;
-            font-size: 1.05rem;
-            
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 16px 28px;
+
+            background: linear-gradient(90deg, rgba(46,139,87,0.25), transparent);
+border-left: 4px solid var(--cor-destaque);
+color: #5fffa8;
+text-shadow: 0 0 8px rgba(95,255,168,0.5);
+
             /* Correções Visuais Blindadas */
             color: var(--texto-principal) !important; /* Força a letra a ficar branca */
             text-decoration: none !important; /* Remove o sublinhado azul feio */
