@@ -47,18 +47,18 @@
             z-index: 10;
         }
         .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
-        .gbm-logo-img {
+       .gbm-logo-img {
     height: 50px;
     width: auto;
     border-radius: 8px;
     display: inline-block;
     transform-origin: center center;
-    animation: spin 8s linear infinite;
+    transition: transform 0.8s ease-in-out;
 }
-@keyframes spin {
-    0%   { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.gbm-logo-img:hover {
+    transform: rotate(360deg);
 }
+
 
         .gbm-title {
             font-family: 'Rajdhani', sans-serif;
