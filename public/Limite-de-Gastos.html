@@ -336,12 +336,7 @@
                                 <span>Gasto</span>
                             </div>
                                 </div>
-
-                                <div style="display: flex; align-items: center; gap: 5px; flex: 1; min-width: 180px;">
-                                    <span style="font-size: 0.85rem; color: var(--texto-mutado);">Aviso em:</span>
                                     <input type="range" id="alerta-${catId}" value="${valorAtual}" min="10" max="100" step="10"
-                                        oninput="document.getElementById('display-${catId}').innerText = this.value + '%'">
-                                    <span id="display-${catId}" style="width: 45px; font-weight: bold; color: var(--cor-destaque); text-align: right;">${valorAtual}%</span>
                                 </div>
 
                                 <button onclick="salvarAlteracao('${m.categoria}', '${catId}')" class="btn-acao">Salvar</button>
