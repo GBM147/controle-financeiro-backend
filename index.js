@@ -17,7 +17,10 @@ const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro
 const resend = new Resend(process.env.RESEND_API_KEY);
 // Envio de e-mail via Gmail (Nodemailer)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    family: 4, // força IPv4 — o Render não roteia IPv6 de saída
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD
