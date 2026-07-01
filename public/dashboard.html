@@ -398,13 +398,14 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     </div>
     
     <!-- MENU EMBUTIDO -->
-    <div class="gbm-menu-container">
-        <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)">
-            <img src="logo-transparente.jpg" alt="GBM" class="gbm-menu-logo">
-            <span class="gbm-menu-text">GBM</span>
-            <span class="hamburger-icon">&#9776;</span>
-        </button>
-    </div>
+     <div class="gbm-menu-container">
+    <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" style="position:relative;">
+        <img src="logo-transparente.jpg" alt="GBM" class="gbm-menu-logo">
+        <span class="gbm-menu-text">GBM</span>
+        <span class="hamburger-icon">&#9776;</span>
+        <span id="dot-alertas" style="display:none; position:absolute; top:2px; right:2px; width:9px; height:9px; background:#ef4444; border-radius:50%; box-shadow:0 0 4px #ef4444;"></span>
+    </button>
+</div>
     <button id="btn-notificacoes" onclick="abrirPainelAlertas()" style="position:relative; background:none; border:none; cursor:pointer; margin-right:10px;">
     <span style="font-size:1.4rem;">🔔</span>
     <span id="badge-alertas" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; border-radius:50%; font-size:0.65rem; padding:2px 5px; font-weight:bold;">0</span>
@@ -417,6 +418,10 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         <button class="fechar-btn" onclick="fecharMenuLateral()">&times;</button>
     </div>
     <div class="sidebar-content">
+        <a href="#" id="item-notificacoes" class="menu-item" onclick="abrirPainelAlertas(); return false;">
+        🔔 Notificações <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.7rem; padding:2px 8px; margin-left:8px;">0</span>
+    </a>
+    <div class="divisor"></div>
         <a href="Limite-de-Gastos.html" class="menu-item">🚧 Limite de Gastos</a>
         <a href="relatorio.html" class="menu-item">📊 Relatório Mensal</a>
         <a href="metas.html" class="menu-item">🎯 Metas</a>
@@ -986,12 +991,17 @@ async function carregarAlertas() {
         const res = await fetch('/alertas');
         const alertas = await res.json();
         const naoLidos = alertas.filter(a => !a.lida);
-        const badge = document.getElementById('badge-alertas');
+
+        const dot = document.getElementById('dot-alertas');
+        const badgeMenu = document.getElementById('badge-alertas-menu');
+
         if (naoLidos.length > 0) {
-            badge.style.display = 'inline-block';
-            badge.innerText = naoLidos.length;
+            dot.style.display = 'block';
+            badgeMenu.style.display = 'inline-block';
+            badgeMenu.innerText = naoLidos.length;
         } else {
-            badge.style.display = 'none';
+            dot.style.display = 'none';
+            badgeMenu.style.display = 'none';
         }
         window._alertasCache = alertas;
     } catch (e) {
@@ -1006,7 +1016,7 @@ function abrirPainelAlertas() {
         return;
     }
     const texto = alertas.map(a => `• ${a.mensagem}`).join('\n');
-    alert(texto); // troque por um modal bonito depois, isso é só o mínimo funcional
+    alert(texto); // dá pra trocar por um modal mais bonito depois
     alertas.forEach(a => {
         if (!a.lida) fetch('/alertas/marcar-lida', {
             method: 'POST', headers: {'Content-Type':'application/json'},
@@ -1014,10 +1024,11 @@ function abrirPainelAlertas() {
         });
     });
     carregarAlertas();
+    fecharMenuLateral(); // fecha o menu depois de abrir o painel
 }
 
 carregarAlertas();
-setInterval(carregarAlertas, 60000); // atualiza a cada 1 minuto
+setInterval(carregarAlertas, 60000);
         // --- 5. LIGAR O MOTOR ---
         carregarDados();
     </script>
