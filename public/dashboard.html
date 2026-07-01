@@ -469,9 +469,39 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         <div id="lista-transacoes-modal">Carregando...</div>
     </div>
 </div>
-
-    
-
+<div class="lancamento-rapido" style="margin: 0 20px 20px 20px; padding: 20px 25px;">
+    <h3 style="margin: 0 0 15px 0; font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: var(--texto-mutado);">✍️ Lançamento Rápido</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <input type="text"   id="manual-desc"  placeholder="Descrição"   style="flex:2; min-width:140px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
+        <input type="number" id="manual-valor" placeholder="R$ 0,00"     style="flex:1; min-width:90px;  padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;" step="0.01">
+        <select id="manual-tipo" style="flex:1; min-width:110px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
+            <option value="Despesa">Despesa</option>
+            <option value="Receita">Receita</option>
+        </select>
+        <select id="manual-cat" style="flex:1; min-width:140px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
+            <option value="Alimentação">Alimentação</option>
+            <option value="Habitação">Habitação</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Eletricidade / Luz">Eletricidade / Luz</option>
+            <option value="Telecomunicações / Internet">Telecomunicações / Internet</option>
+            <option value="Pagamento de Fatura">Pagamento de Fatura</option>
+            <option value="Pagamento de Boleto">Pagamento de Boleto</option>
+            <option value="Streaming de Vídeo">Streaming de Vídeo</option>
+            <option value="Streaming de Música">Streaming de Música</option>
+            <option value="Academia e Fitness">Academia e Fitness</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Educação">Educação</option>
+            <option value="Supermercado">Supermercado</option>
+            <option value="Restaurantes">Restaurantes</option>
+            <option value="Salário">Salário</option>
+            <option value="Lazer">Lazer</option>
+            <option value="Outros">Outros</option>
+        </select>
+        <input type="date" id="manual-data" style="flex:1; min-width:130px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
+        <button class="btn-acao" onclick="salvarLancamentoManual()" style="background: var(--cor-destaque);">Lançar</button>
+        <button class="btn-acao" onclick="desfazerUltimo()" style="background: rgba(255,77,77,0.2); border: 1px solid #ff4d4d; color: #ff4d4d;" title="Desfazer último lançamento">↩ Desfazer</button>
+    </div>
+</div>
 <div class="painel-ajustes">
     <div class="grupo-ajuste">
         <label>Limite de Gastos</label>
