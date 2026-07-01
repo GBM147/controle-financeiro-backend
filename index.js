@@ -419,28 +419,61 @@ app.post('/transacao-manual', async (req, res) => {
 async function auditarMetas() {
     try {
         const [prefs] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
-        const percentualAlerta = prefs.length > 0 ? prefs[0].percentual_alerta : 80;
+        const percentualAlertaGlobal = prefs.length > 0 ? prefs[0].percentual_alerta : 80;
+
         const sql = `
-            SELECT t.categoria, SUM(t.valor) as total_gasto, m.valor_limite
+            SELECT t.categoria, SUM(t.valor) as total_gasto, m.valor_limite, m.percentual_alerta as percentual_categoria
             FROM transacoes t
             JOIN metas m ON t.categoria = m.categoria
             WHERE t.tipo = 'Despesa' AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE()) AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
-            GROUP BY t.categoria, m.valor_limite
+            GROUP BY t.categoria, m.valor_limite, m.percentual_alerta
         `;
         const [gastos] = await db.promise().query(sql);
+
+        // Pega o e-mail do usuário a notificar (ajuste se tiver multiusuário de verdade)
+        const [usuarios] = await db.promise().query('SELECT id, email, nome FROM usuarios LIMIT 1');
+        const usuario = usuarios[0];
+
         for (const item of gastos) {
             const gastoAbs = Math.abs(item.total_gasto);
             const limite = parseFloat(item.valor_limite);
+            // Usa o % configurado NA META (por categoria). Se não tiver, cai no global.
+            const percentualAlerta = item.percentual_categoria != null ? item.percentual_categoria : percentualAlertaGlobal;
             const porcentagemAtual = (gastoAbs / limite) * 100;
+
             if (porcentagemAtual >= percentualAlerta) {
                 const msg = `Atenção: Você atingiu ${porcentagemAtual.toFixed(1)}% do seu limite de R$ ${limite.toFixed(2)} na categoria ${item.categoria}.`;
+
                 const [check] = await db.promise().query(
-                    'SELECT id FROM alertas WHERE categoria = ? AND DATE(data_criacao) = CURRENT_DATE()', 
+                    'SELECT id FROM alertas WHERE categoria = ? AND DATE(data_criacao) = CURRENT_DATE()',
                     [item.categoria]
                 );
+
                 if (check.length === 0) {
                     await db.promise().query('INSERT INTO alertas (categoria, mensagem) VALUES (?, ?)', [item.categoria, msg]);
                     console.log(`🔔 NOVO ALERTA GERADO: ${msg}`);
+
+                    // --- ENVIO DO E-MAIL DE NOTIFICAÇÃO ---
+                    if (usuario && usuario.email) {
+                        try {
+                            await resend.emails.send({
+                                from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
+                                to: usuario.email.toLowerCase().trim(),
+                                subject: `🚨 GBM - Limite de ${item.categoria} quase estourando!`,
+                                html: `
+                                    <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
+                                        <h2 style="color: #c89f53;">Guardian of Budget & Money</h2>
+                                        <p>Olá, ${usuario.nome}.</p>
+                                        <h1 style="color: #ef4444;">${porcentagemAtual.toFixed(1)}%</h1>
+                                        <p>Você já gastou <strong>R$ ${gastoAbs.toFixed(2)}</strong> de um limite de <strong>R$ ${limite.toFixed(2)}</strong> na categoria <strong>${item.categoria}</strong>.</p>
+                                        <p style="color: #8a9ba8; font-size: 12px;">Acesse seu painel para mais detalhes.</p>
+                                    </div>
+                                `
+                            });
+                        } catch (emailErr) {
+                            console.error("❌ Erro ao enviar e-mail de alerta:", emailErr);
+                        }
+                    }
                 }
             }
         }
@@ -709,4 +742,9 @@ app.post('/corrigir-categoria', async (req, res) => {
 const PORT = process.env.PORT || 3000; 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando perfeitamente na porta ${PORT}`);
+});
+// Roda a auditoria de metas todos os dias às 08:00 (mesmo sem novo lançamento)
+cron.schedule('0 8 * * *', () => {
+    console.log('⏰ Rodando auditoria diária de metas...');
+    auditarMetas();
 });

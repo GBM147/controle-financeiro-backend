@@ -405,6 +405,10 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             <span class="hamburger-icon">&#9776;</span>
         </button>
     </div>
+    <button id="btn-notificacoes" onclick="abrirPainelAlertas()" style="position:relative; background:none; border:none; cursor:pointer; margin-right:10px;">
+    <span style="font-size:1.4rem;">🔔</span>
+    <span id="badge-alertas" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; border-radius:50%; font-size:0.65rem; padding:2px 5px; font-weight:bold;">0</span>
+</button>
 </header> <div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
 
 <div id="sidebar-menu" class="sidebar-menu">
@@ -977,6 +981,43 @@ async function salvarObjetivo() {
 function fecharModalTransacoes() {
     document.getElementById('modal-transacoes').style.display = 'none';
 }
+async function carregarAlertas() {
+    try {
+        const res = await fetch('/alertas');
+        const alertas = await res.json();
+        const naoLidos = alertas.filter(a => !a.lida);
+        const badge = document.getElementById('badge-alertas');
+        if (naoLidos.length > 0) {
+            badge.style.display = 'inline-block';
+            badge.innerText = naoLidos.length;
+        } else {
+            badge.style.display = 'none';
+        }
+        window._alertasCache = alertas;
+    } catch (e) {
+        console.error('Erro ao carregar alertas:', e);
+    }
+}
+
+function abrirPainelAlertas() {
+    const alertas = window._alertasCache || [];
+    if (alertas.length === 0) {
+        alert('Nenhuma notificação por enquanto 🎉');
+        return;
+    }
+    const texto = alertas.map(a => `• ${a.mensagem}`).join('\n');
+    alert(texto); // troque por um modal bonito depois, isso é só o mínimo funcional
+    alertas.forEach(a => {
+        if (!a.lida) fetch('/alertas/marcar-lida', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ id: a.id })
+        });
+    });
+    carregarAlertas();
+}
+
+carregarAlertas();
+setInterval(carregarAlertas, 60000); // atualiza a cada 1 minuto
         // --- 5. LIGAR O MOTOR ---
         carregarDados();
     </script>
