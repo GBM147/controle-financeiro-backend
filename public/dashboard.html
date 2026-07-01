@@ -613,14 +613,14 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
         btnSubmeter.innerText = textoOriginal;
         btnSubmeter.disabled = false;
         if (resultado.success) {
-            alert(resultado.message);
+            gbmAlerta(resultado.message);
             window.location.reload(); // Recarrega o ecrã na hora para recalcular os gráficos e tabelas com os dados reais!
         } else {
-            alert('Erro no processamento: ' + resultado.message);
+            gbmAlerta('Erro: ' + resultado.message, 'erro');
         }
     } catch (erro) {
         console.error('Erro ao enviar ficheiro:', erro);
-        alert('Não foi possível comunicar com o servidor financeiro.');
+        gbmAlerta('Não foi possível comunicar com o servidor.', 'erro');
     }
 });
         // --- 1. TEMA ESCURO (Lembrar escolha) ---
@@ -810,7 +810,7 @@ const categorias = [
             const categoria = document.getElementById('manual-cat').value;
             const data_transacao = document.getElementById('manual-data').value;
 
-            if (!descricao || !valor || !data_transacao) return alert("Preencha todos os campos!");
+            if (!descricao || !valor || !data_transacao) return gbmAlerta("Preencha todos os campos!", 'erro');
 
             try {
                 const resposta = await fetch('/transacao-manual', {
@@ -823,8 +823,8 @@ const categorias = [
                     document.getElementById('manual-desc').value = '';
                     document.getElementById('manual-valor').value = '';
                     carregarDados(); // Recarrega a tabela na hora!
-                } else { alert("Erro no servidor."); }
-            } catch (error) { alert("Falha na comunicação."); }
+                } else { gbmAlerta("Erro no servidor.", 'erro'); }
+            } catch (error) { gbmAlerta("Falha na comunicação.", 'erro'); }
         }
 
         async function salvarMeta() {
@@ -840,7 +840,7 @@ const categorias = [
                 });
                 document.getElementById('meta-valor').value = '';
                 carregarDados();
-                alert("Limite salvo com sucesso!");
+                gbmAlerta("Limite salvo com sucesso!");
             } catch (error) { alert("Erro ao salvar o limite."); }
         }
 
@@ -855,7 +855,7 @@ const categorias = [
                 });
                 document.getElementById('meta-valor').value = '';
                 carregarDados();
-                alert("Limite removido!");
+                gbmAlerta("Limite removido!");
             } catch (error) { alert("Erro ao remover o limite."); }
         }
         function aplicarCoresFinanceiras() {
@@ -882,6 +882,16 @@ const categorias = [
                 }
             });
         }
+        function gbmAlerta(mensagem, tipo = 'info') {
+    const cor = tipo === 'erro' ? 'rgba(239,68,68,0.3)' : 'rgba(95,255,168,0.3)';
+    const icone = tipo === 'erro' ? '❌' : '✅';
+    document.getElementById('lista-notificacoes-modal').innerHTML = `
+        <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:16px; font-family:'Inter',sans-serif; font-size:0.9rem; line-height:1.5; text-align:center;">
+            <div style="font-size:2rem; margin-bottom:10px;">${icone}</div>
+            ${mensagem}
+        </div>`;
+    document.getElementById('modal-notificacoes').style.display = 'flex';
+}
         // Funções do Menu Lateral (Sidebar)
         function abrirMenuLateral(event) {
             if(event) event.stopPropagation();
@@ -908,7 +918,7 @@ const categorias = [
                 if (res.ok) {
                     window.location.reload(); // Recarrega para atualizar totais e gráfico
                 } else {
-                    alert('Erro ao desfazer. Tente novamente.');
+                    gbmAlerta('Erro ao desfazer. Tente novamente.', 'erro');
                 }
             } catch (error) {
                 console.error('Erro de conexão:', error);
@@ -1028,7 +1038,7 @@ async function salvarObjetivo() {
                 document.getElementById('objetivo-nome').value = '';
                 document.getElementById('objetivo-valor').value = '';
                 carregarDados();
-                alert("Meta criada com sucesso! Acesse o menu lateral 'Metas' para acompanhar o seu progresso.");
+                gbmAlerta("Meta criada! Acesse Metas no menu para acompanhar.");
             } catch (error) { alert("Erro ao criar a meta."); }
         }
 
@@ -1081,3 +1091,21 @@ setInterval(carregarAlertas, 60000);
         // --- 5. LIGAR O MOTOR ---
         carregarDados();
     </script>
+    </script>
+
+    <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
+        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:480px; width:90%; box-shadow:0 0 30px rgba(95,255,168,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="logo-transparente.jpg" style="height:32px; border-radius:6px;">
+                    <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
+                </div>
+                <button onclick="fecharModalNotificacoes()" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <div id="lista-notificacoes-modal" style="display:flex; flex-direction:column; gap:12px; max-height:340px; overflow-y:auto;"></div>
+            <button onclick="fecharModalNotificacoes()" style="margin-top:20px; width:100%; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">FECHAR</button>
+        </div>
+    </div>
+
+</body>
+</html>
