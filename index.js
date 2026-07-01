@@ -9,23 +9,11 @@ const cors = require('cors');
 const cron = require('node-cron');
 const bcrypt = require('bcrypt');
 const { Resend } = require('resend');
-const nodemailer = require('nodemailer');
 const multer = require('multer');
 const ofx = require('node-ofx-parser');
 const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
-// Inicializamos a API de Email (Resend) — pode remover depois se não usar mais
+// Inicializamos a API de Email (Resend)
 const resend = new Resend(process.env.RESEND_API_KEY);
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    requireTLS: true,
-    family: 4,
-    auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-    }
-});
 // 1. Inicializamos o servidor Express
 const app = express();
 // --- ROTA: CRIAR SESSÃO DE PAGAMENTO (MERCADO PAGO) ---
@@ -307,8 +295,8 @@ app.post('/enviar-codigo', async (req, res) => {
                 return res.status(404).json({ success: false, message: 'Usuário não encontrado no banco.' });
             }
             const usuario = rows[0];
-            await transporter.sendMail({
-                from: 'GBM Financeiro <guardianofbudgetmoney@gmail.com>',
+            const { error } = await resend.emails.send({
+                from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
                 to: usuario.email.toLowerCase().trim(),
                 subject: 'GBM - Seu Código de Acesso',
                 html: `
@@ -322,6 +310,10 @@ app.post('/enviar-codigo', async (req, res) => {
                     </div>
                 `
             });
+            if (error) {
+                console.error("Erro da API Resend:", error);
+                return res.status(500).json({ success: false, message: 'Falha no provedor de e-mail.' });
+            }
             res.json({ success: true, message: 'Código enviado com sucesso!' });
         } else {
             res.status(400).json({ success: false, message: 'Canal de verificação inválido.' });
@@ -594,8 +586,8 @@ app.post('/esqueci-senha', async (req, res) => {
             [codigo, expira, usuario.id]
         );
 
-        await transporter.sendMail({
-            from: 'GBM Financeiro <guardianofbudgetmoney@gmail.com>',
+        const { error } = await resend.emails.send({
+            from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
             to: email.toLowerCase().trim(),
             subject: 'GBM - Recuperação de Senha',
             html: `
@@ -609,6 +601,11 @@ app.post('/esqueci-senha', async (req, res) => {
                 </div>
             `
         });
+
+        if (error) {
+            console.error("Erro da API Resend:", error);
+            return res.status(500).json({ success: false, message: 'Falha ao enviar e-mail.' });
+        }
 
         res.json({ success: true, message: 'Se o e-mail existir, enviaremos um código.' });
     } catch (erro) {
