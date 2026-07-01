@@ -15,12 +15,12 @@ const ofx = require('node-ofx-parser');
 const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
 // Inicializamos a API de Email (Resend) — pode remover depois se não usar mais
 const resend = new Resend(process.env.RESEND_API_KEY);
-// Envio de e-mail via Gmail (Nodemailer)
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    family: 4, // força IPv4 — o Render não roteia IPv6 de saída
+    port: 587,
+    secure: false,
+    requireTLS: true,
+    family: 4,
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD
