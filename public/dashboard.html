@@ -386,6 +386,29 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
                 height: 400px !important;
                 overflow-x: auto; /* Permite rolar a tabela para os lados se a tela for muito estreita */
             }
+            /* 6. Empilhar o painel de Limite de Gastos e Nova Meta no celular */
+.painel-ajustes {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 15px !important;
+}
+
+.painel-ajustes .grupo-ajuste > div {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+}
+
+.painel-ajustes select,
+.painel-ajustes input,
+.painel-ajustes button {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 0 8px 0 !important;
+    height: 46px !important;
+    font-size: 16px !important;
+}
         }
     </style>
 </head>
