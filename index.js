@@ -528,6 +528,34 @@ app.get('/relatorio-mensal', async (req, res) => {
     const [rows] = await db.promise().query(sql, [mes, ano]);
     res.json(rows);
 });
+// --- ROTA: RELATÓRIO DETALHADO (transações individuais para editar categoria) ---
+app.get('/relatorio-detalhado', async (req, res) => {
+    const { mes, ano } = req.query;
+    const sql = `
+        SELECT id, descricao, valor, tipo, categoria, data_transacao
+        FROM transacoes
+        WHERE MONTH(data_transacao) = ? AND YEAR(data_transacao) = ?
+        ORDER BY data_transacao DESC
+    `;
+    const [rows] = await db.promise().query(sql, [mes, ano]);
+    res.json(rows);
+});
+
+// --- ROTA: ATUALIZAR CATEGORIA DE UMA TRANSAÇÃO ---
+app.put('/atualizar-categoria/:id', async (req, res) => {
+    const { id } = req.params;
+    const { categoria } = req.body;
+    try {
+        await db.promise().query(
+            'UPDATE transacoes SET categoria = ? WHERE id = ?',
+            [categoria, id]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false });
+    }
+});
 app.get('/metas-resumo', async (req, res) => {
     const sql = `
         SELECT m.categoria, m.valor_limite as limite, 

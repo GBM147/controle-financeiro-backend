@@ -228,6 +228,44 @@
             .gbm-logo-img { height: 40px; }
             .card { padding: 18px; }
         }
+                /* Modal de editar categoria */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.ativo { display: flex; }
+        .modal-box {
+            background: #0f1a2b; border: 1px solid rgba(95,255,168,0.3);
+            border-radius: 14px; padding: 30px; width: 90%; max-width: 400px;
+        }
+        .modal-box h3 { margin: 0 0 8px; color: #fff; font-size: 1.1rem; }
+        .modal-desc { color: #8a9ba8; font-size: 0.85rem; margin-bottom: 20px; word-break: break-word; }
+        .modal-box select {
+            width: 100%; padding: 10px 14px; border-radius: 8px;
+            background: #1a2a3a; border: 1px solid rgba(255,255,255,0.15);
+            color: #fff; font-size: 1rem; margin-bottom: 20px;
+        }
+        .modal-acoes { display: flex; gap: 10px; }
+        .btn-confirmar {
+            flex: 1; padding: 11px; border-radius: 8px; border: none;
+            background: #2E8B57; color: #fff; font-weight: 700;
+            font-size: 1rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-confirmar:hover { background: #3cb371; }
+        .btn-cancelar {
+            flex: 1; padding: 11px; border-radius: 8px; border: none;
+            background: rgba(255,255,255,0.08); color: #fff;
+            font-size: 1rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-cancelar:hover { background: rgba(255,255,255,0.15); }
+        .btn-editar-cat {
+            background: none; border: 1px solid rgba(95,255,168,0.3);
+            color: #5fffa8; border-radius: 6px; padding: 3px 10px;
+            font-size: 0.78rem; cursor: pointer; transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-editar-cat:hover { background: rgba(95,255,168,0.1); }
     </style>
 </head>
 <body>
@@ -270,7 +308,40 @@
         </div>
     </div>
 </div>
-
+<!-- MODAL EDITAR CATEGORIA -->
+<div class="modal-overlay" id="modal-categoria">
+    <div class="modal-box">
+        <h3>✏️ Alterar Categoria</h3>
+        <p class="modal-desc" id="modal-desc-tx"></p>
+        <select id="modal-select-cat">
+            <option>Alimentação</option>
+            <option>Habitação</option>
+            <option>Transporte</option>
+            <option>Eletricidade / Luz</option>
+            <option>Telecomunicações / Internet</option>
+            <option>Pagamento de Fatura</option>
+            <option>Pagamento de Boleto</option>
+            <option>Streaming de Vídeo</option>
+            <option>Streaming de Música</option>
+            <option>Academia e Fitness</option>
+            <option>Saúde</option>
+            <option>Educação</option>
+            <option>Supermercado</option>
+            <option>Restaurantes</option>
+            <option>Salário</option>
+            <option>Lazer</option>
+            <option>Transferência</option>
+            <option>Taxas Bancárias</option>
+            <option>Entretenimento</option>
+            <option>Igreja / Doações</option>
+            <option>Outros</option>
+        </select>
+        <div class="modal-acoes">
+            <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+            <button class="btn-confirmar" onclick="salvarCategoria()">Salvar</button>
+        </div>
+    </div>
+</div>
     <script>
         let dadosRelatorio = [];
         document.getElementById('mes-ref').value = new Date().getMonth() + 1;
@@ -285,7 +356,7 @@
             container.innerHTML = '<p class="texto-vazio">Carregando...</p>';
 
             try {
-                const res = await fetch(`/relatorio-mensal?mes=${mes}&ano=${ano}`);
+                const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}`);
                 dadosRelatorio = await res.json();
 
                 if (dadosRelatorio.length === 0) {
@@ -295,7 +366,7 @@
 
                 let totalReceita = 0, totalDespesa = 0;
                 dadosRelatorio.forEach(item => {
-                    const v = Math.abs(parseFloat(item.total_movimentado) || 0);
+                    const v = Math.abs(parseFloat(item.valor) || 0);
                     if (item.tipo === 'Receita') totalReceita += v;
                     else totalDespesa += v;
                 });
@@ -334,11 +405,15 @@
                     const badge  = isReceita
                         ? '<span class="badge-tipo badge-receita">Receita</span>'
                         : '<span class="badge-tipo badge-despesa">Despesa</span>';
-                    const valor  = Math.abs(parseFloat(item.total_movimentado) || 0).toFixed(2);
+                    const valor  = Math.abs(parseFloat(item.valor) || 0).toFixed(2);
+                    const descEscapada = (item.descricao || item.categoria).replace(/'/g, "\\'");
 
                     html += `
                         <tr>
-                            <td style="font-weight: 500;">${item.categoria}</td>
+                            <td style="font-weight: 500;">
+                                ${item.categoria}
+                                <br><button class="btn-editar-cat" onclick="abrirModal(${item.id}, '${descEscapada}', '${item.categoria}')">✏️ editar</button>
+                            </td>
                             <td>${badge}</td>
                             <td style="text-align: right; font-weight: 700; color: ${cor};">${sinal}R$ ${valor}</td>
                         </tr>`;
@@ -442,6 +517,47 @@
 
             doc.save(`GBM-relatorio-${NOMES_MESES[mes]}-${ano}.pdf`);
         }
+
+    let txIdAtual = null;
+
+        function abrirModal(id, descricao, categoriaAtual) {
+            txIdAtual = id;
+            document.getElementById('modal-desc-tx').innerText = descricao;
+            document.getElementById('modal-select-cat').value = categoriaAtual;
+            document.getElementById('modal-categoria').classList.add('ativo');
+        }
+
+        function fecharModal() {
+            txIdAtual = null;
+            document.getElementById('modal-categoria').classList.remove('ativo');
+        }
+
+        async function salvarCategoria() {
+            if (!txIdAtual) return;
+            const novaCategoria = document.getElementById('modal-select-cat').value;
+            try {
+                const res = await fetch(`/atualizar-categoria/${txIdAtual}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categoria: novaCategoria })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    fecharModal();
+                    gerarRelatorio(); // recarrega o relatório com a nova categoria
+                } else {
+                    alert('Erro ao salvar. Tente novamente.');
+                }
+            } catch (e) {
+                alert('Falha na comunicação com o servidor.');
+            }
+        }
+
+        // Fechar modal clicando fora
+        document.getElementById('modal-categoria').addEventListener('click', function(e) {
+            if (e.target === this) fecharModal();
+        });
     </script>
+    
 </body>
 </html>
