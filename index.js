@@ -44,11 +44,16 @@ app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
         const meuDominio = `${req.protocol}://${req.get('host')}`;
         const preApproval = new PreApproval(mpClient);
 
-        // Cria a ASSINATURA vinculada ao plano fixo (MP_PLAN_ID)
+        // Cria a ASSINATURA diretamente (sem depender de plano pré-criado)
         const resultado = await preApproval.create({
             body: {
-                preapproval_plan_id: process.env.MP_PLAN_ID,
                 reason: 'Plano Mensal - GBM',
+                auto_recurring: {
+                    frequency: 1,
+                    frequency_type: 'months',
+                    transaction_amount: 19.90,
+                    currency_id: 'BRL'
+                },
                 back_url: `${meuDominio}/dashboard.html?pago=sucesso`,
                 payer_email: rows[0].email,
                 external_reference: userId.toString()
