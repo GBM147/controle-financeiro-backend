@@ -660,6 +660,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
     // Prepara o arquivo dentro de um pacote de envio (FormData)
     const formData = new FormData();
     formData.append('file', arquivoInput.files[0]);
+    formData.append('userId', localStorage.getItem('userIdAtual'));
 
     try {
         // Feedback visual para o utilizador saber que o sistema está a pensar
@@ -717,9 +718,10 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
         async function carregarDados() {
             try {
                 const hoje = new Date();
-                const mes = hoje.getMonth() + 1; // getMonth() retorna 0-11, por isso o +1
+                const mes = hoje.getMonth() + 1;
                 const ano = hoje.getFullYear();
-                const res = await fetch(`/resumo-financeiro?mes=${mes}&ano=${ano}`);
+                const userId = localStorage.getItem('userIdAtual');
+                const res = await fetch(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}`);
                 const json = await res.json();
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
                 
@@ -877,10 +879,11 @@ const categorias = [
             if (!descricao || !valor || !data_transacao) return gbmAlerta("Preencha todos os campos!", 'erro');
 
             try {
+                const userId = localStorage.getItem('userIdAtual');
                 const resposta = await fetch('/transacao-manual', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ descricao, valor: parseFloat(valor), tipo, categoria, data_transacao })
+                    body: JSON.stringify({ descricao, valor: parseFloat(valor), tipo, categoria, data_transacao, userId })
                 });
                 const jsonRetorno = await resposta.json();
                 if (jsonRetorno.success) {
@@ -897,10 +900,11 @@ const categorias = [
             if (!categoria || !valor) return alert("Selecione uma categoria e digite o valor limite.");
             
             try {
+                const userId = localStorage.getItem('userIdAtual');
                 await fetch('/metas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ categoria, valor_limite: parseFloat(valor) })
+                    body: JSON.stringify({ categoria, valor_limite: parseFloat(valor), userId })
                 });
                 document.getElementById('meta-valor').value = '';
                 carregarDados();
@@ -912,10 +916,11 @@ const categorias = [
             const categoria = document.getElementById('meta-categoria').value;
             if (!categoria) return alert("Selecione uma categoria primeiro.");
             try {
+                const userId = localStorage.getItem('userIdAtual');
                 await fetch('/metas', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ categoria })
+                    body: JSON.stringify({ categoria, userId })
                 });
                 document.getElementById('meta-valor').value = '';
                 carregarDados();
@@ -1094,10 +1099,11 @@ async function salvarObjetivo() {
             
             try {
                 // Reaproveitamos a API de metas que já existe e funciona perfeitamente!
+                const userId = localStorage.getItem('userIdAtual');
                 await fetch('/metas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ categoria, valor_limite: parseFloat(valor) })
+                    body: JSON.stringify({ categoria, valor_limite: parseFloat(valor), userId })
                 });
                 document.getElementById('objetivo-nome').value = '';
                 document.getElementById('objetivo-valor').value = '';

@@ -356,7 +356,8 @@
             container.innerHTML = '<p class="texto-vazio">Carregando...</p>';
 
             try {
-                const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}`);
+                const userId = localStorage.getItem('userIdAtual');
+const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${userId}`);
                 dadosRelatorio = await res.json();
 
                 if (dadosRelatorio.length === 0) {

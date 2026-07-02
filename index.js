@@ -142,7 +142,8 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
             transacoesOfx = [transacoesOfx];
         }
         // 3. Localiza a conta do utilizador para vincular os lançamentos
-        const [contas] = await db.promise().query('SELECT id FROM contas_bancarias LIMIT 1');
+        const userId = req.body.userId || 1; // fallback temporário
+        const [contas] = await db.promise().query('SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
         const contaInternaId = contas.length > 0 ? contas[0].id : 1;
         // Carrega as regras salvas pelo usuário para usar na categorização
 const [regrasUsuario] = await db.promise().query(
@@ -330,7 +331,7 @@ app.post('/enviar-codigo', async (req, res) => {
 // --- LÓGICA DE NEGÓCIO EVOLUÍDA: RECEITAS, DESPESAS E METAS ---
 app.get('/resumo-financeiro', async (req, res) => {
     try {
-        const { mes, ano } = req.query;
+        const { mes, ano, userId } = req.query;
         let sql = `
             SELECT 
                 t.categoria, 
@@ -340,10 +341,11 @@ app.get('/resumo-financeiro', async (req, res) => {
                 AVG(t.valor) AS ticket_medio,
                 m.valor_limite AS teto_gastos
             FROM transacoes t
-            LEFT JOIN metas m ON t.categoria = m.categoria
-            WHERE 1=1
+            JOIN contas_bancarias cb ON t.conta_id = cb.id
+            LEFT JOIN metas m ON t.categoria = m.categoria AND m.usuario_id = cb.usuario_id
+            WHERE cb.usuario_id = ?
         `;
-        const params = [];
+        const params = [userId];
         if (mes && mes !== 'todos') {
             const mesesArray = mes.split(',');
             const placeholders = mesesArray.map(() => '?').join(',');
@@ -358,7 +360,7 @@ app.get('/resumo-financeiro', async (req, res) => {
         const [rows] = await db.promise().query(sql, params);
         
         // --- NOVO: PUXA O SALDO ATUALIZADO DA CONTA ---
-        const [contaDB] = await db.promise().query('SELECT saldo FROM contas_bancarias LIMIT 1');
+        const [contaDB] = await db.promise().query('SELECT saldo FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
         const saldoDaConta = contaDB.length > 0 ? contaDB[0].saldo : 0;
         // ----------------------------------------------
 
@@ -372,13 +374,13 @@ app.get('/resumo-financeiro', async (req, res) => {
 // --- NOVA ROTA: SALVAR/ATUALIZAR METAS DO USUÁRIO ---
 app.post('/metas', async (req, res) => {
     try {
-        const { categoria, valor_limite } = req.body;
+        const { categoria, valor_limite, userId } = req.body;
         const sql = `
-            INSERT INTO metas (categoria, valor_limite) 
-            VALUES (?, ?) 
-            ON DUPLICATE KEY UPDATE valor_limite = VALUES(valor_limite)
+            INSERT INTO metas (categoria, valor_limite, usuario_id) 
+            VALUES (?, ?, ?) 
+            ON DUPLICATE KEY UPDATE valor_limite = VALUES(valor_limite), usuario_id = VALUES(usuario_id)
         `;
-        await db.promise().query(sql, [categoria, valor_limite]);
+        await db.promise().query(sql, [categoria, valor_limite, userId]);
         console.log(`🎯 Nova meta definida: ${categoria} -> R$ ${valor_limite}`);
         res.json({ success: true, message: 'Orçamento atualizado!' });
     } catch (error) {
@@ -389,8 +391,8 @@ app.post('/metas', async (req, res) => {
 // --- NOVA ROTA: REMOVER LIMITE (TORNAR GASTO FIXO / SEM LIMITE) ---
 app.delete('/metas', async (req, res) => {
     try {
-        const { categoria } = req.body;
-        await db.promise().query('DELETE FROM metas WHERE categoria = ?', [categoria]);
+        const { categoria, userId } = req.body;
+        await db.promise().query('DELETE FROM metas WHERE categoria = ? AND usuario_id = ?', [categoria, userId]);
         console.log(`🗑️ Limite removido. A categoria [${categoria}] agora é um gasto fixo.`);
         res.json({ success: true, message: 'Limite removido com sucesso!' });
     } catch (error) {
@@ -403,7 +405,8 @@ app.post('/transacao-manual', async (req, res) => {
     try {
         const { descricao, valor, tipo, categoria, data_transacao } = req.body;
         const transacaoIdGerado = 'MANUAL_' + Date.now();
-        const [contas] = await db.promise().query('SELECT id FROM contas_bancarias LIMIT 1');
+        const { userId } = req.body;
+        const [contas] = await db.promise().query('SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
         const contaInternaId = contas.length > 0 ? contas[0].id : 1; 
         const valorFinal = Math.abs(valor);
         const sql = `INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao)
@@ -530,14 +533,15 @@ app.get('/relatorio-mensal', async (req, res) => {
 });
 // --- ROTA: RELATÓRIO DETALHADO (transações individuais para editar categoria) ---
 app.get('/relatorio-detalhado', async (req, res) => {
-    const { mes, ano } = req.query;
+    const { mes, ano, userId } = req.query;
     const sql = `
-        SELECT id, descricao, valor, tipo, categoria, data_transacao
-        FROM transacoes
-        WHERE MONTH(data_transacao) = ? AND YEAR(data_transacao) = ?
-        ORDER BY data_transacao DESC
+        SELECT t.id, t.descricao, t.valor, t.tipo, t.categoria, t.data_transacao
+        FROM transacoes t
+        JOIN contas_bancarias cb ON t.conta_id = cb.id
+        WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
+        ORDER BY t.data_transacao DESC
     `;
-    const [rows] = await db.promise().query(sql, [mes, ano]);
+    const [rows] = await db.promise().query(sql, [userId, mes, ano]);
     res.json(rows);
 });
 
@@ -557,15 +561,18 @@ app.put('/atualizar-categoria/:id', async (req, res) => {
     }
 });
 app.get('/metas-resumo', async (req, res) => {
+    const { userId } = req.query;
     const sql = `
         SELECT m.categoria, m.valor_limite as limite, 
         IFNULL(SUM(ABS(t.valor)), 0) as gasto
         FROM metas m
         LEFT JOIN transacoes t ON m.categoria = t.categoria 
         AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE())
+        LEFT JOIN contas_bancarias cb ON t.conta_id = cb.id AND cb.usuario_id = ?
+        WHERE m.usuario_id = ?
         GROUP BY m.categoria, m.valor_limite
     `;
-    const [rows] = await db.promise().query(sql);
+    const [rows] = await db.promise().query(sql, [userId, userId]);
     res.json(rows);
 });
 app.post('/atualizar-meta-alerta', async (req, res) => {
