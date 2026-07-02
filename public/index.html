@@ -159,8 +159,8 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
         
         <h2>Bem-vindo de volta</h2>
         <div class="form-group">
-            <label>CPF ou E-mail</label>
-            <input type="text" id="login-identificacao" placeholder="Digite seu CPF ou E-mail">
+            <label>E-mail</label>
+            <input type="email" id="login-identificacao" placeholder="Digite seu E-mail">
         </div>
         <div class="form-group">
             <label>Senha</label>
@@ -191,10 +191,6 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
                 <label>Sobrenome</label>
                 <input type="text" id="cad-sobrenome" placeholder="Silva">
             </div>
-        </div>
-        <div class="form-group">
-            <label>CPF</label>
-            <input type="text" id="cad-cpf" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
         </div>
         <div class="form-group">
             <label>E-mail</label>
@@ -280,14 +276,6 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
             document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
         }
 
-        // Máscara simples para CPF em tempo real
-        function mascaraCPF(input) {
-            let v = input.value.replace(/\D/g, ""); // Remove tudo o que não é dígito
-            v = v.replace(/(\d{3})(\d)/, "$1.$2"); // Coloca ponto entre o 3º e 4º dígitos
-            v = v.replace(/(\d{3})(\d)/, "$1.$2"); // Coloca ponto entre o 6º e 7º dígitos
-            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2"); // Coloca traço antes dos últimos 2 dígitos
-            input.value = v;
-        }
 
 function fazerLogin() {
     // Agora sim! Os IDs exatos que estão na sua linha 48 e 52:
@@ -295,7 +283,7 @@ function fazerLogin() {
     const senha = document.getElementById('login-senha').value;
 
     if (!emailCpf || !senha) {
-        alert("Por favor, preencha o e-mail/CPF e a senha.");
+        alert("Por favor, preencha o e-mail e a senha.");
         return;
     }
 
@@ -319,6 +307,8 @@ fetch('/login', {
                 // 🚀 CHECA A CATRACA DO PAGAMENTO ANTES DE ENTRAR NO SISTEMA
                 if (data.statusPagamento === 'pago') {
                     window.location.href = 'dashboard.html';
+                } else if (data.statusPagamento === 'trial' && data.trialExpira && new Date() < new Date(data.trialExpira)) {
+                    window.location.href = 'dashboard.html';
                 } else {
                     window.location.href = 'pagamento.html';
                 }
@@ -339,7 +329,6 @@ async function registrarUsuario() {
     const inputs = {
         nome: document.getElementById('cad-nome'),
         sobrenome: document.getElementById('cad-sobrenome'),
-        cpf: document.getElementById('cad-cpf'),
         email: document.getElementById('cad-email'),
         telefone: document.getElementById('cad-telefone'),
         senha: document.getElementById('cad-senha')
@@ -367,7 +356,6 @@ async function registrarUsuario() {
     // 4. Se tudo estiver preenchido, pegamos os valores reais
     const nome = inputs.nome.value.trim();
     const sobrenome = inputs.sobrenome.value.trim();
-    const cpf = inputs.cpf.value.trim();
     const email = inputs.email.value.trim();
     const telefone = inputs.telefone.value.trim();
     const senha = inputs.senha.value;
@@ -383,7 +371,7 @@ async function registrarUsuario() {
         const resposta = await fetch('/cadastro', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome, sobrenome, cpf, email, telefone, senha })
+            body: JSON.stringify({ nome, sobrenome, email, telefone, senha })
         });
         
         const json = await resposta.json();

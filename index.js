@@ -266,19 +266,19 @@ if (!categoria) {
 });
 // --- ROTA 1: CADASTRO DE USUÁRIO ---
 app.post('/cadastro', async (req, res) => {
-    const { nome, sobrenome, cpf, email, telefone, senha } = req.body;
+    const { nome, sobrenome, email, telefone, senha } = req.body;
     try {
         const salt = await bcrypt.genSalt(10);
         const senhaHash = await bcrypt.hash(senha, salt);
-        const cpfLimpo = cpf.replace(/\D/g, '');
-        const cpfMascarado = crypto.createHash('sha256').update(cpfLimpo).digest('hex');
-        const sql = `INSERT INTO usuarios (nome, sobrenome, cpf, email, telefone, senha_hash) VALUES (?, ?, ?, ?, ?, ?)`;
-        const [result] = await db.promise().query(sql, [nome, sobrenome, cpf, email, telefone, senhaHash]);
+        const sql = `INSERT INTO usuarios 
+            (nome, sobrenome, email, telefone, senha_hash, status_pagamento, trial_expira) 
+            VALUES (?, ?, ?, ?, ?, 'trial', DATE_ADD(NOW(), INTERVAL 30 DAY))`;
+        const [result] = await db.promise().query(sql, [nome, sobrenome, email, telefone, senhaHash]);
         res.json({ success: true, userId: result.insertId, message: 'Cadastro realizado!' });
     } catch (error) {
         console.error(error);
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ success: false, message: 'CPF ou E-mail já estão registados!' });
+            return res.status(400).json({ success: false, message: 'E-mail já cadastrado!' });
         }
         res.status(500).json({ success: false, message: 'Erro interno do servidor.' });
     }
@@ -533,8 +533,8 @@ app.post('/atualizar-meta-alerta', async (req, res) => {
 // --- ROTA DE LOGIN CORRIGIDA (PULA VERIFICAÇÃO SE JÁ VERIFICADO) ---
 app.post('/login', async (req, res) => {
     const { identificacao, senha } = req.body;
-    const sql = "SELECT * FROM usuarios WHERE email = ? OR cpf = ?";
-    db.query(sql, [identificacao, identificacao], async (err, results) => {
+    const sql = "SELECT * FROM usuarios WHERE email = ?";
+    db.query(sql, [identificacao], async (err, results) => {
         if (err || results.length === 0) {
             return res.status(401).json({ success: false, message: 'Usuário não encontrado.' });
         }
@@ -548,7 +548,8 @@ app.post('/login', async (req, res) => {
             return res.json({ 
                 success: true, 
                 verificado: true, 
-                statusPagamento: usuario.status_pagamento, // 🔍 ENVIAMOS O STATUS DO PAGAMENTO
+                statusPagamento: usuario.status_pagamento,
+                trialExpira: usuario.trial_expira,
                 userId: usuario.id, 
                 message: 'Login efetuado com sucesso!' 
             });
