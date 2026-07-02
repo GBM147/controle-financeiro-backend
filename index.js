@@ -44,16 +44,11 @@ app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
         const meuDominio = `${req.protocol}://${req.get('host')}`;
         const preApproval = new PreApproval(mpClient);
 
-        // Cria a ASSINATURA (Cobrança Mensal Recorrente)
+        // Cria a ASSINATURA vinculada ao plano fixo (MP_PLAN_ID)
         const resultado = await preApproval.create({
             body: {
+                preapproval_plan_id: process.env.MP_PLAN_ID,
                 reason: 'Plano Mensal - GBM',
-                auto_recurring: {
-                    frequency: 1,
-                    frequency_type: 'months', // Repete a cada 1 mês
-                    transaction_amount: 19.90, // Novo valor!
-                    currency_id: 'BRL'
-                },
                 back_url: `${meuDominio}/dashboard.html?pago=sucesso`,
                 payer_email: rows[0].email,
                 external_reference: userId.toString()
@@ -772,40 +767,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando perfeitamente na porta ${PORT}`);
 });
-const fetch = require('node-fetch');
-
-async function criarPlano() {
-    const response = await fetch('https://api.mercadopago.com/preapproval_plan', {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer SEU_ACCESS_TOKEN',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            reason: 'GBM Financeiro - Plano Premium',
-            auto_recurring: {
-                frequency: 1,
-                frequency_type: 'months',
-                transaction_amount: 19.90,
-                currency_id: 'BRL',
-                free_trial: {
-                    frequency: 1,
-                    frequency_type: 'months'
-                }
-            },
-            back_url: 'https://controle-financeiro-backend-7yvd.onrender.com/pagamento-confirmado',
-            payment_methods_allowed: {
-                payment_types: [{ id: 'credit_card' }]
-            }
-        })
-    });
-
-    const data = await response.json();
-    console.log('ID DO PLANO:', data.id);
-    console.log('Resposta completa:', JSON.stringify(data, null, 2));
-}
-
-criarPlano();
 // Roda a auditoria de metas todos os dias às 08:00 (mesmo sem novo lançamento)
 cron.schedule('0 8 * * *', () => {
     console.log('⏰ Rodando auditoria diária de metas...');
