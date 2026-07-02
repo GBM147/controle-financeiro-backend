@@ -409,6 +409,29 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
                 font-size: 0.8rem !important;
                 word-break: break-all !important;
             }
+            /* 7. Card OFX no celular */
+#card-ofx {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 15px;
+}
+
+#card-ofx form {
+    flex-direction: column !important;
+    width: 100% !important;
+}
+
+#card-ofx form button,
+#card-ofx form span {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    height: 46px !important;
+    font-size: 16px !important;
+    margin: 0 !important;
+}
+
+#card-ofx h3 { font-size: 1rem !important; }
             }
             /* 6. Empilhar o painel de Limite de Gastos e Nova Meta no celular */
 .painel-ajustes {
@@ -586,7 +609,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             <canvas id="meuGrafico"></canvas>
         </div>
     </div>
-<div class="card" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; padding: 15px 25px;">
+<div class="card" id="card-ofx" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; padding: 15px 25px;">
     <div>
         <h3 style="margin: 0; color: var(--texto-principal);">Importar Extrato (OFX)</h3>
         <p style="margin: 5px 0 0 0; color: var(--texto-mutated); font-size: 0.9rem;">Sincronize as suas contas com o ficheiro do banco.</p>
