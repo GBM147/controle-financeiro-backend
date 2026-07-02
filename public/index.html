@@ -306,13 +306,10 @@ fetch('/login', {
             if (data.verificado) {
                 // 🚀 CHECA A CATRACA DO PAGAMENTO ANTES DE ENTRAR NO SISTEMA
                 if (data.statusPagamento === 'pago') {
-                    window.location.href = 'dashboard.html';
-                } else if (data.statusPagamento === 'trial' && data.trialExpira && new Date() < new Date(data.trialExpira)) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    window.location.href = 'pagamento.html';
-                }
-            } else {
+    window.location.href = 'dashboard.html';
+} else {
+    window.location.href = 'pagamento.html';
+}
                 // 🔒 Conta nova: Esconde o login e mostra a tela de código
                 document.getElementById('form-login').style.display = 'none';
                 document.getElementById('form-escolha-validacao').style.display = 'block';
