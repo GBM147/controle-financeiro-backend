@@ -223,7 +223,10 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
             <input type="text" id="codigo-input" placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; font-weight: bold;">
         </div>
         <button class="btn-submit" onclick="verificarCodigo()">Validar Agora</button>
-        
+        <div class="toggle-link">
+            <span id="reenviar-link-codigo" onclick="reenviarCodigoEmail()">Reenviar código</span>
+            <span id="reenviar-timer-codigo" style="display:none; color: var(--texto-mutated);"></span>
+        </div>
     </div>
 
     <div id="form-esqueci-senha" style="display: none; text-align: center;">
@@ -251,6 +254,10 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
             <input type="password" id="redefinir-senha-nova" placeholder="Mínimo 8 caracteres">
         </div>
         <button class="btn-submit" onclick="redefinirSenha()">Salvar Nova Senha</button>
+        <div class="toggle-link">
+            <span id="reenviar-link-senha" onclick="reenviarCodigoSenha()">Reenviar código</span>
+            <span id="reenviar-timer-senha" style="display:none; color: var(--texto-mutated);"></span>
+        </div>
     </div>
     </div>
 
@@ -397,8 +404,68 @@ async function enviarCodigo(canal) {
     if (json.success) {
         document.getElementById('form-escolha-validacao').style.display = 'none';
         document.getElementById('form-validar-codigo').style.display = 'block';
+        iniciarCronometroReenvio('reenviar-link-codigo', 'reenviar-timer-codigo');
     } else {
         alert("Erro ao enviar código: " + json.message);
+    }
+}
+
+function iniciarCronometroReenvio(linkId, timerId, segundos = 30) {
+    const link = document.getElementById(linkId);
+    const timer = document.getElementById(timerId);
+    let restante = segundos;
+
+    link.style.display = 'none';
+    timer.style.display = 'inline';
+    timer.innerText = `Reenviar em ${restante}s`;
+
+    const intervalo = setInterval(() => {
+        restante--;
+        if (restante <= 0) {
+            clearInterval(intervalo);
+            timer.style.display = 'none';
+            link.style.display = 'inline';
+        } else {
+            timer.innerText = `Reenviar em ${restante}s`;
+        }
+    }, 1000);
+}
+
+async function reenviarCodigoEmail() {
+    const userId = document.getElementById('temp-user-id').value;
+    try {
+        const resposta = await fetch('/enviar-codigo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, canal: 'email' })
+        });
+        const json = await resposta.json();
+        if (json.success) {
+            iniciarCronometroReenvio('reenviar-link-codigo', 'reenviar-timer-codigo');
+        } else {
+            alert("Erro ao reenviar: " + json.message);
+        }
+    } catch (err) {
+        alert("Falha na comunicação com o servidor.");
+    }
+}
+
+async function reenviarCodigoSenha() {
+    const email = document.getElementById('temp-recuperar-email').value;
+    try {
+        const resposta = await fetch('/esqueci-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const json = await resposta.json();
+        if (json.success) {
+            iniciarCronometroReenvio('reenviar-link-senha', 'reenviar-timer-senha');
+        } else {
+            alert("Erro ao reenviar: " + json.message);
+        }
+    } catch (err) {
+        alert("Falha na comunicação com o servidor.");
     }
 }
 async function verificarCodigo() {
@@ -450,6 +517,7 @@ async function solicitarRecuperacao() {
             document.getElementById('temp-recuperar-email').value = email;
             document.getElementById('form-esqueci-senha').style.display = 'none';
             document.getElementById('form-redefinir-senha').style.display = 'block';
+            iniciarCronometroReenvio('reenviar-link-senha', 'reenviar-timer-senha');
             alert("Se o e-mail existir, um código foi enviado.");
         } else {
             alert("Erro: " + json.message);
@@ -489,6 +557,27 @@ async function redefinirSenha() {
         alert("Falha na comunicação com o servidor.");
     }
 }
+// --- ATALHO: ENTER SUBMETE O FORMULÁRIO VISÍVEL ---
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+
+    const mapaFormularios = {
+        'form-login': fazerLogin,
+        'form-cadastro': registrarUsuario,
+        'form-validar-codigo': verificarCodigo,
+        'form-esqueci-senha': solicitarRecuperacao,
+        'form-redefinir-senha': redefinirSenha
+    };
+
+    for (const [id, funcao] of Object.entries(mapaFormularios)) {
+        const el = document.getElementById(id);
+        if (el && el.style.display !== 'none') {
+            e.preventDefault();
+            funcao();
+            break;
+        }
+    }
+});
     </script>
 </body>
 </html>
