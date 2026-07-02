@@ -583,6 +583,23 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     </form>
 </div>
 <script>
+    // --- GUARDA DE AUTENTICAÇÃO ---
+(async function verificarAcesso() {
+    const userId = localStorage.getItem('userIdAtual');
+    if (!userId) {
+        window.location.href = 'index.html';
+        return;
+    }
+    try {
+        const res = await fetch('/login-status?userId=' + userId);
+        const data = await res.json();
+        if (data.statusPagamento === 'pago') return; // acesso liberado
+        if (data.statusPagamento === 'trial' && data.trialExpira && new Date() < new Date(data.trialExpira)) return; // trial válido
+        window.location.href = 'pagamento.html'; // trial expirado ou sem plano
+    } catch (e) {
+        window.location.href = 'index.html';
+    }
+})();
     // Captura o envio do formulário de extrato OFX
 document.getElementById('form-upload-ofx').addEventListener('submit', async (e) => {
     e.preventDefault();

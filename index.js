@@ -578,6 +578,20 @@ app.post('/login', async (req, res) => {
         }
     });
 });
+// --- ROTA: VERIFICAR STATUS DO USUÁRIO ---
+app.get('/login-status', async (req, res) => {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ success: false });
+    try {
+        const [rows] = await db.promise().query(
+            'SELECT status_pagamento, trial_expira FROM usuarios WHERE id = ?', [userId]
+        );
+        if (rows.length === 0) return res.status(404).json({ success: false });
+        res.json({ statusPagamento: rows[0].status_pagamento, trialExpira: rows[0].trial_expira });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
 // --- ROTA DE VERIFICAÇÃO ---
 app.post('/verificar-conta', (req, res) => {
     const { userId, codigoDigitado } = req.body;
