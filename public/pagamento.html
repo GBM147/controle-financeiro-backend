@@ -40,9 +40,13 @@
 <body>
     <div class="container">
         <img src="logo-transparente.jpg" alt="GBM Logo" style="height: 60px; margin-bottom: 20px;">
-        <h2>Quase lá! Ative sua Conta</h2>
-        <p>Para desbloquear o seu painel financeiro, lançamentos de despesas e importador automático de extratos OFX, ative o seu plano Premium.</p>
+        <h2 id="titulo-pagamento">Quase lá! Ative sua Conta</h2>
+        <p id="descricao-pagamento">Para desbloquear o seu painel financeiro, lançamentos de despesas e importador automático de extratos OFX, ative o seu plano Premium.</p>
         
+        <div id="banner-trial" style="display:none; background: rgba(16,185,129,0.12); border: 1px solid #10b981; border-radius: 10px; padding: 12px 18px; margin-bottom: 20px; color: #10b981; font-weight: 600; font-size: 0.95rem;">
+            🎁 Seu 1º mês é <strong>GRÁTIS</strong>! O valor de R$ 19,90 só começa a ser cobrado no 2º mês.
+        </div>
+
         <div class="preco">R$ 19,90</div>
         <p style="margin-bottom: 30px; font-size: 0.9rem;">Assinatura Mensal / Cancele quando quiser</p>
 
@@ -52,6 +56,19 @@
     <script>
         const userId = localStorage.getItem('userIdAtual');
         if(!userId) window.location.href = 'index.html';
+
+        // Mostra o banner de trial se vier da tela de cadastro novo
+        async function verificarStatusTrial() {
+            try {
+                const res = await fetch('/login-status?userId=' + userId);
+                const data = await res.json();
+                if (data.statusPagamento === 'trial') {
+                    document.getElementById('banner-trial').style.display = 'block';
+                    document.getElementById('titulo-pagamento').innerText = 'Ative agora — 1º mês grátis!';
+                }
+            } catch(e) {}
+        }
+        verificarStatusTrial();
 
         async function irParaPagamento() {
             const btn = document.getElementById('btn-action');
