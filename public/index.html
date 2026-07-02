@@ -486,6 +486,7 @@ async function verificarCodigo() {
         const json = await resposta.json();
 
         if (json.success) {
+            localStorage.setItem('userIdAtual', userId);
             alert("Conta validada com sucesso! Seu período gratuito de 30 dias começou! 🎉");
             window.location.href = 'pagamento.html';
         } else {
