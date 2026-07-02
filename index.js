@@ -44,7 +44,7 @@ app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
         const meuDominio = `${req.protocol}://${req.get('host')}`;
         const preApproval = new PreApproval(mpClient);
 
-        // Cria a ASSINATURA diretamente (sem depender de plano pré-criado)
+        // Cria a ASSINATURA diretamente, com 1 mês grátis (trial)
         const resultado = await preApproval.create({
             body: {
                 reason: 'Plano Mensal - GBM',
@@ -52,7 +52,11 @@ app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
                     frequency: 1,
                     frequency_type: 'months',
                     transaction_amount: 19.90,
-                    currency_id: 'BRL'
+                    currency_id: 'BRL',
+                    free_trial: {
+                        frequency: 1,
+                        frequency_type: 'months'
+                    }
                 },
                 back_url: `${meuDominio}/dashboard.html?pago=sucesso`,
                 payer_email: rows[0].email,
