@@ -426,11 +426,10 @@ async function verificarCodigo() {
         const json = await resposta.json();
 
         if (json.success) {
-            alert("Conta validada com sucesso! Bem-vindo(a)!");
-            // Redireciona para o painel principal após o sucesso
-            window.location.href = '/dashboard.html'; 
+            alert("Conta validada com sucesso! Seu período gratuito de 30 dias começou! 🎉");
+            window.location.href = 'pagamento.html';
         } else {
-            alert("Erro: " + json.message); // Ex: Código incorreto
+            alert("Erro: " + json.message);
         }
     } catch (err) {
         console.error(err);
