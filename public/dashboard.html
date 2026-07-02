@@ -380,11 +380,35 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
                 height: auto !important;
             }
 
-            .grafico-wrapper { height: 300px !important; margin-bottom: 20px; }
+            .grafico-wrapper { height: 250px !important; max-height: 250px !important; margin-bottom: 20px; overflow: hidden; }
+            .grafico-wrapper canvas { max-height: 250px !important; }
             
             .container-tabela {
                 height: 400px !important;
                 overflow-x: auto; /* Permite rolar a tabela para os lados se a tela for muito estreita */
+                /* OFX — empilhar no mobile */
+            .card[style*="justify-content: space-between"] {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 15px !important;
+                padding: 15px !important;
+            }
+            .card[style*="justify-content: space-between"] form {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 10px !important;
+            }
+            .card[style*="justify-content: space-between"] form .btn-acao {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                height: 46px !important;
+                font-size: 15px !important;
+            }
+            #nome-arquivo {
+                font-size: 0.8rem !important;
+                word-break: break-all !important;
+            }
             }
             /* 6. Empilhar o painel de Limite de Gastos e Nova Meta no celular */
 .painel-ajustes {
