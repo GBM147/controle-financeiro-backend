@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -344,10 +343,23 @@
 </div>
     <script>
         let dadosRelatorio = [];
-        document.getElementById('mes-ref').value = new Date().getMonth() + 1;
+let CATEGORIAS_TODAS = [];
+document.getElementById('mes-ref').value = new Date().getMonth() + 1;
 
-        const NOMES_MESES = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-                              'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const NOMES_MESES = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                      'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+async function carregarCategorias() {
+    try {
+        const userId = localStorage.getItem('userIdAtual');
+        const res = await fetch(`/categorias?userId=${userId}`);
+        const dados = await res.json();
+        CATEGORIAS_TODAS = dados.todas || [];
+    } catch (e) {
+        console.error('Erro ao carregar categorias:', e);
+    }
+}
+carregarCategorias();
 
         async function gerarRelatorio() {
             const mes = document.getElementById('mes-ref').value;
@@ -452,7 +464,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
 
             let totalReceita = 0, totalDespesa = 0;
             dadosRelatorio.forEach(item => {
-                const v = Math.abs(parseFloat(item.total_movimentado) || 0);
+                const v = Math.abs(parseFloat(item.valor) || 0);
                 if (item.tipo === 'Receita') totalReceita += v;
                 else totalDespesa += v;
             });
@@ -485,7 +497,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
                     return [
                         i.categoria,
                         i.tipo,
-                        (isReceita ? '+ ' : '- ') + 'R$ ' + Math.abs(parseFloat(i.total_movimentado) || 0).toFixed(2)
+                        (isReceita ? '+ ' : '- ') + 'R$ ' + Math.abs(parseFloat(i.valor) || 0).toFixed(2)
                     ];
                 }),
                 startY: 65,
@@ -522,11 +534,18 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
     let txIdAtual = null;
 
         function abrirModal(id, descricao, categoriaAtual) {
-            txIdAtual = id;
-            document.getElementById('modal-desc-tx').innerText = descricao;
-            document.getElementById('modal-select-cat').value = categoriaAtual;
-            document.getElementById('modal-categoria').classList.add('ativo');
-        }
+    txIdAtual = id;
+    document.getElementById('modal-desc-tx').innerText = descricao;
+
+    const select = document.getElementById('modal-select-cat');
+    if (CATEGORIAS_TODAS.length > 0) {
+        select.innerHTML = CATEGORIAS_TODAS
+            .map(c => `<option value="${c}">${c}</option>`)
+            .join('');
+    }
+    document.getElementById('modal-select-cat').value = categoriaAtual;
+    document.getElementById('modal-categoria').classList.add('ativo');
+}
 
         function fecharModal() {
             txIdAtual = null;

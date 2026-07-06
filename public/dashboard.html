@@ -578,6 +578,17 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             <button class="btn-acao" onclick="removerMeta()" style="background: var(--texto-mutated);" title="Remover limite desta categoria">Sem Limite</button>
         </div>
     </div>
+    <div class="grupo-ajuste">
+    <label>Criar Nova Categoria</label>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..." style="width: 160px;">
+        <button class="btn-acao" onclick="criarNovaCategoria()" style="background: #1a56a0;">＋ Criar Categoria</button>
+    </div>
+    <p style="color: var(--texto-mutado); font-size: 0.78rem; margin: 6px 0 0 0;">
+        Suas categorias personalizadas ficam disponíveis só na sua conta.
+    </p>
+    <div id="lista-categorias-personalizadas" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;"></div>
+</div>
             <div class="grupo-ajuste">
         <label>Nova Meta</label>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -735,28 +746,24 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
             }
         }
         function atualizarDropdownCategorias() {
-            const selectMeta = document.getElementById('meta-categoria');
-            if (!selectMeta) return;
+    const selectMeta = document.getElementById('meta-categoria');
+    if (!selectMeta) return;
 
-            selectMeta.innerHTML = '<option value="" disabled selected>Categoria...</option>';
-            
-            const categoriasUnicas = [...new Set(dadosAPI.map(i => i.categoria).filter(c => c))];
-const categorias = [
-    "Alimentação", "Habitação", "Transporte", "Eletricidade / Luz", 
-    "Telecomunicações / Internet", "Pagamento de Fatura", "Pagamento de Boleto", 
-    "Streaming de Vídeo", "Streaming de Música", "Academia e Fitness", 
-    "Saúde", "Educação", "Supermercado", "Restaurantes", "Salário", "Lazer", "Outros"
-];
-            
-            categorias.forEach(padrao => {
-                if (!categoriasUnicas.includes(padrao)) categoriasUnicas.push(padrao);
-            });
+    const selecionadaAntes = selectMeta.value;
+    selectMeta.innerHTML = '<option value="" disabled selected>Categoria...</option>';
 
-            categoriasUnicas.forEach(cat => {
-                selectMeta.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
-        }
+    const categoriasUnicas = [...new Set(dadosAPI.map(i => i.categoria).filter(c => c))];
 
+    CATEGORIAS_DISPONIVEIS.forEach(padrao => {
+        if (!categoriasUnicas.includes(padrao)) categoriasUnicas.push(padrao);
+    });
+
+    categoriasUnicas.forEach(cat => {
+        selectMeta.innerHTML += `<option value="${cat}">${cat}</option>`;
+    });
+
+    if (selecionadaAntes) selectMeta.value = selecionadaAntes;
+}
         function atualizarResumoFinanceiro(saldoBancoReal) {
     let ent = 0, sai = 0;
     dadosAPI.forEach(item => {
@@ -994,12 +1001,98 @@ const categorias = [
                 alert('Erro ao comunicar com o servidor.');
             }
         }
-        const CATEGORIAS_DISPONIVEIS = [
+        let CATEGORIAS_DISPONIVEIS = [
     'Alimentação', 'Transporte', 'Salário', 'Educação', 'Saúde', 'Moradia',
     'Entretenimento', 'Telecomunicações / Internet', 'Supermercado',
     'Igreja / Doações', 'Pagamento de Fatura', 'Pagamento de Boleto',
     'Taxas Bancárias', 'Transferência', 'Crédito Cartão', 'Outros'
 ];
+
+async function carregarCategorias() {
+    try {
+        const userId = localStorage.getItem('userIdAtual');
+        const res = await fetch(`/categorias?userId=${userId}`);
+        const dados = await res.json();
+        CATEGORIAS_DISPONIVEIS = dados.todas || CATEGORIAS_DISPONIVEIS;
+        window._categoriasPersonalizadas = dados.personalizadas || [];
+        preencherSelectsDeCategoria();
+    } catch (e) {
+        console.error('Erro ao carregar categorias:', e);
+    }
+}
+
+function preencherSelectsDeCategoria() {
+    const selectManual = document.getElementById('manual-cat');
+    if (selectManual) {
+        const atual = selectManual.value;
+        selectManual.innerHTML = categoriasOpcoes(atual);
+    }
+    atualizarDropdownCategorias();
+    renderizarCategoriasPersonalizadas();
+}
+
+function renderizarCategoriasPersonalizadas() {
+    const container = document.getElementById('lista-categorias-personalizadas');
+    if (!container) return;
+    const lista = window._categoriasPersonalizadas || [];
+
+    if (lista.length === 0) {
+        container.innerHTML = '<span style="color: var(--texto-mutado); font-size:0.8rem;">Nenhuma categoria personalizada ainda.</span>';
+        return;
+    }
+
+    container.innerHTML = lista.map(c => `
+        <span style="display:inline-flex; align-items:center; gap:6px; background:rgba(26,86,160,0.25); border:1px solid rgba(95,255,168,0.2); padding:5px 10px; border-radius:20px; font-size:0.8rem;">
+            ${c.nome}
+            <button onclick="removerCategoriaPersonalizada(${c.id})" title="Remover categoria" style="background:none; border:none; color:#ff8080; cursor:pointer; font-size:0.9rem; line-height:1;">✕</button>
+        </span>
+    `).join('');
+}
+
+async function removerCategoriaPersonalizada(id) {
+    if (!confirm('Remover esta categoria? Lançamentos já feitos com ela mantêm o nome, mas ela deixará de aparecer nas opções.')) return;
+    const userId = localStorage.getItem('userIdAtual');
+    try {
+        const res = await fetch(`/categorias/${id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            await carregarCategorias();
+        } else {
+            alert(data.error || 'Erro ao remover categoria.');
+        }
+    } catch (e) {
+        alert('Falha na comunicação com o servidor.');
+    }
+}
+
+async function criarNovaCategoria() {
+    const input = document.getElementById('nova-categoria-nome');
+    const nome = input.value.trim();
+    if (!nome) return alert('Digite o nome da categoria.');
+
+    const userId = localStorage.getItem('userIdAtual');
+    try {
+        const res = await fetch('/categorias', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, nome })
+        });
+        const data = await res.json();
+        if (data.success) {
+            input.value = '';
+            await carregarCategorias();
+            gbmAlerta(`Categoria "${nome}" criada! Já está disponível nos seus lançamentos.`);
+        } else {
+            alert(data.error || 'Erro ao criar categoria.');
+        }
+    } catch (e) {
+        alert('Falha na comunicação com o servidor.');
+    }
+}
 
 function categoriasOpcoes(selecionada) {
     return CATEGORIAS_DISPONIVEIS.map(c =>
@@ -1159,6 +1252,7 @@ function abrirPainelAlertas() {
 carregarAlertas();
 setInterval(carregarAlertas, 60000);
         // --- 5. LIGAR O MOTOR ---
+        carregarCategorias();
         carregarDados();
     </script>
     </script>
