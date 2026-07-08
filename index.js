@@ -885,30 +885,6 @@ app.delete('/categorias/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Falha ao remover categoria.' });
     }
 });
-app.get('/manutencao-temporaria-xyz789', async (req, res) => {
-    const chave = req.query.chave;
-    if (chave !== '1234') {
-        return res.status(403).send('Acesso negado.');
-    }
-
-    try {
-        await db.promise().query(`
-            DELETE a1 FROM alertas a1
-            INNER JOIN alertas a2
-            WHERE a1.id > a2.id
-              AND a1.categoria = a2.categoria
-              AND MONTH(a1.data_criacao) = MONTH(a2.data_criacao)
-              AND YEAR(a1.data_criacao) = YEAR(a2.data_criacao)
-        `);
-
-        await db.promise().query('DELETE FROM transacoes');
-
-        res.send('✅ Limpeza concluída: alertas duplicados removidos e todos os lançamentos apagados.');
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('❌ Erro: ' + error.message);
-    }
-});
 // 4. Liga o servidor
 const PORT = process.env.PORT || 3000; 
 app.listen(PORT, '0.0.0.0', () => {
