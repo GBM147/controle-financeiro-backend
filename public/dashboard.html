@@ -664,7 +664,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
     
     const arquivoInput = document.getElementById('arquivo-ofx');
     if (arquivoInput.files.length === 0) {
-        alert('Por favor, selecione um ficheiro .OFX exportado do seu banco primeiro!');
+        gbmAlerta('Selecione um arquivo .OFX antes de processar.', 'aviso');
         return;
     }
 
@@ -904,7 +904,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
         async function salvarMeta() {
             const categoria = document.getElementById('meta-categoria').value;
             const valor = document.getElementById('meta-valor').value;
-            if (!categoria || !valor) return alert("Selecione uma categoria e digite o valor limite.");
+            if (!categoria || !valor) return gbmAlerta('Selecione uma categoria e digite o valor limite.', 'aviso');
             
             try {
                 const userId = localStorage.getItem('userIdAtual');
@@ -916,12 +916,12 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 document.getElementById('meta-valor').value = '';
                 carregarDados();
                 gbmAlerta("Limite salvo com sucesso!");
-            } catch (error) { alert("Erro ao salvar o limite."); }
+            } catch (error) { gbmAlerta('Erro ao salvar o limite.', 'erro'); }
         }
 
         async function removerMeta() {
             const categoria = document.getElementById('meta-categoria').value;
-            if (!categoria) return alert("Selecione uma categoria primeiro.");
+            if (!categoria) return gbmAlerta('Selecione uma categoria primeiro.', 'aviso');
             try {
                 const userId = localStorage.getItem('userIdAtual');
                 await fetch('/metas', {
@@ -932,7 +932,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 document.getElementById('meta-valor').value = '';
                 carregarDados();
                 gbmAlerta("Limite removido!");
-            } catch (error) { alert("Erro ao remover o limite."); }
+            } catch (error) { gbmAlerta('Erro ao remover o limite.', 'erro'); }
         }
         function aplicarCoresFinanceiras() {
             // Procura todos os textos dentro da tabela e dos cards superiores
@@ -958,15 +958,50 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 }
             });
         }
+        let _resolveConfirm = null;
+
         function gbmAlerta(mensagem, tipo = 'info') {
-    const cor = tipo === 'erro' ? 'rgba(239,68,68,0.3)' : 'rgba(95,255,168,0.3)';
-    const icone = tipo === 'erro' ? '❌' : '✅';
+    const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
+                : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
+                :                    'rgba(95,255,168,0.3)';
+    const icone = tipo === 'erro'  ? '❌'
+                : tipo === 'aviso' ? '⚠️'
+                :                    '✅';
+
     document.getElementById('lista-notificacoes-modal').innerHTML = `
-        <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:16px; font-family:'Inter',sans-serif; font-size:0.9rem; line-height:1.5; text-align:center;">
-            <div style="font-size:2rem; margin-bottom:10px;">${icone}</div>
+        <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+            <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
             ${mensagem}
         </div>`;
+
+    document.getElementById('btn-confirmar-modal').style.display = 'none';
+    document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
     document.getElementById('modal-notificacoes').style.display = 'flex';
+    _resolveConfirm = null;
+}
+
+function gbmConfirmar(mensagem) {
+    return new Promise(resolve => {
+        _resolveConfirm = resolve;
+
+        document.getElementById('lista-notificacoes-modal').innerHTML = `
+            <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
+                ${mensagem}
+            </div>`;
+
+        document.getElementById('btn-confirmar-modal').style.display = 'block';
+        document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
+        document.getElementById('modal-notificacoes').style.display = 'flex';
+    });
+}
+
+function fecharModalNotificacoes(confirmado = false) {
+    document.getElementById('modal-notificacoes').style.display = 'none';
+    if (_resolveConfirm) {
+        _resolveConfirm(confirmado);
+        _resolveConfirm = null;
+    }
 }
         // Funções do Menu Lateral (Sidebar)
         function abrirMenuLateral(event) {
@@ -984,9 +1019,8 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
         }
         // --- FUNÇÃO PARA DESFAZER ÚLTIMO LANÇAMENTO ---
         async function desfazerUltimo() {
-            if (!confirm('⚠️ Tem a certeza que deseja APAGAR o ÚLTIMO lançamento que acabou de adicionar?')) {
-                return;
-            }
+            const ok = await gbmConfirmar('Deseja apagar o <strong>último lançamento</strong> adicionado? Esta ação não pode ser desfeita.');
+            if (!ok) return;
 
             try {
                 const res = await fetch('/desfazer-ultimo', { method: 'DELETE' });
@@ -998,7 +1032,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 }
             } catch (error) {
                 console.error('Erro de conexão:', error);
-                alert('Erro ao comunicar com o servidor.');
+                gbmAlerta('Erro ao comunicar com o servidor.', 'erro');
             }
         }
         let CATEGORIAS_DISPONIVEIS = [
@@ -1050,7 +1084,8 @@ function renderizarCategoriasPersonalizadas() {
 }
 
 async function removerCategoriaPersonalizada(id) {
-    if (!confirm('Remover esta categoria? Lançamentos já feitos com ela mantêm o nome, mas ela deixará de aparecer nas opções.')) return;
+    const ok = await gbmConfirmar('Remover esta categoria? Os lançamentos já feitos mantêm o nome, mas ela deixará de aparecer nas opções.');
+    if (!ok) return;
     const userId = localStorage.getItem('userIdAtual');
     try {
         const res = await fetch(`/categorias/${id}`, {
@@ -1062,17 +1097,17 @@ async function removerCategoriaPersonalizada(id) {
         if (data.success) {
             await carregarCategorias();
         } else {
-            alert(data.error || 'Erro ao remover categoria.');
+            gbmAlerta(data.error || 'Erro ao remover categoria.', 'erro');
         }
     } catch (e) {
-        alert('Falha na comunicação com o servidor.');
+        gbmAlerta('Falha na comunicação com o servidor.', 'erro');
     }
 }
 
 async function criarNovaCategoria() {
     const input = document.getElementById('nova-categoria-nome');
     const nome = input.value.trim();
-    if (!nome) return alert('Digite o nome da categoria.');
+    if (!nome) return gbmAlerta('Digite o nome da categoria.', 'aviso');
 
     const userId = localStorage.getItem('userIdAtual');
     try {
@@ -1087,10 +1122,10 @@ async function criarNovaCategoria() {
             await carregarCategorias();
             gbmAlerta(`Categoria "${nome}" criada! Já está disponível nos seus lançamentos.`);
         } else {
-            alert(data.error || 'Erro ao criar categoria.');
+            gbmAlerta(data.error || 'Erro ao criar categoria.', 'erro');
         }
     } catch (e) {
-        alert('Falha na comunicação com o servidor.');
+        gbmAlerta('Falha na comunicação com o servidor.', 'erro');
     }
 }
 
@@ -1188,7 +1223,7 @@ async function salvarObjetivo() {
             const categoria = document.getElementById('objetivo-nome').value.trim();
             const valor = document.getElementById('objetivo-valor').value;
             
-            if (!categoria || !valor) return alert("Por favor, digite o nome da sua Meta (ex: Viagem) e o valor.");
+            if (!categoria || !valor) return gbmAlerta('Digite o nome da meta e o valor objetivo.', 'aviso');
             
             try {
                 // Reaproveitamos a API de metas que já existe e funciona perfeitamente!
@@ -1202,7 +1237,7 @@ async function salvarObjetivo() {
                 document.getElementById('objetivo-valor').value = '';
                 carregarDados();
                 gbmAlerta("Meta criada! Acesse Metas no menu para acompanhar.");
-            } catch (error) { alert("Erro ao criar a meta."); }
+            } catch (error) { gbmAlerta('Erro ao criar a meta.', 'erro'); }
         }
 
 function fecharModalTransacoes() {
@@ -1234,11 +1269,11 @@ async function carregarAlertas() {
 function abrirPainelAlertas() {
     const alertas = window._alertasCache || [];
     if (alertas.length === 0) {
-        alert('Nenhuma notificação por enquanto 🎉');
+        gbmAlerta('Nenhuma notificação por enquanto 🎉');
         return;
     }
-    const texto = alertas.map(a => `• ${a.mensagem}`).join('\n');
-    alert(texto); // dá pra trocar por um modal mais bonito depois
+    const texto = alertas.map(a => `• ${a.mensagem}`).join('<br>');
+    gbmAlerta(texto);
     alertas.forEach(a => {
         if (!a.lida) fetch('/alertas/marcar-lida', {
             method: 'POST', headers: {'Content-Type':'application/json'},
@@ -1264,10 +1299,13 @@ setInterval(carregarAlertas, 60000);
                     <img src="logo-transparente.jpg" style="height:32px; border-radius:6px;">
                     <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
                 </div>
-                <button onclick="fecharModalNotificacoes()" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer;">&times;</button>
+                <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer;">&times;</button>
             </div>
             <div id="lista-notificacoes-modal" style="display:flex; flex-direction:column; gap:12px; max-height:340px; overflow-y:auto;"></div>
-            <button onclick="fecharModalNotificacoes()" style="margin-top:20px; width:100%; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">FECHAR</button>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#246e45'" onmouseout="this.style.background='#2E8B57'">CONFIRMAR</button>
+                <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
+            </div>
         </div>
     </div>
 

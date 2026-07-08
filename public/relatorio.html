@@ -441,7 +441,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
         }
 
         function baixarPDF() {
-            if (dadosRelatorio.length === 0) return alert('Gere o relatório antes de baixar!');
+            if (dadosRelatorio.length === 0) return gbmAlerta('Gere o relatório antes de baixar!', 'aviso');
 
             const mes = document.getElementById('mes-ref').value;
             const ano = document.getElementById('ano-ref').value;
@@ -566,10 +566,10 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
                     fecharModal();
                     gerarRelatorio(); // recarrega o relatório com a nova categoria
                 } else {
-                    alert('Erro ao salvar. Tente novamente.');
+                    gbmAlerta('Erro ao salvar. Tente novamente.', 'erro');
                 }
             } catch (e) {
-                alert('Falha na comunicação com o servidor.');
+                gbmAlerta('Falha na comunicação com o servidor.', 'erro');
             }
         }
 
@@ -577,7 +577,72 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
         document.getElementById('modal-categoria').addEventListener('click', function(e) {
             if (e.target === this) fecharModal();
         });
+
+        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
+        let _resolveConfirm = null;
+
+        function gbmAlerta(mensagem, tipo = 'info') {
+            const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
+                        : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
+                        :                    'rgba(95,255,168,0.3)';
+            const icone = tipo === 'erro'  ? '❌'
+                        : tipo === 'aviso' ? '⚠️'
+                        :                    '✅';
+
+            document.getElementById('lista-notificacoes-modal').innerHTML = `
+                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                    <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
+                    ${mensagem}
+                </div>`;
+
+            document.getElementById('btn-confirmar-modal').style.display = 'none';
+            document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
+            document.getElementById('modal-notificacoes').style.display = 'flex';
+            _resolveConfirm = null;
+        }
+
+        function gbmConfirmar(mensagem) {
+            return new Promise(resolve => {
+                _resolveConfirm = resolve;
+
+                document.getElementById('lista-notificacoes-modal').innerHTML = `
+                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                        <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
+                        ${mensagem}
+                    </div>`;
+
+                document.getElementById('btn-confirmar-modal').style.display = 'block';
+                document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
+                document.getElementById('modal-notificacoes').style.display = 'flex';
+            });
+        }
+
+        function fecharModalNotificacoes(confirmado = false) {
+            document.getElementById('modal-notificacoes').style.display = 'none';
+            if (_resolveConfirm) {
+                _resolveConfirm(confirmado);
+                _resolveConfirm = null;
+            }
+        }
     </script>
-    
+
+    <!-- MODAL DE NOTIFICAÇÕES GBM -->
+    <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
+        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="logo-transparente.jpg" alt="GBM" style="height:28px;">
+                    <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
+                </div>
+                <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            <div id="lista-notificacoes-modal"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#246e45'" onmouseout="this.style.background='#2E8B57'">CONFIRMAR</button>
+                <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
