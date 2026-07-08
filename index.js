@@ -887,7 +887,7 @@ app.delete('/categorias/:id', async (req, res) => {
 });
 app.get('/manutencao-temporaria-xyz789', async (req, res) => {
     const chave = req.query.chave;
-    if (chave !== 'AVNS_zy1vm6uA7xPIdBA0RB2') {
+    if (chave !== '1234') {
         return res.status(403).send('Acesso negado.');
     }
 
