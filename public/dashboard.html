@@ -578,18 +578,24 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             <button class="btn-acao" onclick="removerMeta()" style="background: var(--texto-mutated);" title="Remover limite desta categoria">Sem Limite</button>
         </div>
     </div>
-    <div class="grupo-ajuste">
-    <label>Criar Nova Categoria</label>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..." style="width: 160px;">
-        <button class="btn-acao" onclick="criarNovaCategoria()" style="background: #1a56a0;">＋ Criar Categoria</button>
-    </div>
-    <p style="color: var(--texto-mutado); font-size: 0.78rem; margin: 6px 0 0 0;">
-        Suas categorias personalizadas ficam disponíveis só na sua conta.
-    </p>
-    <div id="lista-categorias-personalizadas" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;"></div>
 </div>
-            <div class="grupo-ajuste">
+
+<div class="painel-ajustes">
+    <div class="grupo-ajuste">
+        <label>Criar Nova Categoria</label>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..." style="width: 160px;">
+            <button class="btn-acao" onclick="criarNovaCategoria()" style="background: #1a56a0;">＋ Criar Categoria</button>
+        </div>
+        <p style="color: var(--texto-mutado); font-size: 0.78rem; margin: 6px 0 0 0;">
+            Suas categorias personalizadas ficam disponíveis só na sua conta.
+        </p>
+        <div id="lista-categorias-personalizadas" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;"></div>
+    </div>
+</div>
+
+<div class="painel-ajustes">
+    <div class="grupo-ajuste">
         <label>Nova Meta</label>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança..." style="width: 160px;">
@@ -597,7 +603,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             <button class="btn-acao" onclick="salvarObjetivo()" style="background: #8b5cf6;">Adicionar Meta</button>
         </div>
     </div>
-    </div>
+</div>
 <div class="painel-ajustes" style="max-width: 260px;">
     <div class="grupo-ajuste">
         <label for="select-tipo">Exibição de Dados</label>
