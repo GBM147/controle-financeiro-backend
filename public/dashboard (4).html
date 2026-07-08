@@ -270,6 +270,8 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 }
 
         .painel-ajustes { margin: 0 20px 20px 20px; padding: 15px 20px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        .linha-paineis { display: flex; gap: 20px; margin: 0 20px 20px 20px; flex-wrap: wrap; }
+        .linha-paineis .painel-ajustes { flex: 1 1 300px; max-width: 360px; margin: 0; }
         .grupo-ajuste { display: flex; flex-direction: column; gap: 5px; }
         .grupo-ajuste label { font-size: 0.85rem; color: var(--texto-principal); font-weight: 600; }
         .grupo-ajuste select, .grupo-ajuste input { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--borda); background: rgba(15, 23, 42, 0.6); color: var(--texto-principal); font-size: 0.9rem; cursor: pointer; outline: none; transition: all 0.3s ease; }
@@ -549,6 +551,8 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         <button class="btn-acao" onclick="desfazerUltimo()" style="background: rgba(255,77,77,0.2); border: 1px solid #ff4d4d; color: #ff4d4d;" title="Desfazer último lançamento">↩ Desfazer</button>
     </div>
 </div>
+<div class="linha-paineis">
+
 <div class="painel-ajustes">
     <div class="grupo-ajuste">
         <label>Limite de Gastos</label>
@@ -603,6 +607,8 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             <button class="btn-acao" onclick="salvarObjetivo()" style="background: #8b5cf6;">Adicionar Meta</button>
         </div>
     </div>
+</div>
+
 </div>
 <div class="painel-ajustes" style="max-width: 260px;">
     <div class="grupo-ajuste">
