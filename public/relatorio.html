@@ -344,6 +344,23 @@
     <script>
         let dadosRelatorio = [];
 let CATEGORIAS_TODAS = [];
+let BANCOS_CORES = {};
+
+async function carregarBancosInfo() {
+    try {
+        const res = await fetch('/bancos-info');
+        BANCOS_CORES = await res.json();
+    } catch (e) {
+        console.error('Erro ao carregar cores de bancos:', e);
+    }
+}
+carregarBancosInfo();
+
+function etiquetaBanco(nomeBanco) {
+    if (!nomeBanco) return '';
+    const cor = BANCOS_CORES[nomeBanco] || '#607d8b';
+    return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;">🏦 ${nomeBanco}</span>`;
+}
 document.getElementById('mes-ref').value = new Date().getMonth() + 1;
 
 const NOMES_MESES = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho',
@@ -405,6 +422,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
                         <thead>
                             <tr>
                                 <th>Categoria</th>
+                                <th>Banco</th>
                                 <th>Tipo</th>
                                 <th style="text-align: right;">Valor</th>
                             </tr>
@@ -427,6 +445,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
                                 ${item.categoria}
                                 <br><button class="btn-editar-cat" onclick="abrirModal(${item.id}, '${descEscapada}', '${item.categoria}')">✏️ editar</button>
                             </td>
+                            <td>${etiquetaBanco(item.banco)}</td>
                             <td>${badge}</td>
                             <td style="text-align: right; font-weight: 700; color: ${cor};">${sinal}R$ ${valor}</td>
                         </tr>`;
@@ -491,11 +510,12 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
             doc.text(`R$ ${saldo.toFixed(2)}`, 134, 56);
 
             doc.autoTable({
-                head: [['Categoria', 'Tipo', 'Valor']],
+                head: [['Categoria', 'Banco', 'Tipo', 'Valor']],
                 body: dadosRelatorio.map(i => {
                     const isReceita = i.tipo === 'Receita';
                     return [
                         i.categoria,
+                        i.banco || '—',
                         i.tipo,
                         (isReceita ? '+ ' : '- ') + 'R$ ' + Math.abs(parseFloat(i.valor) || 0).toFixed(2)
                     ];
@@ -506,17 +526,17 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
                 alternateRowStyles: { fillColor: [245, 247, 250] },
                 didParseCell: function(data) {
                     if (data.cell.section === 'body') {
-                        if (data.column.index === 1) {
+                        if (data.column.index === 2) {
                             data.cell.styles.textColor = data.cell.raw === 'Receita' ? [16, 185, 129] : [239, 68, 68];
                             data.cell.styles.fontStyle = 'bold';
                         }
-                        if (data.column.index === 2) {
+                        if (data.column.index === 3) {
                             data.cell.styles.textColor = String(data.cell.raw).startsWith('+') ? [16, 185, 129] : [239, 68, 68];
                             data.cell.styles.fontStyle = 'bold';
                         }
                     }
                 },
-                columnStyles: { 2: { halign: 'right' } }
+                columnStyles: { 3: { halign: 'right' } }
             });
 
             const pageCount = doc.internal.getNumberOfPages();

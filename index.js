@@ -14,6 +14,38 @@ const ofx = require('node-ofx-parser');
 const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
 // Inicializamos a API de Email (Resend)
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// --- MAPA DE BANCOS (código Febraban -> nome + cor de referência) ---
+const BANCOS_INFO = {
+    '001': { nome: 'Banco do Brasil',  cor: '#F8DE00' },
+    '033': { nome: 'Santander',        cor: '#EC0000' },
+    '104': { nome: 'Caixa Econômica',  cor: '#0066B3' },
+    '237': { nome: 'Bradesco',         cor: '#CC092F' },
+    '341': { nome: 'Itaú',             cor: '#EC7000' },
+    '260': { nome: 'Nubank',           cor: '#820AD1' },
+    '077': { nome: 'Banco Inter',      cor: '#FF7A00' },
+    '212': { nome: 'Banco Original',   cor: '#00AA4F' },
+    '336': { nome: 'C6 Bank',          cor: '#1E1E1E' },
+    '290': { nome: 'PagBank',          cor: '#00C650' },
+    '756': { nome: 'Sicoob',           cor: '#6DB33F' },
+    '748': { nome: 'Sicredi',          cor: '#7CB342' },
+    'MANUAL': { nome: 'Manual', cor: '#8a9ba8' },
+    'OUTRO': { nome: 'Outro banco', cor: '#607d8b' }
+};
+
+// Identifica o banco a partir da árvore já convertida do OFX
+function identificarBanco(rais) {
+    try {
+        const bankId = rais?.BANKMSGSRSV1?.STMTTRNRS?.STMTRS?.BANKACCTFROM?.BANKID;
+        const orgFI  = rais?.SIGNONMSGSRSV1?.SONRS?.FI?.ORG;
+
+        if (bankId && BANCOS_INFO[bankId]) return BANCOS_INFO[bankId].nome;
+        if (orgFI) return orgFI; // usa o nome que o próprio banco colocou no arquivo
+        return 'Outro banco';
+    } catch (e) {
+        return 'Outro banco';
+    }
+}
 // 1. Inicializamos o servidor Express
 const app = express();
 // --- ROTA: CRIAR SESSÃO DE PAGAMENTO (MERCADO PAGO) ---
@@ -132,6 +164,7 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
         const dadosConvertidos = ofx.parse(ofxRawData);
         // 2. Navega pela árvore estrutural padrão de um ficheiro OFX
         const rais = dadosConvertidos.OFX || {};
+        const nomeBanco = identificarBanco(rais);
         const bankMsg = rais.BANKMSGSRSV1 || {};
         const stmtTrnRs = bankMsg.STMTTRNRS || {};
         const stmtRs = stmtTrnRs.STMTRS || {};
@@ -240,12 +273,12 @@ if (!categoria) {
             
             // 5. Salva na base de dados. Se o transacao_id_pluggy já existir, ele simplesmente ignora para não duplicar!
             const sql = `
-                INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao, banco)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE conta_id = conta_id
             `;
             const [resultadoInsert] = await db.promise().query(sql, [
-                contaInternaId, transacaoIdBancario, descricao, valor, tipo, categoria, dataFormatada
+                contaInternaId, transacaoIdBancario, descricao, valor, tipo, categoria, dataFormatada, nomeBanco
             ]);
             
             // affectedRows = 1 significa nova linha. affectedRows = 0 ou 2 significa que já existia e foi ignorada.
@@ -336,6 +369,7 @@ app.get('/resumo-financeiro', async (req, res) => {
             SELECT 
                 t.categoria, 
                 t.tipo,
+                t.banco,
                 SUM(t.valor) AS total_movimentado, 
                 COUNT(t.id) AS qtd_transacoes,
                 AVG(t.valor) AS ticket_medio,
@@ -356,7 +390,7 @@ app.get('/resumo-financeiro', async (req, res) => {
             sql += ` AND YEAR(t.data_transacao) = ?`;
             params.push(ano);
         }
-        sql += ` GROUP BY t.categoria, t.tipo ORDER BY total_movimentado ASC;`;
+        sql += ` GROUP BY t.categoria, t.tipo, t.banco ORDER BY total_movimentado ASC;`;
         const [rows] = await db.promise().query(sql, params);
         
         // --- NOVO: PUXA O SALDO ATUALIZADO DA CONTA ---
@@ -409,9 +443,9 @@ app.post('/transacao-manual', async (req, res) => {
         const [contas] = await db.promise().query('SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
         const contaInternaId = contas.length > 0 ? contas[0].id : 1; 
         const valorFinal = Math.abs(valor);
-        const sql = `INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)`;
-        await db.promise().query(sql, [contaInternaId, transacaoIdGerado, descricao, valorFinal, tipo, categoria, data_transacao]);
+        const sql = `INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao, banco)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        await db.promise().query(sql, [contaInternaId, transacaoIdGerado, descricao, valorFinal, tipo, categoria, data_transacao, 'Manual']);
         console.log(`✍️ Lançamento Manual: ${descricao} | R$ ${valorFinal} | ${data_transacao}`);
         await auditarMetas();
         res.json({ success: true, message: 'Lançamento inserido no MySQL!' });
@@ -466,9 +500,9 @@ async function auditarMetas() {
                 const msg = `Atenção: Você atingiu ${porcentagemAtual.toFixed(1)}% do seu limite de R$ ${limite.toFixed(2)} na categoria ${item.categoria}.`;
 
                 const [check] = await db.promise().query(
-    'SELECT id FROM alertas WHERE categoria = ? AND MONTH(data_criacao) = MONTH(CURRENT_DATE()) AND YEAR(data_criacao) = YEAR(CURRENT_DATE())',
-    [item.categoria]
-);
+                    'SELECT id FROM alertas WHERE categoria = ? AND DATE(data_criacao) = CURRENT_DATE()',
+                    [item.categoria]
+                );
 
                 if (check.length === 0) {
                     await db.promise().query('INSERT INTO alertas (categoria, mensagem) VALUES (?, ?)', [item.categoria, msg]);
@@ -535,7 +569,7 @@ app.get('/relatorio-mensal', async (req, res) => {
 app.get('/relatorio-detalhado', async (req, res) => {
     const { mes, ano, userId } = req.query;
     const sql = `
-        SELECT t.id, t.descricao, t.valor, t.tipo, t.categoria, t.data_transacao
+        SELECT t.id, t.descricao, t.valor, t.tipo, t.categoria, t.data_transacao, t.banco
         FROM transacoes t
         JOIN contas_bancarias cb ON t.conta_id = cb.id
         WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
@@ -769,7 +803,7 @@ app.get('/transacoes-individuais', async (req, res) => {
         const mes = req.query.mes || new Date().getMonth() + 1;
         const ano = req.query.ano || new Date().getFullYear();
         const [transacoes] = await db.promise().query(`
-            SELECT id, descricao, valor, tipo, categoria, data_transacao
+            SELECT id, descricao, valor, tipo, categoria, data_transacao, banco
             FROM transacoes
             WHERE MONTH(data_transacao) = ? AND YEAR(data_transacao) = ?
             ORDER BY data_transacao DESC
@@ -817,6 +851,13 @@ const CATEGORIAS_PADRAO = [
 ];
 
 // Lista as categorias padrão + as personalizadas criadas por este usuário
+// Expõe o mapa de bancos (nome + cor) para o frontend usar nas etiquetas
+app.get('/bancos-info', (req, res) => {
+    const mapa = {};
+    Object.values(BANCOS_INFO).forEach(b => { mapa[b.nome] = b.cor; });
+    res.json(mapa);
+});
+
 app.get('/categorias', async (req, res) => {
     try {
         const { userId } = req.query;
@@ -890,40 +931,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando perfeitamente na porta ${PORT}`);
 });
-const fetch = require('node-fetch');
-
-async function criarPlano() {
-    const response = await fetch('https://api.mercadopago.com/preapproval_plan', {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer SEU_ACCESS_TOKEN',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            reason: 'GBM Financeiro - Plano Premium',
-            auto_recurring: {
-                frequency: 1,
-                frequency_type: 'months',
-                transaction_amount: 19.90,
-                currency_id: 'BRL',
-                free_trial: {
-                    frequency: 1,
-                    frequency_type: 'months'
-                }
-            },
-            back_url: 'https://controle-financeiro-backend-7yvd.onrender.com/pagamento-confirmado',
-            payment_methods_allowed: {
-                payment_types: [{ id: 'credit_card' }]
-            }
-        })
-    });
-
-    const data = await response.json();
-    console.log('ID DO PLANO:', data.id);
-    console.log('Resposta completa:', JSON.stringify(data, null, 2));
-}
-
-criarPlano();
 // Roda a auditoria de metas todos os dias às 08:00 (mesmo sem novo lançamento)
 cron.schedule('0 8 * * *', () => {
     console.log('⏰ Rodando auditoria diária de metas...');
