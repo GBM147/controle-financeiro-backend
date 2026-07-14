@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Acesso - GBM</title>
+    <title>Acesso - Financeiro Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
 :root {
@@ -166,6 +166,10 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
             <label>Senha</label>
             <input type="password" id="login-senha" placeholder="********">
         </div>
+        <div style="display:flex; align-items:center; gap:8px; margin: -8px 0 14px 2px;">
+            <input type="checkbox" id="login-manter-conectado" style="width:16px; height:16px; cursor:pointer; accent-color: #2E8B57;">
+            <label for="login-manter-conectado" style="margin:0; font-weight:400; font-size:0.88rem; cursor:pointer;">Manter conectado</label>
+        </div>
         <button class="btn-submit" onclick="fazerLogin()">Entrar</button>
         <div class="toggle-link">
             Ainda não tem conta? <span onclick="alternarForms('cadastro')">Criar uma agora</span>
@@ -263,6 +267,28 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
 
 
     <script>
+        // Recupera o userId salvo (permanente com "Manter conectado", ou só da aba atual)
+        function pegarUserId() {
+            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        }
+
+        // Se já existe uma sessão salva, pula a tela de login e vai direto pro sistema
+        (async function verificarSessaoExistente() {
+            const userId = pegarUserId();
+            if (!userId) return;
+
+            try {
+                const res = await fetch(`/login-status?userId=${userId}`);
+                const data = await res.json();
+                if (data.statusPagamento) {
+                    window.location.href = data.statusPagamento === 'pago' ? 'dashboard.html' : 'pagamento.html';
+                }
+            } catch (e) {
+                console.error('Erro ao verificar sessão existente:', e);
+                // Se der erro, simplesmente deixa a pessoa na tela de login normalmente
+            }
+        })();
+
         function mascaraTelefone(input) {
     // Remove tudo que não é número
     let v = input.value.replace(/\D/g, "");
@@ -301,9 +327,18 @@ fetch('/login', {
     .then(response => response.json())
 .then(data => {
             if (data.success) {
-            // 1. Guardamos o ID do usuario
+            // 1. Guardamos o ID do usuario — permanente se "Manter conectado" estiver marcado,
+            //    ou só durante essa aba/sessão se não estiver.
+            const manterConectado = document.getElementById('login-manter-conectado').checked;
             document.getElementById('temp-user-id').value = data.userId;
-            localStorage.setItem('userIdAtual', data.userId);
+
+            if (manterConectado) {
+                localStorage.setItem('userIdAtual', data.userId);
+                sessionStorage.removeItem('userIdAtual');
+            } else {
+                sessionStorage.setItem('userIdAtual', data.userId);
+                localStorage.removeItem('userIdAtual');
+            }
 
             // 2. Verifica se a conta já foi ativada
             if (data.verificado) {

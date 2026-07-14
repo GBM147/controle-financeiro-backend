@@ -558,7 +558,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         <a href="metas.html" class="menu-item">🎯 Metas</a>
         
         <div class="divisor"></div>
-        <a href="index.html" class="menu-item texto-vermelho">🚪 Sair</a>
+                <a href="#" class="menu-item texto-vermelho" onclick="fazerLogout(); return false;">🚪 Sair</a>
     </div>
 </div>
 </header>
@@ -567,7 +567,9 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     <div class="card"><h3>Total Recebido (Entradas)</h3><p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p></div>
     <div class="card"><h3>Total Gasto (Saídas)</h3><p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p></div>
     <div class="card"><h3>Resultado do Período</h3><p id="saldo-liquido">R$ 0,00</p></div>
-    <div class="card"><h3>Saldo da Conta 🏦</h3><p id="saldo-banco">R$ 0,00</p></div>
+    <div class="card"><h3>Saldo da Conta 🏦</h3><p id="saldo-banco">R$ 0,00</p>
+        <div id="lista-saldos-bancos" style="display:flex; flex-direction:column; gap:4px; margin-top:8px;"></div>
+    </div>
 </div>
 <div id="modal-transacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; overflow-y:auto;">
     <div style="max-width:850px; margin:40px auto; background:#1e1e1e; border-radius:16px; padding:30px; border:1px solid rgba(255,255,255,0.15);">
@@ -619,7 +621,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 <div class="painel-ajustes" id="painel-limite">
     <div class="grupo-ajuste">
         <label>Limite de Gastos</label>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <select id="meta-categoria" style="width: 140px;">
                 <option value="" disabled selected>Categoria...</option>
                 <option value="Alimentação">Alimentação</option>
@@ -718,7 +720,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 <script>
     // --- GUARDA DE AUTENTICAÇÃO ---
 (async function verificarAcesso() {
-    const userId = localStorage.getItem('userIdAtual');
+    const userId = pegarUserId();
     if (!userId) {
         window.location.href = 'index.html';
         return;
@@ -746,7 +748,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
     // Prepara o arquivo dentro de um pacote de envio (FormData)
     const formData = new FormData();
     formData.append('file', arquivoInput.files[0]);
-    formData.append('userId', localStorage.getItem('userIdAtual'));
+    formData.append('userId', pegarUserId());
 
     try {
         // Feedback visual para o utilizador saber que o sistema está a pensar
@@ -779,6 +781,22 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
             document.body.classList.add('dark-theme');
         }
         let meuChart = null;
+        // Recupera o userId salvo (permanente com "Manter conectado", ou só da aba atual)
+        function pegarUserId() {
+            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('userIdAtual');
+            sessionStorage.removeItem('userIdAtual');
+            window.location.href = 'index.html';
+        }
+
+        // Se não há sessão nenhuma, manda de volta pro login
+        if (!pegarUserId()) {
+            window.location.href = 'index.html';
+        }
+
         let dadosAPI = [];
         let BANCOS_CORES = {};
 
@@ -823,15 +841,16 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 const hoje = new Date();
                 const mes = hoje.getMonth() + 1;
                 const ano = hoje.getFullYear();
-                const userId = localStorage.getItem('userIdAtual');
+                const userId = pegarUserId();
                 const res = await fetch(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}`);
                 const json = await res.json();
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
                 
                 // NOVO: Pega o saldo real vindo do backend
                 const saldoBanco = parseFloat(json.saldo_banco) || 0;
+                const saldosPorBanco = json.saldos_bancos || [];
                 
-                atualizarResumoFinanceiro(saldoBanco); // Passa o saldo para a função
+                atualizarResumoFinanceiro(saldoBanco, saldosPorBanco); // Passa o saldo para a função
                 renderizarVisualizacao();
             } catch (err) { 
                 console.error("Erro ao carregar dados:", err); 
@@ -856,7 +875,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
 
     if (selecionadaAntes) selectMeta.value = selecionadaAntes;
 }
-        function atualizarResumoFinanceiro(saldoBancoReal) {
+        function atualizarResumoFinanceiro(saldoBancoReal, saldosPorBanco = []) {
     let ent = 0, sai = 0;
     dadosAPI.forEach(item => {
         let v = parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, ''));
@@ -879,6 +898,25 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
     elBanco.innerText = `R$ ${saldoBancoReal.toFixed(2)}`;
     elBanco.style.color = saldoBancoReal < 0 ? '#ff4d4d' : '#2ecc71';
     elBanco.style.textShadow = saldoBancoReal < 0 ? '0 0 5px rgba(255,77,77,0.3)' : '0 0 5px rgba(46,204,113,0.3)';
+
+    // NOVO: lista de saldo individual de cada banco, dentro do mesmo card
+    const listaBancos = document.getElementById('lista-saldos-bancos');
+    if (listaBancos) {
+        if (saldosPorBanco.length <= 1) {
+            // Só 1 banco (ou nenhum): não precisa de detalhamento, o total já basta
+            listaBancos.innerHTML = '';
+        } else {
+            listaBancos.innerHTML = saldosPorBanco.map(b => {
+                const cor = BANCOS_CORES[b.banco] || '#607d8b';
+                const valor = parseFloat(b.saldo) || 0;
+                return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; padding:3px 0; border-top:1px solid rgba(255,255,255,0.06);">
+                        <span style="color:${cor}; display:flex; align-items:center; gap:5px;">🏦 ${b.banco}</span>
+                        <span style="font-weight:700; color:${valor < 0 ? '#ff4d4d' : '#b0bec5'};">R$ ${valor.toFixed(2)}</span>
+                    </div>`;
+            }).join('');
+        }
+    }
 }
 
         function renderizarVisualizacao() {
@@ -991,7 +1029,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
             if (!descricao || !valor || !data_transacao) return gbmAlerta("Preencha todos os campos!", 'erro');
 
             try {
-                const userId = localStorage.getItem('userIdAtual');
+                const userId = pegarUserId();
                 const resposta = await fetch('/transacao-manual', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1012,7 +1050,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
             if (!categoria || !valor) return gbmAlerta('Selecione uma categoria e digite o valor limite.', 'aviso');
             
             try {
-                const userId = localStorage.getItem('userIdAtual');
+                const userId = pegarUserId();
                 await fetch('/metas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1028,7 +1066,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
             const categoria = document.getElementById('meta-categoria').value;
             if (!categoria) return gbmAlerta('Selecione uma categoria primeiro.', 'aviso');
             try {
-                const userId = localStorage.getItem('userIdAtual');
+                const userId = pegarUserId();
                 await fetch('/metas', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
@@ -1149,7 +1187,7 @@ function fecharModalNotificacoes(confirmado = false) {
 
 async function carregarCategorias() {
     try {
-        const userId = localStorage.getItem('userIdAtual');
+        const userId = pegarUserId();
         const res = await fetch(`/categorias?userId=${userId}`);
         const dados = await res.json();
         CATEGORIAS_DISPONIVEIS = dados.todas || CATEGORIAS_DISPONIVEIS;
@@ -1191,7 +1229,7 @@ function renderizarCategoriasPersonalizadas() {
 async function removerCategoriaPersonalizada(id) {
     const ok = await gbmConfirmar('Remover esta categoria? Os lançamentos já feitos mantêm o nome, mas ela deixará de aparecer nas opções.');
     if (!ok) return;
-    const userId = localStorage.getItem('userIdAtual');
+    const userId = pegarUserId();
     try {
         const res = await fetch(`/categorias/${id}`, {
             method: 'DELETE',
@@ -1214,7 +1252,7 @@ async function criarNovaCategoria() {
     const nome = input.value.trim();
     if (!nome) return gbmAlerta('Digite o nome da categoria.', 'aviso');
 
-    const userId = localStorage.getItem('userIdAtual');
+    const userId = pegarUserId();
     try {
         const res = await fetch('/categorias', {
             method: 'POST',
@@ -1334,7 +1372,7 @@ async function salvarObjetivo() {
             
             try {
                 // Reaproveitamos a API de metas que já existe e funciona perfeitamente!
-                const userId = localStorage.getItem('userIdAtual');
+                const userId = pegarUserId();
                 await fetch('/metas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1497,6 +1535,7 @@ setInterval(carregarAlertas, 60000);
 
         function iniciarTutorial() {
             _passoAtual = 0;
+            localStorage.setItem('gbm_tutorial_concluido', 'sim');
             document.getElementById('tour-overlay').style.display = 'block';
             renderizarPassoTutorial();
         }

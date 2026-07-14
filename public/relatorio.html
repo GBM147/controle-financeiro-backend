@@ -296,6 +296,9 @@
                 <option value="12">Dezembro</option>
             </select>
             <input type="number" id="ano-ref" value="2026">
+            <select id="banco-ref">
+                <option value="todos">Todos os bancos</option>
+            </select>
             <button class="btn-acao btn-gerar" onclick="gerarRelatorio()">Gerar Relatório</button>
             <button class="btn-acao btn-pdf"   onclick="baixarPDF()">Baixar PDF 📄</button>
         </div>
@@ -342,6 +345,15 @@
     </div>
 </div>
     <script>
+        // Recupera o userId salvo (permanente com "Manter conectado", ou só da aba atual)
+        function pegarUserId() {
+            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        }
+
+        if (!pegarUserId()) {
+            window.location.href = 'index.html';
+        }
+
         let dadosRelatorio = [];
 let CATEGORIAS_TODAS = [];
 let BANCOS_CORES = {};
@@ -368,7 +380,7 @@ const NOMES_MESES = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho',
 
 async function carregarCategorias() {
     try {
-        const userId = localStorage.getItem('userIdAtual');
+        const userId = pegarUserId();
         const res = await fetch(`/categorias?userId=${userId}`);
         const dados = await res.json();
         CATEGORIAS_TODAS = dados.todas || [];
@@ -378,19 +390,36 @@ async function carregarCategorias() {
 }
 carregarCategorias();
 
+async function carregarBancosUsados() {
+    try {
+        const userId = pegarUserId();
+        const res = await fetch(`/bancos-usados?userId=${userId}`);
+        const bancos = await res.json();
+        const select = document.getElementById('banco-ref');
+        bancos.forEach(nome => {
+            select.innerHTML += `<option value="${nome}">${nome}</option>`;
+        });
+    } catch (e) {
+        console.error('Erro ao carregar bancos usados:', e);
+    }
+}
+carregarBancosUsados();
+
         async function gerarRelatorio() {
             const mes = document.getElementById('mes-ref').value;
             const ano = document.getElementById('ano-ref').value;
+            const banco = document.getElementById('banco-ref').value;
             const container = document.getElementById('resultado-relatorio');
             container.innerHTML = '<p class="texto-vazio">Carregando...</p>';
 
             try {
-                const userId = localStorage.getItem('userIdAtual');
-const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${userId}`);
+                const userId = pegarUserId();
+const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${userId}&banco=${encodeURIComponent(banco)}`);
                 dadosRelatorio = await res.json();
 
                 if (dadosRelatorio.length === 0) {
-                    container.innerHTML = `<p class="texto-vazio">Nenhum dado encontrado para ${NOMES_MESES[mes]}/${ano}.</p>`;
+                    const sufixoBanco = banco !== 'todos' ? ` (${banco})` : '';
+                    container.innerHTML = `<p class="texto-vazio">Nenhum dado encontrado para ${NOMES_MESES[mes]}/${ano}${sufixoBanco}.</p>`;
                     return;
                 }
 
@@ -405,7 +434,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
 
                 let html = `
                     <div class="resultado-header">
-                        <h3>${NOMES_MESES[mes]} / ${ano}</h3>
+                        <h3>${NOMES_MESES[mes]} / ${ano}${banco !== 'todos' ? ' — ' + banco : ''}</h3>
                         <div class="resumo-rapido">
                             <div class="resumo-item">Entradas
                                 <strong style="color: var(--cor-receita);">R$ ${totalReceita.toFixed(2)}</strong>
@@ -464,6 +493,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
 
             const mes = document.getElementById('mes-ref').value;
             const ano = document.getElementById('ano-ref').value;
+            const banco = document.getElementById('banco-ref').value;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
@@ -478,7 +508,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
             doc.setFontSize(11);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(176, 190, 197);
-            doc.text(`Relatório Financeiro — ${NOMES_MESES[mes]} / ${ano}`, 14, 25);
+            doc.text(`Relatório Financeiro — ${NOMES_MESES[mes]} / ${ano}${banco !== 'todos' ? ' — ' + banco : ''}`, 14, 25);
             doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
 
             let totalReceita = 0, totalDespesa = 0;
@@ -548,7 +578,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
                     14, doc.internal.pageSize.height - 8);
             }
 
-            doc.save(`GBM-relatorio-${NOMES_MESES[mes]}-${ano}.pdf`);
+            doc.save(`GBM-relatorio-${NOMES_MESES[mes]}-${ano}${banco !== 'todos' ? '-' + banco.replace(/\s+/g, '') : ''}.pdf`);
         }
 
     let txIdAtual = null;
