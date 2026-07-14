@@ -9,8 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-/* Partículas — garante que o conteúdo fique acima do canvas */
-        body > *:not(#particles-canvas) { position: relative; z-index: 1; }
+/* Partículas — garante que o conteúdo principal fique acima do canvas */
+        .gbm-header { z-index: 10; }
+        .grid-cards, .lancamento-rapido, .linha-paineis,
+        .painel-ajustes, .chart-container, .card { position: relative; z-index: 1; }
 
         /* Logo flutuante no cabeçalho */
         .gbm-logo-img {
