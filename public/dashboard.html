@@ -1581,58 +1581,64 @@ function iniciarTutorial() {
             return el;
         }
 
-        function renderizarPassoTutorial() {
-            const passo = PASSOS_TUTORIAL[_passoAtual];
-            const overlay = document.getElementById('tour-overlay');
-            const spot = document.getElementById('tour-spotlight');
-            const caixa = document.getElementById('tour-caixa');
+function renderizarPassoTutorial() {
+    const passo = PASSOS_TUTORIAL[_passoAtual];
+    const overlay = document.getElementById('tour-overlay');
+    const spot = document.getElementById('tour-spotlight');
+    const caixa = document.getElementById('tour-caixa');
 
-            document.getElementById('tour-titulo').innerText = passo.titulo;
-            document.getElementById('tour-texto').innerText = passo.texto;
-            document.getElementById('tour-contador').innerText = `Passo ${_passoAtual + 1} de ${PASSOS_TUTORIAL.length}`;
-            document.getElementById('tour-btn-voltar').style.display = _passoAtual === 0 ? 'none' : 'inline-block';
-            document.getElementById('tour-btn-avancar').innerText = (_passoAtual === PASSOS_TUTORIAL.length - 1) ? 'Concluir' : 'Próximo';
+    document.getElementById('tour-titulo').innerText = passo.titulo;
+    document.getElementById('tour-texto').innerText = passo.texto;
+    document.getElementById('tour-contador').innerText = `Passo ${_passoAtual + 1} de ${PASSOS_TUTORIAL.length}`;
+    document.getElementById('tour-btn-voltar').style.display = _passoAtual === 0 ? 'none' : 'inline-block';
+    document.getElementById('tour-btn-avancar').innerText = (_passoAtual === PASSOS_TUTORIAL.length - 1) ? 'Concluir' : 'Próximo';
 
-            const elAlvo = encontrarElementoPasso(passo);
+    const elAlvo = encontrarElementoPasso(passo);
 
-            if (!elAlvo) {
-                // Passo sem elemento específico: caixa centralizada, sem spotlight visível
-                spot.style.width = '0px';
-                spot.style.height = '0px';
-                spot.style.top = '-9999px';
-                spot.style.left = '-9999px';
-                spot.style.boxShadow = '0 0 0 9999px rgba(0, 6, 14, 0.82)';
-                caixa.classList.add('centralizado');
-                caixa.style.top = '';
-                caixa.style.left = '';
-                return;
-            }
+    if (!elAlvo) {
+        spot.style.cssText = 'width:0; height:0; top:-9999px; left:-9999px; box-shadow:0 0 0 9999px rgba(0,6,14,0.82);';
+        caixa.classList.add('centralizado');
+        caixa.style.top = '';
+        caixa.style.left = '';
+        return;
+    }
 
-            caixa.classList.remove('centralizado');
-            elAlvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    caixa.classList.remove('centralizado');
 
-            setTimeout(() => {
-                const rect = elAlvo.getBoundingClientRect();
-                const folga = 8;
+    // Scroll instantâneo no mobile — evita o problema de timing
+    elAlvo.scrollIntoView({ behavior: 'instant', block: 'center' });
 
-                spot.style.top = (rect.top - folga) + 'px';
-                spot.style.left = (rect.left - folga) + 'px';
-                spot.style.width = (rect.width + folga * 2) + 'px';
-                spot.style.height = (rect.height + folga * 2) + 'px';
+    // Espera o browser aplicar o scroll antes de medir
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            const rect = elAlvo.getBoundingClientRect();
+            const folga = 8;
 
-                // Posiciona a caixa embaixo do elemento (ou em cima, se não couber)
-                const caixaAltura = caixa.offsetHeight || 180;
-                const espacoAbaixo = window.innerHeight - rect.bottom;
-                let topo = (espacoAbaixo > caixaAltura + 30) ? rect.bottom + 16 : rect.top - caixaAltura - 16;
-                topo = Math.max(16, Math.min(topo, window.innerHeight - caixaAltura - 16));
+            spot.style.top    = (rect.top  - folga) + 'px';
+            spot.style.left   = (rect.left - folga) + 'px';
+            spot.style.width  = (rect.width  + folga * 2) + 'px';
+            spot.style.height = (rect.height + folga * 2) + 'px';
+            spot.style.boxShadow = '0 0 0 9999px rgba(0,6,14,0.82)';
 
-                let esquerda = rect.left;
-                esquerda = Math.max(16, Math.min(esquerda, window.innerWidth - 340));
+            const caixaLargura = Math.min(320, window.innerWidth - 32);
+            const caixaAltura  = caixa.offsetHeight || 200;
+            const espacoAbaixo = window.innerHeight - rect.bottom;
 
-                caixa.style.top = topo + 'px';
-                caixa.style.left = esquerda + 'px';
-            }, 280);
-        }
+            let topo = espacoAbaixo > caixaAltura + 30
+                ? rect.bottom + 16
+                : rect.top - caixaAltura - 16;
+
+            topo = Math.max(16, Math.min(topo, window.innerHeight - caixaAltura - 16));
+
+            let esquerda = rect.left;
+            esquerda = Math.max(16, Math.min(esquerda, window.innerWidth - caixaLargura - 16));
+
+            caixa.style.top   = topo + 'px';
+            caixa.style.left  = esquerda + 'px';
+            caixa.style.maxWidth = caixaLargura + 'px';
+        });
+    });
+}
 
         function avancarTutorial() {
             if (_passoAtual >= PASSOS_TUTORIAL.length - 1) {
