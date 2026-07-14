@@ -184,15 +184,14 @@
     <script>
        async function carregarMetas() {
             try {
-                const res = await fetch('/metas-resumo');
+                const userId = localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        const res = await fetch(`/metas-resumo?userId=${userId}`);
                 const json = await res.json();
 
                 let metas = json.data ? json.data : (Array.isArray(json) ? json : []);
                 
-                const despesasPadrao = ["Alimentação", "Habitação", "Transporte", "Eletricidade / Luz", "Telecomunicações / Internet", "Pagamento de Fatura", "Pagamento de Boleto", "Streaming de Vídeo", "Streaming de Música", "Academia e Fitness", "Saúde", "Educação", "Supermercado", "Restaurantes", "Salário", "Lazer", "Outros"];
-
-                // FILTRO MÁGICO INVERSO: Mantém apenas o que NÃO está na lista padrão
-                metas = metas.filter(m => m.categoria && !despesasPadrao.includes(m.categoria));
+                // Mostra todas as metas do usuário
+                metas = metas.filter(m => m.categoria);
 
                 const container = document.getElementById('lista-metas');
                 
