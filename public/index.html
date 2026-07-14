@@ -348,7 +348,8 @@ fetch('/login', {
 } else {
     window.location.href = 'pagamento.html';
 }
-                // 🔒 Conta nova: Esconde o login e mostra a tela de código
+            } else {
+                // 🔒 Conta ainda não verificada: esconde o login e mostra a tela de código
                 document.getElementById('form-login').style.display = 'none';
                 document.getElementById('form-escolha-validacao').style.display = 'block';
             }
