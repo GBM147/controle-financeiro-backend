@@ -2,271 +2,481 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Acesso - Financeiro Pro</title>
+    <title>Acesso - GBM Finance</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-:root {
-    --bg-principal: #09101a; 
-    --bg-card: #111c2e; 
-    --texto-principal: #e8ecef;
-    --texto-mutated: #8a9ba8; 
-    --borda: #1f3047; 
-    --cor-destaque: #205c4e; 
-    --cor-hover: #297a66; 
-    --cor-ouro: #c89f53; 
-    --cor-sucesso: #10b981;
-}
+        /* --- ESTILOS GERAIS & BACKGROUND --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-body { 
-    font-family: 'Inter', sans-serif; 
-    
-    /* Define a imagem como fundo de tela inteira */
-    background-image: url('fundo-marmore.jpg'); 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    
-    /* Escurece a imagem de fundo em 70% */
-    background-color: rgba(9, 16, 26, 0.7);
-    background-blend-mode: overlay;
-    
-    color: var(--texto-principal); 
-    min-height: 100vh; 
-    display: flex; 
-    flex-direction: column;
-    justify-content: center; 
-    align-items: center; 
-    margin: 0; 
-    padding: 30px 15px;
-    box-sizing: border-box;
-    position: relative; 
-    overflow-x: hidden;
-}  
+        body {
+            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(9, 16, 26, 0.6) 0%, rgba(9, 16, 26, 0.85) 100%), 
+                        url('fundo-marmore.jpg') no-repeat center center fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-/* O Efeito de Vidro (Glassmorphism) na caixa de Login */
-.auth-container { 
-    background: rgba(17, 28, 46, 0.65); 
-    backdrop-filter: blur(12px); 
-    width: 100%; 
-    max-width: 400px; 
-    padding: 40px; 
-    border-radius: 12px; 
-    box-shadow: 0 15px 35px rgba(0,0,0,0.8); 
-    border: 1px solid rgba(255, 255, 255, 0.1); 
-    position: relative; 
-    overflow: visible;
-    margin: 0 auto;
-}
+        /* Canvas de Partículas Douradas */
+        #particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
 
-@media (max-width: 480px) {
-    .auth-container {
-        padding: 25px 20px;
-        max-width: 100%;
-    }
-    .topo-logo img {
-        max-width: 130px;
-    }
-    h2 {
-        font-size: 1.4rem;
-    }
-}
+        /* --- CARD DE LOGIN TRANSLÚCIDO (GLASSMORPHISM) --- */
+        .login-container {
+            position: relative;
+            z-index: 2;
+            background: rgba(17, 28, 46, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            margin: 20px auto;
+        }
 
-h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; }
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                max-width: 100%;
+                border-radius: 12px;
+            }
+        }
 
-.form-group { margin-bottom: 15px; }
-.form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: var(--texto-mutated); }
+        /* Logo Animado */
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6));
+            animation: float 4s ease-in-out infinite;
+        }
 
-/* Os campos de texto com fundo azul profundo */
-.form-group input { 
-    width: 100%; 
-    padding: 12px; 
-    border-radius: 8px; 
-    border: 1px solid var(--borda); 
-    background: #060a12; 
-    color: var(--texto-principal); 
-    font-size: 1rem; 
-    box-sizing: border-box; 
-    transition: 0.3s; 
-}
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
 
-/* Borda dourada ao clicar no campo */
-.form-group input:focus { 
-    outline: none; 
-    border-color: var(--cor-ouro); 
-    box-shadow: 0 0 0 2px rgba(200, 159, 83, 0.2); 
-}
+        h2 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
 
-.btn-submit { 
-    width: 100%; 
-    padding: 12px; 
-    background: var(--cor-destaque); 
-    color: white; 
-    border: 1px solid #18473c; 
-    border-radius: 8px; 
-    font-size: 1rem; 
-    font-weight: bold; 
-    cursor: pointer; 
-    transition: all 0.3s ease; 
-    margin-top: 10px; 
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
+        .subtitle {
+            color: #b3b3b3;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
 
-.btn-submit:hover { 
-    background: var(--cor-hover); 
-    transform: translateY(-2px); 
-    box-shadow: 0 4px 12px rgba(32, 92, 78, 0.4); 
-}
+        /* --- INPUTS COM LABELS FLUTUANTES --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 22px;
+            text-align: left;
+        }
 
-.toggle-link { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--texto-mutated); }
-.toggle-link span { color: var(--cor-ouro); cursor: pointer; font-weight: bold; transition: 0.2s; }
-.toggle-link span:hover { color: #e0b769; text-decoration: none; }
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #060a12;
+            border: 1px solid #1f3047;
+            border-radius: 10px;
+            outline: none;
+            color: #ffffff;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
 
-#form-cadastro { display: none; }
-#form-escolha-validacao {
-    display: none; 
-    background: #060a12; 
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    border: 1px solid var(--borda);
-}
-#form-validar-codigo { display: none; text-align: center; }
-.topo-logo {
-    text-align: center;
-    margin-bottom: 25px; /* Dá um respiro entre o logo e a caixa de vidro */
-    z-index: 10; /* Garante que fica sempre por cima do fundo */
-}
+        .input-group label {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a9ba8;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
 
-.topo-logo img {
-    max-width: 180px; /* Tamanho elegante para o topo */
-    border-radius: 10px;
-    /* Se usar uma imagem sem fundo (PNG), essa sombra dá um efeito 3D flutuante lindo: */
-    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6));
-}
+        /* Comportamento de flutuar quando focado ou preenchido */
+        .input-group input:focus ~ label,
+        .input-group input:not(:placeholder-shown) ~ label {
+            top: -10px;
+            left: 10px;
+            transform: translateY(0) scale(0.85);
+            color: #c89f53; /* Dourado GBM */
+            font-weight: 600;
+            background: #060a12; /* Fundo para cobrir a borda ao flutuar */
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        /* Borda dourada e glow ao focar */
+        .input-group input:focus {
+            border-color: #c89f53;
+            box-shadow: 0 0 12px rgba(200, 159, 83, 0.25);
+        }
+
+        /* --- CONFIGURAÇÕES EXTRAS --- */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+
+        .remember-me {
+            color: #8a9ba8;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember-me input {
+            margin-right: 8px;
+            accent-color: #10b981;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .forgot-pass {
+            color: #c89f53;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .forgot-pass:hover {
+            color: #e0b769;
+            text-decoration: underline;
+        }
+
+        /* --- BOTÃO ESMERALDA COM SHINE --- */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #205c4e; /* Esmeralda escuro do seu projeto */
+            border: 1px solid #18473c;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(32, 92, 78, 0.3);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .btn-login:hover {
+            background: #297a66;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(32, 92, 78, 0.5);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        /* Efeito de Brilho Correndo (Shine) */
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 30%;
+            height: 200%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(30deg);
+            animation: shine 4s infinite ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { left: -60%; }
+            15% { left: 130%; }
+            100% { left: 130%; }
+        }
+
+        .signup-prompt {
+            margin-top: 25px;
+            color: #8a9ba8;
+            font-size: 14px;
+        }
+
+        .signup-prompt span {
+            color: #10b981;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .signup-prompt span:hover {
+            color: #34d399;
+            text-decoration: underline;
+        }
+
+        /* --- RODAPÉ COM VERSÍCULO --- */
+        .login-footer {
+            position: relative;
+            z-index: 2;
+            margin-top: 25px;
+            max-width: 420px;
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        .verse {
+            font-style: italic;
+            color: #e2e8f0;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .reference {
+            color: #c89f53;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
     </style>
 </head>
 <body>
-    <div class="topo-logo">
-    <img src="logo-transparente.jpg" alt="Guardian of Budget & Money">
-</div>
 
-<div class="auth-container">
-    
-    <div id="form-login">
-        <div style="text-align: center; margin-bottom: 15px;">   
-        </div>
-        
-        <h2>Bem-vindo de volta</h2>
-        <div class="form-group">
-            <label>E-mail</label>
-            <input type="email" id="login-identificacao" placeholder="Digite seu E-mail">
-        </div>
-        <div class="form-group">
-            <label>Senha</label>
-            <input type="password" id="login-senha" placeholder="********">
-        </div>
-        <div style="display:flex; align-items:center; gap:8px; margin: -8px 0 14px 2px;">
-            <input type="checkbox" id="login-manter-conectado" style="width:16px; height:16px; cursor:pointer; accent-color: #2E8B57;">
-            <label for="login-manter-conectado" style="margin:0; font-weight:400; font-size:0.88rem; cursor:pointer;">Manter conectado</label>
-        </div>
-        <button class="btn-submit" onclick="fazerLogin()">Entrar</button>
-        <div class="toggle-link">
-            Ainda não tem conta? <span onclick="alternarForms('cadastro')">Criar uma agora</span>
-        </div>
-        <div class="toggle-link">
-            <span onclick="mostrarRecuperacao()">Esqueceu sua senha?</span>
-        </div>
-    </div>
-    <div id="form-cadastro" style="display: none;">
-        <div style="text-align: center; margin-bottom: 15px;">
-        </div>
-        <h2>Criar Conta</h2>
-        <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;">
-                <label>Nome</label>
-                <input type="text" id="cad-nome" placeholder="João">
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="login-container">
+        <div id="form-login">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Bem-vindo de volta</h2>
+            <p class="subtitle">Entre na sua conta para continuar</p>
+
+            <div class="input-group">
+                <input type="email" id="login-identificacao" placeholder=" " required>
+                <label>E-mail</label>
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>Sobrenome</label>
-                <input type="text" id="cad-sobrenome" placeholder="Silva">
+
+            <div class="input-group">
+                <input type="password" id="login-senha" placeholder=" " required>
+                <label>Senha</label>
             </div>
+
+            <div class="form-options">
+                <label class="remember-me" for="login-manter-conectado">
+                    <input type="checkbox" id="login-manter-conectado">
+                    <span>Manter conectado</span>
+                </label>
+                <span class="forgot-pass" onclick="mostrarRecuperacao()">Esqueceu sua senha?</span>
+            </div>
+
+            <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+
+            <p class="signup-prompt">
+                Ainda não tem conta? <span onclick="alternarForms('cadastro')">Criar uma agora</span>
+            </p>
         </div>
-        <div class="form-group">
-            <label>E-mail</label>
-            <input type="email" id="cad-email" placeholder="joao@email.com">
+
+        <div id="form-cadastro" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo" style="width: 90px; margin-bottom: 15px;">
+            <h2>Criar Conta</h2>
+            
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex: 1;">
+                    <input type="text" id="cad-nome" placeholder=" ">
+                    <label>Nome</label>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <input type="text" id="cad-sobrenome" placeholder=" ">
+                    <label>Sobrenome</label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <input type="email" id="cad-email" placeholder=" ">
+                <label>E-mail</label>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="cad-telefone" placeholder=" " maxlength="15" oninput="mascaraTelefone(this)">
+                <label>Telefone</label>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 10px;">
+                <input type="password" id="cad-senha" placeholder=" ">
+                <label>Senha</label>
+            </div>
+            <div style="text-align: left; margin-bottom: 25px;">
+                <small style="color: #8a9ba8; font-size: 0.75rem;">Deve conter letras maiúsculas, minúsculas e números.</small>
+            </div>
+
+            <button class="btn-login" onclick="registrarUsuario()" style="background: #10b981; border-color: #059669;">Registrar e Validar</button>
+            
+            <p class="signup-prompt">
+                Já tem uma conta? <span onclick="alternarForms('login')">Fazer login</span>
+            </p>
         </div>
-        <div class="form-group">
-            <label>Telefone</label>
-            <input type="text" id="cad-telefone" placeholder="(00) 00000-0000" maxlength="15" oninput="mascaraTelefone(this)">
+
+        <div id="form-escolha-validacao" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Verificação</h2>
+            <p class="subtitle" style="margin-bottom: 25px;">Enviaremos um código de 6 dígitos para o seu e-mail.</p>
+            
+            <button class="btn-login" onclick="enviarCodigo('email')" style="margin-bottom: 15px;">📧 Receber Código por E-mail</button>
+            <input type="hidden" id="temp-user-id">
         </div>
-        <div class="form-group">
-            <label>Senha</label>
-            <input type="password" id="cad-senha" placeholder="Mínimo 8 caracteres">
-            <small style="color: var(--texto-mutated); font-size: 0.7rem;">
-                Deve conter letras maiúsculas, minúsculas e números.
-            </small>
+
+        <div id="form-validar-codigo" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Código Enviado</h2>
+            <p class="subtitle">Insira os 6 dígitos que recebeu:</p>
+            
+            <div class="input-group">
+                <input type="text" id="codigo-input" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 12px; font-size: 1.5rem; font-weight: bold; padding-left: 24px;">
+                <label style="left: 50%; transform: translate(-50%, -50%);">000000</label>
+            </div>
+            
+            <button class="btn-login" onclick="verificarCodigo()">Validar Agora</button>
+            
+            <p class="signup-prompt">
+                <span id="reenviar-link-codigo" onclick="reenviarCodigoEmail()">Reenviar código</span>
+                <span id="reenviar-timer-codigo" style="display:none; color: #8a9ba8; cursor: default;"></span>
+            </p>
         </div>
-        <button class="btn-submit" onclick="registrarUsuario()" style="background: var(--cor-sucesso);">Registrar e Validar E-mail</button>
-        <div class="toggle-link">
-            Já tem uma conta? <span onclick="alternarForms('login')">Fazer login</span>
+
+        <div id="form-esqueci-senha" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Recuperar Senha</h2>
+            <p class="subtitle">Informe seu e-mail cadastrado:</p>
+            
+            <div class="input-group">
+                <input type="email" id="recuperar-email" placeholder=" ">
+                <label>E-mail</label>
+            </div>
+            
+            <button class="btn-login" onclick="solicitarRecuperacao()">Enviar Código</button>
+            
+            <p class="signup-prompt">
+                <span onclick="alternarForms('login')">Voltar ao login</span>
+            </p>
+        </div>
+
+        <div id="form-redefinir-senha" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Nova Senha</h2>
+            <p class="subtitle">Insira o código recebido e a nova senha:</p>
+            
+            <input type="hidden" id="temp-recuperar-email">
+            
+            <div class="input-group">
+                <input type="text" id="redefinir-codigo" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.2rem; font-weight: bold;">
+                <label>Código de 6 dígitos</label>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="redefinir-senha-nova" placeholder=" ">
+                <label>Nova Senha</label>
+            </div>
+            
+            <button class="btn-login" onclick="redefinirSenha()">Salvar Nova Senha</button>
+            
+            <p class="signup-prompt">
+                <span id="reenviar-link-senha" onclick="reenviarCodigoSenha()">Reenviar código</span>
+                <span id="reenviar-timer-senha" style="display:none; color: #8a9ba8; cursor: default;"></span>
+            </p>
         </div>
     </div>
 
-    <div id="form-escolha-validacao" style="display: none; text-align: center;">
-        <h2 style="color: white; margin-bottom: 20px;">Verificação por E-mail</h2>
-        <p style="color: #ccc; margin-bottom: 20px;">Enviaremos um código de 6 dígitos para o seu e-mail.</p>
-        <button class="btn-submit" onclick="enviarCodigo('email')" style="margin-bottom: 10px;">📧 Receber Código por E-mail</button>
-        <input type="hidden" id="temp-user-id">
-    </div>
-
-    <div id="form-validar-codigo" style="display: none; text-align: center;">
-        <h2 style="color: white; margin-bottom: 10px;">Código de Verificação</h2>
-        <p style="color: #ccc; margin-bottom: 15px;">Insira os 6 dígitos que recebeu:</p>
-        <div class="form-group">
-            <input type="text" id="codigo-input" placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; font-weight: bold;">
-        </div>
-        <button class="btn-submit" onclick="verificarCodigo()">Validar Agora</button>
-        <div class="toggle-link">
-            <span id="reenviar-link-codigo" onclick="reenviarCodigoEmail()">Reenviar código</span>
-            <span id="reenviar-timer-codigo" style="display:none; color: var(--texto-mutated);"></span>
-        </div>
-    </div>
-
-    <div id="form-esqueci-senha" style="display: none; text-align: center;">
-        <h2 style="color: white; margin-bottom: 10px;">Recuperar Senha</h2>
-        <p style="color: #ccc; margin-bottom: 15px;">Informe seu e-mail cadastrado:</p>
-        <div class="form-group">
-            <label>E-mail</label>
-            <input type="email" id="recuperar-email" placeholder="joao@email.com">
-        </div>
-        <button class="btn-submit" onclick="solicitarRecuperacao()">Enviar Código</button>
-        <div class="toggle-link">
-            <span onclick="alternarForms('login')">Voltar ao login</span>
-        </div>
-    </div>
-
-    <div id="form-redefinir-senha" style="display: none; text-align: center;">
-        <h2 style="color: white; margin-bottom: 10px;">Nova Senha</h2>
-        <p style="color: #ccc; margin-bottom: 15px;">Insira o código recebido e a nova senha:</p>
-        <input type="hidden" id="temp-recuperar-email">
-        <div class="form-group">
-            <input type="text" id="redefinir-codigo" placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; font-weight: bold;">
-        </div>
-        <div class="form-group">
-            <label>Nova Senha</label>
-            <input type="password" id="redefinir-senha-nova" placeholder="Mínimo 8 caracteres">
-        </div>
-        <button class="btn-submit" onclick="redefinirSenha()">Salvar Nova Senha</button>
-        <div class="toggle-link">
-            <span id="reenviar-link-senha" onclick="reenviarCodigoSenha()">Reenviar código</span>
-            <span id="reenviar-timer-senha" style="display:none; color: var(--texto-mutated);"></span>
-        </div>
-    </div>
-    </div>
-
+    <footer class="login-footer">
+        <p class="verse">“O sábio economiza e tem sempre bastante comida e dinheiro em sua casa, mas o tolo gasta todo o seu dinheiro assim que o recebe.”</p>
+        <span class="reference">PROVÉRBIOS 21:20</span>
+    </footer>
 
     <script>
+        // --- 1. SCRIPT DAS PARTÍCULAS DOURADAS ---
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.size = Math.random() * 2.5 + 0.8;
+                this.speedY = Math.random() * 1.2 + 0.3;
+                this.opacity = Math.random() * 0.4 + 0.2;
+            }
+            update() {
+                this.y -= this.speedY;
+                if (this.y < -10) {
+                    this.y = canvas.height + 10;
+                    this.x = Math.random() * canvas.width;
+                    this.opacity = Math.random() * 0.4 + 0.2;
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`; 
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const numberOfParticles = Math.floor((canvas.width * canvas.height) / 15000);
+            for (let i = 0; i < Math.min(numberOfParticles, 65); i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        initParticles();
+        animate();
+
+        // --- 2. SCRIPT ORIGINAL DO SEU BACKEND ---
+
         // Recupera o userId salvo (permanente com "Manter conectado", ou só da aba atual)
         function pegarUserId() {
             return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
@@ -285,338 +495,319 @@ h2 { text-align: center; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; 
                 }
             } catch (e) {
                 console.error('Erro ao verificar sessão existente:', e);
-                // Se der erro, simplesmente deixa a pessoa na tela de login normalmente
             }
         })();
 
         function mascaraTelefone(input) {
-    // Remove tudo que não é número
-    let v = input.value.replace(/\D/g, "");
-    
-    // Aplica a máscara (XX) XXXXX-XXXX
-    v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
-    v = v.replace(/(\d)(\d{4})$/, "$1-$2");
-    
-    input.value = v;
-}
+            let v = input.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+            input.value = v;
+        }
+
         // Função para alternar entre as telas de Login e Cadastro
         function alternarForms(tela) {
             document.getElementById('form-login').style.display = tela === 'login' ? 'block' : 'none';
             document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
         }
 
+        function fazerLogin() {
+            const emailCpf = document.getElementById('login-identificacao').value;
+            const senha = document.getElementById('login-senha').value;
 
-function fazerLogin() {
-    // Agora sim! Os IDs exatos que estão na sua linha 48 e 52:
-    const emailCpf = document.getElementById('login-identificacao').value;
-    const senha = document.getElementById('login-senha').value;
-
-    if (!emailCpf || !senha) {
-        gbmAlerta("Por favor, preencha o e-mail e a senha.", 'aviso');
-        return;
-    }
-
-    // Envia para o servidor
-fetch('/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ identificacao: emailCpf, senha: senha }) 
-    })
-    .then(response => response.json())
-.then(data => {
-            if (data.success) {
-            // 1. Guardamos o ID do usuario — permanente se "Manter conectado" estiver marcado,
-            //    ou só durante essa aba/sessão se não estiver.
-            const manterConectado = document.getElementById('login-manter-conectado').checked;
-            document.getElementById('temp-user-id').value = data.userId;
-
-            if (manterConectado) {
-                localStorage.setItem('userIdAtual', data.userId);
-                sessionStorage.removeItem('userIdAtual');
-            } else {
-                sessionStorage.setItem('userIdAtual', data.userId);
-                localStorage.removeItem('userIdAtual');
+            if (!emailCpf || !senha) {
+                gbmAlerta("Por favor, preencha o e-mail e a senha.", 'aviso');
+                return;
             }
 
-            // 2. Verifica se a conta já foi ativada
-            if (data.verificado) {
-                // 🚀 CHECA A CATRACA DO PAGAMENTO ANTES DE ENTRAR NO SISTEMA
-                if (data.statusPagamento === 'pago') {
-    window.location.href = 'dashboard.html';
-} else {
-    window.location.href = 'pagamento.html';
-}
-            } else {
-                // 🔒 Conta ainda não verificada: esconde o login e mostra a tela de código
-                document.getElementById('form-login').style.display = 'none';
-                document.getElementById('form-escolha-validacao').style.display = 'block';
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identificacao: emailCpf, senha: senha }) 
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const manterConectado = document.getElementById('login-manter-conectado').checked;
+                    document.getElementById('temp-user-id').value = data.userId;
+
+                    if (manterConectado) {
+                        localStorage.setItem('userIdAtual', data.userId);
+                        sessionStorage.removeItem('userIdAtual');
+                    } else {
+                        sessionStorage.setItem('userIdAtual', data.userId);
+                        localStorage.removeItem('userIdAtual');
+                    }
+
+                    if (data.verificado) {
+                        if (data.statusPagamento === 'pago') {
+                            window.location.href = 'dashboard.html';
+                        } else {
+                            window.location.href = 'pagamento.html';
+                        }
+                    } else {
+                        document.getElementById('form-login').style.display = 'none';
+                        document.getElementById('form-escolha-validacao').style.display = 'block';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro de conexão:', error);
+                gbmAlerta('Erro ao tentar conectar com o servidor.', 'erro');
+            });
+        }
+
+        async function registrarUsuario() {
+            const inputs = {
+                nome: document.getElementById('cad-nome'),
+                sobrenome: document.getElementById('cad-sobrenome'),
+                email: document.getElementById('cad-email'),
+                telefone: document.getElementById('cad-telefone'),
+                senha: document.getElementById('cad-senha')
+            };
+
+            let camposVazios = false;
+
+            for (const key in inputs) {
+                inputs[key].style.border = "1px solid #1f3047"; 
+                if (!inputs[key].value.trim()) {
+                    inputs[key].style.border = "1px solid red";
+                    camposVazios = true;
+                }
+            }
+
+            if (camposVazios) {
+                return gbmAlerta("Todos os campos devem ser preenchidos. Por favor, verifique os campos destacados em vermelho.", 'aviso');
+            }
+
+            const nome = inputs.nome.value.trim();
+            const sobrenome = inputs.sobrenome.value.trim();
+            const email = inputs.email.value.trim();
+            const telefone = inputs.telefone.value.trim();
+            const senha = inputs.senha.value;
+
+            const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            if (!regexSenha.test(senha)) {
+                inputs.senha.style.border = "1px solid red";
+                return gbmAlerta("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.", 'aviso');
+            }
+
+            try {
+                const resposta = await fetch('/cadastro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, sobrenome, email, telefone, senha })
+                });
+                
+                const json = await resposta.json();
+
+                if (json.success) {
+                    document.getElementById('form-cadastro').style.display = 'none';
+                    document.getElementById('form-escolha-validacao').style.display = 'block';
+                    document.getElementById('temp-user-id').value = json.userId;
+                } else {
+                    gbmAlerta("Erro: " + json.message, 'erro');
+                }
+            } catch (err) {
+                console.error(err);
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
             }
         }
-        })
-        .catch(error => {
-            console.error('Erro de conexão:', error);
-            gbmAlerta('Erro ao tentar conectar com o servidor.', 'erro');
-        });
-    }
-async function registrarUsuario() {
-    // 1. Mapeamos os elementos do HTML (em vez de pegar só os valores)
-    const inputs = {
-        nome: document.getElementById('cad-nome'),
-        sobrenome: document.getElementById('cad-sobrenome'),
-        email: document.getElementById('cad-email'),
-        telefone: document.getElementById('cad-telefone'),
-        senha: document.getElementById('cad-senha')
-    };
 
-    let camposVazios = false;
+        async function enviarCodigo(canal) {
+            const userId = document.getElementById('temp-user-id').value;
+            gbmAlerta("Enviando código via " + canal + "...", 'aviso');
 
-    // 2. Limpar erros antigos e verificar quem está vazio
-    for (const key in inputs) {
-        // Reseta a borda para a cor padrão (cinza escuro)
-        inputs[key].style.border = "1px solid #333"; 
-        
-        // Se o valor, sem espaços, estiver vazio, pinta de vermelho
-        if (!inputs[key].value.trim()) {
-            inputs[key].style.border = "1px solid red";
-            camposVazios = true;
+            const resposta = await fetch('/enviar-codigo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, canal })
+            });
+
+            const json = await resposta.json();
+            if (json.success) {
+                document.getElementById('form-escolha-validacao').style.display = 'none';
+                document.getElementById('form-validar-codigo').style.display = 'block';
+                iniciarCronometroReenvio('reenviar-link-codigo', 'reenviar-timer-codigo');
+            } else {
+                gbmAlerta("Erro ao enviar código: " + json.message, 'erro');
+            }
         }
-    }
 
-    // 3. Trava: Se algum campo ficou vazio, para tudo aqui
-    if (camposVazios) {
-        return gbmAlerta("Todos os campos devem ser preenchidos. Por favor, verifique os campos destacados em vermelho.", 'aviso');
-    }
+        function iniciarCronometroReenvio(linkId, timerId, segundos = 30) {
+            const link = document.getElementById(linkId);
+            const timer = document.getElementById(timerId);
+            let restante = segundos;
 
-    // 4. Se tudo estiver preenchido, pegamos os valores reais
-    const nome = inputs.nome.value.trim();
-    const sobrenome = inputs.sobrenome.value.trim();
-    const email = inputs.email.value.trim();
-    const telefone = inputs.telefone.value.trim();
-    const senha = inputs.senha.value;
-
-    // 5. Trava da Senha (com borda vermelha também!)
-    const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!regexSenha.test(senha)) {
-        inputs.senha.style.border = "1px solid red"; // Destaca a senha
-        return gbmAlerta("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.", 'aviso');
-    }
-
-    try {
-        const resposta = await fetch('/cadastro', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome, sobrenome, email, telefone, senha })
-        });
-        
-        const json = await resposta.json();
-
-        if (json.success) {
-            document.getElementById('form-cadastro').style.display = 'none';
-            document.getElementById('form-escolha-validacao').style.display = 'block';
-            document.getElementById('temp-user-id').value = json.userId;
-        } else {
-            gbmAlerta("Erro: " + json.message, 'erro');
-        }
-    } catch (err) {
-        console.error(err);
-        gbmAlerta("Falha na comunicação com o servidor.", 'erro');
-    }
-}
-async function enviarCodigo(canal) {
-    const userId = document.getElementById('temp-user-id').value;
-    
-    // Mostra que o processo começou
-    gbmAlerta("Enviando código via " + canal + "...", 'aviso');
-
-    const resposta = await fetch('/enviar-codigo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, canal })
-    });
-
-    const json = await resposta.json();
-    if (json.success) {
-        document.getElementById('form-escolha-validacao').style.display = 'none';
-        document.getElementById('form-validar-codigo').style.display = 'block';
-        iniciarCronometroReenvio('reenviar-link-codigo', 'reenviar-timer-codigo');
-    } else {
-        gbmAlerta("Erro ao enviar código: " + json.message, 'erro');
-    }
-}
-
-function iniciarCronometroReenvio(linkId, timerId, segundos = 30) {
-    const link = document.getElementById(linkId);
-    const timer = document.getElementById(timerId);
-    let restante = segundos;
-
-    link.style.display = 'none';
-    timer.style.display = 'inline';
-    timer.innerText = `Reenviar em ${restante}s`;
-
-    const intervalo = setInterval(() => {
-        restante--;
-        if (restante <= 0) {
-            clearInterval(intervalo);
-            timer.style.display = 'none';
-            link.style.display = 'inline';
-        } else {
+            link.style.display = 'none';
+            timer.style.display = 'inline';
             timer.innerText = `Reenviar em ${restante}s`;
-        }
-    }, 1000);
-}
 
-async function reenviarCodigoEmail() {
-    const userId = document.getElementById('temp-user-id').value;
-    try {
-        const resposta = await fetch('/enviar-codigo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, canal: 'email' })
+            const intervalo = setInterval(() => {
+                restante--;
+                if (restante <= 0) {
+                    clearInterval(intervalo);
+                    timer.style.display = 'none';
+                    link.style.display = 'inline';
+                } else {
+                    timer.innerText = `Reenviar em ${restante}s`;
+                }
+            }, 1000);
+        }
+
+        async function reenviarCodigoEmail() {
+            const userId = document.getElementById('temp-user-id').value;
+            try {
+                const resposta = await fetch('/enviar-codigo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, canal: 'email' })
+                });
+                const json = await resposta.json();
+                if (json.success) {
+                    iniciarCronometroReenvio('reenviar-link-codigo', 'reenviar-timer-codigo');
+                } else {
+                    gbmAlerta("Erro ao reenviar: " + json.message, 'erro');
+                }
+            } catch (err) {
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        async function reenviarCodigoSenha() {
+            const email = document.getElementById('temp-recuperar-email').value;
+            try {
+                const resposta = await fetch('/esqueci-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const json = await resposta.json();
+                if (json.success) {
+                    iniciarCronometroReenvio('reenviar-link-senha', 'reenviar-timer-senha');
+                } else {
+                    gbmAlerta("Erro ao reenviar: " + json.message, 'erro');
+                }
+            } catch (err) {
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        async function verificarCodigo() {
+            const userId = document.getElementById('temp-user-id').value;
+            const codigoDigitado = document.getElementById('codigo-input').value.trim();
+
+            if (codigoDigitado.length !== 6) {
+                return gbmAlerta("Por favor, insira o código completo de 6 dígitos.", 'aviso');
+            }
+
+            try {
+                const resposta = await fetch('/validar-codigo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, codigo: codigoDigitado })
+                });
+
+                const json = await resposta.json();
+
+                if (json.success) {
+                    localStorage.setItem('userIdAtual', userId);
+                    gbmAlerta("Conta validada com sucesso! Seu período gratuito de 30 dias começou! 🎉", 'info');
+                    window.location.href = 'pagamento.html';
+                } else {
+                    gbmAlerta("Erro: " + json.message, 'erro');
+                }
+            } catch (err) {
+                console.error(err);
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        function mostrarRecuperacao() {
+            document.getElementById('form-login').style.display = 'none';
+            document.getElementById('form-esqueci-senha').style.display = 'block';
+        }
+
+        async function solicitarRecuperacao() {
+            const email = document.getElementById('recuperar-email').value.trim();
+            if (!email) {
+                return gbmAlerta("Digite seu e-mail.", 'aviso');
+            }
+            try {
+                const resposta = await fetch('/esqueci-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const json = await resposta.json();
+                if (json.success) {
+                    document.getElementById('temp-recuperar-email').value = email;
+                    document.getElementById('form-esqueci-senha').style.display = 'none';
+                    document.getElementById('form-redefinir-senha').style.display = 'block';
+                    iniciarCronometroReenvio('reenviar-link-senha', 'reenviar-timer-senha');
+                    gbmAlerta("Se o e-mail existir, um código foi enviado.", 'aviso');
+                } else {
+                    gbmAlerta("Erro: " + json.message, 'erro');
+                }
+            } catch (err) {
+                console.error(err);
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        async function redefinirSenha() {
+            const email = document.getElementById('temp-recuperar-email').value;
+            const codigo = document.getElementById('redefinir-codigo').value.trim();
+            const novaSenha = document.getElementById('redefinir-senha-nova').value;
+
+            const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            if (!regexSenha.test(novaSenha)) {
+                return gbmAlerta("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.", 'aviso');
+            }
+
+            try {
+                const resposta = await fetch('/redefinir-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, codigo, novaSenha })
+                });
+                const json = await resposta.json();
+                if (json.success) {
+                    gbmAlerta("Senha redefinida com sucesso! Faça login.", 'info');
+                    document.getElementById('form-redefinir-senha').style.display = 'none';
+                    document.getElementById('form-login').style.display = 'block';
+                } else {
+                    gbmAlerta("Erro: " + json.message, 'erro');
+                }
+            } catch (err) {
+                console.error(err);
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        // --- ATALHO: ENTER SUBMETE O FORMULÁRIO VISÍVEL ---
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter') return;
+
+            const mapaFormularios = {
+                'form-login': fazerLogin,
+                'form-cadastro': registrarUsuario,
+                'form-validar-codigo': verificarCodigo,
+                'form-esqueci-senha': solicitarRecuperacao,
+                'form-redefinir-senha': redefinirSenha
+            };
+
+            for (const [id, funcao] of Object.entries(mapaFormularios)) {
+                const el = document.getElementById(id);
+                if (el && el.style.display !== 'none') {
+                    e.preventDefault();
+                    funcao();
+                    break;
+                }
+            }
         });
-        const json = await resposta.json();
-        if (json.success) {
-            iniciarCronometroReenvio('reenviar-link-codigo', 'reenviar-timer-codigo');
-        } else {
-            gbmAlerta("Erro ao reenviar: " + json.message, 'erro');
-        }
-    } catch (err) {
-        gbmAlerta("Falha na comunicação com o servidor.", 'erro');
-    }
-}
 
-async function reenviarCodigoSenha() {
-    const email = document.getElementById('temp-recuperar-email').value;
-    try {
-        const resposta = await fetch('/esqueci-senha', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-        });
-        const json = await resposta.json();
-        if (json.success) {
-            iniciarCronometroReenvio('reenviar-link-senha', 'reenviar-timer-senha');
-        } else {
-            gbmAlerta("Erro ao reenviar: " + json.message, 'erro');
-        }
-    } catch (err) {
-        gbmAlerta("Falha na comunicação com o servidor.", 'erro');
-    }
-}
-async function verificarCodigo() {
-    const userId = document.getElementById('temp-user-id').value;
-    const codigoDigitado = document.getElementById('codigo-input').value.trim();
-
-    if (codigoDigitado.length !== 6) {
-        return gbmAlerta("Por favor, insira o código completo de 6 dígitos.", 'aviso');
-    }
-
-    try {
-        const resposta = await fetch('/validar-codigo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, codigo: codigoDigitado })
-        });
-
-        const json = await resposta.json();
-
-        if (json.success) {
-            localStorage.setItem('userIdAtual', userId);
-            gbmAlerta("Conta validada com sucesso! Seu período gratuito de 30 dias começou! 🎉", 'info');
-            window.location.href = 'pagamento.html';
-        } else {
-            gbmAlerta("Erro: " + json.message, 'erro');
-        }
-    } catch (err) {
-        console.error(err);
-        gbmAlerta("Falha na comunicação com o servidor.", 'erro');
-    }
-}
-function mostrarRecuperacao() {
-    document.getElementById('form-login').style.display = 'none';
-    document.getElementById('form-esqueci-senha').style.display = 'block';
-}
-
-async function solicitarRecuperacao() {
-    const email = document.getElementById('recuperar-email').value.trim();
-    if (!email) {
-        return gbmAlerta("Digite seu e-mail.", 'aviso');
-    }
-    try {
-        const resposta = await fetch('/esqueci-senha', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-        });
-        const json = await resposta.json();
-        if (json.success) {
-            document.getElementById('temp-recuperar-email').value = email;
-            document.getElementById('form-esqueci-senha').style.display = 'none';
-            document.getElementById('form-redefinir-senha').style.display = 'block';
-            iniciarCronometroReenvio('reenviar-link-senha', 'reenviar-timer-senha');
-            gbmAlerta("Se o e-mail existir, um código foi enviado.", 'aviso');
-        } else {
-            gbmAlerta("Erro: " + json.message, 'erro');
-        }
-    } catch (err) {
-        console.error(err);
-        gbmAlerta("Falha na comunicação com o servidor.", 'erro');
-    }
-}
-
-async function redefinirSenha() {
-    const email = document.getElementById('temp-recuperar-email').value;
-    const codigo = document.getElementById('redefinir-codigo').value.trim();
-    const novaSenha = document.getElementById('redefinir-senha-nova').value;
-
-    const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!regexSenha.test(novaSenha)) {
-        return gbmAlerta("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.", 'aviso');
-    }
-
-    try {
-        const resposta = await fetch('/redefinir-senha', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, codigo, novaSenha })
-        });
-        const json = await resposta.json();
-        if (json.success) {
-            gbmAlerta("Senha redefinida com sucesso! Faça login.", 'info');
-            document.getElementById('form-redefinir-senha').style.display = 'none';
-            document.getElementById('form-login').style.display = 'block';
-        } else {
-            gbmAlerta("Erro: " + json.message, 'erro');
-        }
-    } catch (err) {
-        console.error(err);
-        gbmAlerta("Falha na comunicação com o servidor.", 'erro');
-    }
-}
-// --- ATALHO: ENTER SUBMETE O FORMULÁRIO VISÍVEL ---
-document.addEventListener('keydown', function(e) {
-    if (e.key !== 'Enter') return;
-
-    const mapaFormularios = {
-        'form-login': fazerLogin,
-        'form-cadastro': registrarUsuario,
-        'form-validar-codigo': verificarCodigo,
-        'form-esqueci-senha': solicitarRecuperacao,
-        'form-redefinir-senha': redefinirSenha
-    };
-
-    for (const [id, funcao] of Object.entries(mapaFormularios)) {
-        const el = document.getElementById(id);
-        if (el && el.style.display !== 'none') {
-            e.preventDefault();
-            funcao();
-            break;
-        }
-    }
-});
-
-        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
+        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES ---
         let _resolveConfirm = null;
 
         function gbmAlerta(mensagem, tipo = 'info') {
@@ -628,7 +819,7 @@ document.addEventListener('keydown', function(e) {
                         :                    '✅';
 
             document.getElementById('lista-notificacoes-modal').innerHTML = `
-                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
                     <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
                     ${mensagem}
                 </div>`;
@@ -644,7 +835,7 @@ document.addEventListener('keydown', function(e) {
                 _resolveConfirm = resolve;
 
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
-                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
                         <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
                         ${mensagem}
                     </div>`;
@@ -664,7 +855,6 @@ document.addEventListener('keydown', function(e) {
         }
     </script>
 
-    <!-- MODAL DE NOTIFICAÇÕES GBM -->
     <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
         <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -676,7 +866,7 @@ document.addEventListener('keydown', function(e) {
             </div>
             <div id="lista-notificacoes-modal"></div>
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#246e45'" onmouseout="this.style.background='#2E8B57'">CONFIRMAR</button>
+                <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#205c4e; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#297a66'" onmouseout="this.style.background='#205c4e'">CONFIRMAR</button>
                 <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
             </div>
         </div>
