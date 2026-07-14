@@ -450,13 +450,36 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 
 .painel-ajustes select,
 .painel-ajustes input,
-.painel-ajustes button {
+.painel-ajustes button:not(.chip-btn) {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     margin: 0 0 8px 0 !important;
     height: 46px !important;
     font-size: 16px !important;
+}
+
+/* Exceção: botões ✕ das tags de categoria não podem ser 100% */
+#lista-categorias-personalizadas button,
+#lista-categorias-personalizadas span button {
+    width: auto !important;
+    height: auto !important;
+    min-height: unset !important;
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Empilha os três painéis (Limite, Categoria, Meta) verticalmente */
+.linha-paineis {
+    flex-direction: column !important;
+    margin: 0 15px 15px 15px !important;
+}
+
+.linha-paineis .painel-ajustes {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 0 12px 0 !important;
 }
         }
 
@@ -1533,12 +1556,24 @@ setInterval(carregarAlertas, 60000);
 
         let _passoAtual = 0;
 
-        function iniciarTutorial() {
-            _passoAtual = 0;
-            localStorage.setItem('gbm_tutorial_concluido', 'sim');
-            document.getElementById('tour-overlay').style.display = 'block';
-            renderizarPassoTutorial();
-        }
+        function getTutorialKey() {
+    const uid = pegarUserId();
+    return uid ? `gbm_tutorial_${uid}` : 'gbm_tutorial_concluido';
+}
+
+function marcarTutorialVisto() {
+    try {
+        localStorage.setItem(getTutorialKey(), 'sim');
+        localStorage.setItem('gbm_tutorial_concluido', 'sim');
+    } catch(e) {}
+}
+
+function iniciarTutorial() {
+    _passoAtual = 0;
+    marcarTutorialVisto();
+    document.getElementById('tour-overlay').style.display = 'block';
+    renderizarPassoTutorial();
+}
 
         function encontrarElementoPasso(passo) {
             let el = passo.selector ? document.querySelector(passo.selector) : null;
@@ -1619,17 +1654,19 @@ setInterval(carregarAlertas, 60000);
         }
 
         function finalizarTutorial() {
-            document.getElementById('tour-overlay').style.display = 'none';
-            localStorage.setItem('gbm_tutorial_concluido', 'sim');
-        }
+    document.getElementById('tour-overlay').style.display = 'none';
+    marcarTutorialVisto();
+}
 
         // Auto-inicia no primeiro acesso (dá um tempinho pra tudo carregar na tela)
         window.addEventListener('load', () => {
-            const jaViu = localStorage.getItem('gbm_tutorial_concluido');
-            if (!jaViu) {
-                setTimeout(iniciarTutorial, 1200);
-            }
-        });
+    try {
+        const uid = pegarUserId();
+        const chave = uid ? `gbm_tutorial_${uid}` : 'gbm_tutorial_concluido';
+        const jaViu = localStorage.getItem(chave) || localStorage.getItem('gbm_tutorial_concluido');
+        if (!jaViu) setTimeout(iniciarTutorial, 1200);
+    } catch(e) {}
+});
     </script>
 </body>
 </html>
