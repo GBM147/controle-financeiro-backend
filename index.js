@@ -415,7 +415,7 @@ app.get('/resumo-financeiro', async (req, res) => {
             saldoDaConta = contaDB.length > 0 ? contaDB[0].saldo : 0;
         }
 
-        res.json({ status: 'success', data: rows, saldo_banco: saldoDaConta, saldos_bancos: saldosBancos });
+        res.json({ status: 'success', data: rows });
     } catch (error) {
         console.error("❌ Erro na lógica de resumo com balanço:", error);
         res.status(500).json({ status: 'error', message: 'Falha ao processar resumo financeiro' });
