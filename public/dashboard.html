@@ -591,7 +591,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     <div class="card"><h3>Total Recebido (Entradas)</h3><p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p></div>
     <div class="card"><h3>Total Gasto (Saídas)</h3><p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p></div>
     <div class="card"><h3>Resultado do Período</h3><p id="saldo-liquido">R$ 0,00</p></div>
-    <div class="card"><h3>Economia vs. Mês Anterior 📊</h3><p id="economia-mensal">R$ 0,00</p>
+    <div class="card"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p>
         <div id="detalhe-economia" style="font-size:0.75rem; color:var(--texto-mutado); margin-top:6px;"></div>
     </div>
 </div>
@@ -869,8 +869,9 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 const res = await fetch(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}`);
                 const json = await res.json();
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
+                const saldoBanco = parseFloat(json.saldo_banco) || 0;
 
-                atualizarResumoFinanceiro();
+                atualizarResumoFinanceiro(saldoBanco);
                 carregarEconomiaMensal();
                 renderizarVisualizacao();
             } catch (err) { 
@@ -896,7 +897,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
 
     if (selecionadaAntes) selectMeta.value = selecionadaAntes;
 }
-        function atualizarResumoFinanceiro() {
+        function atualizarResumoFinanceiro(saldoBancoReal = 0) {
     let ent = 0, sai = 0;
     dadosAPI.forEach(item => {
         let v = parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, ''));
