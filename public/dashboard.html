@@ -9,39 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-/* Partículas — garante que o conteúdo principal fique acima do canvas */
-        .gbm-header { z-index: 10; }
-        .grid-cards, .lancamento-rapido, .linha-paineis,
-        .painel-ajustes, .chart-container, .card { position: relative; z-index: 1; }
-
-        /* Logo flutuante no cabeçalho */
-        .gbm-logo-img {
-            animation: float-logo 4s ease-in-out infinite;
-        }
-        @keyframes float-logo {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-5px); }
-        }
-
-        /* Botão shine — aplica em todos os .btn-acao e .btn-voltar */
-        .btn-acao, .btn-voltar, .btn-gerar, .btn-pdf {
-            position: relative;
-            overflow: hidden;
-        }
-        .btn-acao::after, .btn-voltar::after, .btn-gerar::after, .btn-pdf::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -60%;
-            width: 30%; height: 200%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%);
-            transform: rotate(30deg);
-            animation: btn-shine 4s infinite ease-in-out;
-        }
-        @keyframes btn-shine {
-            0%   { left: -60%; }
-            15%  { left: 130%; }
-            100% { left: 130%; }
-        }
         :root {
             --cor-destaque: #2E8B57; 
             --texto-principal: #ffffff;
@@ -580,7 +547,6 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     </style>
 </head>
 <body>
-<canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
 <!-- NOVO CABEÇALHO GBM COMPLETO -->
 <header class="gbm-header">
     <div class="gbm-logo-container">
@@ -612,6 +578,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     <div class="divisor"></div>
         <a href="Limite-de-Gastos.html" class="menu-item">🚧 Limite de Gastos</a>
         <a href="relatorio.html" class="menu-item">📊 Relatório Mensal</a>
+        <a href="comparativo.html" class="menu-item">📆 Comparativo Mensal</a>
         <a href="metas.html" class="menu-item">🎯 Metas</a>
         
         <div class="divisor"></div>
@@ -624,8 +591,8 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     <div class="card"><h3>Total Recebido (Entradas)</h3><p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p></div>
     <div class="card"><h3>Total Gasto (Saídas)</h3><p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p></div>
     <div class="card"><h3>Resultado do Período</h3><p id="saldo-liquido">R$ 0,00</p></div>
-    <div class="card"><h3>Saldo da Conta 🏦</h3><p id="saldo-banco">R$ 0,00</p>
-        <div id="lista-saldos-bancos" style="display:flex; flex-direction:column; gap:4px; margin-top:8px;"></div>
+    <div class="card"><h3>Economia vs. Mês Anterior 📊</h3><p id="economia-mensal">R$ 0,00</p>
+        <div id="detalhe-economia" style="font-size:0.75rem; color:var(--texto-mutado); margin-top:6px;"></div>
     </div>
 </div>
 <div id="modal-transacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; overflow-y:auto;">
@@ -902,12 +869,9 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 const res = await fetch(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}`);
                 const json = await res.json();
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
-                
-                // NOVO: Pega o saldo real vindo do backend
-                const saldoBanco = parseFloat(json.saldo_banco) || 0;
-                const saldosPorBanco = json.saldos_bancos || [];
-                
-                atualizarResumoFinanceiro(saldoBanco, saldosPorBanco); // Passa o saldo para a função
+
+                atualizarResumoFinanceiro();
+                carregarEconomiaMensal();
                 renderizarVisualizacao();
             } catch (err) { 
                 console.error("Erro ao carregar dados:", err); 
@@ -932,7 +896,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
 
     if (selecionadaAntes) selectMeta.value = selecionadaAntes;
 }
-        function atualizarResumoFinanceiro(saldoBancoReal, saldosPorBanco = []) {
+        function atualizarResumoFinanceiro() {
     let ent = 0, sai = 0;
     dadosAPI.forEach(item => {
         let v = parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, ''));
@@ -949,32 +913,45 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
     elPeriodo.innerText = `R$ ${periodo.toFixed(2)}`;
     elPeriodo.style.color = periodo < 0 ? '#ff4d4d' : '#2ecc71';
     elPeriodo.style.textShadow = periodo < 0 ? '0 0 5px rgba(255,77,77,0.3)' : '0 0 5px rgba(46,204,113,0.3)';
-
-    // Card 4: saldo real da conta bancária (vem do LEDGERBAL do OFX)
-    const elBanco = document.getElementById('saldo-banco');
-    elBanco.innerText = `R$ ${saldoBancoReal.toFixed(2)}`;
-    elBanco.style.color = saldoBancoReal < 0 ? '#ff4d4d' : '#2ecc71';
-    elBanco.style.textShadow = saldoBancoReal < 0 ? '0 0 5px rgba(255,77,77,0.3)' : '0 0 5px rgba(46,204,113,0.3)';
-
-    // NOVO: lista de saldo individual de cada banco, dentro do mesmo card
-    const listaBancos = document.getElementById('lista-saldos-bancos');
-    if (listaBancos) {
-        if (saldosPorBanco.length <= 1) {
-            // Só 1 banco (ou nenhum): não precisa de detalhamento, o total já basta
-            listaBancos.innerHTML = '';
-        } else {
-            listaBancos.innerHTML = saldosPorBanco.map(b => {
-                const cor = BANCOS_CORES[b.banco] || '#607d8b';
-                const valor = parseFloat(b.saldo) || 0;
-                return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; padding:3px 0; border-top:1px solid rgba(255,255,255,0.06);">
-                        <span style="color:${cor}; display:flex; align-items:center; gap:5px;">🏦 ${b.banco}</span>
-                        <span style="font-weight:700; color:${valor < 0 ? '#ff4d4d' : '#b0bec5'};">R$ ${valor.toFixed(2)}</span>
-                    </div>`;
-            }).join('');
-        }
-    }
 }
+
+        // Card 4: quanto você economizou (ou gastou a mais) comparado ao mês anterior
+        async function carregarEconomiaMensal() {
+            try {
+                const hoje = new Date();
+                const mes = hoje.getMonth() + 1;
+                const ano = hoje.getFullYear();
+                const userId = pegarUserId();
+
+                const res = await fetch(`/economia-mensal?userId=${userId}&mes=${mes}&ano=${ano}`);
+                const dados = await res.json();
+
+                const elEconomia = document.getElementById('economia-mensal');
+                const elDetalhe = document.getElementById('detalhe-economia');
+
+                if (!dados.temMesAnterior) {
+                    elEconomia.innerText = '—';
+                    elEconomia.style.color = 'var(--texto-mutado)';
+                    elEconomia.style.textShadow = 'none';
+                    elDetalhe.innerText = 'Sem dados do mês anterior para comparar ainda.';
+                    return;
+                }
+
+                const economia = dados.economia || 0;
+                const positivo = economia >= 0;
+
+                elEconomia.innerText = `${positivo ? '+' : '-'} R$ ${Math.abs(economia).toFixed(2)}`;
+                elEconomia.style.color = positivo ? '#2ecc71' : '#ff4d4d';
+                elEconomia.style.textShadow = positivo ? '0 0 5px rgba(46,204,113,0.3)' : '0 0 5px rgba(255,77,77,0.3)';
+
+                const percentualTexto = dados.percentual !== null ? ` (${Math.abs(dados.percentual).toFixed(1)}%)` : '';
+                elDetalhe.innerText = positivo
+                    ? `Você gastou R$ ${Math.abs(economia).toFixed(2)} a menos que o mês passado${percentualTexto}.`
+                    : `Você gastou R$ ${Math.abs(economia).toFixed(2)} a mais que o mês passado${percentualTexto}.`;
+            } catch (e) {
+                console.error('Erro ao carregar economia mensal:', e);
+            }
+        }
 
         function renderizarVisualizacao() {
             const tipo = document.getElementById('select-tipo').value;
@@ -1539,7 +1516,7 @@ setInterval(carregarAlertas, 60000);
             {
                 selector: '.grid-cards',
                 titulo: '📊 Resumo Financeiro',
-                texto: 'Aqui você vê, em tempo real: quanto entrou, quanto saiu, o resultado do período e o saldo atual da sua conta.'
+                texto: 'Aqui você vê, em tempo real: quanto entrou, quanto saiu, o resultado do período e quanto você economizou em relação ao mês anterior.'
             },
             {
                 selector: '.lancamento-rapido',
@@ -1708,53 +1685,5 @@ function renderizarPassoTutorial() {
     } catch(e) {}
 });
     </script>
-<script>
-    // --- PARTÍCULAS DOURADAS GBM ---
-    (function() {
-        const canvas = document.getElementById('particles-canvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        function Particle() {
-            this.x = Math.random() * canvas.width;
-            this.y = canvas.height + Math.random() * 100;
-            this.size = Math.random() * 2.5 + 0.8;
-            this.speedY = Math.random() * 1.2 + 0.3;
-            this.opacity = Math.random() * 0.4 + 0.2;
-        }
-        Particle.prototype.update = function() {
-            this.y -= this.speedY;
-            if (this.y < -10) {
-                this.y = canvas.height + 10;
-                this.x = Math.random() * canvas.width;
-                this.opacity = Math.random() * 0.4 + 0.2;
-            }
-        };
-        Particle.prototype.draw = function() {
-            ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        };
-
-        const count = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 15000), 65);
-        for (let i = 0; i < count; i++) particles.push(new Particle());
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animate);
-        }
-        animate();
-    })();
-</script>
 </body>
 </html>

@@ -187,6 +187,14 @@ const [regrasUsuario] = await db.promise().query(
         if (ledgerBal.BALAMT) {
             const saldoReal = parseFloat(ledgerBal.BALAMT);
             await db.promise().query('UPDATE contas_bancarias SET saldo = ? WHERE id = ?', [saldoReal, contaInternaId]);
+
+            // Guarda o saldo desse banco específico, sem apagar o saldo dos outros bancos já importados
+            await db.promise().query(
+                `INSERT INTO saldos_por_banco (usuario_id, banco, saldo)
+                 VALUES (?, ?, ?)
+                 ON DUPLICATE KEY UPDATE saldo = VALUES(saldo)`,
+                [userId, nomeBanco, saldoReal]
+            );
         }
         // -----------------------------------------------------
 
@@ -392,19 +400,120 @@ app.get('/resumo-financeiro', async (req, res) => {
         }
         sql += ` GROUP BY t.categoria, t.tipo, t.banco ORDER BY total_movimentado ASC;`;
         const [rows] = await db.promise().query(sql, params);
-        
-        // --- NOVO: PUXA O SALDO ATUALIZADO DA CONTA ---
-        const [contaDB] = await db.promise().query('SELECT saldo FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
-        const saldoDaConta = contaDB.length > 0 ? contaDB[0].saldo : 0;
-        // ----------------------------------------------
 
-        // Altere a linha do res.json para enviar o saldo_banco junto!
-        res.json({ status: 'success', data: rows, saldo_banco: saldoDaConta });
+        // --- Saldos separados por banco ---
+        const [saldosBancos] = await db.promise().query(
+            'SELECT banco, saldo FROM saldos_por_banco WHERE usuario_id = ? ORDER BY saldo DESC',
+            [userId]
+        );
+
+        let saldoDaConta;
+        if (saldosBancos.length > 0) {
+            saldoDaConta = saldosBancos.reduce((soma, b) => soma + parseFloat(b.saldo), 0);
+        } else {
+            const [contaDB] = await db.promise().query('SELECT saldo FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
+            saldoDaConta = contaDB.length > 0 ? contaDB[0].saldo : 0;
+        }
+
+        res.json({ status: 'success', data: rows, saldo_banco: saldoDaConta, saldos_bancos: saldosBancos });
     } catch (error) {
         console.error("❌ Erro na lógica de resumo com balanço:", error);
         res.status(500).json({ status: 'error', message: 'Falha ao processar resumo financeiro' });
     }
 });
+
+// --- NOVA ROTA: ECONOMIA DO MÊS COMPARADA AO MÊS ANTERIOR ---
+app.get('/economia-mensal', async (req, res) => {
+    try {
+        const { userId, mes, ano } = req.query;
+        const mesAtual = parseInt(mes);
+        const anoAtual = parseInt(ano);
+
+        let mesAnterior = mesAtual - 1;
+        let anoAnterior = anoAtual;
+        if (mesAnterior === 0) {
+            mesAnterior = 12;
+            anoAnterior = anoAtual - 1;
+        }
+
+        const sql = `
+            SELECT MONTH(t.data_transacao) as mes, YEAR(t.data_transacao) as ano,
+                   SUM(CASE WHEN t.tipo = 'Despesa' THEN t.valor ELSE 0 END) as despesas,
+                   SUM(CASE WHEN t.tipo = 'Receita' THEN t.valor ELSE 0 END) as receitas
+            FROM transacoes t
+            JOIN contas_bancarias cb ON t.conta_id = cb.id
+            WHERE cb.usuario_id = ?
+              AND ((MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?)
+                OR (MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?))
+            GROUP BY YEAR(t.data_transacao), MONTH(t.data_transacao)
+        `;
+        const [rows] = await db.promise().query(sql, [userId, mesAtual, anoAtual, mesAnterior, anoAnterior]);
+
+        const atual = rows.find(r => r.mes === mesAtual && r.ano === anoAtual) || { despesas: 0, receitas: 0 };
+        const anterior = rows.find(r => r.mes === mesAnterior && r.ano === anoAnterior);
+
+        const despesaAtual = parseFloat(atual.despesas) || 0;
+        const despesaAnterior = anterior ? (parseFloat(anterior.despesas) || 0) : null;
+
+        const economia = despesaAnterior !== null ? (despesaAnterior - despesaAtual) : null;
+        const percentual = (despesaAnterior && despesaAnterior > 0) ? (economia / despesaAnterior) * 100 : null;
+
+        res.json({
+            despesaAtual,
+            despesaAnterior,
+            economia,
+            percentual,
+            temMesAnterior: !!anterior
+        });
+    } catch (error) {
+        console.error('❌ Erro ao calcular economia mensal:', error);
+        res.status(500).json({ error: 'Falha ao calcular economia mensal.' });
+    }
+});
+
+// --- NOVA ROTA: COMPARATIVO DE TODOS OS MESES DE UM ANO ---
+app.get('/comparativo-mensal', async (req, res) => {
+    try {
+        const { userId, ano } = req.query;
+        const anoConsulta = ano || new Date().getFullYear();
+
+        const sql = `
+            SELECT MONTH(t.data_transacao) as mes,
+                   SUM(CASE WHEN t.tipo = 'Receita' THEN t.valor ELSE 0 END) as entradas,
+                   SUM(CASE WHEN t.tipo = 'Despesa' THEN t.valor ELSE 0 END) as saidas
+            FROM transacoes t
+            JOIN contas_bancarias cb ON t.conta_id = cb.id
+            WHERE cb.usuario_id = ? AND YEAR(t.data_transacao) = ?
+            GROUP BY MONTH(t.data_transacao)
+            ORDER BY mes ASC
+        `;
+        const [rows] = await db.promise().query(sql, [userId, anoConsulta]);
+        res.json(rows);
+    } catch (error) {
+        console.error('❌ Erro ao gerar comparativo mensal:', error);
+        res.status(500).json({ error: 'Falha ao gerar comparativo mensal.' });
+    }
+});
+
+// --- NOVA ROTA: ANOS QUE O USUÁRIO TEM DADOS (pra popular o seletor) ---
+app.get('/anos-disponiveis', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        const [rows] = await db.promise().query(
+            `SELECT DISTINCT YEAR(t.data_transacao) as ano
+             FROM transacoes t
+             JOIN contas_bancarias cb ON t.conta_id = cb.id
+             WHERE cb.usuario_id = ?
+             ORDER BY ano DESC`,
+            [userId]
+        );
+        res.json(rows.map(r => r.ano));
+    } catch (error) {
+        console.error('❌ Erro ao buscar anos disponíveis:', error);
+        res.status(500).json({ error: 'Falha ao buscar anos.' });
+    }
+});
+
 // --- NOVA ROTA: SALVAR/ATUALIZAR METAS DO USUÁRIO ---
 app.post('/metas', async (req, res) => {
     try {
@@ -500,7 +609,7 @@ async function auditarMetas() {
                 const msg = `Atenção: Você atingiu ${porcentagemAtual.toFixed(1)}% do seu limite de R$ ${limite.toFixed(2)} na categoria ${item.categoria}.`;
 
                 const [check] = await db.promise().query(
-                    'SELECT id FROM alertas WHERE categoria = ? AND DATE(data_criacao) = CURRENT_DATE()',
+                    'SELECT id FROM alertas WHERE categoria = ? AND MONTH(data_criacao) = MONTH(CURRENT_DATE()) AND YEAR(data_criacao) = YEAR(CURRENT_DATE())',
                     [item.categoria]
                 );
 
