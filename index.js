@@ -401,20 +401,6 @@ app.get('/resumo-financeiro', async (req, res) => {
         sql += ` GROUP BY t.categoria, t.tipo, t.banco ORDER BY total_movimentado ASC;`;
         const [rows] = await db.promise().query(sql, params);
 
-        // --- Saldos separados por banco ---
-        const [saldosBancos] = await db.promise().query(
-            'SELECT banco, saldo FROM saldos_por_banco WHERE usuario_id = ? ORDER BY saldo DESC',
-            [userId]
-        );
-
-        let saldoDaConta;
-        if (saldosBancos.length > 0) {
-            saldoDaConta = saldosBancos.reduce((soma, b) => soma + parseFloat(b.saldo), 0);
-        } else {
-            const [contaDB] = await db.promise().query('SELECT saldo FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
-            saldoDaConta = contaDB.length > 0 ? contaDB[0].saldo : 0;
-        }
-
         res.json({ status: 'success', data: rows });
     } catch (error) {
         console.error("❌ Erro na lógica de resumo com balanço:", error);
