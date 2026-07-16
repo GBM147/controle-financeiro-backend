@@ -575,6 +575,36 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         .tour-btn-pular:hover { background: rgba(255,255,255,0.15); }
         .tour-btn-avancar { background: #2E8B57; color: #fff; }
         .tour-btn-avancar:hover { background: #246e45; }
+
+        /* --- TUTORIAL EM TELAS ESTREITAS: caixa fixa no rodapé (bottom sheet) --- */
+        @media (max-width: 480px) {
+            #tour-caixa {
+                position: fixed !important;
+                top: auto !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box;
+                border-radius: 18px 18px 0 0;
+                max-height: 60vh;
+                overflow-y: auto;
+                animation: tour-subir 0.3s ease;
+            }
+            #tour-caixa.centralizado {
+                position: fixed !important;
+                top: auto !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                transform: none !important;
+                border-radius: 18px 18px 0 0;
+            }
+        }
+        @keyframes tour-subir {
+            from { transform: translateY(100%); }
+            to   { transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -1638,21 +1668,18 @@ function renderizarPassoTutorial() {
     document.getElementById('tour-btn-avancar').innerText = (_passoAtual === PASSOS_TUTORIAL.length - 1) ? 'Concluir' : 'Próximo';
 
     const elAlvo = encontrarElementoPasso(passo);
+    const ehMobile = window.innerWidth <= 480;
 
     if (!elAlvo) {
         spot.style.cssText = 'width:0; height:0; top:-9999px; left:-9999px; box-shadow:0 0 0 9999px rgba(0,6,14,0.82);';
         caixa.classList.add('centralizado');
-        caixa.style.top = '';
-        caixa.style.left = '';
+        if (!ehMobile) { caixa.style.top = ''; caixa.style.left = ''; }
         return;
     }
 
     caixa.classList.remove('centralizado');
-
-    // Scroll instantâneo no mobile — evita o problema de timing
     elAlvo.scrollIntoView({ behavior: 'instant', block: 'center' });
 
-    // Espera o browser aplicar o scroll antes de medir
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             const rect = elAlvo.getBoundingClientRect();
@@ -1663,6 +1690,9 @@ function renderizarPassoTutorial() {
             spot.style.width  = (rect.width  + folga * 2) + 'px';
             spot.style.height = (rect.height + folga * 2) + 'px';
             spot.style.boxShadow = '0 0 0 9999px rgba(0,6,14,0.82)';
+
+            // No celular a caixa fica fixa no rodapé (via CSS) — não precisa calcular posição
+            if (ehMobile) return;
 
             const caixaLargura = Math.min(320, window.innerWidth - 32);
             const caixaAltura  = caixa.offsetHeight || 200;
