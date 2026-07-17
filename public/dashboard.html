@@ -590,35 +590,10 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         .tour-btn-avancar { background: #2E8B57; color: #fff; }
         .tour-btn-avancar:hover { background: #246e45; }
 
-        /* --- TUTORIAL EM TELAS ESTREITAS: caixa fixa no rodapé (bottom sheet) --- */
-        @media (max-width: 480px) {
-            #tour-caixa {
-                position: fixed !important;
-                top: auto !important;
-                left: 0 !important;
-                right: 0 !important;
-                bottom: 0 !important;
-                max-width: 100% !important;
-                width: 100% !important;
-                box-sizing: border-box;
-                border-radius: 18px 18px 0 0;
-                max-height: 60vh;
-                overflow-y: auto;
-                animation: tour-subir 0.3s ease;
-            }
-            #tour-caixa.centralizado {
-                position: fixed !important;
-                top: auto !important;
-                bottom: 0 !important;
-                left: 0 !important;
-                transform: none !important;
-                border-radius: 18px 18px 0 0;
-            }
+        #tour-spotlight {
+            box-sizing: border-box;
         }
-        @keyframes tour-subir {
-            from { transform: translateY(100%); }
-            to   { transform: translateY(0); }
-        }
+        /* Apagamos as regras do celular, agora a caixa flutua normalmente em qualquer tela! */
     </style>
 </head>
 <body>
@@ -1679,6 +1654,7 @@ function iniciarTutorial() {
     _passoAtual = 0;
     marcarTutorialVisto();
     document.getElementById('tour-overlay').style.display = 'block';
+    document.body.style.overflow = 'hidden'; // 🔒 Congela o fundo (impede rolagem)
     renderizarPassoTutorial();
 }
 
@@ -1718,11 +1694,15 @@ function renderizarPassoTutorial() {
     const MARGEM       = 12; // px de respiro entre spotlight e caixa
     const BORDA_TELA   = 10; // px mínimo das bordas laterais
 
-    // Scroll síncrono + duplo rAF garante que o layout está estável antes de medir
+    // 🔓 Libera o scroll rapidinho só para conseguir mover a tela até o elemento
+    document.body.style.overflow = '';
     elAlvo.scrollIntoView({ behavior: 'instant', block: 'center' });
 
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
+            // 🔒 Trava o scroll de novo com a tela já no lugar exato
+            document.body.style.overflow = 'hidden';
+
             const rect       = elAlvo.getBoundingClientRect();
             const folga      = 6;
             const vw         = window.innerWidth;
@@ -1791,6 +1771,7 @@ function renderizarPassoTutorial() {
 
         function finalizarTutorial() {
     document.getElementById('tour-overlay').style.display = 'none';
+    document.body.style.overflow = ''; // 🔓 Libera o fundo de volta ao normal
     marcarTutorialVisto();
 }
 
