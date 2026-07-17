@@ -502,7 +502,12 @@
                 const res = await fetch(`/login-status?userId=${userId}`);
                 const data = await res.json();
                 if (data.statusPagamento) {
-                    window.location.href = data.statusPagamento === 'pago' ? 'dashboard.html' : 'pagamento.html';
+                    const dentroDoPrazo = data.trialExpira && new Date() <= new Date(data.trialExpira);
+                    if (data.statusPagamento === 'pago' || (data.statusPagamento === 'cancelado' && dentroDoPrazo)) {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        window.location.href = 'pagamento.html';
+                    }
                 }
             } catch (e) {
                 console.error('Erro ao verificar sessão existente:', e);
@@ -551,7 +556,8 @@
                     }
 
                     if (data.verificado) {
-                        if (data.statusPagamento === 'pago') {
+                        const dentroDoPrazo = data.trialExpira && new Date() <= new Date(data.trialExpira);
+                        if (data.statusPagamento === 'pago' || (data.statusPagamento === 'cancelado' && dentroDoPrazo)) {
                             window.location.href = 'dashboard.html';
                         } else {
                             window.location.href = 'pagamento.html';

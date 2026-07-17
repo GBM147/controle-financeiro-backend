@@ -54,7 +54,10 @@
     </div>
 
     <script>
-        const userId = localStorage.getItem('userIdAtual');
+        function pegarUserId() {
+            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        }
+        const userId = pegarUserId();
         if(!userId) window.location.href = 'index.html';
 
         // Mostra o banner de trial se vier da tela de cadastro novo
