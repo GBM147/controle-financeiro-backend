@@ -339,6 +339,17 @@
                 <small style="color: #8a9ba8; font-size: 0.75rem;">Deve conter letras maiúsculas, minúsculas e números.</small>
             </div>
 
+            <!-- INÍCIO DA CAIXA DOS TERMOS -->
+            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 25px; text-align: left;">
+                <input type="checkbox" id="aceite-termos" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #10b981; cursor: pointer;">
+                <label for="aceite-termos" style="color: #8a9ba8; font-size: 13px; line-height: 1.4; cursor: pointer;">
+                    Eu li e concordo com os 
+                    <a href="termos.html" target="_blank" style="color: #c89f53; text-decoration: none; font-weight: 600; transition: color 0.2s;">Termos e Condições</a> 
+                    de uso da plataforma GBM.
+                </label>
+            </div>
+            <!-- FIM DA CAIXA DOS TERMOS -->
+
             <button class="btn-login" onclick="registrarUsuario()" style="background: #10b981; border-color: #059669;">Registrar e Validar</button>
             
             <p class="signup-prompt">
@@ -591,6 +602,13 @@
                 inputs.senha.style.border = "1px solid red";
                 return gbmAlerta("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.", 'aviso');
             }
+
+            // --- NOVO: TRAVA DOS TERMOS E CONDIÇÕES ---
+            const aceitouTermos = document.getElementById('aceite-termos').checked;
+            if (!aceitouTermos) {
+                return gbmAlerta("Você precisa aceitar os Termos e Condições para criar a sua conta.", 'aviso');
+            }
+            // ------------------------------------------
 
             try {
                 const resposta = await fetch('/cadastro', {
