@@ -809,6 +809,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 </div>
 <script>
     // --- GUARDA DE AUTENTICAÇÃO ---
+// --- GUARDA DE AUTENTICAÇÃO (BLINDADA) ---
 (async function verificarAcesso() {
     const userId = pegarUserId();
     if (!userId) {
@@ -818,13 +819,24 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     try {
         const res = await fetch('/login-status?userId=' + userId);
         const data = await res.json();
-        if (data.statusPagamento === 'pago') return; // acesso liberado
 
-        // Verifica se ainda está dentro do prazo dos 30 dias (mesmo tendo cancelado)
-        const dentroDoPrazo = data.trialExpira && new Date() < new Date(data.trialExpira);
-        if ((data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') && dentroDoPrazo) return;
+        // 1. Se estiver Pago, acesso total!
+        if (data.statusPagamento === 'pago') return; 
 
-        window.location.href = 'pagamento.html'; // trial expirado ou sem plano
+        // 2. Se cancelou ou está no período grátis, verificamos se a data ainda não venceu
+        if (data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') {
+            if (data.trialExpira) {
+                const dataExpiracao = new Date(data.trialExpira);
+                const dataHoje = new Date();
+                
+                if (dataHoje <= dataExpiracao) {
+                    return; // Ainda tem dias restantes, acesso liberado!
+                }
+            }
+        }
+
+        // Se falhou em tudo, manda para a tela de pagamento
+        window.location.href = 'pagamento.html'; 
     } catch (e) {
         window.location.href = 'index.html';
     }
