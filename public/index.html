@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Acesso - GBM Finance</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Link para o App (PWA) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2E8B57">
     <style>
         /* --- ESTILOS GERAIS & BACKGROUND --- */
         * {
@@ -276,6 +279,12 @@
     <canvas id="particles-canvas"></canvas>
 
     <div class="login-container">
+        
+        <!-- BOTÃO DE INSTALAR O APP -->
+        <button id="btn-instalar-app" onclick="instalarGBM()" style="display:none; width:100%; margin-bottom: 20px; padding:12px; background:#c89f53; color:#09101a; border:none; border-radius:10px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 15px rgba(200, 159, 83, 0.4); transition: 0.3s;">
+            📲 Instalar Aplicativo GBM
+        </button>
+
         <div id="form-login">
             <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
             <h2>Bem-vindo de volta</h2>
@@ -953,6 +962,37 @@
         function aceitarTermosModal() {
             document.getElementById('aceite-termos').checked = true; // Marca a caixinha verde magicamente!
             fecharModalTermos();
+        }
+        // --- SISTEMA DE INSTALAÇÃO DO APLICATIVO (PWA) ---
+        // 1. Registar o motor (Service Worker)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => {
+                console.log("Service Worker Registado!");
+            });
+        }
+
+        // 2. Capturar o evento de instalação do Chrome
+        let promptInstalacao;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Impede o Chrome de mostrar o mini-aviso automático logo de cara
+            e.preventDefault();
+            promptInstalacao = e;
+            // Mostra o nosso botão dourado bonito
+            document.getElementById('btn-instalar-app').style.display = 'block';
+        });
+
+        // 3. Função que roda quando o utilizador clica no nosso botão dourado
+        function instalarGBM() {
+            if (promptInstalacao) {
+                promptInstalacao.prompt(); // Mostra a tela de instalação real do Android/Windows
+                promptInstalacao.userChoice.then((resultado) => {
+                    if (resultado.outcome === 'accepted') {
+                        console.log('Usuário instalou o App GBM!');
+                    }
+                    promptInstalacao = null;
+                    document.getElementById('btn-instalar-app').style.display = 'none';
+                });
+            }
         }
     </script>
 </body>

@@ -1,0 +1,23 @@
+{
+  "name": "Guardian of Budget & Money",
+  "short_name": "GBM Finance",
+  "description": "Seu controlador financeiro inteligente.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#09101a",
+  "theme_color": "#2E8B57",
+  "icons": [
+    {
+      "src": "logo-transparente.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "logo-transparente.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
