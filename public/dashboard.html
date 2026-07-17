@@ -523,7 +523,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             pointer-events: none;
         }
         #tour-spotlight {
-            position: absolute;
+            position: fixed;
             border-radius: 12px;
             box-shadow: 0 0 0 9999px rgba(0, 6, 14, 0.82);
             border: 2px solid #5fffa8;
@@ -531,16 +531,19 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             pointer-events: none;
         }
         #tour-caixa {
-            position: absolute;
+            position: fixed;
             background: #0f1a2b;
             border: 1px solid rgba(95,255,168,0.35);
             border-radius: 14px;
-            padding: 20px 22px;
-            max-width: 320px;
-            box-shadow: 0 15px 45px rgba(0,0,0,0.6);
+            padding: 18px 18px;
+            max-width: 300px;
+            width: calc(100vw - 20px);
+            box-sizing: border-box;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.7);
             font-family: 'Inter', sans-serif;
-            transition: top 0.35s ease, left 0.35s ease;
+            transition: top 0.25s ease, left 0.25s ease;
             pointer-events: auto;
+            z-index: 9999999;
         }
         #tour-caixa.centralizado {
             position: fixed;
@@ -1657,59 +1660,82 @@ function iniciarTutorial() {
 
 function renderizarPassoTutorial() {
     const passo = PASSOS_TUTORIAL[_passoAtual];
-    const overlay = document.getElementById('tour-overlay');
-    const spot = document.getElementById('tour-spotlight');
+    const spot  = document.getElementById('tour-spotlight');
     const caixa = document.getElementById('tour-caixa');
 
-    document.getElementById('tour-titulo').innerText = passo.titulo;
-    document.getElementById('tour-texto').innerText = passo.texto;
+    document.getElementById('tour-titulo').innerText   = passo.titulo;
+    document.getElementById('tour-texto').innerText    = passo.texto;
     document.getElementById('tour-contador').innerText = `Passo ${_passoAtual + 1} de ${PASSOS_TUTORIAL.length}`;
-    document.getElementById('tour-btn-voltar').style.display = _passoAtual === 0 ? 'none' : 'inline-block';
-    document.getElementById('tour-btn-avancar').innerText = (_passoAtual === PASSOS_TUTORIAL.length - 1) ? 'Concluir' : 'Próximo';
+    document.getElementById('tour-btn-voltar').style.display   = _passoAtual === 0 ? 'none' : 'inline-block';
+    document.getElementById('tour-btn-avancar').innerText      = _passoAtual === PASSOS_TUTORIAL.length - 1 ? 'Concluir' : 'Próximo';
 
     const elAlvo = encontrarElementoPasso(passo);
-    const ehMobile = window.innerWidth <= 480;
 
+    // --- Passo SEM elemento: caixa centralizada na tela ---
     if (!elAlvo) {
-        spot.style.cssText = 'width:0; height:0; top:-9999px; left:-9999px; box-shadow:0 0 0 9999px rgba(0,6,14,0.82);';
+        spot.style.cssText = 'width:0;height:0;top:-9999px;left:-9999px;box-shadow:0 0 0 9999px rgba(0,6,14,0.88);';
         caixa.classList.add('centralizado');
-        if (!ehMobile) { caixa.style.top = ''; caixa.style.left = ''; }
+        caixa.style.top = '';
+        caixa.style.left = '';
         return;
     }
 
     caixa.classList.remove('centralizado');
+
+    // Altura real do header sticky (descontada no cálculo de posição)
+    const headerEl     = document.querySelector('.gbm-header');
+    const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 56;
+    const MARGEM       = 12; // px de respiro entre spotlight e caixa
+    const BORDA_TELA   = 10; // px mínimo das bordas laterais
+
+    // Scroll síncrono + duplo rAF garante que o layout está estável antes de medir
     elAlvo.scrollIntoView({ behavior: 'instant', block: 'center' });
 
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            const rect = elAlvo.getBoundingClientRect();
-            const folga = 8;
+            const rect       = elAlvo.getBoundingClientRect();
+            const folga      = 6;
+            const vw         = window.innerWidth;
+            const vh         = window.innerHeight;
 
-            spot.style.top    = (rect.top  - folga) + 'px';
-            spot.style.left   = (rect.left - folga) + 'px';
-            spot.style.width  = (rect.width  + folga * 2) + 'px';
-            spot.style.height = (rect.height + folga * 2) + 'px';
-            spot.style.boxShadow = '0 0 0 9999px rgba(0,6,14,0.82)';
+            // Spotlight
+            spot.style.top        = (rect.top  - folga) + 'px';
+            spot.style.left       = (rect.left - folga) + 'px';
+            spot.style.width      = (rect.width  + folga * 2) + 'px';
+            spot.style.height     = (rect.height + folga * 2) + 'px';
+            spot.style.boxShadow  = '0 0 0 9999px rgba(0,6,14,0.88)';
 
-            // No celular a caixa fica fixa no rodapé (via CSS) — não precisa calcular posição
-            if (ehMobile) return;
-
-            const caixaLargura = Math.min(320, window.innerWidth - 32);
-            const caixaAltura  = caixa.offsetHeight || 200;
-            const espacoAbaixo = window.innerHeight - rect.bottom;
-
-            let topo = espacoAbaixo > caixaAltura + 30
-                ? rect.bottom + 16
-                : rect.top - caixaAltura - 16;
-
-            topo = Math.max(16, Math.min(topo, window.innerHeight - caixaAltura - 16));
-
-            let esquerda = rect.left;
-            esquerda = Math.max(16, Math.min(esquerda, window.innerWidth - caixaLargura - 16));
-
-            caixa.style.top   = topo + 'px';
-            caixa.style.left  = esquerda + 'px';
+            // Caixa: largura máxima segura para mobile
+            const caixaLargura = Math.min(300, vw - BORDA_TELA * 2);
             caixa.style.maxWidth = caixaLargura + 'px';
+
+            const caixaAltura  = caixa.offsetHeight || 220;
+
+            // Posição vertical: prefere abaixo do elemento, mas respeita header e borda inferior
+            const espacoAbaixo = vh - rect.bottom - MARGEM;
+            const espacoAcima  = rect.top - headerHeight - MARGEM;
+
+            let topo;
+            if (espacoAbaixo >= caixaAltura) {
+                // Cabe abaixo
+                topo = rect.bottom + MARGEM;
+            } else if (espacoAcima >= caixaAltura) {
+                // Cabe acima
+                topo = rect.top - caixaAltura - MARGEM;
+            } else {
+                // Nem acima nem abaixo — centraliza verticalmente na viewport respeitando header
+                topo = headerHeight + MARGEM + Math.max(0, (vh - headerHeight - caixaAltura) / 2);
+            }
+
+            // Nunca encobre o header, nunca vaza abaixo da tela
+            topo = Math.max(headerHeight + MARGEM, Math.min(topo, vh - caixaAltura - BORDA_TELA));
+
+            // Posição horizontal: centraliza sob o elemento, mas não vaza nas bordas
+            let esquerda = rect.left + (rect.width / 2) - (caixaLargura / 2);
+            esquerda = Math.max(BORDA_TELA, Math.min(esquerda, vw - caixaLargura - BORDA_TELA));
+
+            caixa.style.top  = topo + 'px';
+            caixa.style.left = esquerda + 'px';
         });
     });
 }
