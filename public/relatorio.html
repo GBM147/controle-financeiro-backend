@@ -376,14 +376,39 @@
     </div>
 </div>
     <script>
-        // Recupera o userId salvo (permanente com "Manter conectado", ou só da aba atual)
+        // Recupera o userId salvo
         function pegarUserId() {
             return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
         }
 
-        if (!pegarUserId()) {
-            window.location.href = 'index.html';
-        }
+        // --- GUARDA DE ACESSO PREMIUM ---
+        (async function verificarAcessoPremium() {
+            const userId = pegarUserId();
+            if (!userId) {
+                window.location.href = 'index.html';
+                return;
+            }
+            try {
+                const res = await fetch('/login-status?userId=' + userId);
+                const data = await res.json();
+
+                let isPremium = false;
+                if (data.statusPagamento === 'pago') {
+                    isPremium = true;
+                } else if (data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') {
+                    if (data.trialExpira && new Date() <= new Date(data.trialExpira)) {
+                        isPremium = true;
+                    }
+                }
+
+                if (!isPremium) {
+                    // Se não for Premium, expulsa para a tela de pagamento
+                    window.location.href = 'pagamento.html';
+                }
+            } catch (e) {
+                window.location.href = 'index.html';
+            }
+        })();
 
         let dadosRelatorio = [];
 let CATEGORIAS_TODAS = [];

@@ -628,8 +628,8 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     <a href="#" class="menu-item" onclick="iniciarTutorial(); fecharMenuLateral(); return false;">❓ Como usar o site</a>
     <div class="divisor"></div>
         <a href="Limite-de-Gastos.html" class="menu-item">🚧 Limite de Gastos</a>
-        <a href="relatorio.html" class="menu-item">📊 Relatório Mensal</a>
-        <a href="comparativo.html" class="menu-item">📆 Comparativo Mensal</a>
+        <a href="#" class="menu-item" onclick="acessarRotaPremium('relatorio.html', 'Relatório Mensal'); return false;">📊 Relatório Mensal</a>
+        <a href="#" class="menu-item" onclick="acessarRotaPremium('comparativo.html', 'Comparativo Mensal'); return false;">📆 Comparativo Mensal</a>
         <a href="metas.html" class="menu-item">🎯 Metas</a>
         <a href="assinatura.html" class="menu-item">🛡️ Minha Assinatura</a>
         
@@ -794,39 +794,66 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     </form>
 </div>
 <script>
-    // --- GUARDA DE AUTENTICAÇÃO ---
-// --- GUARDA DE AUTENTICAÇÃO (BLINDADA) ---
-(async function verificarAcesso() {
-    const userId = pegarUserId();
-    if (!userId) {
-        window.location.href = 'index.html';
-        return;
-    }
-    try {
-        const res = await fetch('/login-status?userId=' + userId);
-        const data = await res.json();
+// Variável global para sabermos o status do cliente em qualquer lugar da tela
+        window.usuarioPremium = true; 
 
-        // 1. Se estiver Pago, acesso total!
-        if (data.statusPagamento === 'pago') return; 
+        // --- GUARDA DE AUTENTICAÇÃO (FREEMIUM) ---
+        (async function verificarAcesso() {
+            const userId = pegarUserId();
+            if (!userId) {
+                window.location.href = 'index.html';
+                return;
+            }
+            try {
+                const res = await fetch('/login-status?userId=' + userId);
+                const data = await res.json();
 
-        // 2. Se cancelou ou está no período grátis, verificamos se a data ainda não venceu
-        if (data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') {
-            if (data.trialExpira) {
-                const dataExpiracao = new Date(data.trialExpira);
-                const dataHoje = new Date();
+                let isPremium = false;
                 
-                if (dataHoje <= dataExpiracao) {
-                    return; // Ainda tem dias restantes, acesso liberado!
+                // Verifica se é pagante ou se está num Trial/Cancelado ainda no prazo
+                if (data.statusPagamento === 'pago') {
+                    isPremium = true;
+                } else if (data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') {
+                    if (data.trialExpira) {
+                        const dataExpiracao = new Date(data.trialExpira);
+                        if (new Date() <= dataExpiracao) isPremium = true;
+                    }
                 }
+
+                if (!isPremium) {
+                    window.usuarioPremium = false; // Grava na memória que é gratuito
+                    
+                    // USUÁRIO GRATUITO: Injeta o script do Google AdSense
+                    const scriptAds = document.createElement('script');
+                    scriptAds.async = true;
+                    scriptAds.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"; // LEMBRE DE COLOCAR SEU CÓDIGO
+                    scriptAds.crossOrigin = "anonymous";
+                    document.head.appendChild(scriptAds);
+                    console.log("Modo Gratuito: Anúncios ativados.");
+                } else {
+                    console.log("Modo Premium: Tela limpa e sem anúncios.");
+                }
+
+            } catch (e) {
+                window.location.href = 'index.html';
+            }
+        })();
+
+        // --- FUNÇÃO DA TRAVA DO MENU LATERAL ---
+        function acessarRotaPremium(url, nomeRecurso) {
+            if (window.usuarioPremium) {
+                // Se for assinante, deixa passar direto
+                window.location.href = url;
+            } else {
+                // Se for gratuito, fecha o menu e mostra a propaganda amigável
+                fecharMenuLateral();
+                gbmConfirmar(`A ferramenta <strong>${nomeRecurso}</strong> é uma funcionalidade exclusiva para assinantes do plano Premium.<br><br>Deseja assinar agora por apenas R$ 19,90 e liberar todos os recursos avançados sem anúncios?`).then((confirmado) => {
+                    if (confirmado) {
+                        window.location.href = 'pagamento.html';
+                    }
+                });
             }
         }
-
-        // Se falhou em tudo, manda para a tela de pagamento
-        window.location.href = 'pagamento.html'; 
-    } catch (e) {
-        window.location.href = 'index.html';
-    }
-})();
     // Captura o envio do formulário de extrato OFX
 document.getElementById('form-upload-ofx').addEventListener('submit', async (e) => {
     e.preventDefault();
