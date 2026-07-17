@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Minha Assinatura | GBM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Partículas — garante que o conteúdo fique acima do canvas */
+        body > *:not(#particles-canvas) { position: relative; z-index: 1; }
+
+        /* Logo flutuante no cabeçalho */
+        .gbm-logo-img { animation: float-logo 4s ease-in-out infinite; }
+        @keyframes float-logo {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-5px); }
+        }
+
+        :root {
+            --cor-destaque: #2E8B57;
+            --texto-principal: #ffffff;
+            --texto-mutado: #b0bec5;
+            --borda: rgba(255, 255, 255, 0.15);
+            --cor-receita: #10b981;
+            --cor-despesa: #ef4444;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('fundo-marmore.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--texto-principal); min-height: 100vh;
+        }
+
+        /* CABEÇALHO GBM */
+        .gbm-header {
+            background: transparent; border-bottom: 1px solid var(--borda);
+            padding: 0 20px; display: flex; align-items: center; justify-content: space-between;
+            height: 56px; position: sticky; top: 0; z-index: 10;
+        }
+        .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
+        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; }
+        .gbm-title {
+            font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px; margin: 0;
+            background: linear-gradient(90deg, #2E8B57 0%, #5fffa8 25%, #3d28ff 50%, #655aff 75%, #2E8B57 100%);
+            background-size: 200% auto; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent; animation: gbm-shine 4s linear infinite;
+        }
+        @keyframes gbm-shine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+
+        .btn-voltar {
+            text-decoration: none; color: var(--texto-principal);
+            font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 1px;
+            background: #0f1a2b; padding: 8px 16px; border-radius: 8px;
+            border: 1px solid rgba(95, 255, 168, 0.25); transition: 0.3s;
+        }
+        .btn-voltar:hover { border-color: #5fffa8; box-shadow: 0 0 14px rgba(95, 255, 168, 0.3); }
+
+        .page-wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+
+        .titulo-pagina {
+            font-family: 'Rajdhani', sans-serif; text-align: center;
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 700;
+            letter-spacing: 1.5px; margin: 0 0 30px 0;
+        }
+
+        /* CARD DE ASSINATURA */
+        .card {
+            background: rgba(15, 26, 43, 0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(95, 255, 168, 0.22); border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 30px;
+        }
+
+        .info-linha {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .info-linha:last-child { border-bottom: none; }
+        
+        .info-label { color: var(--texto-mutado); font-size: 0.95rem; font-weight: 600; }
+        .info-valor { font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #fff; }
+
+        .badge-status {
+            padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;
+            font-family: 'Inter', sans-serif; font-weight: bold; text-transform: uppercase;
+        }
+        .status-ativo { background: rgba(16,185,129,0.2); color: var(--cor-receita); border: 1px solid var(--cor-receita); }
+        .status-trial { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+        .status-cancelado { background: rgba(239,68,68,0.2); color: var(--cor-despesa); border: 1px solid var(--cor-despesa); }
+
+        .btn-cancelar-assinatura {
+            width: 100%; padding: 15px; margin-top: 30px;
+            background: rgba(239, 68, 68, 0.1); color: #ff4d4d;
+            border: 1px solid #ff4d4d; border-radius: 8px;
+            font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .btn-cancelar-assinatura:hover { background: rgba(239, 68, 68, 0.25); }
+
+        @media (max-width: 768px) { .gbm-title { display: none; } }
+    </style>
+</head>
+<body>
+<canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
+
+<header class="gbm-header">
+    <div class="gbm-logo-container">
+        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
+        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
+    </div>
+    <a href="dashboard.html" class="btn-voltar">Voltar</a>
+</header>
+
+<div class="page-wrapper">
+    <h2 class="titulo-pagina">🛡️ Minha Assinatura</h2>
+
+    <div class="card" id="card-assinatura">
+        <p style="text-align: center; color: var(--texto-mutado);">Carregando informações...</p>
+    </div>
+</div>
+
+<script>
+    const userId = localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+    if (!userId) window.location.href = 'index.html';
+
+    async function carregarAssinatura() {
+        try {
+            const res = await fetch(`/minha-assinatura?userId=${userId}`);
+            const data = await res.json();
+
+            if (data.error) throw new Error(data.error);
+
+            const card = document.getElementById('card-assinatura');
+            let statusHtml = '';
+            let dataTexto = '';
+
+            // Lógica de apresentação de status
+            if (data.status_pagamento === 'pago') {
+                statusHtml = '<span class="badge-status status-ativo">Plano Ativo</span>';
+                dataTexto = `Renovação automática ativada`;
+            } else if (data.status_pagamento === 'trial') {
+                statusHtml = '<span class="badge-status status-trial">Período de Teste (Trial)</span>';
+                const expira = new Date(data.trial_expira).toLocaleDateString('pt-BR');
+                dataTexto = `1º Cobrança em: ${expira}`;
+            } else {
+                statusHtml = '<span class="badge-status status-cancelado">Cancelado</span>';
+                dataTexto = `O seu plano não será renovado.`;
+            }
+
+            card.innerHTML = `
+                <div class="info-linha">
+                    <span class="info-label">Plano</span>
+                    <span class="info-valor">Premium GBM</span>
+                </div>
+                <div class="info-linha">
+                    <span class="info-label">Valor</span>
+                    <span class="info-valor">R$ 19,90 / mês</span>
+                </div>
+                <div class="info-linha">
+                    <span class="info-label">Status</span>
+                    ${statusHtml}
+                </div>
+                <div class="info-linha">
+                    <span class="info-label">Faturação</span>
+                    <span class="info-valor" style="font-size: 1rem; font-weight: 500; font-family: 'Inter', sans-serif;">${dataTexto}</span>
+                </div>
+
+                ${data.status_pagamento !== 'cancelado' 
+                    ? `<button class="btn-cancelar-assinatura" onclick="pedirCancelamento()">Cancelar Assinatura</button>` 
+                    : `<p style="text-align:center; color: var(--texto-mutado); margin-top: 20px; font-size: 0.9rem;">Sua assinatura está cancelada. Aproveite o acesso até o final do período vigente.</p>`
+                }
+            `;
+        } catch (error) {
+            document.getElementById('card-assinatura').innerHTML = `<p style="text-align: center; color: #ff4d4d;">Erro ao carregar dados.</p>`;
+        }
+    }
+
+    async function pedirCancelamento() {
+        const confirmar = await gbmConfirmar("Tem certeza que deseja cancelar sua assinatura? Você perderá acesso às automações OFX e relatórios após o fim do seu ciclo atual.");
+        
+        if (confirmar) {
+            try {
+                const res = await fetch('/cancelar-assinatura', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId })
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    gbmAlerta(result.message);
+                    carregarAssinatura(); // Recarrega a tela para mostrar o status "Cancelado"
+                } else {
+                    gbmAlerta("Erro ao cancelar: " + result.message, 'erro');
+                }
+            } catch (error) {
+                gbmAlerta("Falha de conexão ao tentar cancelar.", 'erro');
+            }
+        }
+    }
+
+    carregarAssinatura();
+
+    // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES ---
+    let _resolveConfirm = null;
+
+    function gbmAlerta(mensagem, tipo = 'info') {
+        const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)' : tipo === 'aviso' ? 'rgba(245,158,11,0.3)' : 'rgba(95,255,168,0.3)';
+        const icone = tipo === 'erro'  ? '❌' : tipo === 'aviso' ? '⚠️' : '✅';
+
+        document.getElementById('lista-notificacoes-modal').innerHTML = `
+            <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
+                ${mensagem}
+            </div>`;
+        document.getElementById('btn-confirmar-modal').style.display = 'none';
+        document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
+        document.getElementById('modal-notificacoes').style.display = 'flex';
+        _resolveConfirm = null;
+    }
+
+    function gbmConfirmar(mensagem) {
+        return new Promise(resolve => {
+            _resolveConfirm = resolve;
+            document.getElementById('lista-notificacoes-modal').innerHTML = `
+                <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                    <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
+                    ${mensagem}
+                </div>`;
+            document.getElementById('btn-confirmar-modal').style.display = 'block';
+            document.getElementById('btn-fechar-modal').innerText = 'MANTER ASSINATURA';
+            document.getElementById('modal-notificacoes').style.display = 'flex';
+        });
+    }
+
+    function fecharModalNotificacoes(confirmado = false) {
+        document.getElementById('modal-notificacoes').style.display = 'none';
+        if (_resolveConfirm) {
+            _resolveConfirm(confirmado);
+            _resolveConfirm = null;
+        }
+    }
+</script>
+
+<!-- MODAL DE NOTIFICAÇÕES GBM -->
+<div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
+    <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="logo-transparente.jpg" alt="GBM" style="height:28px;">
+                <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
+            </div>
+            <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+        </div>
+        <div id="lista-notificacoes-modal"></div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:rgba(239, 68, 68, 0.8); color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#ff4d4d'" onmouseout="this.style.background='rgba(239, 68, 68, 0.8)'">QUERO CANCELAR</button>
+            <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- PARTÍCULAS DOURADAS GBM ---
+    (function() {
+        const canvas = document.getElementById('particles-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+        function Particle() {
+            this.x = Math.random() * canvas.width; this.y = canvas.height + Math.random() * 100;
+            this.size = Math.random() * 2.5 + 0.8; this.speedY = Math.random() * 1.2 + 0.3;
+            this.opacity = Math.random() * 0.4 + 0.2;
+        }
+        Particle.prototype.update = function() {
+            this.y -= this.speedY;
+            if (this.y < -10) { this.y = canvas.height + 10; this.x = Math.random() * canvas.width; this.opacity = Math.random() * 0.4 + 0.2; }
+        };
+        Particle.prototype.draw = function() {
+            ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`; ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+        };
+
+        const count = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 15000), 65);
+        for (let i = 0; i < count; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    })();
+</script>
+</body>
+</html>

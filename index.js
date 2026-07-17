@@ -1021,6 +1021,44 @@ app.delete('/categorias/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Falha ao remover categoria.' });
     }
 });
+// --- ROTA: BUSCAR DADOS DA ASSINATURA ---
+app.get('/minha-assinatura', async (req, res) => {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: 'Usuário não informado.' });
+
+    try {
+        const [rows] = await db.promise().query(
+            'SELECT nome, email, status_pagamento, trial_expira FROM usuarios WHERE id = ?', 
+            [userId]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+        
+        res.json(rows[0]);
+    } catch (error) {
+        console.error('❌ Erro ao buscar assinatura:', error);
+        res.status(500).json({ error: 'Falha ao buscar dados da assinatura.' });
+    }
+});
+
+// --- ROTA: CANCELAR ASSINATURA ---
+app.post('/cancelar-assinatura', async (req, res) => {
+    const { userId } = req.body;
+    try {
+        // ATENÇÃO: Num cenário real com Mercado Pago, aqui você faria uma requisição à API 
+        // do MP para cancelar o 'preapproval_id' vinculado a este usuário.
+        // Por agora, vamos atualizar o status na nossa base de dados para impedir a renovação.
+        
+        await db.promise().query(
+            "UPDATE usuarios SET status_pagamento = 'cancelado' WHERE id = ?", 
+            [userId]
+        );
+        
+        res.json({ success: true, message: 'Sua assinatura foi cancelada com sucesso. Você não receberá novas cobranças.' });
+    } catch (error) {
+        console.error('❌ Erro ao cancelar assinatura:', error);
+        res.status(500).json({ success: false, message: 'Falha ao processar o cancelamento.' });
+    }
+});
 // 4. Liga o servidor
 const PORT = process.env.PORT || 3000; 
 app.listen(PORT, '0.0.0.0', () => {
