@@ -203,6 +203,17 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
+            flex: 1; 
+            overflow-y: auto; /* Faz o menu ter a sua própria barra de rolagem */
+        }
+        
+        /* Deixa a barra de rolagem do menu elegante e fina */
+        .sidebar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: rgba(95, 255, 168, 0.3);
+            border-radius: 10px;
         }
 
         .sidebar-content .menu-item {
@@ -1268,10 +1279,12 @@ function fecharModalNotificacoes(confirmado = false) {
             if(event) event.stopPropagation();
             document.getElementById('sidebar-menu').classList.add('aberto');
             document.getElementById('menu-overlay').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // 🔒 Trava o scroll do fundo
         }
 
         function fecharMenuLateral() {
             document.getElementById('sidebar-menu').classList.remove('aberto');
+            document.body.style.overflow = ''; // 🔓 Libera o scroll do fundo
             // Animação de sumiço rápido para a película
             setTimeout(() => {
                 document.getElementById('menu-overlay').style.display = 'none';
