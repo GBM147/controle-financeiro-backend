@@ -1696,7 +1696,10 @@ function renderizarPassoTutorial() {
 
     // 🔓 Libera o scroll rapidinho só para conseguir mover a tela até o elemento
     document.body.style.overflow = '';
-    elAlvo.scrollIntoView({ behavior: 'instant', block: 'center' });
+    
+    // Rola a tela para que o topo do elemento fique logo abaixo do cabeçalho
+    const posicaoElemento = elAlvo.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: posicaoElemento - headerHeight - 15, behavior: 'instant' });
 
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -1715,26 +1718,29 @@ function renderizarPassoTutorial() {
             spot.style.height     = (rect.height + folga * 2) + 'px';
             spot.style.boxShadow  = '0 0 0 9999px rgba(0,6,14,0.88)';
 
-            // Caixa: largura máxima segura para mobile
-            const caixaLargura = Math.min(300, vw - BORDA_TELA * 2);
+            // Caixa
+            const MARGEM       = 15;
+            const BORDA_TELA   = 10;
+            const caixaLargura = Math.min(320, vw - BORDA_TELA * 2);
             caixa.style.maxWidth = caixaLargura + 'px';
 
             const caixaAltura  = caixa.offsetHeight || 220;
 
-            // Posição vertical: prefere abaixo do elemento, mas respeita header e borda inferior
+            // Posição vertical inteligente
+            let topo;
             const espacoAbaixo = vh - rect.bottom - MARGEM;
             const espacoAcima  = rect.top - headerHeight - MARGEM;
 
-            let topo;
             if (espacoAbaixo >= caixaAltura) {
-                // Cabe abaixo
+                // Se couber, coloca perfeitamente ABAIXO do elemento
                 topo = rect.bottom + MARGEM;
             } else if (espacoAcima >= caixaAltura) {
-                // Cabe acima
+                // Se não couber embaixo, mas couber em CIMA do elemento
                 topo = rect.top - caixaAltura - MARGEM;
             } else {
-                // Nem acima nem abaixo — centraliza verticalmente na viewport respeitando header
-                topo = headerHeight + MARGEM + Math.max(0, (vh - headerHeight - caixaAltura) / 2);
+                // Se o elemento for gigante (tampa a tela toda), prende a caixa no FUNDO da tela.
+                // Assim o topo do painel (título e campos) fica 100% livre e visível!
+                topo = vh - caixaAltura - BORDA_TELA;
             }
 
             // Nunca encobre o header, nunca vaza abaixo da tela
