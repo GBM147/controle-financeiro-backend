@@ -344,7 +344,7 @@
                 <input type="checkbox" id="aceite-termos" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #10b981; cursor: pointer;">
                 <label for="aceite-termos" style="color: #8a9ba8; font-size: 13px; line-height: 1.4; cursor: pointer;">
                     Eu li e concordo com os 
-                    <a href="termos.html" target="_blank" style="color: #c89f53; text-decoration: none; font-weight: 600; transition: color 0.2s;">Termos e Condições</a> 
+                    <a href="#" onclick="abrirModalTermos(); return false;" style="color: #c89f53; text-decoration: none; font-weight: 600; transition: color 0.2s;">Termos e Condições</a> 
                     de uso da plataforma GBM.
                 </label>
             </div>
@@ -895,6 +895,56 @@
             </div>
         </div>
     </div>
+<!-- MODAL DE TERMOS -->
+    <div id="modal-termos" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
+        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:600px; width:90%; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="logo-transparente.jpg" alt="GBM" style="height:28px; border-radius:4px;">
+                    <h2 style="color:#5fffa8; margin:0; font-family:'Rajdhani',sans-serif; font-size: 1.4rem;">Termos de Uso</h2>
+                </div>
+                <button onclick="fecharModalTermos()" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            
+            <!-- Conteúdo com barra de rolagem -->
+            <div style="overflow-y:auto; padding-right:15px; color:#d1d5db; font-size:0.9rem; line-height:1.6; font-family:'Inter',sans-serif;">
+                <p>Bem-vindo(a) ao <strong>Guardian of Budget & Money (GBM)</strong>. Este documento rege o uso do nosso software.</p>
+                
+                <h3 style="color:#c89f53; margin:20px 0 10px 0; font-family:'Rajdhani',sans-serif; font-size: 1.2rem;">1. Descrição do Serviço</h3>
+                <p>O GBM é uma ferramenta de organização financeira. Não somos uma instituição financeira, não realizamos investimentos e não fornecemos aconselhamento fiscal.</p>
+                
+                <h3 style="color:#c89f53; margin:20px 0 10px 0; font-family:'Rajdhani',sans-serif; font-size: 1.2rem;">2. Assinatura e Período de Teste</h3>
+                <p>Oferecemos 30 dias de teste gratuito. Pode cancelar a qualquer momento antes do término para evitar cobranças. Caso cancele após o início do ciclo, o acesso permanecerá ativo até ao fim do período pago.</p>
+                
+                <h3 style="color:#c89f53; margin:20px 0 10px 0; font-family:'Rajdhani',sans-serif; font-size: 1.2rem;">3. Dados e Privacidade (LGPD)</h3>
+                <p>Os seus ficheiros OFX e dados manuais são usados exclusivamente para exibir as suas métricas. Aplicamos medidas de segurança rígidas (como criptografia de senhas) para proteger as suas informações financeiras.</p>
+                
+                <h3 style="color:#c89f53; margin:20px 0 10px 0; font-family:'Rajdhani',sans-serif; font-size: 1.2rem;">4. Limitação de Responsabilidade</h3>
+                <p>A sua saúde financeira e as decisões tomadas com base nos gráficos ou alertas gerados pela plataforma são da sua inteira responsabilidade.</p>
+            </div>
+            
+            <!-- Botões de Ação -->
+            <div style="margin-top:25px; display: flex; gap: 10px;">
+                <button onclick="aceitarTermosModal()" style="flex: 2; padding:14px; background:#10b981; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1.1rem; font-weight:700; cursor:pointer; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">LI E ACEITO</button>
+                <button onclick="fecharModalTermos()" style="flex: 1; padding:14px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        function abrirModalTermos() {
+            document.getElementById('modal-termos').style.display = 'flex';
+        }
+
+        function fecharModalTermos() {
+            document.getElementById('modal-termos').style.display = 'none';
+        }
+
+        function aceitarTermosModal() {
+            document.getElementById('aceite-termos').checked = true; // Marca a caixinha verde magicamente!
+            fecharModalTermos();
+        }
+    </script>
 </body>
 </html>
