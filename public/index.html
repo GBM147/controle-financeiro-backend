@@ -513,12 +513,8 @@
                 const res = await fetch(`/login-status?userId=${userId}`);
                 const data = await res.json();
                 if (data.statusPagamento) {
-                    const dentroDoPrazo = data.trialExpira && new Date() <= new Date(data.trialExpira);
-                    if (data.statusPagamento === 'pago' || (data.statusPagamento === 'cancelado' && dentroDoPrazo)) {
-                        window.location.href = 'dashboard.html';
-                    } else {
-                        window.location.href = 'pagamento.html';
-                    }
+                    // Todos os usuários (Premium e Gratuitos) entram direto no sistema
+                    window.location.href = 'dashboard.html';
                 }
             } catch (e) {
                 console.error('Erro ao verificar sessão existente:', e);
@@ -567,12 +563,8 @@
                     }
 
                     if (data.verificado) {
-                        const dentroDoPrazo = data.trialExpira && new Date() <= new Date(data.trialExpira);
-                        if (data.statusPagamento === 'pago' || (data.statusPagamento === 'cancelado' && dentroDoPrazo)) {
-                            window.location.href = 'dashboard.html';
-                        } else {
-                            window.location.href = 'pagamento.html';
-                        }
+                        // Todos os usuários (Premium e Gratuitos) entram direto no sistema
+                        window.location.href = 'dashboard.html';
                     } else {
                         document.getElementById('form-login').style.display = 'none';
                         document.getElementById('form-escolha-validacao').style.display = 'block';

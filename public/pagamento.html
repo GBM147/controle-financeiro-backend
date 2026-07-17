@@ -34,7 +34,13 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4);
         }
-        .btn-pagar:hover { background: #3cb371; transform: translateY(-2px); }
+        .btn-secundario {
+            background: transparent; color: #8a9ba8; border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px 30px; font-size: 0.95rem; font-weight: 600;
+            border-radius: 8px; width: 100%; cursor: pointer;
+            transition: all 0.3s ease; margin-top: 12px;
+        }
+        .btn-secundario:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
     </style>
 </head>
 <body>
@@ -50,7 +56,8 @@
         <div class="preco">R$ 19,90</div>
         <p style="margin-bottom: 30px; font-size: 0.9rem;">Assinatura Mensal / Cancele quando quiser</p>
 
-        <button onclick="irParaPagamento()" id="btn-action" class="btn-pagar">Ativar Acesso Agora 🚀</button>
+        <button onclick="irParaPagamento()" id="btn-action" class="btn-pagar">Ativar Premium (1º Mês Grátis) 🚀</button>
+        <button onclick="continuarGratis()" id="btn-gratis" class="btn-secundario">Continuar no Plano Gratuito (com anúncios)</button>
     </div>
 
     <script>
@@ -98,6 +105,13 @@
                 btn.innerText = 'Ativar Acesso Agora 🚀';
                 btn.disabled = false;
             }
+        }
+        // Função para quem escolher o plano gratuito
+        function continuarGratis() {
+            const btn = document.getElementById('btn-gratis');
+            btn.innerText = 'Entrando... ⏳';
+            btn.disabled = true;
+            window.location.href = 'dashboard.html';
         }
     </script>
 </body>
