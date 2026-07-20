@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fale Conosco | GBM</title>
+    <style>
+        /* Mantendo a identidade visual Premium Glassmorphism do GBM */
+        body { 
+            background: #0f172a; color: #fff; font-family: 'Inter', sans-serif; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; background-image: radial-gradient(circle at top right, #1a2a3a, #0f172a);
+        }
+        .container { 
+            background: rgba(20, 30, 40, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(10px); padding: 40px; border-radius: 12px; 
+            width: 100%; max-width: 450px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+        }
+        h2 { margin: 0 0 5px 0; color: #fff; text-align: center; }
+        p.subtitle { text-align: center; color: #8a9ba8; font-size: 0.9rem; margin-bottom: 25px; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #d1d9e0; font-size: 0.9rem; font-weight: 500; }
+        input, textarea, select { 
+            width: 100%; padding: 12px; background: rgba(0,0,0,0.2); 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; 
+            color: #fff; font-family: 'Inter', sans-serif; box-sizing: border-box; 
+            transition: all 0.3s ease;
+        }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #2E8B57; background: rgba(0,0,0,0.4); }
+        
+        .btn-enviar { 
+            width: 100%; padding: 14px; background: #2E8B57; color: #fff; 
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer; 
+            transition: 0.3s; margin-top: 10px; font-size: 1rem;
+        }
+        .btn-enviar:hover { background: #3cb371; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4); }
+        
+        .btn-voltar { 
+            display: block; text-align: center; margin-top: 20px; 
+            color: #8a9ba8; text-decoration: none; font-size: 0.9rem; transition: 0.3s;
+        }
+        .btn-voltar:hover { color: #fff; }
+        
+        #mensagem-status { 
+            display: none; text-align: center; margin-top: 15px; padding: 12px; 
+            border-radius: 8px; font-size: 0.9rem; font-weight: 500;
+        }
+        .sucesso { color: #3cb371; background: rgba(46, 139, 87, 0.1); border: 1px solid rgba(46, 139, 87, 0.3); }
+        .erro { color: #ff4d4d; background: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Fale Conosco</h2>
+        <p class="subtitle">Envie seu feedback, dúvida ou sugestão.</p>
+
+        <form id="formFeedback">
+            <div class="form-group">
+                <label for="assunto">Assunto</label>
+                <select id="assunto" required>
+                    <option value="" disabled selected>Selecione uma opção...</option>
+                    <option value="Duvida">Dúvida sobre o sistema</option>
+                    <option value="Feedback">Feedback / Sugestão</option>
+                    <option value="Problema">Relatar um Problema</option>
+                    <option value="Assinatura">Dúvida sobre Assinatura</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="mensagem">Sua Mensagem</label>
+                <textarea id="mensagem" rows="5" placeholder="Descreva sua solicitação com detalhes..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-enviar" id="btnSubmit">Enviar Mensagem 🚀</button>
+        </form>
+
+        <div id="mensagem-status"></div>
+
+        <a href="dashboard.html" class="btn-voltar">← Voltar para o Dashboard</a>
+    </div>
+
+    <script>
+        document.getElementById('formFeedback').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Impede a página de recarregar
+            
+            const btnSubmit = document.getElementById('btnSubmit');
+            const statusDiv = document.getElementById('mensagem-status');
+            const assunto = document.getElementById('assunto').value;
+            const mensagem = document.getElementById('mensagem').value;
+            
+            // Pega o ID do usuário salvo no localStorage (padrão do seu sistema)
+            const userData = JSON.parse(localStorage.getItem('usuarioGBM') || '{}');
+            const userId = userData.id || 'Usuário Desconhecido';
+            const userEmail = userData.email || 'Email Desconhecido';
+
+            btnSubmit.innerText = 'Enviando... ⏳';
+            btnSubmit.disabled = true;
+
+            try {
+                // Rota do seu backend que fará o disparo do e-mail
+                const response = await fetch('/api/enviar-feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, userEmail, assunto, mensagem })
+                });
+
+                if (response.ok) {
+                    document.getElementById('formFeedback').reset();
+                    statusDiv.className = 'sucesso';
+                    statusDiv.innerText = 'Mensagem enviada com sucesso! Retornaremos em breve.';
+                    statusDiv.style.display = 'block';
+                } else {
+                    throw new Error('Falha no envio');
+                }
+            } catch (error) {
+                statusDiv.className = 'erro';
+                statusDiv.innerText = 'Erro ao enviar mensagem. Tente novamente mais tarde.';
+                statusDiv.style.display = 'block';
+            } finally {
+                btnSubmit.innerText = 'Enviar Mensagem 🚀';
+                btnSubmit.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
