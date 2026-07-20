@@ -102,6 +102,72 @@
         .btn-cancelar-assinatura:hover { background: rgba(239, 68, 68, 0.25); }
 
         @media (max-width: 768px) { .gbm-title { display: none; } }
+        /* =========================================
+           ESTRUTURA DE GRID DOS PLANOS (FREEMIUM)
+           ========================================= */
+        .planos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .plano-card {
+            background: rgba(20, 30, 40, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        .plano-card.plano-ativo {
+            background: rgba(30, 45, 60, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .plano-badge-atual {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: #8a9ba8;
+            color: #1a1a2e;
+            padding: 4px 15px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .plano-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            flex-grow: 1;
+        }
+        .plano-features li {
+            font-size: 0.9rem;
+            color: #d1d9e0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .feature-inativa {
+            color: #6c7a87 !important;
+            text-decoration: line-through;
+        }
+        .btn-upgrade {
+            width: 100%; padding: 14px; background: #2E8B57; color: #fff; border: none; border-radius: 8px; 
+            font-weight: 600; cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
+        }
+        .btn-upgrade:hover { 
+            background: #3cb371; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 139, 87, 0.5); 
+        }
     </style>
 </head>
 <body>
@@ -134,77 +200,105 @@
 
             if (data.error) throw new Error(data.error);
 
-            const card = document.getElementById('card-assinatura');
+            const cardContainer = document.getElementById('card-assinatura');
             
-            // 1. ESTADO PADRÃO: PLANO GRATUITO (FREEMIUM)
-            // Se o usuário acabou de criar a conta e clicou em "Continuar Grátis",
-            // ou se o plano expirou, ele cai nesta regra por padrão.
-            let planoNome = 'Plano Gratuito (Com anúncios)';
-            let valorTexto = 'R$ 0,00 / mês';
-            let statusHtml = '<span class="badge-status" style="background: rgba(138, 155, 168, 0.2); color: #8a9ba8; border: 1px solid #8a9ba8;">Plano Free Ativo</span>';
-            let dataTexto = 'Você está na versão gratuita.';
-            
-            // O botão principal para quem é Free sempre será o de Upgrade
-            let botaoHtml = `
-                <button onclick="window.location.href='pagamento.html'" style="width: 100%; padding: 15px; margin-top: 30px; background: #2E8B57; color: #fff; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4);" onmouseover="this.style.background='#3cb371'" onmouseout="this.style.background='#2E8B57'">
-                    🚀 Fazer Upgrade para Premium
-                </button>
-            `;
+            // Remove o estilo do container antigo para ele virar apenas um wrapper invisível
+            cardContainer.style.background = 'transparent';
+            cardContainer.style.border = 'none';
+            cardContainer.style.boxShadow = 'none';
+            cardContainer.style.padding = '0';
 
             const trialValido = data.trial_expira && new Date() <= new Date(data.trial_expira);
 
-            // 2. VALIDAÇÃO DE UPGRADE (Sobrescreve o Free apenas se tiver direito)
+            // Validação absoluta de qual plano está no controle da conta
+            const isPremiumActive = (data.status_pagamento === 'pago') || 
+                                    (data.status_pagamento === 'trial' && trialValido) || 
+                                    (data.status_pagamento === 'cancelado' && trialValido);
+            const isFreeActive = !isPremiumActive;
+
+            // --- CONSTRUÇÃO DOS DADOS DO CARD PREMIUM ---
+            let statusPremiumHtml = '';
+            let infoPremiumHtml = '';
+            let botaoPremiumHtml = '';
+
             if (data.status_pagamento === 'pago') {
-                planoNome = 'Premium GBM';
-                valorTexto = 'R$ 19,90 / mês';
-                statusHtml = '<span class="badge-status status-ativo">Plano Ativo</span>';
-                dataTexto = `Renovação automática ativada`;
-                botaoHtml = `<button class="btn-cancelar-assinatura" style="margin-top: 30px;" onclick="pedirCancelamento()">Cancelar Assinatura</button>`;
+                statusPremiumHtml = '<span class="badge-status status-ativo">Plano Ativo</span>';
+                infoPremiumHtml = 'Renovação automática ativada';
+                botaoPremiumHtml = `<button class="btn-cancelar-assinatura" style="margin-top: 15px; width: 100%;" onclick="pedirCancelamento()">Cancelar Assinatura</button>`;
                 
             } else if (data.status_pagamento === 'trial' && trialValido) {
-                planoNome = 'Premium GBM';
-                valorTexto = 'R$ 19,90 / mês';
-                statusHtml = '<span class="badge-status status-trial">Período de Teste (Trial)</span>';
+                statusPremiumHtml = '<span class="badge-status status-trial">Período de Teste</span>';
                 const expira = new Date(data.trial_expira).toLocaleDateString('pt-BR');
-                dataTexto = `1º Cobrança em: ${expira}`;
-                botaoHtml = `
-                    <button onclick="window.location.href='pagamento.html'" style="width: 100%; padding: 15px; margin-top: 30px; background: #2E8B57; color: #fff; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4);" onmouseover="this.style.background='#3cb371'" onmouseout="this.style.background='#2E8B57'">
-                        🚀 Assinar Premium Definitivo
-                    </button>
-                    <button class="btn-cancelar-assinatura" style="margin-top: 15px;" onclick="pedirCancelamento()">Cancelar Teste</button>
+                infoPremiumHtml = `1º Cobrança em: ${expira}`;
+                botaoPremiumHtml = `
+                    <button onclick="window.location.href='pagamento.html'" class="btn-upgrade">🚀 Assinar Definitivo</button>
+                    <button class="btn-cancelar-assinatura" style="margin-top: 15px; width: 100%;" onclick="pedirCancelamento()">Cancelar Teste</button>
                 `;
                 
             } else if (data.status_pagamento === 'cancelado' && trialValido) {
-                planoNome = 'Premium GBM';
-                valorTexto = 'R$ 19,90 / mês';
-                statusHtml = '<span class="badge-status status-cancelado">Cancelado (No Prazo)</span>';
-                dataTexto = `Acesso premium até ${new Date(data.trial_expira).toLocaleDateString('pt-BR')}`;
-                botaoHtml = `
-                    <button onclick="window.location.href='pagamento.html'" style="width: 100%; padding: 15px; margin-top: 30px; background: #2E8B57; color: #fff; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4);" onmouseover="this.style.background='#3cb371'" onmouseout="this.style.background='#2E8B57'">
-                        🚀 Reativar Premium Agora
-                    </button>
+                statusPremiumHtml = '<span class="badge-status status-cancelado">Cancelado (No Prazo)</span>';
+                infoPremiumHtml = `Acesso premium até ${new Date(data.trial_expira).toLocaleDateString('pt-BR')}`;
+                botaoPremiumHtml = `
+                    <button onclick="window.location.href='pagamento.html'" class="btn-upgrade">🚀 Reativar Premium Agora</button>
+                `;
+            } else {
+                statusPremiumHtml = '<span class="badge-status" style="background: rgba(255,255,255,0.05); color: #8a9ba8; border: 1px solid rgba(255,255,255,0.1);">Inativo</span>';
+                infoPremiumHtml = `Faça o upgrade para liberar todos os recursos.`;
+                botaoPremiumHtml = `
+                    <button onclick="window.location.href='pagamento.html'" class="btn-upgrade">🚀 Fazer Upgrade Agora</button>
                 `;
             }
 
-            // 3. RENDERIZAÇÃO FINAL
-            card.innerHTML = `
-                <div class="info-linha">
-                    <span class="info-label">Plano</span>
-                    <span class="info-valor" style="color: ${planoNome.includes('Gratuito') ? '#8a9ba8' : '#fff'};">${planoNome}</span>
+            // --- INJEÇÃO DA VITRINE (GRID) COM OS DOIS PLANOS ---
+            cardContainer.innerHTML = `
+                <div class="planos-grid">
+                    
+                    <!-- CARD: PLANO GRATUITO -->
+                    <div class="plano-card ${isFreeActive ? 'plano-ativo' : ''}" style="border: 1px solid ${isFreeActive ? '#8a9ba8' : 'rgba(255,255,255,0.05)'};">
+                        ${isFreeActive ? '<div class="plano-badge-atual">Seu Plano Atual</div>' : ''}
+                        
+                        <h3 style="margin:0 0 5px 0; color: #fff; font-size: 1.2rem;">Plano Gratuito</h3>
+                        <h2 style="margin:0 0 25px 0; color: #8a9ba8; font-size: 1.8rem;">R$ 0,00 <span style="font-size: 0.9rem; font-weight: 400;">/ mês</span></h2>
+                        
+                        <ul class="plano-features">
+                            <li>✔️ Importação de OFX ilimitada</li>
+                            <li>✔️ Dashboard de Lançamentos</li>
+                            <li class="feature-inativa">❌ Relatórios Mensais</li>
+                            <li class="feature-inativa">❌ Comparativos de Gastos</li>
+                            <li style="color: #ff9800;">⚠️ Plataforma com Anúncios</li>
+                        </ul>
+                        
+                        ${isFreeActive 
+                            ? `<button disabled style="width: 100%; padding: 14px; margin-top: 15px; background: rgba(255,255,255,0.05); color: #8a9ba8; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-weight: 600; cursor: not-allowed; font-family: 'Inter', sans-serif;">Plano em uso</button>` 
+                            : `<div style="text-align: center; color: #6c7a87; font-size: 0.9rem; margin-top: 15px; padding: 14px;">Plano base da conta</div>`}
+                    </div>
+
+                    <!-- CARD: PREMIUM GBM -->
+                    <div class="plano-card ${isPremiumActive ? 'plano-ativo' : ''}" style="border: 1px solid ${isPremiumActive ? '#2E8B57' : 'rgba(255,255,255,0.05)'};">
+                        ${isPremiumActive ? '<div class="plano-badge-atual" style="background: #2E8B57; color: #fff;">Seu Plano Atual</div>' : ''}
+                        
+                        <h3 style="margin:0 0 5px 0; color: #fff; font-size: 1.2rem;">Premium GBM</h3>
+                        <h2 style="margin:0 0 25px 0; color: #fff; font-size: 1.8rem;">R$ 19,90 <span style="font-size: 0.9rem; font-weight: 400; color: #8a9ba8;">/ mês</span></h2>
+                        
+                        <ul class="plano-features">
+                            <li>✔️ Importação de OFX ilimitada</li>
+                            <li>✔️ Dashboard de Lançamentos</li>
+                            <li style="color: #3cb371; font-weight: 500;">✨ Relatórios Mensais Liberados</li>
+                            <li style="color: #3cb371; font-weight: 500;">✨ Comparativos de Gastos</li>
+                            <li style="color: #3cb371; font-weight: 500;">🚫 Experiência Zero Anúncios</li>
+                        </ul>
+                        
+                        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-size: 0.9rem; color: #8a9ba8;">Status:</span>
+                                ${statusPremiumHtml}
+                            </div>
+                            <p style="font-size: 0.85rem; color: #8a9ba8; margin-bottom: 15px; text-align: center;">${infoPremiumHtml}</p>
+                            ${botaoPremiumHtml}
+                        </div>
+                    </div>
+
                 </div>
-                <div class="info-linha">
-                    <span class="info-label">Valor</span>
-                    <span class="info-valor" style="color: ${planoNome.includes('Gratuito') ? '#8a9ba8' : '#fff'};">${valorTexto}</span>
-                </div>
-                <div class="info-linha">
-                    <span class="info-label">Status</span>
-                    ${statusHtml}
-                </div>
-                <div class="info-linha">
-                    <span class="info-label">Faturação</span>
-                    <span class="info-valor" style="font-size: 0.95rem; font-weight: 500; font-family: 'Inter', sans-serif; color: var(--texto-mutado);">${dataTexto}</span>
-                </div>
-                ${botaoHtml}
             `;
         } catch (error) {
             document.getElementById('card-assinatura').innerHTML = `<p style="text-align: center; color: #ff4d4d;">Erro ao carregar dados.</p>`;
