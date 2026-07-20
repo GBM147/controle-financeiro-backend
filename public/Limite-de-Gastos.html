@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -312,9 +311,16 @@
 </div>
 
     <script>
+        // Recupera o userId salvo (mesmo padrão usado no resto do app)
+        function pegarUserId() {
+            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        }
+        const userId = pegarUserId();
+        if (!userId) window.location.href = 'index.html';
+
         async function carregarEditor() {
             try {
-                const res = await fetch('/metas-resumo');
+                const res = await fetch('/metas-resumo?userId=' + userId);
                 const json = await res.json();
                 let metas = json.data ? json.data : (Array.isArray(json) ? json : []);
                 
@@ -394,7 +400,7 @@
             await fetch('/atualizar-meta-alerta', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ categoria: categoriaOriginal, valor_limite, percentual_alerta })
+                body: JSON.stringify({ categoria: categoriaOriginal, valor_limite, percentual_alerta, userId })
             });
             gbmAlerta("Regra gravada com sucesso!");
         }
@@ -413,7 +419,7 @@ async function salvarNovoLimite() {
                 const res = await fetch('/atualizar-meta-alerta', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ categoria, valor_limite, percentual_alerta })
+                    body: JSON.stringify({ categoria, valor_limite, percentual_alerta, userId })
                 });
 
                 if (res.ok) {

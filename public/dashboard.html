@@ -1299,7 +1299,11 @@ function fecharModalNotificacoes(confirmado = false) {
             if (!ok) return;
 
             try {
-                const res = await fetch('/desfazer-ultimo', { method: 'DELETE' });
+                const res = await fetch('/desfazer-ultimo', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: pegarUserId() })
+                });
 
                 if (res.ok) {
                     window.location.reload(); // Recarrega para atualizar totais e gráfico
@@ -1473,10 +1477,11 @@ async function salvarCorrecao(transacaoId, descricao) {
     btn.disabled = true;
 
     try {
+        const userId = pegarUserId();
         const res = await fetch('/corrigir-categoria', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ transacaoId, descricao, novaCategoria })
+            body: JSON.stringify({ transacaoId, descricao, novaCategoria, userId })
         });
         const data = await res.json();
 
@@ -1523,7 +1528,7 @@ function fecharModalTransacoes() {
 }
 async function carregarAlertas() {
     try {
-        const res = await fetch('/alertas');
+        const res = await fetch('/alertas?userId=' + pegarUserId());
         const alertas = await res.json();
         const naoLidos = alertas.filter(a => !a.lida);
 
@@ -1555,7 +1560,7 @@ function abrirPainelAlertas() {
     alertas.forEach(a => {
         if (!a.lida) fetch('/alertas/marcar-lida', {
             method: 'POST', headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ id: a.id })
+            body: JSON.stringify({ id: a.id, userId: pegarUserId() })
         });
     });
     carregarAlertas();

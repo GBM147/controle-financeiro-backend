@@ -48,6 +48,13 @@ function identificarBanco(rais) {
 }
 // 1. Inicializamos o servidor Express
 const app = express();
+// 2. Middlewares essenciais (precisam vir ANTES de qualquer rota, incluindo o webhook,
+// senão req.body chega vazio nas rotas registradas antes deles)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+// Isso faz o servidor ler e entregar automaticamente os seus ficheiros HTML/CSS da pasta public
+app.use(express.static('public'));
 // --- ROTA: CRIAR SESSÃO DE PAGAMENTO (MERCADO PAGO) ---
 // --- ROTA: CRIAR ASSINATURA MENSAL (MERCADO PAGO) ---
 // Extrai o nome do estabelecimento limpando os prefixos padrão dos bancos
@@ -129,12 +136,6 @@ app.post('/webhook-mercadopago', async (req, res) => {
         }
     }
 });
-// 2. Middlewares (Configurações essenciais centralizadas)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors());
-// Isso faz o servidor ler e entregar automaticamente os seus ficheiros HTML/CSS da pasta public
-app.use(express.static('public')); 
 // --- LIGAÇÃO À BASE DE DADOS MYSQL ---
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -180,7 +181,8 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
         const contaInternaId = contas.length > 0 ? contas[0].id : 1;
         // Carrega as regras salvas pelo usuário para usar na categorização
 const [regrasUsuario] = await db.promise().query(
-    'SELECT descricao_contem, categoria FROM regras_categoria WHERE usuario_id = 1'
+    'SELECT descricao_contem, categoria FROM regras_categoria WHERE usuario_id = ?',
+    [userId]
 );
         // --- NOVO: CAPTURA O SALDO EXATO DO BANCO PELO OFX ---
         const ledgerBal = stmtRs.LEDGERBAL || {};
@@ -571,18 +573,17 @@ async function auditarMetas() {
         const [prefs] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
         const percentualAlertaGlobal = prefs.length > 0 ? prefs[0].percentual_alerta : 80;
 
+        // Agora o gasto é calculado POR USUÁRIO (via a conta bancária a que a transação pertence),
+        // não somado entre todos os usuários que têm a mesma categoria.
         const sql = `
-            SELECT t.categoria, SUM(t.valor) as total_gasto, m.valor_limite, m.percentual_alerta as percentual_categoria
+            SELECT cb.usuario_id, t.categoria, SUM(t.valor) as total_gasto, m.valor_limite, m.percentual_alerta as percentual_categoria
             FROM transacoes t
-            JOIN metas m ON t.categoria = m.categoria
+            JOIN contas_bancarias cb ON t.conta_id = cb.id
+            JOIN metas m ON t.categoria = m.categoria AND m.usuario_id = cb.usuario_id
             WHERE t.tipo = 'Despesa' AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE()) AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
-            GROUP BY t.categoria, m.valor_limite, m.percentual_alerta
+            GROUP BY cb.usuario_id, t.categoria, m.valor_limite, m.percentual_alerta
         `;
         const [gastos] = await db.promise().query(sql);
-
-        // Pega o e-mail do usuário a notificar (ajuste se tiver multiusuário de verdade)
-        const [usuarios] = await db.promise().query('SELECT id, email, nome FROM usuarios LIMIT 1');
-        const usuario = usuarios[0];
 
         for (const item of gastos) {
             const gastoAbs = Math.abs(item.total_gasto);
@@ -595,15 +596,17 @@ async function auditarMetas() {
                 const msg = `Atenção: Você atingiu ${porcentagemAtual.toFixed(1)}% do seu limite de R$ ${limite.toFixed(2)} na categoria ${item.categoria}.`;
 
                 const [check] = await db.promise().query(
-                    'SELECT id FROM alertas WHERE categoria = ? AND MONTH(data_criacao) = MONTH(CURRENT_DATE()) AND YEAR(data_criacao) = YEAR(CURRENT_DATE())',
-                    [item.categoria]
+                    'SELECT id FROM alertas WHERE categoria = ? AND usuario_id = ? AND MONTH(data_criacao) = MONTH(CURRENT_DATE()) AND YEAR(data_criacao) = YEAR(CURRENT_DATE())',
+                    [item.categoria, item.usuario_id]
                 );
 
                 if (check.length === 0) {
-                    await db.promise().query('INSERT INTO alertas (categoria, mensagem) VALUES (?, ?)', [item.categoria, msg]);
-                    console.log(`🔔 NOVO ALERTA GERADO: ${msg}`);
+                    await db.promise().query('INSERT INTO alertas (usuario_id, categoria, mensagem) VALUES (?, ?, ?)', [item.usuario_id, item.categoria, msg]);
+                    console.log(`🔔 NOVO ALERTA GERADO (usuario ${item.usuario_id}): ${msg}`);
 
-                    // --- ENVIO DO E-MAIL DE NOTIFICAÇÃO ---
+                    // --- ENVIO DO E-MAIL DE NOTIFICAÇÃO PARA O DONO DA META ---
+                    const [usuarios] = await db.promise().query('SELECT email, nome FROM usuarios WHERE id = ?', [item.usuario_id]);
+                    const usuario = usuarios[0];
                     if (usuario && usuario.email) {
                         try {
                             await resend.emails.send({
@@ -632,57 +635,114 @@ async function auditarMetas() {
     }
 }
 app.get('/configuracoes-alerta', async (req, res) => {
-    const [rows] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
-    res.json(rows[0] || { percentual_alerta: 80 });
+    try {
+        const [rows] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
+        res.json(rows[0] || { percentual_alerta: 80 });
+    } catch (error) {
+        console.error('❌ Erro ao buscar configurações de alerta:', error);
+        res.status(500).json({ percentual_alerta: 80 });
+    }
 });
 app.post('/configuracoes-alerta', async (req, res) => {
-    const { percentual } = req.body;
-    await db.promise().query('UPDATE preferencias_notificacao SET percentual_alerta = ? WHERE id = 1', [percentual]);
-    res.json({ success: true });
+    try {
+        const { percentual } = req.body;
+        await db.promise().query('UPDATE preferencias_notificacao SET percentual_alerta = ? WHERE id = 1', [percentual]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Erro ao salvar configurações de alerta:', error);
+        res.status(500).json({ success: false });
+    }
 });
 app.get('/alertas', async (req, res) => {
-    const [rows] = await db.promise().query('SELECT * FROM alertas ORDER BY data_criacao DESC LIMIT 50');
-    res.json(rows);
+    try {
+        const { userId } = req.query;
+        if (!userId) return res.status(400).json({ error: 'userId é obrigatório.' });
+        const [rows] = await db.promise().query(
+            'SELECT * FROM alertas WHERE usuario_id = ? ORDER BY data_criacao DESC LIMIT 50',
+            [userId]
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error('❌ Erro ao buscar alertas:', error);
+        res.status(500).json({ error: 'Falha ao buscar alertas.' });
+    }
 });
 app.post('/alertas/marcar-lida', async (req, res) => {
-    const { id } = req.body;
-    await db.promise().query('UPDATE alertas SET lida = TRUE WHERE id = ?', [id]);
-    res.json({ success: true });
+    try {
+        const { id, userId } = req.body;
+        if (!userId) return res.status(400).json({ success: false, error: 'userId é obrigatório.' });
+        await db.promise().query('UPDATE alertas SET lida = TRUE WHERE id = ? AND usuario_id = ?', [id, userId]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Erro ao marcar alerta como lido:', error);
+        res.status(500).json({ success: false });
+    }
 });
 app.get('/relatorio-mensal', async (req, res) => {
-    const { mes, ano } = req.query; 
-    const sql = `
-        SELECT categoria, tipo, IFNULL(SUM(valor), 0) as total_movimentado
-        FROM transacoes
-        WHERE MONTH(data_transacao) = ? AND YEAR(data_transacao) = ?
-        GROUP BY categoria, tipo
-    `;
-    const [rows] = await db.promise().query(sql, [mes, ano]);
-    res.json(rows);
+    try {
+        const { mes, ano, userId } = req.query;
+        if (!userId) return res.status(400).json({ error: 'userId é obrigatório.' });
+        const sql = `
+            SELECT t.categoria, t.tipo, IFNULL(SUM(t.valor), 0) as total_movimentado
+            FROM transacoes t
+            JOIN contas_bancarias cb ON t.conta_id = cb.id
+            WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
+            GROUP BY t.categoria, t.tipo
+        `;
+        const [rows] = await db.promise().query(sql, [userId, mes, ano]);
+        res.json(rows);
+    } catch (error) {
+        console.error('❌ Erro ao gerar relatório mensal:', error);
+        res.status(500).json({ error: 'Falha ao gerar relatório mensal.' });
+    }
 });
 // --- ROTA: RELATÓRIO DETALHADO (transações individuais para editar categoria) ---
 app.get('/relatorio-detalhado', async (req, res) => {
-    const { mes, ano, userId } = req.query;
-    const sql = `
-        SELECT t.id, t.descricao, t.valor, t.tipo, t.categoria, t.data_transacao, t.banco
-        FROM transacoes t
-        JOIN contas_bancarias cb ON t.conta_id = cb.id
-        WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
-        ORDER BY t.data_transacao DESC
-    `;
-    const [rows] = await db.promise().query(sql, [userId, mes, ano]);
-    res.json(rows);
+    try {
+        const { mes, ano, userId, banco } = req.query;
+        if (!userId) return res.status(400).json({ error: 'userId é obrigatório.' });
+
+        let sql = `
+            SELECT t.id, t.descricao, t.valor, t.tipo, t.categoria, t.data_transacao, t.banco
+            FROM transacoes t
+            JOIN contas_bancarias cb ON t.conta_id = cb.id
+            WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
+        `;
+        const params = [userId, mes, ano];
+
+        if (banco && banco !== 'todos') {
+            sql += ' AND t.banco = ?';
+            params.push(banco);
+        }
+
+        sql += ' ORDER BY t.data_transacao DESC';
+
+        const [rows] = await db.promise().query(sql, params);
+        res.json(rows);
+    } catch (error) {
+        console.error('❌ Erro ao gerar relatório detalhado:', error);
+        res.status(500).json({ error: 'Falha ao gerar relatório detalhado.' });
+    }
 });
 
 // --- ROTA: ATUALIZAR CATEGORIA DE UMA TRANSAÇÃO ---
 app.put('/atualizar-categoria/:id', async (req, res) => {
     const { id } = req.params;
-    const { categoria } = req.body;
+    const { categoria, userId } = req.body;
+    if (!userId) {
+        return res.status(400).json({ success: false, error: 'userId é obrigatório.' });
+    }
     try {
-        await db.promise().query(
-            'UPDATE transacoes SET categoria = ? WHERE id = ?',
-            [categoria, id]
+        const [result] = await db.promise().query(
+            `UPDATE transacoes t
+             JOIN contas_bancarias cb ON t.conta_id = cb.id
+             SET t.categoria = ?
+             WHERE t.id = ? AND cb.usuario_id = ?`,
+            [categoria, id, userId]
         );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, error: 'Transação não encontrada para este usuário.' });
+        }
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -705,12 +765,22 @@ app.get('/metas-resumo', async (req, res) => {
     res.json(rows);
 });
 app.post('/atualizar-meta-alerta', async (req, res) => {
-    const { categoria, valor_limite, percentual_alerta } = req.body;
-    await db.promise().query(
-        'UPDATE metas SET valor_limite = ?, percentual_alerta = ? WHERE categoria = ?', 
-        [valor_limite, percentual_alerta, categoria]
-    );
-    res.json({ success: true });
+    try {
+        const { categoria, valor_limite, percentual_alerta, userId } = req.body;
+        if (!userId) {
+            return res.status(400).json({ success: false, error: 'userId é obrigatório.' });
+        }
+        await db.promise().query(
+            `INSERT INTO metas (categoria, valor_limite, percentual_alerta, usuario_id)
+             VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE valor_limite = VALUES(valor_limite), percentual_alerta = VALUES(percentual_alerta)`,
+            [categoria, valor_limite, percentual_alerta, userId]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Erro ao atualizar meta/alerta:', error);
+        res.status(500).json({ success: false, error: 'Falha ao atualizar meta.' });
+    }
 });
 // --- ROTA DE LOGIN CORRIGIDA (PULA VERIFICAÇÃO SE JÁ VERIFICADO) ---
 app.post('/login', async (req, res) => {
@@ -746,20 +816,7 @@ app.post('/login', async (req, res) => {
         }
     });
 });
-// --- ROTA: VERIFICAR STATUS DO USUÁRIO ---
-app.get('/login-status', async (req, res) => {
-    const { userId } = req.query;
-    if (!userId) return res.status(400).json({ success: false });
-    try {
-        const [rows] = await db.promise().query(
-            'SELECT status_pagamento, trial_expira FROM usuarios WHERE id = ?', [userId]
-        );
-        if (rows.length === 0) return res.status(404).json({ success: false });
-        res.json({ statusPagamento: rows[0].status_pagamento, trialExpira: rows[0].trial_expira });
-    } catch (e) {
-        res.status(500).json({ success: false });
-    }
-});
+// --- ROTA: VERIFICAR STATUS DO USUÁRIO --- (duplicada removida — já definida acima)
 // --- ROTA DE VERIFICAÇÃO ---
 app.post('/verificar-conta', (req, res) => {
     const { userId, codigoDigitado } = req.body;
@@ -880,11 +937,20 @@ app.post('/redefinir-senha', async (req, res) => {
 });
 // --- ROTA PARA DESFAZER O ÚLTIMO LANÇAMENTO (VERSÃO CORRIGIDA) ---
 app.delete('/desfazer-ultimo', (req, res) => {
-    // Apaga a transação com o maior ID (a última que foi inserida)
-    const sql = 'DELETE FROM transacoes ORDER BY id DESC LIMIT 1';
-    
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).json({ error: 'userId é obrigatório.' });
+    }
+    // Apaga apenas a transação de maior ID PERTENCENTE AO USUÁRIO (a última que ele inseriu)
+    const sql = `
+        DELETE t FROM transacoes t
+        JOIN contas_bancarias cb ON t.conta_id = cb.id
+        WHERE cb.usuario_id = ?
+        ORDER BY t.id DESC LIMIT 1
+    `;
+
     // Usando o formato de callback clássico em vez de 'await'
-    db.query(sql, (err, result) => {
+    db.query(sql, [userId], (err, result) => {
         if (err) {
             console.error('Erro ao desfazer transação:', err);
             return res.status(500).json({ error: 'Erro ao excluir no banco de dados.' });
@@ -912,22 +978,28 @@ app.get('/transacoes-individuais', async (req, res) => {
 // Corrigir categoria e salvar como regra permanente
 app.post('/corrigir-categoria', async (req, res) => {
     try {
-        const { transacaoId, descricao, novaCategoria } = req.body;
+        const { transacaoId, descricao, novaCategoria, userId } = req.body;
+        if (!userId) {
+            return res.status(400).json({ success: false, error: 'userId é obrigatório.' });
+        }
 
-        // 1. Atualiza a transação
+        // 1. Atualiza a transação (garantindo que ela pertence ao próprio usuário)
         await db.promise().query(
-            'UPDATE transacoes SET categoria = ? WHERE id = ?',
-            [novaCategoria, transacaoId]
+            `UPDATE transacoes t
+             JOIN contas_bancarias cb ON t.conta_id = cb.id
+             SET t.categoria = ?
+             WHERE t.id = ? AND cb.usuario_id = ?`,
+            [novaCategoria, transacaoId, userId]
         );
 
-        // 2. Extrai a palavra-chave e salva a regra
+        // 2. Extrai a palavra-chave e salva a regra vinculada a este usuário
         const palavraChave = extrairPalavraChave(descricao);
         if (palavraChave) {
             await db.promise().query(`
                 INSERT INTO regras_categoria (usuario_id, descricao_contem, categoria)
-                VALUES (1, ?, ?)
+                VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE categoria = VALUES(categoria)
-            `, [palavraChave, novaCategoria]);
+            `, [userId, palavraChave, novaCategoria]);
         }
 
         res.json({ success: true });
@@ -951,6 +1023,29 @@ app.get('/bancos-info', (req, res) => {
     const mapa = {};
     Object.values(BANCOS_INFO).forEach(b => { mapa[b.nome] = b.cor; });
     res.json(mapa);
+});
+
+// Lista os bancos distintos que o usuário já usou em suas transações
+// (usado para popular o filtro de banco no relatório)
+app.get('/bancos-usados', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        if (!userId) return res.status(400).json({ error: 'userId é obrigatório.' });
+
+        const [rows] = await db.promise().query(
+            `SELECT DISTINCT t.banco
+             FROM transacoes t
+             JOIN contas_bancarias cb ON t.conta_id = cb.id
+             WHERE cb.usuario_id = ? AND t.banco IS NOT NULL AND t.banco <> ''
+             ORDER BY t.banco ASC`,
+            [userId]
+        );
+
+        res.json(rows.map(r => r.banco));
+    } catch (error) {
+        console.error('❌ Erro ao buscar bancos usados:', error);
+        res.status(500).json({ error: 'Falha ao buscar bancos usados.' });
+    }
 });
 
 app.get('/categorias', async (req, res) => {
@@ -1059,6 +1154,40 @@ app.post('/cancelar-assinatura', async (req, res) => {
         res.status(500).json({ success: false, message: 'Falha ao processar o cancelamento.' });
     }
 });
+// --- ROTA: RECEBER FEEDBACK DA PÁGINA "FALE CONOSCO" ---
+app.post('/api/enviar-feedback', async (req, res) => {
+    try {
+        const { userId, userEmail, assunto, mensagem } = req.body;
+        if (!mensagem || !assunto) {
+            return res.status(400).json({ success: false, error: 'Assunto e mensagem são obrigatórios.' });
+        }
+
+        const emailSuporte = process.env.EMAIL_SUPORTE || 'suporte@gbm-finance.com';
+
+        await resend.emails.send({
+            from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
+            to: emailSuporte,
+            reply_to: userEmail || undefined,
+            subject: `📩 [Fale Conosco] ${assunto} — Usuário ${userId || 'desconhecido'}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>Nova mensagem via Fale Conosco</h2>
+                    <p><strong>Usuário:</strong> ${userId || 'desconhecido'}</p>
+                    <p><strong>E-mail:</strong> ${userEmail || 'não informado'}</p>
+                    <p><strong>Assunto:</strong> ${assunto}</p>
+                    <p><strong>Mensagem:</strong></p>
+                    <p>${(mensagem || '').replace(/\n/g, '<br>')}</p>
+                </div>
+            `
+        });
+
+        res.json({ success: true, message: 'Mensagem enviada com sucesso!' });
+    } catch (error) {
+        console.error('❌ Erro ao enviar feedback:', error);
+        res.status(500).json({ success: false, error: 'Falha ao enviar mensagem.' });
+    }
+});
+
 // 4. Liga o servidor
 const PORT = process.env.PORT || 3000; 
 app.listen(PORT, '0.0.0.0', () => {
