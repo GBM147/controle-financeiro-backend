@@ -135,30 +135,66 @@
             if (data.error) throw new Error(data.error);
 
             const card = document.getElementById('card-assinatura');
-            let statusHtml = '';
-            let dataTexto = '';
+            
+            // 1. ESTADO PADRÃO: PLANO GRATUITO (FREEMIUM)
+            // Se o usuário acabou de criar a conta e clicou em "Continuar Grátis",
+            // ou se o plano expirou, ele cai nesta regra por padrão.
+            let planoNome = 'Plano Gratuito (Com anúncios)';
+            let valorTexto = 'R$ 0,00 / mês';
+            let statusHtml = '<span class="badge-status" style="background: rgba(138, 155, 168, 0.2); color: #8a9ba8; border: 1px solid #8a9ba8;">Plano Free Ativo</span>';
+            let dataTexto = 'Você está na versão gratuita.';
+            
+            // O botão principal para quem é Free sempre será o de Upgrade
+            let botaoHtml = `
+                <button onclick="window.location.href='pagamento.html'" style="width: 100%; padding: 15px; margin-top: 30px; background: #2E8B57; color: #fff; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4);" onmouseover="this.style.background='#3cb371'" onmouseout="this.style.background='#2E8B57'">
+                    🚀 Fazer Upgrade para Premium
+                </button>
+            `;
 
-            // Lógica de apresentação de status
+            const trialValido = data.trial_expira && new Date() <= new Date(data.trial_expira);
+
+            // 2. VALIDAÇÃO DE UPGRADE (Sobrescreve o Free apenas se tiver direito)
             if (data.status_pagamento === 'pago') {
+                planoNome = 'Premium GBM';
+                valorTexto = 'R$ 19,90 / mês';
                 statusHtml = '<span class="badge-status status-ativo">Plano Ativo</span>';
                 dataTexto = `Renovação automática ativada`;
-            } else if (data.status_pagamento === 'trial') {
+                botaoHtml = `<button class="btn-cancelar-assinatura" style="margin-top: 30px;" onclick="pedirCancelamento()">Cancelar Assinatura</button>`;
+                
+            } else if (data.status_pagamento === 'trial' && trialValido) {
+                planoNome = 'Premium GBM';
+                valorTexto = 'R$ 19,90 / mês';
                 statusHtml = '<span class="badge-status status-trial">Período de Teste (Trial)</span>';
                 const expira = new Date(data.trial_expira).toLocaleDateString('pt-BR');
                 dataTexto = `1º Cobrança em: ${expira}`;
-            } else {
-                statusHtml = '<span class="badge-status status-cancelado">Cancelado</span>';
-                dataTexto = `O seu plano não será renovado.`;
+                botaoHtml = `
+                    <button onclick="window.location.href='pagamento.html'" style="width: 100%; padding: 15px; margin-top: 30px; background: #2E8B57; color: #fff; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4);" onmouseover="this.style.background='#3cb371'" onmouseout="this.style.background='#2E8B57'">
+                        🚀 Assinar Premium Definitivo
+                    </button>
+                    <button class="btn-cancelar-assinatura" style="margin-top: 15px;" onclick="pedirCancelamento()">Cancelar Teste</button>
+                `;
+                
+            } else if (data.status_pagamento === 'cancelado' && trialValido) {
+                planoNome = 'Premium GBM';
+                valorTexto = 'R$ 19,90 / mês';
+                statusHtml = '<span class="badge-status status-cancelado">Cancelado (No Prazo)</span>';
+                dataTexto = `Acesso premium até ${new Date(data.trial_expira).toLocaleDateString('pt-BR')}`;
+                botaoHtml = `
+                    <button onclick="window.location.href='pagamento.html'" style="width: 100%; padding: 15px; margin-top: 30px; background: #2E8B57; color: #fff; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4);" onmouseover="this.style.background='#3cb371'" onmouseout="this.style.background='#2E8B57'">
+                        🚀 Reativar Premium Agora
+                    </button>
+                `;
             }
 
+            // 3. RENDERIZAÇÃO FINAL
             card.innerHTML = `
                 <div class="info-linha">
                     <span class="info-label">Plano</span>
-                    <span class="info-valor">Premium GBM</span>
+                    <span class="info-valor" style="color: ${planoNome.includes('Gratuito') ? '#8a9ba8' : '#fff'};">${planoNome}</span>
                 </div>
                 <div class="info-linha">
                     <span class="info-label">Valor</span>
-                    <span class="info-valor">R$ 19,90 / mês</span>
+                    <span class="info-valor" style="color: ${planoNome.includes('Gratuito') ? '#8a9ba8' : '#fff'};">${valorTexto}</span>
                 </div>
                 <div class="info-linha">
                     <span class="info-label">Status</span>
@@ -166,19 +202,14 @@
                 </div>
                 <div class="info-linha">
                     <span class="info-label">Faturação</span>
-                    <span class="info-valor" style="font-size: 1rem; font-weight: 500; font-family: 'Inter', sans-serif;">${dataTexto}</span>
+                    <span class="info-valor" style="font-size: 0.95rem; font-weight: 500; font-family: 'Inter', sans-serif; color: var(--texto-mutado);">${dataTexto}</span>
                 </div>
-
-                ${data.status_pagamento !== 'cancelado' 
-                    ? `<button class="btn-cancelar-assinatura" onclick="pedirCancelamento()">Cancelar Assinatura</button>` 
-                    : `<p style="text-align:center; color: var(--texto-mutado); margin-top: 20px; font-size: 0.9rem;">Sua assinatura está cancelada. Aproveite o acesso até o final do período vigente.</p>`
-                }
+                ${botaoHtml}
             `;
         } catch (error) {
             document.getElementById('card-assinatura').innerHTML = `<p style="text-align: center; color: #ff4d4d;">Erro ao carregar dados.</p>`;
         }
     }
-
     async function pedirCancelamento() {
         const confirmar = await gbmConfirmar("Tem certeza que deseja cancelar sua assinatura? Você perderá acesso às automações OFX e relatórios após o fim do seu ciclo atual.");
         
