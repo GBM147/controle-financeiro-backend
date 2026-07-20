@@ -90,7 +90,7 @@ app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
                 auto_recurring: {
                     frequency: 1,
                     frequency_type: 'months',
-                    transaction_amount: 19.90,
+                    transaction_amount: 9.90,
                     currency_id: 'BRL',
                     free_trial: {
                         frequency: 1,

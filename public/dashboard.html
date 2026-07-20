@@ -848,7 +848,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             } else {
                 // Se for gratuito, fecha o menu e mostra a propaganda amigável
                 fecharMenuLateral();
-                gbmConfirmar(`A ferramenta <strong>${nomeRecurso}</strong> é uma funcionalidade exclusiva para assinantes do plano Premium.<br><br>Deseja assinar agora por apenas R$ 19,90 e liberar todos os recursos avançados sem anúncios?`).then((confirmado) => {
+                gbmConfirmar(`A ferramenta <strong>${nomeRecurso}</strong> é uma funcionalidade exclusiva para assinantes do plano Premium.<br><br>Deseja assinar agora por apenas R$ 9,90 e liberar todos os recursos avançados sem anúncios?`).then((confirmado) => {
                     if (confirmado) {
                         window.location.href = 'pagamento.html';
                     }
