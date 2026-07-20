@@ -1157,9 +1157,19 @@ app.post('/cancelar-assinatura', async (req, res) => {
 // --- ROTA: RECEBER FEEDBACK DA PÁGINA "FALE CONOSCO" ---
 app.post('/api/enviar-feedback', async (req, res) => {
     try {
-        const { userId, userEmail, assunto, mensagem } = req.body;
+        const { userId, assunto, mensagem } = req.body;
         if (!mensagem || !assunto) {
             return res.status(400).json({ success: false, error: 'Assunto e mensagem são obrigatórios.' });
+        }
+
+        let userEmail = null;
+        let userNome = null;
+        if (userId) {
+            const [rows] = await db.promise().query('SELECT nome, email FROM usuarios WHERE id = ?', [userId]);
+            if (rows.length > 0) {
+                userEmail = rows[0].email;
+                userNome = rows[0].nome;
+            }
         }
 
         const emailSuporte = process.env.EMAIL_SUPORTE || 'suporte@gbm-finance.com';
@@ -1172,7 +1182,7 @@ app.post('/api/enviar-feedback', async (req, res) => {
             html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px;">
                     <h2>Nova mensagem via Fale Conosco</h2>
-                    <p><strong>Usuário:</strong> ${userId || 'desconhecido'}</p>
+                    <p><strong>Usuário:</strong> ${userNome || 'não identificado'} (ID: ${userId || 'desconhecido'})</p>
                     <p><strong>E-mail:</strong> ${userEmail || 'não informado'}</p>
                     <p><strong>Assunto:</strong> ${assunto}</p>
                     <p><strong>Mensagem:</strong></p>

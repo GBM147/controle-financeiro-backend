@@ -90,10 +90,11 @@
             const assunto = document.getElementById('assunto').value;
             const mensagem = document.getElementById('mensagem').value;
             
-            // Pega o ID do usuário salvo no localStorage (padrão do seu sistema)
-            const userData = JSON.parse(localStorage.getItem('usuarioGBM') || '{}');
-            const userId = userData.id || 'Usuário Desconhecido';
-            const userEmail = userData.email || 'Email Desconhecido';
+            // Pega o ID do usuário salvo (mesmo padrão usado no resto do app)
+            function pegarUserId() {
+                return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+            }
+            const userId = pegarUserId();
 
             btnSubmit.innerText = 'Enviando... ⏳';
             btnSubmit.disabled = true;
@@ -103,7 +104,7 @@
                 const response = await fetch('/api/enviar-feedback', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, userEmail, assunto, mensagem })
+                    body: JSON.stringify({ userId, assunto, mensagem })
                 });
 
                 if (response.ok) {
@@ -112,11 +113,13 @@
                     statusDiv.innerText = 'Mensagem enviada com sucesso! Retornaremos em breve.';
                     statusDiv.style.display = 'block';
                 } else {
-                    throw new Error('Falha no envio');
+                    let motivo = '';
+                    try { motivo = (await response.json()).error || ''; } catch (e) {}
+                    throw new Error(motivo || 'Falha no envio');
                 }
             } catch (error) {
                 statusDiv.className = 'erro';
-                statusDiv.innerText = 'Erro ao enviar mensagem. Tente novamente mais tarde.';
+                statusDiv.innerText = 'Erro ao enviar mensagem: ' + (error.message || 'tente novamente mais tarde.');
                 statusDiv.style.display = 'block';
             } finally {
                 btnSubmit.innerText = 'Enviar Mensagem 🚀';
