@@ -11,6 +11,9 @@ const bcrypt = require('bcrypt');
 const { Resend } = require('resend');
 const multer = require('multer');
 const ofx = require('node-ofx-parser');
+const pdfParse = require('pdf-parse');
+const { renderComEspacamento } = require('./pdfRender');
+const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./pdfExtratoParser');
 const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
 // Inicializamos a API de Email (Resend)
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -155,6 +158,55 @@ db.connect((err) => {
     console.log('📦 Ligado à base de dados MySQL com sucesso!');
 });
 // --- NOVA ROTA: IMPORTAÇÃO E PARSER DE EXTRATO BANCÁRIO OFX ---
+// Aplica as regras aprendidas do usuário e, na falta delas, as keywords padrão do sistema
+function categorizarTransacao(descricao, regrasUsuario) {
+    // 1º: Verifica as regras aprendidas do usuário
+    for (const regra of regrasUsuario) {
+        if (descricao.toLowerCase().includes(regra.descricao_contem.toLowerCase())) {
+            return regra.categoria;
+        }
+    }
+
+    // 2º: Se não achou regra, aplica as keywords padrão
+    const descMinuscula = descricao.toLowerCase();
+    if (descMinuscula.includes('credito de salario')) {
+        return 'Salário';
+    } else if (descMinuscula.includes('unicid') || descMinuscula.includes('mensalidade')) {
+        return 'Educação';
+    } else if (descMinuscula.includes('pagamento cartao') || descMinuscula.includes('fatura')) {
+        return 'Pagamento de Fatura';
+    } else if (descMinuscula.includes('pagamento de boleto')) {
+        return 'Pagamento de Boleto';
+    } else if (descMinuscula.includes('cafe') || descMinuscula.includes('coffee') ||
+               descMinuscula.includes('servano') || descMinuscula.includes('prc ali') ||
+               descMinuscula.includes('ifood') || descMinuscula.includes('restaurante') ||
+               descMinuscula.includes('lanche') || descMinuscula.includes('padaria')) {
+        return 'Alimentação';
+    } else if (descMinuscula.includes('uber') || descMinuscula.includes('99app') ||
+               descMinuscula.includes('combustivel') || descMinuscula.includes('posto')) {
+        return 'Transporte';
+    } else if (descMinuscula.includes('up mobile') || descMinuscula.includes('vivo') ||
+               descMinuscula.includes('tim ') || descMinuscula.includes('claro')) {
+        return 'Telecomunicações / Internet';
+    } else if (descMinuscula.includes('igreja') || descMinuscula.includes('evangelica')) {
+        return 'Igreja / Doações';
+    } else if (descMinuscula.includes('bytedance') || descMinuscula.includes('netflix') ||
+               descMinuscula.includes('spotify') || descMinuscula.includes('prime')) {
+        return 'Entretenimento';
+    } else if (descMinuscula.includes('mercado') || descMinuscula.includes('carrefour') ||
+               descMinuscula.includes('atacadao') || descMinuscula.includes('assai')) {
+        return 'Supermercado';
+    } else if (descMinuscula.includes('juros') || descMinuscula.includes('multa') ||
+               descMinuscula.includes('iof') || descMinuscula.includes('tarifa')) {
+        return 'Taxas Bancárias';
+    } else if (descMinuscula.includes('credito liberado')) {
+        return 'Crédito Cartão';
+    } else if (descMinuscula.includes('pix recebido') || descMinuscula.includes('pix enviado')) {
+        return 'Transferência';
+    }
+    return 'Outros';
+}
+
 app.post('/importar-ofx', upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
@@ -222,56 +274,8 @@ const [regrasUsuario] = await db.promise().query(
                 valor = Math.abs(valorOriginal); // Transforma -100 em 100
             }
             // ----------------------------------------
-// 1º: Verifica as regras aprendidas do usuário
-let categoria = null;
-for (const regra of regrasUsuario) {
-    if (descricao.toLowerCase().includes(regra.descricao_contem.toLowerCase())) {
-        categoria = regra.categoria;
-        break;
-    }
-}
-
-// 2º: Se não achou regra, aplica as keywords padrão
-if (!categoria) {
-    const descMinuscula = descricao.toLowerCase();
-    if (descMinuscula.includes('credito de salario')) {
-        categoria = 'Salário';
-    } else if (descMinuscula.includes('unicid') || descMinuscula.includes('mensalidade')) {
-        categoria = 'Educação';
-    } else if (descMinuscula.includes('pagamento cartao') || descMinuscula.includes('fatura')) {
-        categoria = 'Pagamento de Fatura';
-    } else if (descMinuscula.includes('pagamento de boleto')) {
-        categoria = 'Pagamento de Boleto';
-    } else if (descMinuscula.includes('cafe') || descMinuscula.includes('coffee') ||
-               descMinuscula.includes('servano') || descMinuscula.includes('prc ali') ||
-               descMinuscula.includes('ifood') || descMinuscula.includes('restaurante') ||
-               descMinuscula.includes('lanche') || descMinuscula.includes('padaria')) {
-        categoria = 'Alimentação';
-    } else if (descMinuscula.includes('uber') || descMinuscula.includes('99app') ||
-               descMinuscula.includes('combustivel') || descMinuscula.includes('posto')) {
-        categoria = 'Transporte';
-    } else if (descMinuscula.includes('up mobile') || descMinuscula.includes('vivo') ||
-               descMinuscula.includes('tim ') || descMinuscula.includes('claro')) {
-        categoria = 'Telecomunicações / Internet';
-    } else if (descMinuscula.includes('igreja') || descMinuscula.includes('evangelica')) {
-        categoria = 'Igreja / Doações';
-    } else if (descMinuscula.includes('bytedance') || descMinuscula.includes('netflix') ||
-               descMinuscula.includes('spotify') || descMinuscula.includes('prime')) {
-        categoria = 'Entretenimento';
-    } else if (descMinuscula.includes('mercado') || descMinuscula.includes('carrefour') ||
-               descMinuscula.includes('atacadao') || descMinuscula.includes('assai')) {
-        categoria = 'Supermercado';
-    } else if (descMinuscula.includes('juros') || descMinuscula.includes('multa') ||
-               descMinuscula.includes('iof') || descMinuscula.includes('tarifa')) {
-        categoria = 'Taxas Bancárias';
-    } else if (descMinuscula.includes('credito liberado')) {
-        categoria = 'Crédito Cartão';
-    } else if (descMinuscula.includes('pix recebido') || descMinuscula.includes('pix enviado')) {
-        categoria = 'Transferência';
-    } else {
-        categoria = 'Outros';
-    }
-}
+// Categoriza a transação usando as regras do usuário + keywords padrão
+let categoria = categorizarTransacao(descricao, regrasUsuario);
             // Tratamento da Data (O padrão do OFX é YYYYMMDDHHMMSS)
             let dataFormatada = new Date().toISOString().split('T')[0];
             if (tx.DTPOSTED && tx.DTPOSTED.length >= 8) {
@@ -312,6 +316,116 @@ if (!categoria) {
         res.status(500).json({ success: false, message: 'Falha interna ao decodificar o extrato bancário.' });
     }
 });
+// --- ROTA: CONVERSOR DE PDF EM LANÇAMENTOS (PRÉVIA, NÃO GRAVA NO BANCO AINDA) ---
+app.post('/pdf-extrato/preview', upload.single('arquivo'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Nenhum ficheiro PDF foi selecionado.' });
+        }
+        const userId = req.body.userId;
+        if (!userId) {
+            return res.status(400).json({ success: false, message: 'userId é obrigatório.' });
+        }
+
+        // 1. Extrai o texto puro do PDF (preservando o espaçamento entre colunas da tabela)
+        const dadosPdf = await pdfParse(req.file.buffer, { pagerender: renderComEspacamento });
+        const texto = dadosPdf.text || '';
+
+        // 2. Roda o extrator de transações (regras genéricas + conferência de saldo)
+        const bancoDetectado = detectarBancoPdf(texto);
+        const { transacoes, reconciliacao, confianca } = extrairTransacoesDoPdf(texto);
+
+        if (transacoes.length === 0) {
+            return res.status(422).json({
+                success: false,
+                message: 'Não conseguimos identificar nenhuma transação nesse PDF. Ele pode ser um extrato escaneado (imagem) ou ter um layout muito diferente do esperado.'
+            });
+        }
+
+        // 3. Carrega as regras do usuário para já sugerir uma categoria em cada linha
+        const [regrasUsuario] = await db.promise().query(
+            'SELECT descricao_contem, categoria FROM regras_categoria WHERE usuario_id = ?',
+            [userId]
+        );
+
+        const transacoesComCategoria = transacoes.map(t => ({
+            ...t,
+            categoria: categorizarTransacao(t.descricao, regrasUsuario)
+        }));
+
+        res.json({
+            success: true,
+            banco_detectado: bancoDetectado,
+            confianca, // 'alta' (achou coluna de saldo, deu pra conferir) ou 'baixa' (modo simples)
+            reconciliacao, // null quando não foi possível conferir o saldo
+            transacoes: transacoesComCategoria
+        });
+    } catch (error) {
+        console.error('❌ Erro ao converter PDF:', error);
+        res.status(500).json({ success: false, message: 'Falha ao ler o PDF. Verifique se o ficheiro não está corrompido ou protegido por senha.' });
+    }
+});
+
+// --- ROTA: CONFIRMA E GRAVA AS TRANSAÇÕES REVISADAS PELO USUÁRIO ---
+app.post('/pdf-extrato/confirmar', async (req, res) => {
+    try {
+        const { userId, banco, transacoes } = req.body;
+        if (!userId) {
+            return res.status(400).json({ success: false, message: 'userId é obrigatório.' });
+        }
+        if (!Array.isArray(transacoes) || transacoes.length === 0) {
+            return res.status(400).json({ success: false, message: 'Nenhuma transação para importar.' });
+        }
+
+        const [contas] = await db.promise().query('SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
+        const contaInternaId = contas.length > 0 ? contas[0].id : 1;
+        const nomeBanco = banco || 'Outro banco';
+
+        let inseridas = 0;
+        let duplicadas = 0;
+
+        for (const t of transacoes) {
+            const { data, descricao, valor, tipo, categoria } = t;
+            if (!data || !descricao || valor === undefined || valor === null || !tipo) continue;
+
+            const valorFinal = Math.abs(parseFloat(valor));
+            const valorComSinal = tipo === 'Despesa' ? -valorFinal : valorFinal;
+
+            // Como o PDF não tem um ID único de transação (como o FITID do OFX),
+            // criamos uma "impressão digital" da linha para evitar duplicar o mesmo lançamento
+            const chaveUnica = `${contaInternaId}-${data}-${valorComSinal}-${descricao}`;
+            const transacaoIdUnico = crypto.createHash('md5').update(chaveUnica).digest('hex');
+
+            const sql = `
+                INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao, banco)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE conta_id = conta_id
+            `;
+            const [resultado] = await db.promise().query(sql, [
+                contaInternaId, transacaoIdUnico, descricao, valorFinal, tipo, categoria || 'Outros', data, nomeBanco
+            ]);
+
+            if (resultado.affectedRows === 1) {
+                inseridas++;
+            } else {
+                duplicadas++;
+            }
+        }
+
+        if (typeof auditarMetas === 'function') {
+            await auditarMetas();
+        }
+
+        res.json({
+            success: true,
+            message: `Importação concluída! 🚀 Adicionadas: ${inseridas} novas movimentações. Duplicadas ignoradas: ${duplicadas}.`
+        });
+    } catch (error) {
+        console.error('❌ Erro ao confirmar importação de PDF:', error);
+        res.status(500).json({ success: false, message: 'Falha ao gravar as transações.' });
+    }
+});
+
 // --- ROTA 1: CADASTRO DE USUÁRIO ---
 app.post('/cadastro', async (req, res) => {
     const { nome, sobrenome, email, telefone, senha } = req.body;

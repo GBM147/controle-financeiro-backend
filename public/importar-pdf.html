@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Converter PDF em Lançamentos | GBM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body > *:not(#particles-canvas) { position: relative; z-index: 1; }
+        .gbm-logo-img { animation: float-logo 4s ease-in-out infinite; }
+        @keyframes float-logo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        :root {
+            --cor-destaque: #2E8B57;
+            --texto-principal: #ffffff;
+            --texto-mutado: #b0bec5;
+            --borda: rgba(255, 255, 255, 0.15);
+            --cor-receita: #10b981;
+            --cor-despesa: #ef4444;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('fundo-marmore.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--texto-principal); min-height: 100vh;
+        }
+
+        .gbm-header {
+            background: transparent; border-bottom: 1px solid var(--borda);
+            padding: 0 20px; display: flex; align-items: center; justify-content: space-between;
+            height: 56px; position: sticky; top: 0; z-index: 10;
+        }
+        .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
+        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; }
+        .gbm-title {
+            font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px; margin: 0;
+            background: linear-gradient(90deg, #2E8B57 0%, #5fffa8 25%, #3d28ff 50%, #655aff 75%, #2E8B57 100%);
+            background-size: 200% auto; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent; animation: gbm-shine 4s linear infinite;
+        }
+        @keyframes gbm-shine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+        .btn-voltar {
+            text-decoration: none; color: var(--texto-principal);
+            font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 1px;
+            background: #0f1a2b; padding: 8px 16px; border-radius: 8px;
+            border: 1px solid rgba(95, 255, 168, 0.25); transition: 0.3s; cursor: pointer;
+        }
+        .btn-voltar:hover { border-color: #5fffa8; box-shadow: 0 0 14px rgba(95, 255, 168, 0.3); }
+        @media (max-width: 768px) { .gbm-title { display: none; } }
+
+        .page-wrapper { max-width: 900px; margin: 0 auto; padding: 30px 20px 60px; }
+        .titulo-pagina {
+            font-family: 'Rajdhani', sans-serif; font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 700;
+            letter-spacing: 1px; margin: 0 0 6px 0;
+        }
+        .subtitulo-pagina { color: var(--texto-mutado); margin: 0 0 25px 0; font-size: 0.95rem; }
+
+        .card {
+            background: rgba(20, 30, 40, 0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); padding: 28px; margin-bottom: 22px;
+        }
+
+        /* ETAPA 1: UPLOAD */
+        .zona-upload {
+            border: 2px dashed rgba(95, 255, 168, 0.3); border-radius: 12px;
+            padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.3s;
+        }
+        .zona-upload:hover { border-color: #5fffa8; background: rgba(95, 255, 168, 0.04); }
+        .zona-upload input { display: none; }
+        .zona-upload .icone { font-size: 2.4rem; margin-bottom: 10px; }
+        .zona-upload p { margin: 4px 0; color: var(--texto-mutado); }
+        #nome-arquivo-pdf { color: #5fffa8; font-weight: 600; }
+
+        .btn-primario {
+            background: var(--cor-destaque); color: #fff; border: none;
+            padding: 13px 26px; font-size: 1rem; font-weight: 600; font-family: 'Inter', sans-serif;
+            border-radius: 8px; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.35);
+        }
+        .btn-primario:hover { background: #3cb371; }
+        .btn-primario:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* ETAPA 2: CONFERÊNCIA */
+        #etapa-conferencia { display: none; }
+
+        .banner-reconciliacao {
+            border-radius: 10px; padding: 14px 18px; margin-bottom: 18px;
+            font-size: 0.92rem; display: flex; align-items: flex-start; gap: 10px;
+        }
+        .banner-ok { background: rgba(16,185,129,0.12); border: 1px solid #10b981; color: #6ee7b7; }
+        .banner-alerta { background: rgba(239,68,68,0.12); border: 1px solid #ef4444; color: #fca5a5; }
+        .banner-neutro { background: rgba(255,255,255,0.05); border: 1px solid var(--borda); color: var(--texto-mutado); }
+
+        .info-topo { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .badge { background: rgba(95,255,168,0.12); border: 1px solid rgba(95,255,168,0.3); color: #5fffa8; padding: 5px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; }
+
+        table.tabela-transacoes { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        table.tabela-transacoes th { text-align: left; padding: 8px 6px; color: var(--texto-mutado); border-bottom: 1px solid var(--borda); font-weight: 600; }
+        table.tabela-transacoes td { padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+        table.tabela-transacoes input, table.tabela-transacoes select {
+            width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--borda); border-radius: 6px;
+            color: #fff; padding: 6px 8px; font-family: 'Inter', sans-serif; font-size: 0.85rem; box-sizing: border-box;
+        }
+        table.tabela-transacoes input:focus, table.tabela-transacoes select:focus { outline: none; border-color: #5fffa8; }
+        input.input-valor { text-align: right; }
+        .linha-removida { opacity: 0.35; }
+        .linha-removida input, .linha-removida select { pointer-events: none; }
+        .btn-remover { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem; }
+        .btn-remover:hover { color: #ff8080; }
+        .tipo-despesa { color: var(--cor-despesa); font-weight: 600; }
+        .tipo-receita { color: var(--cor-receita); font-weight: 600; }
+
+        .rodape-conferencia { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 12px; }
+        .contagem-selecionadas { color: var(--texto-mutado); font-size: 0.9rem; }
+
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: girar 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+        @keyframes girar { to { transform: rotate(360deg); } }
+
+        #etapa-sucesso { display: none; text-align: center; padding: 40px 20px; }
+    </style>
+</head>
+<body>
+<canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
+
+<header class="gbm-header">
+    <div class="gbm-logo-container">
+        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
+        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
+    </div>
+    <a href="dashboard.html" class="btn-voltar">← Voltar</a>
+</header>
+
+<div class="page-wrapper">
+    <h2 class="titulo-pagina">📄 Converter PDF em Lançamentos</h2>
+    <p class="subtitulo-pagina">Não tem o arquivo .OFX do banco? Envie o PDF do extrato — a gente extrai as transações pra você conferir antes de importar.</p>
+
+    <!-- ETAPA 1: UPLOAD -->
+    <div class="card" id="etapa-upload">
+        <label class="zona-upload" for="input-pdf">
+            <div class="icone">📄⬆️</div>
+            <p id="texto-zona-upload">Clique aqui e selecione o PDF do extrato bancário</p>
+            <p id="nome-arquivo-pdf"></p>
+            <input type="file" id="input-pdf" accept="application/pdf">
+        </label>
+        <div style="text-align:center; margin-top: 20px;">
+            <button class="btn-primario" id="btn-processar" onclick="processarPdf()" disabled>Ler PDF</button>
+        </div>
+        <p style="text-align:center; color: var(--texto-mutado); font-size: 0.8rem; margin-top: 16px;">
+            ⚠️ Funciona apenas com PDFs de texto (extrato exportado direto do banco). Extratos digitalizados/escaneados (foto ou scan) ainda não são suportados.
+        </p>
+    </div>
+
+    <!-- ETAPA 2: CONFERÊNCIA -->
+    <div class="card" id="etapa-conferencia">
+        <div class="info-topo">
+            <div>
+                <span class="badge" id="badge-banco">Banco: —</span>
+            </div>
+            <button class="btn-voltar" onclick="reiniciar()">↺ Enviar outro PDF</button>
+        </div>
+
+        <div id="banner-reconciliacao"></div>
+
+        <div style="overflow-x:auto;">
+            <table class="tabela-transacoes">
+                <thead>
+                    <tr>
+                        <th style="width:16px;"><input type="checkbox" id="checkbox-todas" checked onchange="marcarTodas(this.checked)"></th>
+                        <th style="width:110px;">Data</th>
+                        <th>Descrição</th>
+                        <th style="width:90px;">Tipo</th>
+                        <th style="width:110px;">Valor (R$)</th>
+                        <th style="width:150px;">Categoria</th>
+                        <th style="width:30px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela-transacoes"></tbody>
+            </table>
+        </div>
+
+        <div class="rodape-conferencia">
+            <span class="contagem-selecionadas" id="contagem-selecionadas"></span>
+            <button class="btn-primario" id="btn-confirmar" onclick="confirmarImportacao()">Confirmar Importação ✅</button>
+        </div>
+    </div>
+
+    <!-- ETAPA 3: SUCESSO -->
+    <div class="card" id="etapa-sucesso">
+        <div style="font-size: 2.6rem; margin-bottom: 10px;">🎉</div>
+        <h3 id="texto-sucesso" style="margin: 0 0 20px 0;"></h3>
+        <a href="dashboard.html" class="btn-primario" style="display:inline-block; text-decoration:none;">Ir para o Dashboard</a>
+    </div>
+</div>
+
+<script>
+    function pegarUserId() {
+        return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+    }
+    const userId = pegarUserId();
+    if (!userId) window.location.href = 'index.html';
+
+    let categoriasDisponiveis = ["Alimentação", "Habitação", "Transporte", "Eletricidade / Luz", "Telecomunicações / Internet", "Pagamento de Fatura", "Pagamento de Boleto", "Streaming de Vídeo", "Streaming de Música", "Academia e Fitness", "Saúde", "Educação", "Supermercado", "Restaurantes", "Salário", "Lazer", "Transferência", "Taxas Bancárias", "Crédito Cartão", "Outros"];
+    let transacoesAtuais = [];
+    let bancoDetectadoAtual = 'Outro banco';
+
+    (async function carregarCategorias() {
+        try {
+            const res = await fetch('/categorias?userId=' + userId);
+            const data = await res.json();
+            if (data.todas && data.todas.length > 0) categoriasDisponiveis = data.todas;
+        } catch (e) {}
+    })();
+
+    document.getElementById('input-pdf').addEventListener('change', function () {
+        const btn = document.getElementById('btn-processar');
+        if (this.files.length > 0) {
+            document.getElementById('nome-arquivo-pdf').innerText = this.files[0].name;
+            btn.disabled = false;
+        } else {
+            document.getElementById('nome-arquivo-pdf').innerText = '';
+            btn.disabled = true;
+        }
+    });
+
+    async function processarPdf() {
+        const input = document.getElementById('input-pdf');
+        if (!input.files.length) return;
+
+        const btn = document.getElementById('btn-processar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Lendo o PDF...';
+
+        const formData = new FormData();
+        formData.append('arquivo', input.files[0]);
+        formData.append('userId', userId);
+
+        try {
+            const res = await fetch('/pdf-extrato/preview', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (!data.success) {
+                gbmAlerta(data.message || 'Não foi possível ler esse PDF.', 'erro');
+                btn.disabled = false;
+                btn.innerText = 'Ler PDF';
+                return;
+            }
+
+            bancoDetectadoAtual = data.banco_detectado;
+            transacoesAtuais = data.transacoes.map((t, i) => ({ ...t, id: i, incluida: true }));
+
+            montarTelaConferencia(data);
+
+            document.getElementById('etapa-upload').style.display = 'none';
+            document.getElementById('etapa-conferencia').style.display = 'block';
+        } catch (err) {
+            console.error(err);
+            gbmAlerta('Erro de comunicação com o servidor.', 'erro');
+            btn.disabled = false;
+            btn.innerText = 'Ler PDF';
+        }
+    }
+
+    function montarTelaConferencia(data) {
+        document.getElementById('badge-banco').innerText = '🏦 ' + data.banco_detectado;
+
+        // Banner de conferência de saldo
+        const banner = document.getElementById('banner-reconciliacao');
+        if (data.reconciliacao) {
+            const r = data.reconciliacao;
+            if (r.bate) {
+                banner.className = 'banner-reconciliacao banner-ok';
+                banner.innerHTML = `✅ <div><strong>Conferência de saldo OK.</strong> Saldo inicial (R$ ${r.saldo_inicial.toFixed(2)}) + movimentações encontradas bate certinho com o saldo final do extrato (R$ ${r.saldo_final_extrato.toFixed(2)}).</div>`;
+            } else {
+                banner.className = 'banner-reconciliacao banner-alerta';
+                banner.innerHTML = `⚠️ <div><strong>A conferência de saldo não bateu</strong> (diferença de R$ ${Math.abs(r.diferenca).toFixed(2)}). Isso pode indicar que alguma transação não foi lida corretamente. Revise a lista com atenção antes de confirmar.</div>`;
+            }
+        } else {
+            banner.className = 'banner-reconciliacao banner-neutro';
+            banner.innerHTML = `ℹ️ <div>Não foi possível conferir automaticamente o saldo desse extrato. Revise a lista com atenção antes de confirmar.</div>`;
+        }
+
+        renderizarTabela();
+    }
+
+    function renderizarTabela() {
+        const corpo = document.getElementById('corpo-tabela-transacoes');
+        corpo.innerHTML = '';
+
+        transacoesAtuais.forEach(t => {
+            const optionsCategorias = categoriasDisponiveis.map(c =>
+                `<option value="${c}" ${c === t.categoria ? 'selected' : ''}>${c}</option>`
+            ).join('');
+
+            const tr = document.createElement('tr');
+            tr.id = 'linha-' + t.id;
+            tr.className = t.incluida ? '' : 'linha-removida';
+            tr.innerHTML = `
+                <td><input type="checkbox" ${t.incluida ? 'checked' : ''} onchange="alternarLinha(${t.id}, this.checked)"></td>
+                <td><input type="date" value="${t.data}" onchange="atualizarCampo(${t.id}, 'data', this.value)"></td>
+                <td><input type="text" value="${t.descricao}" onchange="atualizarCampo(${t.id}, 'descricao', this.value)"></td>
+                <td>
+                    <select onchange="atualizarCampo(${t.id}, 'tipo', this.value)">
+                        <option value="Despesa" ${t.tipo === 'Despesa' ? 'selected' : ''}>Despesa</option>
+                        <option value="Receita" ${t.tipo === 'Receita' ? 'selected' : ''}>Receita</option>
+                    </select>
+                </td>
+                <td><input class="input-valor" type="number" step="0.01" min="0" value="${t.valor}" onchange="atualizarCampo(${t.id}, 'valor', this.value)"></td>
+                <td><select onchange="atualizarCampo(${t.id}, 'categoria', this.value)">${optionsCategorias}</select></td>
+                <td><button class="btn-remover" title="Remover essa linha" onclick="alternarLinha(${t.id}, false); document.querySelector('#linha-${t.id} input[type=checkbox]').checked=false;">✕</button></td>
+            `;
+            corpo.appendChild(tr);
+        });
+
+        atualizarContagem();
+    }
+
+    function atualizarCampo(id, campo, valor) {
+        const t = transacoesAtuais.find(x => x.id === id);
+        if (!t) return;
+        t[campo] = campo === 'valor' ? parseFloat(valor) : valor;
+    }
+
+    function alternarLinha(id, incluida) {
+        const t = transacoesAtuais.find(x => x.id === id);
+        if (!t) return;
+        t.incluida = incluida;
+        document.getElementById('linha-' + id).className = incluida ? '' : 'linha-removida';
+        atualizarContagem();
+    }
+
+    function marcarTodas(marcar) {
+        transacoesAtuais.forEach(t => t.incluida = marcar);
+        renderizarTabela();
+    }
+
+    function atualizarContagem() {
+        const total = transacoesAtuais.length;
+        const incluidas = transacoesAtuais.filter(t => t.incluida).length;
+        document.getElementById('contagem-selecionadas').innerText = `${incluidas} de ${total} transações selecionadas para importar`;
+    }
+
+    async function confirmarImportacao() {
+        const selecionadas = transacoesAtuais.filter(t => t.incluida);
+        if (selecionadas.length === 0) {
+            gbmAlerta('Selecione pelo menos uma transação para importar.', 'aviso');
+            return;
+        }
+
+        const btn = document.getElementById('btn-confirmar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Importando...';
+
+        try {
+            const res = await fetch('/pdf-extrato/confirmar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    banco: bancoDetectadoAtual,
+                    transacoes: selecionadas.map(t => ({
+                        data: t.data, descricao: t.descricao, valor: t.valor, tipo: t.tipo, categoria: t.categoria
+                    }))
+                })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                document.getElementById('etapa-conferencia').style.display = 'none';
+                document.getElementById('texto-sucesso').innerText = data.message;
+                document.getElementById('etapa-sucesso').style.display = 'block';
+            } else {
+                gbmAlerta(data.message || 'Erro ao importar.', 'erro');
+                btn.disabled = false;
+                btn.innerText = 'Confirmar Importação ✅';
+            }
+        } catch (err) {
+            console.error(err);
+            gbmAlerta('Erro de comunicação com o servidor.', 'erro');
+            btn.disabled = false;
+            btn.innerText = 'Confirmar Importação ✅';
+        }
+    }
+
+    function reiniciar() {
+        transacoesAtuais = [];
+        document.getElementById('input-pdf').value = '';
+        document.getElementById('nome-arquivo-pdf').innerText = '';
+        document.getElementById('btn-processar').disabled = true;
+        document.getElementById('btn-processar').innerText = 'Ler PDF';
+        document.getElementById('etapa-conferencia').style.display = 'none';
+        document.getElementById('etapa-upload').style.display = 'block';
+    }
+
+    // Alerta simples caso a página seja aberta fora do contexto do app (sem gbmAlerta global)
+    function gbmAlerta(msg, tipo) {
+        if (window.parent && window.parent.gbmAlerta && window.parent !== window) {
+            window.parent.gbmAlerta(msg, tipo);
+        } else {
+            alert(msg);
+        }
+    }
+</script>
+
+<script>
+    (function() {
+        const canvas = document.getElementById('particles-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+        function Particle() {
+            this.x = Math.random() * canvas.width; this.y = canvas.height + Math.random() * 100;
+            this.size = Math.random() * 2.5 + 0.8; this.speedY = Math.random() * 1.2 + 0.3;
+            this.opacity = Math.random() * 0.4 + 0.2;
+        }
+        Particle.prototype.update = function() {
+            this.y -= this.speedY;
+            if (this.y < -10) { this.y = canvas.height + 10; this.x = Math.random() * canvas.width; this.opacity = Math.random() * 0.4 + 0.2; }
+        };
+        Particle.prototype.draw = function() {
+            ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`; ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+        };
+        const count = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 15000), 65);
+        for (let i = 0; i < count; i++) particles.push(new Particle());
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    })();
+</script>
+</body>
+</html>
