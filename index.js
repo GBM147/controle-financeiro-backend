@@ -12,8 +12,8 @@ const { Resend } = require('resend');
 const multer = require('multer');
 const ofx = require('node-ofx-parser');
 const pdfParse = require('pdf-parse');
-const { renderComEspacamento } = require('./pdfRender');
-const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./pdfExtratoParser');
+const { renderComEspacamento } = require('./Pdfrender');
+const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./Pdfextratoparser');
 const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
 // Inicializamos a API de Email (Resend)
 const resend = new Resend(process.env.RESEND_API_KEY);
