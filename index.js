@@ -1325,24 +1325,33 @@ app.post('/api/enviar-feedback', async (req, res) => {
 
         const emailSuporte = process.env.EMAIL_SUPORTE || 'suporte@gbm-finance.com';
 
-        await resend.emails.send({
-            from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
-            to: emailSuporte,
-            reply_to: userEmail || undefined,
-            subject: `📩 [Fale Conosco] ${assunto} — Usuário ${userId || 'desconhecido'}`,
-            html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px;">
-                    <h2>Nova mensagem via Fale Conosco</h2>
-                    <p><strong>Usuário:</strong> ${userNome || 'não identificado'} (ID: ${userId || 'desconhecido'})</p>
-                    <p><strong>E-mail:</strong> ${userEmail || 'não informado'}</p>
-                    <p><strong>Assunto:</strong> ${assunto}</p>
-                    <p><strong>Mensagem:</strong></p>
-                    <p>${(mensagem || '').replace(/\n/g, '<br>')}</p>
-                </div>
-            `
-        });
+        const { data, error: resendError } = await resend.emails.send({
+    from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
+    to: emailSuporte,
+    reply_to: userEmail || undefined,
+    subject: `📩 [Fale Conosco] ${assunto} — Usuário ${userId || 'desconhecido'}`,
+    html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Nova mensagem via Fale Conosco</h2>
+            <p><strong>Usuário:</strong> ${userNome || 'não identificado'} (ID: ${userId || 'desconhecido'})</p>
+            <p><strong>E-mail:</strong> ${userEmail || 'não informado'}</p>
+            <p><strong>Assunto:</strong> ${assunto}</p>
+            <p><strong>Mensagem:</strong></p>
+            <p>${(mensagem || '').replace(/\n/g, '<br>')}</p>
+        </div>
+    `
+});
 
-        res.json({ success: true, message: 'Mensagem enviada com sucesso!' });
+if (resendError) {
+    console.error('❌ Erro do Resend ao enviar feedback:', resendError);
+    return res.status(502).json({
+        success: false,
+        error: 'O provedor de e-mail não conseguiu enviar sua mensagem.'
+    });
+}
+
+console.log('✅ Feedback enviado pelo Resend. ID:', data?.id);
+res.json({ success: true, message: 'Mensagem enviada com sucesso!' });
     } catch (error) {
         console.error('❌ Erro ao enviar feedback:', error);
         res.status(500).json({ success: false, error: 'Falha ao enviar mensagem.' });
