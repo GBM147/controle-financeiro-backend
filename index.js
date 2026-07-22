@@ -376,7 +376,7 @@ app.post('/pdf-extrato/preview', exigirLogin, upload.single('arquivo'), async (r
 
         // 2. Roda o extrator de transações (regras genéricas + conferência de saldo)
         const bancoDetectado = detectarBancoPdf(texto);
-        const { transacoes, reconciliacao, confianca } = extrairTransacoesDoPdf(texto);
+        const { transacoes, reconciliacao, confianca } = await extrairTransacoesDoPdf(texto);
 
         if (transacoes.length === 0) {
             return res.status(422).json({
