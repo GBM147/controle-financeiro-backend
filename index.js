@@ -312,6 +312,12 @@ app.post('/importar-ofx', exigirLogin, upload.single('file'), async (req, res) =
         // 3. Localiza a conta do utilizador para vincular os lançamentos
         const userId = req.session.userId;
         const contaInternaId = await obterOuCriarContaDoUsuario(userId);
+        console.log('🔐 [IMPORTAÇÃO OFX]', {
+            usuarioDaSessao: userId,
+            contaUsada: contaInternaId,
+            banco: nomeBanco,
+            quantidadeDeTransacoes: transacoesOfx.length
+        });
         // Carrega as regras salvas pelo usuário para usar na categorização
 const [regrasUsuario] = await db.promise().query(
     'SELECT descricao_contem, categoria FROM regras_categoria WHERE usuario_id = ?',
@@ -465,6 +471,12 @@ app.post('/pdf-extrato/confirmar', exigirLogin, async (req, res) => {
 
         const contaInternaId = await obterOuCriarContaDoUsuario(userId);
         const nomeBanco = banco || 'Outro banco';
+        console.log('🔐 [IMPORTAÇÃO PDF]', {
+            usuarioDaSessao: userId,
+            contaUsada: contaInternaId,
+            banco: nomeBanco,
+            quantidadeDeTransacoes: transacoes.length
+        });
 
         let inseridas = 0;
         let duplicadas = 0;
@@ -992,26 +1004,35 @@ app.post('/login', async (req, res) => {
         if (!senhaValida) {
             return res.status(401).json({ success: false, message: 'Senha incorreta.' });
         }
-        req.session.userId = usuario.id;
-        // 🧠 O PULO DO GATO: O sistema agora verifica se a conta já foi ativada
-        if (usuario.verificado == 1 || usuario.verificado === true) {
-            return res.json({ 
-                success: true, 
-                verificado: true, 
-                statusPagamento: usuario.status_pagamento,
-                trialExpira: usuario.trial_expira,
-                userId: usuario.id, 
-                message: 'Login efetuado com sucesso!' 
+
+        // Cria um novo identificador de sessão em cada login. Isso impede que
+        // uma sessão anterior seja reutilizada por outro usuário.
+        req.session.regenerate((erroSessao) => {
+            if (erroSessao) {
+                console.error('Erro ao renovar sessão no login:', erroSessao);
+                return res.status(500).json({ success: false, message: 'Não foi possível iniciar uma nova sessão.' });
+            }
+
+            req.session.userId = usuario.id;
+
+            req.session.save((erroSalvar) => {
+                if (erroSalvar) {
+                    console.error('Erro ao salvar sessão no login:', erroSalvar);
+                    return res.status(500).json({ success: false, message: 'Não foi possível salvar a sessão.' });
+                }
+
+                const verificado = usuario.verificado == 1 || usuario.verificado === true;
+
+                return res.json({
+                    success: true,
+                    verificado,
+                    statusPagamento: usuario.status_pagamento,
+                    trialExpira: usuario.trial_expira,
+                    userId: usuario.id,
+                    message: verificado ? 'Login efetuado com sucesso!' : 'Conta não verificada. Insira o código.'
+                });
             });
-        } else {
-            // Se é conta nova, manda para a tela de escolher E-mail/WhatsApp
-            return res.json({ 
-                success: true, 
-                verificado: false, 
-                userId: usuario.id, 
-                message: 'Conta não verificada. Insira o código.' 
-            });
-        }
+        });
     });
 });
 // --- ROTA: VERIFICAR STATUS DO USUÁRIO --- (duplicada removida — já definida acima)
@@ -1040,11 +1061,30 @@ app.post('/validar-codigo', (req, res) => {
         }
         const codigoNoBanco = results[0].token_verificacao;
         if (codigo === codigoNoBanco) {
-            // 🔥 O AJUSTE ESTÁ AQUI: Agora ele limpa o código E define verificado = 1
             db.query("UPDATE usuarios SET token_verificacao = NULL, verificado = 1 WHERE id = ?", [userId], (updateErr) => {
-                if (updateErr) console.error("Erro ao atualizar status:", updateErr);
-                req.session.userId = userId;
-                res.json({ success: true, message: 'Conta validada com sucesso!' });
+                if (updateErr) {
+                    console.error('Erro ao atualizar status:', updateErr);
+                    return res.status(500).json({ success: false, message: 'Não foi possível validar a conta.' });
+                }
+
+                // A validação também autentica o usuário; nunca reutilize uma
+                // sessão iniciada antes da confirmação do código.
+                req.session.regenerate((erroSessao) => {
+                    if (erroSessao) {
+                        console.error('Erro ao renovar sessão na validação:', erroSessao);
+                        return res.status(500).json({ success: false, message: 'Não foi possível iniciar uma nova sessão.' });
+                    }
+
+                    req.session.userId = userId;
+                    req.session.save((erroSalvar) => {
+                        if (erroSalvar) {
+                            console.error('Erro ao salvar sessão na validação:', erroSalvar);
+                            return res.status(500).json({ success: false, message: 'Não foi possível salvar a sessão.' });
+                        }
+
+                        return res.json({ success: true, message: 'Conta validada com sucesso!' });
+                    });
+                });
             });
         } else {
             res.status(400).json({ success: false, message: 'Código de verificação incorreto.' });
