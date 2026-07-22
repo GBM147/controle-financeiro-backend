@@ -12,7 +12,8 @@ const { Resend } = require('resend');
 const multer = require('multer');
 const ofx = require('node-ofx-parser');
 const path = require('path');
-const { spawn } = require('child_process');
+const pdfParse = require('pdf-parse');
+const { renderComEspacamento } = require('./Pdfrender');
 const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./Pdfextratoparser');
 const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
 // Inicializamos a API de Email (Resend)
@@ -357,27 +358,10 @@ let categoria = categorizarTransacao(descricao, regrasUsuario);
 // padrão e recebe de volta o texto já com o espaçamento das colunas
 // reconstruído — mesmo contrato que o Pdfextratoparser.js já espera, então
 // ele continua funcionando sem nenhuma alteração.
-function extrairTextoPdfComPython(bufferPdf) {
-    return new Promise((resolve, reject) => {
-        const processo = spawn('python3', [path.join(__dirname, 'extrator_pdf.py')]);
-        let saida = '';
-        let erro = '';
-
-        processo.stdout.on('data', (chunk) => { saida += chunk; });
-        processo.stderr.on('data', (chunk) => { erro += chunk; });
-
-        processo.on('close', (codigo) => {
-            if (codigo !== 0) {
-                return reject(new Error(erro || `Processo Python encerrou com código ${codigo}`));
-            }
-            resolve(saida);
-        });
-
-        processo.on('error', (err) => reject(err)); // ex: python3 não encontrado no servidor
-
-        processo.stdin.write(bufferPdf);
-        processo.stdin.end();
-    });
+// Extrai o texto do PDF preservando espaçamento entre colunas (sem depender de Python)
+async function extrairTextoPdf(bufferPdf) {
+    const dados = await pdfParse(bufferPdf, { pagerender: renderComEspacamento });
+    return dados.text || '';
 }
 
 app.post('/pdf-extrato/preview', exigirLogin, upload.single('arquivo'), async (req, res) => {
@@ -388,7 +372,7 @@ app.post('/pdf-extrato/preview', exigirLogin, upload.single('arquivo'), async (r
         const userId = req.session.userId;
 
         // 1. Extrai o texto puro do PDF (preservando o espaçamento entre colunas da tabela)
-        const texto = await extrairTextoPdfComPython(req.file.buffer);
+        const texto = await extrairTextoPdf(req.file.buffer);
 
         // 2. Roda o extrator de transações (regras genéricas + conferência de saldo)
         const bancoDetectado = detectarBancoPdf(texto);
