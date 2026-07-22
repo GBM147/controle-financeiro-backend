@@ -13,7 +13,7 @@ const multer = require('multer');
 const ofx = require('node-ofx-parser');
 const path = require('path');
 const pdfParse = require('pdf-parse');
-const { renderComEspacamento } = require('./Pdfrender');
+const { renderComEspacamento } = require('./pdfrender');
 const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./Pdfextratoparser');
 const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
 // Inicializamos a API de Email (Resend)
