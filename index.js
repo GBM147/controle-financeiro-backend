@@ -193,6 +193,23 @@ db.connect((err) => {
     }
     console.log('📦 Ligado à base de dados MySQL com sucesso!');
 });
+async function obterOuCriarContaDoUsuario(userId) {
+    const [contas] = await db.promise().query(
+        'SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1',
+        [userId]
+    );
+
+    if (contas.length > 0) {
+        return contas[0].id;
+    }
+
+    const [resultado] = await db.promise().query(
+        'INSERT INTO contas_bancarias (usuario_id, saldo) VALUES (?, ?)',
+        [userId, 0]
+    );
+
+    return resultado.insertId;
+}
 // --- NOVA ROTA: IMPORTAÇÃO E PARSER DE EXTRATO BANCÁRIO OFX ---
 // Aplica as regras aprendidas do usuário e, na falta delas, as keywords padrão do sistema
 function categorizarTransacao(descricao, regrasUsuario) {
@@ -265,8 +282,7 @@ app.post('/importar-ofx', exigirLogin, upload.single('file'), async (req, res) =
         }
         // 3. Localiza a conta do utilizador para vincular os lançamentos
         const userId = req.session.userId;
-        const [contas] = await db.promise().query('SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
-        const contaInternaId = contas.length > 0 ? contas[0].id : 1;
+        const contaInternaId = await obterOuCriarContaDoUsuario(userId);
         // Carrega as regras salvas pelo usuário para usar na categorização
 const [regrasUsuario] = await db.promise().query(
     'SELECT descricao_contem, categoria FROM regras_categoria WHERE usuario_id = ?',
@@ -418,8 +434,7 @@ app.post('/pdf-extrato/confirmar', exigirLogin, async (req, res) => {
             return res.status(400).json({ success: false, message: 'Nenhuma transação para importar.' });
         }
 
-        const [contas] = await db.promise().query('SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
-        const contaInternaId = contas.length > 0 ? contas[0].id : 1;
+        const contaInternaId = await obterOuCriarContaDoUsuario(userId);
         const nomeBanco = banco || 'Outro banco';
 
         let inseridas = 0;
@@ -697,8 +712,7 @@ app.post('/transacao-manual', exigirLogin, async (req, res) => {
         const { descricao, valor, tipo, categoria, data_transacao } = req.body;
         const transacaoIdGerado = 'MANUAL_' + Date.now();
         const userId = req.session.userId;
-        const [contas] = await db.promise().query('SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
-        const contaInternaId = contas.length > 0 ? contas[0].id : 1; 
+        const contaInternaId = await obterOuCriarContaDoUsuario(userId);
         const valorFinal = Math.abs(valor);
         const sql = `INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao, banco)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
