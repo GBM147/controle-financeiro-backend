@@ -15,7 +15,36 @@ const path = require('path');
 const pdfParse = require('pdf-parse');
 const { renderComEspacamento } = require('./pdfrender');
 const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./Pdfextratoparser');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
+const uploadImagem = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // máximo: 5 MB
+    fileFilter: (req, file, cb) => {
+        const tiposAceitos = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!tiposAceitos.includes(file.mimetype)) {
+            return cb(new Error('Envie apenas imagens JPG, PNG ou WebP.'));
+        }
+
+        cb(null, true);
+    }
+});
+
+function enviarImagemParaCloudinary(buffer, opcoes) {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(opcoes, (erro, resultado) => {
+            if (erro) return reject(erro);
+            resolve(resultado);
+        }).end(buffer);
+    });
+}
 // Inicializamos a API de Email (Resend)
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -1371,7 +1400,143 @@ res.json({ success: true, message: 'Mensagem enviada com sucesso!' });
         res.status(500).json({ success: false, error: 'Falha ao enviar mensagem.' });
     }
 });
+app.get('/perfil', exigirLogin, async (req, res) => {
+    try {
+        const userId = req.session.userId;
 
+        const [usuarios] = await db.promise().query(
+            `SELECT id, nome, sobrenome, nome_exibicao,
+                    foto_perfil_url, capa_perfil_url
+             FROM usuarios
+             WHERE id = ?`,
+            [userId]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuária não encontrada.'
+            });
+        }
+
+        res.json({
+            success: true,
+            perfil: usuarios[0]
+        });
+    } catch (erro) {
+        console.error('Erro ao buscar perfil:', erro);
+        res.status(500).json({
+            success: false,
+            message: 'Não foi possível carregar o perfil.'
+        });
+    }
+});
+
+app.put('/perfil', exigirLogin, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const { nome_exibicao } = req.body;
+
+        const nomeLimpo = String(nome_exibicao || '').trim();
+
+        if (!nomeLimpo || nomeLimpo.length > 100) {
+            return res.status(400).json({
+                success: false,
+                message: 'Informe um nome de até 100 caracteres.'
+            });
+        }
+
+        await db.promise().query(
+            'UPDATE usuarios SET nome_exibicao = ? WHERE id = ?',
+            [nomeLimpo, userId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Perfil atualizado com sucesso.'
+        });
+    } catch (erro) {
+        console.error('Erro ao atualizar perfil:', erro);
+        res.status(500).json({
+            success: false,
+            message: 'Não foi possível atualizar o perfil.'
+        });
+    }
+});
+
+app.post('/perfil/foto', exigirLogin, uploadImagem.single('foto'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Selecione uma foto.'
+            });
+        }
+
+        const userId = req.session.userId;
+
+        const imagem = await enviarImagemParaCloudinary(req.file.buffer, {
+            folder: `gbm/perfis/${userId}`,
+            public_id: 'foto-perfil',
+            overwrite: true,
+            resource_type: 'image'
+        });
+
+        await db.promise().query(
+            'UPDATE usuarios SET foto_perfil_url = ? WHERE id = ?',
+            [imagem.secure_url, userId]
+        );
+
+        res.json({
+            success: true,
+            url: imagem.secure_url,
+            message: 'Foto atualizada com sucesso.'
+        });
+    } catch (erro) {
+        console.error('Erro ao enviar foto:', erro);
+        res.status(500).json({
+            success: false,
+            message: 'Não foi possível enviar a foto.'
+        });
+    }
+});
+
+app.post('/perfil/capa', exigirLogin, uploadImagem.single('capa'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Selecione uma imagem de capa.'
+            });
+        }
+
+        const userId = req.session.userId;
+
+        const imagem = await enviarImagemParaCloudinary(req.file.buffer, {
+            folder: `gbm/perfis/${userId}`,
+            public_id: 'capa-perfil',
+            overwrite: true,
+            resource_type: 'image'
+        });
+
+        await db.promise().query(
+            'UPDATE usuarios SET capa_perfil_url = ? WHERE id = ?',
+            [imagem.secure_url, userId]
+        );
+
+        res.json({
+            success: true,
+            url: imagem.secure_url,
+            message: 'Capa atualizada com sucesso.'
+        });
+    } catch (erro) {
+        console.error('Erro ao enviar capa:', erro);
+        res.status(500).json({
+            success: false,
+            message: 'Não foi possível enviar a capa.'
+        });
+    }
+});
 // 4. Liga o servidor
 const PORT = process.env.PORT || 3000; 
 app.listen(PORT, '0.0.0.0', () => {

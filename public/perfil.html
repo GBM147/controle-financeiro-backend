@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil | GBM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --fundo: #09101a;
+            --painel: #101b2c;
+            --borda: rgba(95,255,168,.28);
+            --destaque: #5fffa8;
+            --texto: #eef5ff;
+            --mutado: #a7b4c7;
+            --erro: #ff6b6b;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--texto);
+            font-family: Inter, sans-serif;
+            background: linear-gradient(rgba(9,16,26,.88), rgba(9,16,26,.94)), url('fundo-marmore.jpg') center/cover fixed;
+        }
+
+        .cabecalho {
+            height: 64px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--borda);
+            background: rgba(9,16,26,.72);
+            backdrop-filter: blur(10px);
+        }
+
+        .marca { display: flex; align-items: center; gap: 12px; }
+        .marca img { width: 44px; height: 44px; object-fit: contain; }
+        .marca strong { font-family: Rajdhani, sans-serif; letter-spacing: 2px; font-size: 1.1rem; color: var(--destaque); }
+        .voltar { color: var(--texto); text-decoration: none; font-weight: 700; }
+        .voltar:hover { color: var(--destaque); }
+
+        main { max-width: 860px; margin: 36px auto; padding: 0 20px 48px; }
+        .perfil-card {
+            overflow: hidden;
+            border: 1px solid var(--borda);
+            border-radius: 18px;
+            background: rgba(16,27,44,.92);
+            box-shadow: 0 20px 50px rgba(0,0,0,.32);
+        }
+
+        .capa {
+            height: 220px;
+            background: linear-gradient(120deg, #203a5f, #173c3a 50%, #101b2c);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .trocar-capa { position: absolute; right: 18px; bottom: 16px; }
+        .btn, .input-file-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 0 16px;
+            border: 1px solid var(--borda);
+            border-radius: 9px;
+            color: var(--texto);
+            background: rgba(9,16,26,.78);
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-principal { background: #267b4d; border-color: #3fb875; }
+        .btn:hover, .input-file-label:hover { filter: brightness(1.12); }
+
+        .conteudo { padding: 0 32px 34px; }
+        .avatar-area { display: flex; align-items: end; gap: 18px; margin-top: -58px; position: relative; }
+        .avatar {
+            width: 124px;
+            height: 124px;
+            border: 4px solid var(--painel);
+            border-radius: 50%;
+            object-fit: cover;
+            background: #0b1422;
+        }
+        .avatar-acoes { padding-bottom: 8px; }
+        h1 { margin: 28px 0 6px; font-family: Rajdhani, sans-serif; font-size: 2rem; }
+        .subtitulo { margin: 0 0 26px; color: var(--mutado); }
+        label { display: block; margin: 18px 0 8px; font-size: .9rem; font-weight: 700; color: var(--mutado); }
+        input[type="text"] {
+            width: 100%;
+            height: 46px;
+            padding: 0 13px;
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 9px;
+            outline: none;
+            background: rgba(9,16,26,.7);
+            color: var(--texto);
+            font: inherit;
+        }
+        input[type="text"]:focus { border-color: var(--destaque); box-shadow: 0 0 0 3px rgba(95,255,168,.11); }
+        input[type="file"] { display: none; }
+        .acoes { display: flex; justify-content: flex-end; margin-top: 24px; }
+        #mensagem { min-height: 24px; margin: 16px 0 0; font-size: .9rem; color: var(--mutado); }
+        #mensagem.erro { color: var(--erro); }
+        #mensagem.sucesso { color: var(--destaque); }
+
+        @media (max-width: 600px) {
+            .cabecalho { padding: 0 16px; }
+            .marca strong { display: none; }
+            main { margin-top: 20px; padding: 0 12px 30px; }
+            .conteudo { padding: 0 20px 24px; }
+            .capa { height: 170px; }
+            .avatar { width: 104px; height: 104px; }
+            .avatar-area { align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <header class="cabecalho">
+        <div class="marca">
+            <img src="logo-transparente.jpg" alt="Logo GBM">
+            <strong>GUARDIAN OF BUDGET &amp; MONEY</strong>
+        </div>
+        <a class="voltar" href="dashboard.html">← Dashboard</a>
+    </header>
+
+    <main>
+        <section class="perfil-card" aria-labelledby="titulo-perfil">
+            <div id="capa-perfil" class="capa">
+                <div class="trocar-capa">
+                    <label class="input-file-label" for="input-capa">🖼️ Alterar capa</label>
+                    <input id="input-capa" type="file" accept="image/png,image/jpeg,image/webp">
+                </div>
+            </div>
+
+            <div class="conteudo">
+                <div class="avatar-area">
+                    <img id="foto-perfil" class="avatar" src="logo-transparente.jpg" alt="Foto de perfil">
+                    <div class="avatar-acoes">
+                        <label class="input-file-label" for="input-foto">📷 Alterar foto</label>
+                        <input id="input-foto" type="file" accept="image/png,image/jpeg,image/webp">
+                    </div>
+                </div>
+
+                <h1 id="titulo-perfil">Meu perfil</h1>
+                <p class="subtitulo">Personalize como seu perfil aparece no GBM.</p>
+
+                <label for="nome-exibicao">Nome exibido</label>
+                <input id="nome-exibicao" type="text" maxlength="100" placeholder="Como deseja ser chamada no sistema">
+
+                <div class="acoes">
+                    <button id="btn-salvar" class="btn btn-principal" type="button">Salvar perfil</button>
+                </div>
+                <p id="mensagem" role="status"></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="auth.js"></script>
+    <script>
+        function pegarUserId() {
+            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        }
+
+        if (!pegarUserId()) {
+            window.location.href = 'index.html';
+        }
+
+        const foto = document.getElementById('foto-perfil');
+        const capa = document.getElementById('capa-perfil');
+        const nome = document.getElementById('nome-exibicao');
+        const mensagem = document.getElementById('mensagem');
+        const botaoSalvar = document.getElementById('btn-salvar');
+
+        function informar(texto, tipo = '') {
+            mensagem.innerText = texto;
+            mensagem.className = tipo;
+        }
+
+        async function lerResposta(resposta) {
+            const dados = await resposta.json();
+            if (!resposta.ok || !dados.success) {
+                throw new Error(dados.message || 'Não foi possível concluir a operação.');
+            }
+            return dados;
+        }
+
+        async function carregarPerfil() {
+            try {
+                const dados = await lerResposta(await fetchApi('/perfil'));
+                const perfil = dados.perfil;
+
+                nome.value = perfil.nome_exibicao || perfil.nome || '';
+
+                if (perfil.foto_perfil_url) {
+                    foto.src = perfil.foto_perfil_url;
+                }
+
+                if (perfil.capa_perfil_url) {
+                    capa.style.backgroundImage = 'url("' + perfil.capa_perfil_url + '")';
+                }
+            } catch (erro) {
+                informar(erro.message, 'erro');
+            }
+        }
+
+        async function enviarImagem(input, campo, rota, destino) {
+            const arquivo = input.files[0];
+            if (!arquivo) return;
+
+            if (arquivo.size > 5 * 1024 * 1024) {
+                informar('A imagem deve ter no máximo 5 MB.', 'erro');
+                input.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append(campo, arquivo);
+            informar('Enviando imagem...');
+
+            try {
+                const dados = await lerResposta(await fetchApi(rota, {
+                    method: 'POST',
+                    body: formData
+                }));
+
+                if (destino === 'foto') {
+                    foto.src = dados.url;
+                } else {
+                    capa.style.backgroundImage = 'url("' + dados.url + '")';
+                }
+
+                informar(dados.message, 'sucesso');
+            } catch (erro) {
+                informar(erro.message, 'erro');
+            } finally {
+                input.value = '';
+            }
+        }
+
+        document.getElementById('input-foto').addEventListener('change', function () {
+            enviarImagem(this, 'foto', '/perfil/foto', 'foto');
+        });
+
+        document.getElementById('input-capa').addEventListener('change', function () {
+            enviarImagem(this, 'capa', '/perfil/capa', 'capa');
+        });
+
+        botaoSalvar.addEventListener('click', async function () {
+            const nomeExibicao = nome.value.trim();
+            if (!nomeExibicao) {
+                informar('Informe o nome que será exibido.', 'erro');
+                return;
+            }
+
+            botaoSalvar.disabled = true;
+            botaoSalvar.innerText = 'Salvando...';
+
+            try {
+                const dados = await lerResposta(await fetchApi('/perfil', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome_exibicao: nomeExibicao })
+                }));
+                informar(dados.message, 'sucesso');
+            } catch (erro) {
+                informar(erro.message, 'erro');
+            } finally {
+                botaoSalvar.disabled = false;
+                botaoSalvar.innerText = 'Salvar perfil';
+            }
+        });
+
+        carregarPerfil();
+    </script>
+</body>
+</html>
