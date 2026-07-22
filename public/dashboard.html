@@ -795,6 +795,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 </button>
     </form>
 </div>
+<script src="auth.js"></script>
 <script>
 // Variável global para sabermos o status do cliente em qualquer lugar da tela
         window.usuarioPremium = true; 
@@ -807,7 +808,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
                 return;
             }
             try {
-                const res = await fetch('/login-status?userId=' + userId);
+                const res = await fetchApi('/login-status?userId=' + userId);
                 const data = await res.json();
 
                 let isPremium = false;
@@ -878,7 +879,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
         btnSubmeter.innerText = 'A processar... ⏳';
         btnSubmeter.disabled = true;
 
-        const resposta = await fetch('/importar-ofx', {
+        const resposta = await fetchApi('/importar-ofx', {
             method: 'POST',
             body: formData
         });
@@ -963,7 +964,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 const mes = hoje.getMonth() + 1;
                 const ano = hoje.getFullYear();
                 const userId = pegarUserId();
-                const res = await fetch(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}`);
+                const res = await fetchApi(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}`);
                 const json = await res.json();
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
                 const saldoBanco = parseFloat(json.saldo_banco) || 0;
@@ -1021,7 +1022,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 const ano = hoje.getFullYear();
                 const userId = pegarUserId();
 
-                const res = await fetch(`/economia-mensal?userId=${userId}&mes=${mes}&ano=${ano}`);
+                const res = await fetchApi(`/economia-mensal?userId=${userId}&mes=${mes}&ano=${ano}`);
                 const dados = await res.json();
 
                 const elEconomia = document.getElementById('economia-mensal');
@@ -1162,7 +1163,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
 
             try {
                 const userId = pegarUserId();
-                const resposta = await fetch('/transacao-manual', {
+                const resposta = await fetchApi('/transacao-manual', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ descricao, valor: parseFloat(valor), tipo, categoria, data_transacao, userId })
@@ -1183,7 +1184,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
             
             try {
                 const userId = pegarUserId();
-                await fetch('/metas', {
+                await fetchApi('/metas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ categoria, valor_limite: parseFloat(valor), userId })
@@ -1199,7 +1200,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
             if (!categoria) return gbmAlerta('Selecione uma categoria primeiro.', 'aviso');
             try {
                 const userId = pegarUserId();
-                await fetch('/metas', {
+                await fetchApi('/metas', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ categoria, userId })
@@ -1300,7 +1301,7 @@ function fecharModalNotificacoes(confirmado = false) {
             if (!ok) return;
 
             try {
-                const res = await fetch('/desfazer-ultimo', {
+                const res = await fetchApi('/desfazer-ultimo', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId: pegarUserId() })
@@ -1326,7 +1327,7 @@ function fecharModalNotificacoes(confirmado = false) {
 async function carregarCategorias() {
     try {
         const userId = pegarUserId();
-        const res = await fetch(`/categorias?userId=${userId}`);
+        const res = await fetchApi(`/categorias?userId=${userId}`);
         const dados = await res.json();
         CATEGORIAS_DISPONIVEIS = dados.todas || CATEGORIAS_DISPONIVEIS;
         window._categoriasPersonalizadas = dados.personalizadas || [];
@@ -1369,7 +1370,7 @@ async function removerCategoriaPersonalizada(id) {
     if (!ok) return;
     const userId = pegarUserId();
     try {
-        const res = await fetch(`/categorias/${id}`, {
+        const res = await fetchApi(`/categorias/${id}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId })
@@ -1392,7 +1393,7 @@ async function criarNovaCategoria() {
 
     const userId = pegarUserId();
     try {
-        const res = await fetch('/categorias', {
+        const res = await fetchApi('/categorias', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId, nome })
@@ -1419,7 +1420,7 @@ function categoriasOpcoes(selecionada) {
 async function abrirModalTransacoes() {
     document.getElementById('modal-transacoes').style.display = 'block';
     const hoje = new Date();
-    const res = await fetch(`/transacoes-individuais?mes=${hoje.getMonth() + 1}&ano=${hoje.getFullYear()}`);
+    const res = await fetchApi(`/transacoes-individuais?mes=${hoje.getMonth() + 1}&ano=${hoje.getFullYear()}`);
     const transacoes = await res.json();
     const container = document.getElementById('lista-transacoes-modal');
 
@@ -1479,7 +1480,7 @@ async function salvarCorrecao(transacaoId, descricao) {
 
     try {
         const userId = pegarUserId();
-        const res = await fetch('/corrigir-categoria', {
+        const res = await fetchApi('/corrigir-categoria', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ transacaoId, descricao, novaCategoria, userId })
@@ -1512,7 +1513,7 @@ async function salvarObjetivo() {
             try {
                 // Reaproveitamos a API de metas que já existe e funciona perfeitamente!
                 const userId = pegarUserId();
-                await fetch('/metas', {
+                await fetchApi('/metas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ categoria, valor_limite: parseFloat(valor), userId })
@@ -1529,7 +1530,7 @@ function fecharModalTransacoes() {
 }
 async function carregarAlertas() {
     try {
-        const res = await fetch('/alertas?userId=' + pegarUserId());
+        const res = await fetchApi('/alertas?userId=' + pegarUserId());
         const alertas = await res.json();
         const naoLidos = alertas.filter(a => !a.lida);
 
@@ -1559,7 +1560,7 @@ function abrirPainelAlertas() {
     const texto = alertas.map(a => `• ${a.mensagem}`).join('<br>');
     gbmAlerta(texto);
     alertas.forEach(a => {
-        if (!a.lida) fetch('/alertas/marcar-lida', {
+        if (!a.lida) fetchApi('/alertas/marcar-lida', {
             method: 'POST', headers: {'Content-Type':'application/json'},
             body: JSON.stringify({ id: a.id, userId: pegarUserId() })
         });

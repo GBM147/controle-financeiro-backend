@@ -278,6 +278,7 @@
     </div>
 </div>
 
+<script src="auth.js"></script>
     <script>
         // Recupera o userId salvo
         function pegarUserId() {
@@ -292,7 +293,7 @@
                 return;
             }
             try {
-                const res = await fetch('/login-status?userId=' + userId);
+                const res = await fetchApi('/login-status?userId=' + userId);
                 const data = await res.json();
 
                 let isPremium = false;
@@ -324,7 +325,7 @@
             const anoAtual = new Date().getFullYear();
             try {
                 const userId = pegarUserId();
-                const res = await fetch(`/anos-disponiveis?userId=${userId}`);
+                const res = await fetchApi(`/anos-disponiveis?userId=${userId}`);
                 const anos = await res.json();
 
                 if (!anos.includes(anoAtual)) anos.unshift(anoAtual);
@@ -343,7 +344,7 @@
 
             try {
                 const userId = pegarUserId();
-                const res = await fetch(`/comparativo-mensal?userId=${userId}&ano=${ano}`);
+                const res = await fetchApi(`/comparativo-mensal?userId=${userId}&ano=${ano}`);
                 const dados = await res.json();
 
                 if (!dados || dados.length === 0) {

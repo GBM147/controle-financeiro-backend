@@ -189,13 +189,14 @@
     </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
     const userId = localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
     if (!userId) window.location.href = 'index.html';
 
     async function carregarAssinatura() {
         try {
-            const res = await fetch(`/minha-assinatura?userId=${userId}`);
+            const res = await fetchApi(`/minha-assinatura?userId=${userId}`);
             const data = await res.json();
 
             if (data.error) throw new Error(data.error);
@@ -313,7 +314,7 @@
         
         if (confirmar) {
             try {
-                const res = await fetch('/cancelar-assinatura', {
+                const res = await fetchApi('/cancelar-assinatura', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId })

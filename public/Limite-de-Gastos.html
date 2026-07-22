@@ -310,6 +310,7 @@
     </div>
 </div>
 
+<script src="auth.js"></script>
     <script>
         // Recupera o userId salvo (mesmo padrão usado no resto do app)
         function pegarUserId() {
@@ -320,7 +321,7 @@
 
         async function carregarEditor() {
             try {
-                const res = await fetch('/metas-resumo?userId=' + userId);
+                const res = await fetchApi('/metas-resumo?userId=' + userId);
                 const json = await res.json();
                 let metas = json.data ? json.data : (Array.isArray(json) ? json : []);
                 
@@ -397,7 +398,7 @@
             const valor_limite = document.getElementById(`limite-${catId}`).value;
             const percentual_alerta = document.getElementById(`alerta-${catId}`).value;
 
-            await fetch('/atualizar-meta-alerta', {
+            await fetchApi('/atualizar-meta-alerta', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ categoria: categoriaOriginal, valor_limite, percentual_alerta, userId })
@@ -416,7 +417,7 @@ async function salvarNovoLimite() {
             }
 
             try {
-                const res = await fetch('/atualizar-meta-alerta', {
+                const res = await fetchApi('/atualizar-meta-alerta', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ categoria, valor_limite, percentual_alerta, userId })

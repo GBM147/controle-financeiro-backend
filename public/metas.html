@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -212,11 +211,12 @@
     </div>
 </div>
 
+<script src="auth.js"></script>
     <script>
        async function carregarMetas() {
             try {
                 const userId = localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
-        const res = await fetch(`/metas-resumo?userId=${userId}`);
+        const res = await fetchApi(`/metas-resumo?userId=${userId}`);
                 const json = await res.json();
 
                 let metas = json.data ? json.data : (Array.isArray(json) ? json : []);

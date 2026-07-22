@@ -198,6 +198,7 @@
     </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
     function pegarUserId() {
         return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
@@ -211,7 +212,7 @@
 
     (async function carregarCategorias() {
         try {
-            const res = await fetch('/categorias?userId=' + userId);
+            const res = await fetchApi('/categorias?userId=' + userId);
             const data = await res.json();
             if (data.todas && data.todas.length > 0) categoriasDisponiveis = data.todas;
         } catch (e) {}
@@ -241,7 +242,7 @@
         formData.append('userId', userId);
 
         try {
-            const res = await fetch('/pdf-extrato/preview', { method: 'POST', body: formData });
+            const res = await fetchApi('/pdf-extrato/preview', { method: 'POST', body: formData });
             const data = await res.json();
 
             if (!data.success) {
@@ -357,7 +358,7 @@
         btn.innerHTML = '<span class="spinner"></span> Importando...';
 
         try {
-            const res = await fetch('/pdf-extrato/confirmar', {
+            const res = await fetchApi('/pdf-extrato/confirmar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

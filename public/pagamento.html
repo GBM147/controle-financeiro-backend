@@ -157,6 +157,7 @@
     </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
     function pegarUserId() {
         return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
@@ -167,7 +168,7 @@
     // Mostra o banner de trial se vier da tela de cadastro novo
     async function verificarStatusTrial() {
         try {
-            const res = await fetch('/login-status?userId=' + userId);
+            const res = await fetchApi('/login-status?userId=' + userId);
             const data = await res.json();
             if (data.statusPagamento === 'trial') {
                 document.getElementById('banner-trial').style.display = 'block';
@@ -183,7 +184,7 @@
         btn.disabled = true;
 
         try {
-            const res = await fetch('/criar-sessao-pagamento', {
+            const res = await fetchApi('/criar-sessao-pagamento', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ userId })

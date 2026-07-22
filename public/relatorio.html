@@ -375,6 +375,7 @@
         </div>
     </div>
 </div>
+<script src="auth.js"></script>
     <script>
         // Recupera o userId salvo
         function pegarUserId() {
@@ -389,7 +390,7 @@
                 return;
             }
             try {
-                const res = await fetch('/login-status?userId=' + userId);
+                const res = await fetchApi('/login-status?userId=' + userId);
                 const data = await res.json();
 
                 let isPremium = false;
@@ -437,7 +438,7 @@ const NOMES_MESES = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho',
 async function carregarCategorias() {
     try {
         const userId = pegarUserId();
-        const res = await fetch(`/categorias?userId=${userId}`);
+        const res = await fetchApi(`/categorias?userId=${userId}`);
         const dados = await res.json();
         CATEGORIAS_TODAS = dados.todas || [];
     } catch (e) {
@@ -449,7 +450,7 @@ carregarCategorias();
 async function carregarBancosUsados() {
     try {
         const userId = pegarUserId();
-        const res = await fetch(`/bancos-usados?userId=${userId}`);
+        const res = await fetchApi(`/bancos-usados?userId=${userId}`);
         const bancos = await res.json();
         const select = document.getElementById('banco-ref');
         bancos.forEach(nome => {
@@ -470,7 +471,7 @@ carregarBancosUsados();
 
             try {
                 const userId = pegarUserId();
-const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${userId}&banco=${encodeURIComponent(banco)}`);
+const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${userId}&banco=${encodeURIComponent(banco)}`);
                 dadosRelatorio = await res.json();
 
                 if (dadosRelatorio.length === 0) {
@@ -662,7 +663,7 @@ const res = await fetch(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${use
             if (!txIdAtual) return;
             const novaCategoria = document.getElementById('modal-select-cat').value;
             try {
-                const res = await fetch(`/atualizar-categoria/${txIdAtual}`, {
+                const res = await fetchApi(`/atualizar-categoria/${txIdAtual}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ categoria: novaCategoria })
