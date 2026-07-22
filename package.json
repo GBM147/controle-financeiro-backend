@@ -25,6 +25,7 @@
     "node-ofx-parser": "^0.5.1",
     "nodemailer": "^8.0.10",
     "pdf-parse": "^1.1.1",
-    "resend": "^3.2.0"
+    "resend": "^3.2.0",
+    "@google/generative-ai": "^0.14.0"
   }
 }
