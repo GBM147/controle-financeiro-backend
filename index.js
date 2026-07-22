@@ -1392,6 +1392,46 @@ app.delete('/categorias/:id', exigirLogin, async (req, res) => {
     }
 });
 // --- ROTA: BUSCAR DADOS DA ASSINATURA ---
+function assinaturaEstaCanceladaNoMP(status) {
+    const statusNormalizado = String(status || '').toLowerCase();
+    return statusNormalizado === 'canceled' || statusNormalizado === 'cancelled';
+}
+
+// Assinaturas antigas foram criadas antes de guardarmos o preapproval_id.
+// Como o projeto já gravava external_reference = userId, ainda é possível
+// localizar a assinatura certa pelo e-mail e por essa referência no MP.
+async function localizarAssinaturaNoMP(userId, email, preapprovalId) {
+    const preApproval = new PreApproval(mpClient);
+
+    if (preapprovalId) {
+        const assinatura = await preApproval.get({ preApprovalId: String(preapprovalId) });
+        return { preApproval, preapprovalId: String(preapprovalId), assinatura };
+    }
+
+    if (!email) {
+        return { preApproval, preapprovalId: null, assinatura: null };
+    }
+
+    const busca = await preApproval.search({
+        options: { payer_email: email }
+    });
+    const resultados = Array.isArray(busca?.results) ? busca.results : [];
+    const candidatas = resultados
+        .filter((assinatura) => String(assinatura.external_reference) === String(userId))
+        .sort((a, b) => {
+            const dataA = new Date(a.last_modified || a.date_created || 0).getTime();
+            const dataB = new Date(b.last_modified || b.date_created || 0).getTime();
+            return dataB - dataA;
+        });
+    const assinatura = candidatas[0] || null;
+
+    return {
+        preApproval,
+        preapprovalId: assinatura?.id ? String(assinatura.id) : null,
+        assinatura
+    };
+}
+
 app.get('/minha-assinatura', exigirLogin, async (req, res) => {
     const userId = req.session.userId;
 
@@ -1414,7 +1454,7 @@ app.post('/cancelar-assinatura', exigirLogin, async (req, res) => {
     const userId = req.session.userId;
     try {
         const [usuarios] = await db.promise().query(
-            `SELECT mercadopago_preapproval_id
+            `SELECT email, mercadopago_preapproval_id
              FROM usuarios
              WHERE id = ?`,
             [userId]
@@ -1424,27 +1464,33 @@ app.post('/cancelar-assinatura', exigirLogin, async (req, res) => {
             return res.status(404).json({ success: false, message: 'Usuário não encontrado.' });
         }
 
-        const preapprovalId = usuarios[0].mercadopago_preapproval_id;
-        if (!preapprovalId) {
-            // Assinaturas criadas antes desta atualização não possuem o ID salvo.
-            // É mais seguro não fingir que uma cobrança foi cancelada.
+        const encontrada = await localizarAssinaturaNoMP(
+            userId,
+            usuarios[0].email,
+            usuarios[0].mercadopago_preapproval_id
+        );
+
+        if (!encontrada.assinatura || !encontrada.preapprovalId) {
             return res.status(409).json({
                 success: false,
-                message: 'Não foi possível localizar esta assinatura no Mercado Pago. Cancele-a no painel do Mercado Pago ou fale com o suporte.'
+                message: 'Não foi possível localizar a assinatura no Mercado Pago. Cancele-a pelo painel do Mercado Pago ou fale com o suporte.'
             });
         }
 
-        const preApproval = new PreApproval(mpClient);
-        await preApproval.update({
-            id: preapprovalId,
-            body: { status: 'canceled' }
-        });
+        if (!assinaturaEstaCanceladaNoMP(encontrada.assinatura.status)) {
+            await encontrada.preApproval.update({
+                id: encontrada.preapprovalId,
+                body: { status: 'canceled' }
+            });
+        }
 
         await db.promise().query(
             `UPDATE usuarios
-             SET status_pagamento = 'cancelado', assinatura_cancelada_no_mp = 1
+             SET mercadopago_preapproval_id = ?,
+                 status_pagamento = 'cancelado',
+                 assinatura_cancelada_no_mp = 1
              WHERE id = ?`,
-            [userId]
+            [encontrada.preapprovalId, userId]
         );
         
         res.json({ success: true, message: 'Sua assinatura foi cancelada no Mercado Pago com sucesso.' });
@@ -1679,7 +1725,7 @@ app.delete('/minha-conta', exigirLogin, async (req, res) => {
         transacaoAberta = true;
 
         const [usuarios] = await banco.query(
-            `SELECT senha_hash, status_pagamento, mercadopago_preapproval_id,
+            `SELECT email, senha_hash, status_pagamento, mercadopago_preapproval_id,
                     assinatura_cancelada_no_mp
              FROM usuarios
              WHERE id = ? FOR UPDATE`,
@@ -1699,11 +1745,52 @@ app.delete('/minha-conta', exigirLogin, async (req, res) => {
             return res.status(401).json({ success: false, message: 'A senha informada está incorreta.' });
         }
 
+        // Consulta o Mercado Pago novamente antes de apagar. Isso recupera
+        // assinaturas antigas (criadas antes de salvarmos o preapproval_id) e
+        // não confunde o acesso restante do período grátis com uma nova cobrança.
+        let cancelamentoConfirmadoNoMP = usuarios[0].assinatura_cancelada_no_mp === 1 || usuarios[0].assinatura_cancelada_no_mp === true;
+        try {
+            const encontrada = await localizarAssinaturaNoMP(
+                userId,
+                usuarios[0].email,
+                usuarios[0].mercadopago_preapproval_id
+            );
+
+            if (encontrada.assinatura && assinaturaEstaCanceladaNoMP(encontrada.assinatura.status)) {
+                await banco.query(
+                    `UPDATE usuarios
+                     SET mercadopago_preapproval_id = ?,
+                         status_pagamento = 'cancelado',
+                         assinatura_cancelada_no_mp = 1
+                     WHERE id = ?`,
+                    [encontrada.preapprovalId, userId]
+                );
+                cancelamentoConfirmadoNoMP = true;
+                usuarios[0].mercadopago_preapproval_id = encontrada.preapprovalId;
+                usuarios[0].status_pagamento = 'cancelado';
+            } else if (encontrada.assinatura) {
+                // Guardamos o ID encontrado para que uma futura tentativa de
+                // cancelamento fale com a assinatura correta do Mercado Pago.
+                await banco.query(
+                    'UPDATE usuarios SET mercadopago_preapproval_id = ? WHERE id = ?',
+                    [encontrada.preapprovalId, userId]
+                );
+                usuarios[0].mercadopago_preapproval_id = encontrada.preapprovalId;
+            }
+        } catch (erroMercadoPago) {
+            console.error('Não foi possível conferir a assinatura no Mercado Pago antes de excluir:', erroMercadoPago);
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(502).json({
+                success: false,
+                message: 'Não foi possível confirmar o status da assinatura no Mercado Pago. Tente novamente em alguns minutos.'
+            });
+        }
+
         // Uma assinatura ativa nunca pode ser desvinculada apenas no banco local.
         // Também bloqueamos um "cancelado" antigo sem confirmação do MP, pois a
         // versão anterior do projeto só alterava o status local e podia manter a
         // cobrança recorrente ativa.
-        const cancelamentoConfirmadoNoMP = usuarios[0].assinatura_cancelada_no_mp === 1 || usuarios[0].assinatura_cancelada_no_mp === true;
         const assinaturaNaoConfirmada =
             (usuarios[0].mercadopago_preapproval_id && !cancelamentoConfirmadoNoMP) ||
             usuarios[0].status_pagamento === 'pago' ||
