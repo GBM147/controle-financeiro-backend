@@ -104,7 +104,9 @@ const sessionStore = new MySQLStore({
 app.set('trust proxy', 1); // necessário no Render para o cookie 'secure' funcionar atrás do proxy
 
 app.use(session({
-    key: 'gbm_sid',
+    // "name" é a opção reconhecida pelo express-session para o nome do cookie.
+    // Antes estava como "key", que era ignorado e deixava o cookie com o nome padrão.
+    name: 'gbm_sid',
     secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
@@ -117,11 +119,37 @@ app.use(session({
     }
 }));
 
-function exigirLogin(req, res, next) {
+async function exigirLogin(req, res, next) {
     if (!req.session.userId) {
         return res.status(401).json({ success: false, error: 'Sessão expirada. Faça login novamente.' });
     }
-    next();
+
+    try {
+        // Também confirma que a conta ainda existe. Assim, ao excluir uma conta,
+        // sessões abertas em outros dispositivos deixam de funcionar imediatamente.
+        const [usuarios] = await db.promise().query(
+            'SELECT id FROM usuarios WHERE id = ? LIMIT 1',
+            [req.session.userId]
+        );
+
+        if (usuarios.length === 0) {
+            return req.session.destroy(() => {
+                const opcoesCookie = {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax'
+                };
+                res.clearCookie('gbm_sid', opcoesCookie);
+                res.clearCookie('connect.sid', opcoesCookie); // limpa o cookie usado por versões anteriores
+                return res.status(401).json({ success: false, error: 'Esta conta não existe mais. Faça login novamente.' });
+            });
+        }
+
+        return next();
+    } catch (erro) {
+        console.error('Erro ao validar sessão:', erro);
+        return res.status(500).json({ success: false, error: 'Não foi possível validar a sessão.' });
+    }
 }
 // --- ROTA: CRIAR SESSÃO DE PAGAMENTO (MERCADO PAGO) ---
 // --- ROTA: CRIAR ASSINATURA MENSAL (MERCADO PAGO) ---
@@ -170,6 +198,19 @@ app.post('/criar-sessao-pagamento', exigirLogin, express.json(), async (req, res
                 external_reference: userId.toString()
             }
         });
+
+        if (!resultado.id) {
+            throw new Error('O Mercado Pago não retornou o identificador da assinatura.');
+        }
+
+        // Guardamos o ID para conseguir cancelar a cobrança recorrente no Mercado
+        // Pago, e não apenas mudar um texto/status na nossa própria base.
+        await db.promise().query(
+            `UPDATE usuarios
+             SET mercadopago_preapproval_id = ?, assinatura_cancelada_no_mp = 0
+             WHERE id = ?`,
+            [String(resultado.id), userId]
+        );
 
         res.json({ url: resultado.init_point }); 
     } catch (error) {
@@ -1372,19 +1413,44 @@ app.get('/minha-assinatura', exigirLogin, async (req, res) => {
 app.post('/cancelar-assinatura', exigirLogin, async (req, res) => {
     const userId = req.session.userId;
     try {
-        // ATENÇÃO: Num cenário real com Mercado Pago, aqui você faria uma requisição à API 
-        // do MP para cancelar o 'preapproval_id' vinculado a este usuário.
-        // Por agora, vamos atualizar o status na nossa base de dados para impedir a renovação.
-        
+        const [usuarios] = await db.promise().query(
+            `SELECT mercadopago_preapproval_id
+             FROM usuarios
+             WHERE id = ?`,
+            [userId]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(404).json({ success: false, message: 'Usuário não encontrado.' });
+        }
+
+        const preapprovalId = usuarios[0].mercadopago_preapproval_id;
+        if (!preapprovalId) {
+            // Assinaturas criadas antes desta atualização não possuem o ID salvo.
+            // É mais seguro não fingir que uma cobrança foi cancelada.
+            return res.status(409).json({
+                success: false,
+                message: 'Não foi possível localizar esta assinatura no Mercado Pago. Cancele-a no painel do Mercado Pago ou fale com o suporte.'
+            });
+        }
+
+        const preApproval = new PreApproval(mpClient);
+        await preApproval.update({
+            id: preapprovalId,
+            body: { status: 'canceled' }
+        });
+
         await db.promise().query(
-            "UPDATE usuarios SET status_pagamento = 'cancelado' WHERE id = ?", 
+            `UPDATE usuarios
+             SET status_pagamento = 'cancelado', assinatura_cancelada_no_mp = 1
+             WHERE id = ?`,
             [userId]
         );
         
-        res.json({ success: true, message: 'Sua assinatura foi cancelada com sucesso. Você não receberá novas cobranças.' });
+        res.json({ success: true, message: 'Sua assinatura foi cancelada no Mercado Pago com sucesso.' });
     } catch (error) {
         console.error('❌ Erro ao cancelar assinatura:', error);
-        res.status(500).json({ success: false, message: 'Falha ao processar o cancelamento.' });
+        res.status(502).json({ success: false, message: 'O Mercado Pago não confirmou o cancelamento. Tente novamente mais tarde.' });
     }
 });
 // --- ROTA: RECEBER FEEDBACK DA PÁGINA "FALE CONOSCO" ---
@@ -1574,6 +1640,195 @@ app.post('/perfil/capa', exigirLogin, uploadImagem.single('capa'), async (req, r
         res.status(500).json({
             success: false,
             message: 'Não foi possível enviar a capa.'
+        });
+    }
+});
+
+// --- ROTA: EXCLUIR A PRÓPRIA CONTA ---
+// A confirmação por texto e pela senha atual impedem exclusões acidentais.
+// Nunca exponha uma rota administrativa que aceite um userId vindo do navegador.
+app.delete('/minha-conta', exigirLogin, async (req, res) => {
+    const userId = req.session.userId;
+    const { senha, confirmacao } = req.body || {};
+    const confirmacaoEsperada = 'EXCLUIR MINHA CONTA';
+    const banco = db.promise();
+    let transacaoAberta = false;
+
+    if (typeof senha !== 'string' || !senha) {
+        return res.status(400).json({ success: false, message: 'Informe a senha atual para excluir a conta.' });
+    }
+
+    if (confirmacao !== confirmacaoEsperada) {
+        return res.status(400).json({
+            success: false,
+            message: `Digite exatamente “${confirmacaoEsperada}” para confirmar a exclusão.`
+        });
+    }
+
+    // Identificadores SQL não podem ser passados como parâmetros. Esta validação
+    // permite usar somente os nomes retornados pelo próprio banco de dados.
+    const identificar = (nome) => {
+        if (!/^[A-Za-z0-9_]+$/.test(nome)) {
+            throw new Error('Nome de tabela inesperado ao excluir a conta.');
+        }
+        return `\`${nome}\``;
+    };
+
+    try {
+        await banco.beginTransaction();
+        transacaoAberta = true;
+
+        const [usuarios] = await banco.query(
+            `SELECT senha_hash, status_pagamento, mercadopago_preapproval_id,
+                    assinatura_cancelada_no_mp
+             FROM usuarios
+             WHERE id = ? FOR UPDATE`,
+            [userId]
+        );
+
+        if (usuarios.length === 0) {
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(404).json({ success: false, message: 'Conta não encontrada.' });
+        }
+
+        const senhaConfere = await bcrypt.compare(senha, usuarios[0].senha_hash);
+        if (!senhaConfere) {
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(401).json({ success: false, message: 'A senha informada está incorreta.' });
+        }
+
+        // Uma assinatura ativa nunca pode ser desvinculada apenas no banco local.
+        // Também bloqueamos um "cancelado" antigo sem confirmação do MP, pois a
+        // versão anterior do projeto só alterava o status local e podia manter a
+        // cobrança recorrente ativa.
+        const cancelamentoConfirmadoNoMP = usuarios[0].assinatura_cancelada_no_mp === 1 || usuarios[0].assinatura_cancelada_no_mp === true;
+        const assinaturaNaoConfirmada =
+            (usuarios[0].mercadopago_preapproval_id && !cancelamentoConfirmadoNoMP) ||
+            usuarios[0].status_pagamento === 'pago' ||
+            (usuarios[0].status_pagamento === 'cancelado' && !cancelamentoConfirmadoNoMP);
+
+        if (assinaturaNaoConfirmada) {
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(409).json({
+                success: false,
+                message: 'Cancele a assinatura no Mercado Pago e aguarde a confirmação antes de excluir a conta.'
+            });
+        }
+
+        // Apaga tabelas que dependem das contas bancárias. A consulta ao
+        // INFORMATION_SCHEMA também cobre futuras tabelas com chave estrangeira
+        // direta para contas_bancarias, sem desativar FOREIGN_KEY_CHECKS.
+        const [dependentesDasContas] = await banco.query(`
+            SELECT TABLE_NAME, COLUMN_NAME
+            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE REFERENCED_TABLE_SCHEMA = DATABASE()
+              AND REFERENCED_TABLE_NAME = 'contas_bancarias'
+        `);
+
+        for (const relacao of dependentesDasContas) {
+            const tabelaFilha = identificar(relacao.TABLE_NAME);
+            const colunaFilha = identificar(relacao.COLUMN_NAME);
+            await banco.query(
+                `DELETE filha
+                 FROM ${tabelaFilha} AS filha
+                 INNER JOIN contas_bancarias AS conta ON filha.${colunaFilha} = conta.id
+                 WHERE conta.usuario_id = ?`,
+                [userId]
+            );
+        }
+
+        // Garante a exclusão das transações mesmo se a base antiga não possuir
+        // a chave estrangeira transacoes.conta_id configurada.
+        await banco.query(`
+            DELETE transacao
+            FROM transacoes AS transacao
+            INNER JOIN contas_bancarias AS conta ON transacao.conta_id = conta.id
+            WHERE conta.usuario_id = ?
+        `, [userId]);
+
+        // Tabelas conhecidas que usam usuario_id, inclusive em bancos mais antigos
+        // onde a chave estrangeira ainda não foi criada.
+        const tabelasDoUsuario = [
+            'saldos_por_banco',
+            'regras_categoria',
+            'metas',
+            'categorias_personalizadas',
+            'alertas'
+        ];
+
+        for (const tabela of tabelasDoUsuario) {
+            await banco.query(`DELETE FROM ${identificar(tabela)} WHERE usuario_id = ?`, [userId]);
+        }
+
+        // O Adminer mostrou mais de uma relação em alertas. Esta parte remove
+        // qualquer outra tabela ligada diretamente a usuarios, antes da linha pai.
+        const [dependentesDoUsuario] = await banco.query(`
+            SELECT TABLE_NAME, COLUMN_NAME
+            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE REFERENCED_TABLE_SCHEMA = DATABASE()
+              AND REFERENCED_TABLE_NAME = 'usuarios'
+              AND TABLE_NAME <> 'contas_bancarias'
+        `);
+
+        for (const relacao of dependentesDoUsuario) {
+            const tabelaFilha = identificar(relacao.TABLE_NAME);
+            const colunaFilha = identificar(relacao.COLUMN_NAME);
+            await banco.query(`DELETE FROM ${tabelaFilha} WHERE ${colunaFilha} = ?`, [userId]);
+        }
+
+        await banco.query('DELETE FROM contas_bancarias WHERE usuario_id = ?', [userId]);
+        const [resultado] = await banco.query('DELETE FROM usuarios WHERE id = ?', [userId]);
+
+        if (resultado.affectedRows !== 1) {
+            throw new Error('A conta não pôde ser removida.');
+        }
+
+        await banco.commit();
+        transacaoAberta = false;
+
+        // Os dois arquivos são removidos após o banco confirmar a exclusão. Falhas
+        // no provedor de imagens não desfazem uma conta já apagada; ficam registradas.
+        const resultadosCloudinary = await Promise.allSettled([
+            cloudinary.uploader.destroy(`gbm/perfis/${userId}/foto-perfil`, { resource_type: 'image', invalidate: true }),
+            cloudinary.uploader.destroy(`gbm/perfis/${userId}/capa-perfil`, { resource_type: 'image', invalidate: true })
+        ]);
+        resultadosCloudinary
+            .filter((resultadoCloudinary) => resultadoCloudinary.status === 'rejected')
+            .forEach((resultadoCloudinary) => console.warn('Não foi possível apagar uma imagem de perfil:', resultadoCloudinary.reason));
+
+        return req.session.destroy((erroSessao) => {
+            if (erroSessao) {
+                console.error('Conta apagada, mas não foi possível encerrar a sessão atual:', erroSessao);
+            }
+
+            const opcoesCookie = {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax'
+            };
+            res.clearCookie('gbm_sid', opcoesCookie);
+            res.clearCookie('connect.sid', opcoesCookie);
+            return res.json({ success: true, message: 'Sua conta e seus dados foram excluídos com sucesso.' });
+        });
+    } catch (erro) {
+        if (transacaoAberta) {
+            try {
+                await banco.rollback();
+            } catch (erroRollback) {
+                console.error('Erro ao desfazer a exclusão da conta:', erroRollback);
+            }
+        }
+
+        console.error('Erro ao excluir conta:', erro);
+        const bloqueioPorRelacao = erro.code === 'ER_ROW_IS_REFERENCED' || erro.code === 'ER_ROW_IS_REFERENCED_2';
+        return res.status(bloqueioPorRelacao ? 409 : 500).json({
+            success: false,
+            message: bloqueioPorRelacao
+                ? 'Há um dado relacionado que ainda impede a exclusão. Nenhum dado foi apagado; contate o suporte para concluir com segurança.'
+                : 'Não foi possível excluir a conta. Tente novamente mais tarde.'
         });
     }
 });

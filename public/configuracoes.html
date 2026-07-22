@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações | GBM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --fundo: #07111f;
+            --painel: rgba(13, 27, 45, .94);
+            --painel-claro: #12223a;
+            --borda: rgba(75, 216, 166, .32);
+            --texto: #e8eef8;
+            --mutado: #9eacc1;
+            --destaque: #48d89a;
+            --azul: #5794ed;
+            --perigo: #ff6473;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--texto);
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            background:
+                linear-gradient(rgba(5, 13, 25, .84), rgba(5, 13, 25, .94)),
+                url('background.png') center / cover fixed,
+                var(--fundo);
+        }
+        .cabecalho {
+            height: 92px;
+            padding: 0 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,.12);
+            background: rgba(6, 15, 29, .68);
+        }
+        .marca { display: flex; align-items: center; gap: 14px; min-width: 0; }
+        .marca img { width: 50px; height: 50px; object-fit: contain; }
+        .marca strong {
+            color: var(--destaque);
+            font-family: Rajdhani, sans-serif;
+            font-size: 1.35rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+        }
+        .voltar, .link-cartao {
+            color: var(--texto);
+            text-decoration: none;
+            border: 1px solid rgba(87, 148, 237, .5);
+            border-radius: 10px;
+            padding: 10px 14px;
+            transition: .2s ease;
+        }
+        .voltar:hover, .link-cartao:hover { border-color: var(--destaque); color: var(--destaque); }
+        main { max-width: 960px; margin: 42px auto; padding: 0 22px 48px; }
+        h1, h2 { font-family: Rajdhani, sans-serif; letter-spacing: .04em; }
+        h1 { margin: 0; font-size: 2.2rem; }
+        .introducao { margin: 8px 0 30px; color: var(--mutado); }
+        .grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+        .cartao, .zona-perigo {
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            background: var(--painel);
+            box-shadow: 0 12px 28px rgba(0,0,0,.18);
+        }
+        .cartao { padding: 22px; min-height: 210px; display: flex; flex-direction: column; }
+        .icone { font-size: 1.8rem; }
+        .cartao h2 { margin: 13px 0 8px; font-size: 1.35rem; }
+        .cartao p { color: var(--mutado); font-size: .92rem; line-height: 1.55; margin: 0 0 20px; }
+        .link-cartao { margin-top: auto; text-align: center; font-weight: 600; }
+        .zona-perigo { margin-top: 30px; padding: 24px; border-color: rgba(255, 100, 115, .55); }
+        .zona-perigo h2 { color: var(--perigo); margin: 0 0 8px; }
+        .zona-perigo > p { color: var(--mutado); margin: 0 0 18px; line-height: 1.55; }
+        details { border-top: 1px solid rgba(255,255,255,.12); padding-top: 16px; }
+        summary { cursor: pointer; color: var(--perigo); font-weight: 600; }
+        .aviso { color: #ffced4; font-size: .9rem; line-height: 1.55; margin: 16px 0; }
+        .campo { margin-top: 14px; }
+        label { display: block; margin-bottom: 7px; font-size: .88rem; color: var(--mutado); }
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            color: var(--texto);
+            border: 1px solid #41516b;
+            border-radius: 9px;
+            background: rgba(6, 15, 29, .75);
+            outline: none;
+        }
+        input:focus { border-color: var(--destaque); box-shadow: 0 0 0 3px rgba(72,216,154,.12); }
+        .confirmacao { display: flex; gap: 9px; align-items: flex-start; margin: 18px 0; color: var(--mutado); font-size: .88rem; line-height: 1.45; }
+        .confirmacao input { margin-top: 3px; accent-color: var(--perigo); }
+        .acoes { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+        button {
+            cursor: pointer;
+            border: 1px solid var(--perigo);
+            border-radius: 9px;
+            padding: 12px 16px;
+            background: rgba(255, 100, 115, .12);
+            color: #ffd9de;
+            font-weight: 700;
+        }
+        button:hover:not(:disabled) { background: rgba(255, 100, 115, .24); }
+        button:disabled { cursor: wait; opacity: .62; }
+        #mensagem { min-height: 24px; margin: 14px 0 0; color: var(--mutado); font-size: .9rem; }
+        #mensagem.erro { color: #ffb2bc; }
+        #mensagem.sucesso { color: var(--destaque); }
+        @media (max-width: 760px) {
+            .cabecalho { height: 76px; padding: 0 16px; }
+            .marca img { width: 42px; height: 42px; }
+            .marca strong { font-size: .95rem; letter-spacing: .06em; }
+            main { margin-top: 28px; padding: 0 14px 32px; }
+            .grade { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 430px) { .marca strong { display: none; } }
+    </style>
+</head>
+<body>
+    <header class="cabecalho">
+        <div class="marca">
+            <img src="logo-transparente.jpg" alt="Logo GBM">
+            <strong>Guardian of Budget &amp; Money</strong>
+        </div>
+        <a class="voltar" href="dashboard.html">← Dashboard</a>
+    </header>
+
+    <main>
+        <h1>Configurações</h1>
+        <p class="introducao">Gerencie sua conta, assinatura e canais de atendimento.</p>
+
+        <section class="grade" aria-label="Opções de configurações">
+            <article class="cartao">
+                <div class="icone">🛡️</div>
+                <h2>Minha assinatura</h2>
+                <p>Veja o status do plano e cancele a assinatura antes de excluir a conta, se ela estiver ativa.</p>
+                <a class="link-cartao" href="assinatura.html">Gerenciar assinatura</a>
+            </article>
+
+            <article class="cartao">
+                <div class="icone">💬</div>
+                <h2>Fale conosco</h2>
+                <p>Envie uma dúvida, sugestão ou peça suporte sobre a sua conta GBM.</p>
+                <a class="link-cartao" href="fale-conosco.html">Abrir atendimento</a>
+            </article>
+
+            <article class="cartao">
+                <div class="icone">👤</div>
+                <h2>Meu perfil</h2>
+                <p>Altere seu nome de exibição, foto e imagem de capa sem mexer na marca GBM.</p>
+                <a class="link-cartao" href="perfil.html">Personalizar perfil</a>
+            </article>
+        </section>
+
+        <section class="zona-perigo" aria-labelledby="titulo-excluir">
+            <h2 id="titulo-excluir">Zona de exclusão</h2>
+            <p>Apagar a conta remove suas transações, saldos, categorias, metas, alertas, perfil e imagens. Esta ação não pode ser desfeita.</p>
+
+            <details>
+                <summary>Quero excluir minha conta</summary>
+                <p class="aviso">Se a assinatura estiver ativa, cancele-a primeiro em “Minha assinatura”. Depois, informe a senha atual e digite a frase de confirmação exatamente como exibida.</p>
+
+                <div class="campo">
+                    <label for="senha-atual">Senha atual</label>
+                    <input id="senha-atual" type="password" autocomplete="current-password" placeholder="Sua senha atual">
+                </div>
+                <div class="campo">
+                    <label for="frase-confirmacao">Digite: EXCLUIR MINHA CONTA</label>
+                    <input id="frase-confirmacao" type="text" autocomplete="off" spellcheck="false" placeholder="EXCLUIR MINHA CONTA">
+                </div>
+                <label class="confirmacao" for="confirmo-exclusao">
+                    <input id="confirmo-exclusao" type="checkbox">
+                    <span>Entendo que esta ação apagará meus dados permanentemente e não poderá ser revertida.</span>
+                </label>
+                <div class="acoes">
+                    <button id="btn-excluir" type="button">Excluir minha conta definitivamente</button>
+                </div>
+                <p id="mensagem" role="status" aria-live="polite"></p>
+            </details>
+        </section>
+    </main>
+
+    <script src="auth.js"></script>
+    <script>
+        function pegarUserId() {
+            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        }
+
+        if (!pegarUserId()) {
+            window.location.href = 'index.html';
+        }
+
+        const senha = document.getElementById('senha-atual');
+        const frase = document.getElementById('frase-confirmacao');
+        const confirmo = document.getElementById('confirmo-exclusao');
+        const botaoExcluir = document.getElementById('btn-excluir');
+        const mensagem = document.getElementById('mensagem');
+
+        function informar(texto, tipo = '') {
+            mensagem.textContent = texto;
+            mensagem.className = tipo;
+        }
+
+        async function excluirConta() {
+            if (!senha.value) {
+                informar('Informe sua senha atual.', 'erro');
+                senha.focus();
+                return;
+            }
+            if (frase.value !== 'EXCLUIR MINHA CONTA') {
+                informar('Digite exatamente a frase de confirmação.', 'erro');
+                frase.focus();
+                return;
+            }
+            if (!confirmo.checked) {
+                informar('Marque a confirmação de que entende a exclusão.', 'erro');
+                return;
+            }
+            if (!window.confirm('Última confirmação: deseja apagar a conta e todos os seus dados permanentemente?')) {
+                return;
+            }
+
+            botaoExcluir.disabled = true;
+            botaoExcluir.textContent = 'Excluindo conta...';
+            informar('Removendo seus dados com segurança...');
+
+            try {
+                const resposta = await fetchApi('/minha-conta', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha: senha.value, confirmacao: frase.value })
+                });
+                const dados = await resposta.json().catch(() => ({}));
+                if (!resposta.ok || !dados.success) {
+                    throw new Error(dados.message || 'Não foi possível excluir a conta.');
+                }
+
+                localStorage.removeItem('userIdAtual');
+                sessionStorage.removeItem('userIdAtual');
+                informar('Conta excluída. Você será direcionada para a tela inicial.', 'sucesso');
+                setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+            } catch (erro) {
+                informar(erro.message, 'erro');
+                botaoExcluir.disabled = false;
+                botaoExcluir.textContent = 'Excluir minha conta definitivamente';
+            }
+        }
+
+        botaoExcluir.addEventListener('click', excluirConta);
+    </script>
+</body>
+</html>
