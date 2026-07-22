@@ -11,8 +11,8 @@ const bcrypt = require('bcrypt');
 const { Resend } = require('resend');
 const multer = require('multer');
 const ofx = require('node-ofx-parser');
-const pdfParse = require('pdf-parse');
-const { renderComEspacamento } = require('./Pdfrender');
+const path = require('path');
+const { spawn } = require('child_process');
 const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./Pdfextratoparser');
 const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
 // Inicializamos a API de Email (Resend)
@@ -58,6 +58,41 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 // Isso faz o servidor ler e entregar automaticamente os seus ficheiros HTML/CSS da pasta public
 app.use(express.static('public'));
+
+// --- SESSÃO DE SERVIDOR (corrige o IDOR: userId deixa de vir do cliente) ---
+const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
+
+const sessionStore = new MySQLStore({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT
+});
+
+app.set('trust proxy', 1); // necessário no Render para o cookie 'secure' funcionar atrás do proxy
+
+app.use(session({
+    key: 'gbm_sid',
+    secret: process.env.SESSION_SECRET,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 dias
+    }
+}));
+
+function exigirLogin(req, res, next) {
+    if (!req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Sessão expirada. Faça login novamente.' });
+    }
+    next();
+}
 // --- ROTA: CRIAR SESSÃO DE PAGAMENTO (MERCADO PAGO) ---
 // --- ROTA: CRIAR ASSINATURA MENSAL (MERCADO PAGO) ---
 // Extrai o nome do estabelecimento limpando os prefixos padrão dos bancos
@@ -76,8 +111,8 @@ function extrairPalavraChave(descricao) {
         .trim();
     return chave.substring(0, 40).trim();
 }
-app.post('/criar-sessao-pagamento', express.json(), async (req, res) => {
-    const { userId } = req.body;
+app.post('/criar-sessao-pagamento', exigirLogin, express.json(), async (req, res) => {
+    const userId = req.session.userId;
 
     try {
         const [rows] = await db.promise().query("SELECT email FROM usuarios WHERE id = ?", [userId]);
@@ -207,7 +242,7 @@ function categorizarTransacao(descricao, regrasUsuario) {
     return 'Outros';
 }
 
-app.post('/importar-ofx', upload.single('file'), async (req, res) => {
+app.post('/importar-ofx', exigirLogin, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'Nenhum ficheiro foi selecionado.' });
@@ -228,7 +263,7 @@ app.post('/importar-ofx', upload.single('file'), async (req, res) => {
             transacoesOfx = [transacoesOfx];
         }
         // 3. Localiza a conta do utilizador para vincular os lançamentos
-        const userId = req.body.userId || 1; // fallback temporário
+        const userId = req.session.userId;
         const [contas] = await db.promise().query('SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
         const contaInternaId = contas.length > 0 ? contas[0].id : 1;
         // Carrega as regras salvas pelo usuário para usar na categorização
@@ -317,19 +352,43 @@ let categoria = categorizarTransacao(descricao, regrasUsuario);
     }
 });
 // --- ROTA: CONVERSOR DE PDF EM LANÇAMENTOS (PRÉVIA, NÃO GRAVA NO BANCO AINDA) ---
-app.post('/pdf-extrato/preview', upload.single('arquivo'), async (req, res) => {
+// --- EXTRAÇÃO DE TEXTO DO PDF VIA PYTHON (pdfplumber) ---
+// Chama extrator_pdf.py como subprocesso, manda os bytes do PDF pela entrada
+// padrão e recebe de volta o texto já com o espaçamento das colunas
+// reconstruído — mesmo contrato que o Pdfextratoparser.js já espera, então
+// ele continua funcionando sem nenhuma alteração.
+function extrairTextoPdfComPython(bufferPdf) {
+    return new Promise((resolve, reject) => {
+        const processo = spawn('python3', [path.join(__dirname, 'extrator_pdf.py')]);
+        let saida = '';
+        let erro = '';
+
+        processo.stdout.on('data', (chunk) => { saida += chunk; });
+        processo.stderr.on('data', (chunk) => { erro += chunk; });
+
+        processo.on('close', (codigo) => {
+            if (codigo !== 0) {
+                return reject(new Error(erro || `Processo Python encerrou com código ${codigo}`));
+            }
+            resolve(saida);
+        });
+
+        processo.on('error', (err) => reject(err)); // ex: python3 não encontrado no servidor
+
+        processo.stdin.write(bufferPdf);
+        processo.stdin.end();
+    });
+}
+
+app.post('/pdf-extrato/preview', exigirLogin, upload.single('arquivo'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'Nenhum ficheiro PDF foi selecionado.' });
         }
-        const userId = req.body.userId;
-        if (!userId) {
-            return res.status(400).json({ success: false, message: 'userId é obrigatório.' });
-        }
+        const userId = req.session.userId;
 
         // 1. Extrai o texto puro do PDF (preservando o espaçamento entre colunas da tabela)
-        const dadosPdf = await pdfParse(req.file.buffer, { pagerender: renderComEspacamento });
-        const texto = dadosPdf.text || '';
+        const texto = await extrairTextoPdfComPython(req.file.buffer);
 
         // 2. Roda o extrator de transações (regras genéricas + conferência de saldo)
         const bancoDetectado = detectarBancoPdf(texto);
@@ -367,12 +426,10 @@ app.post('/pdf-extrato/preview', upload.single('arquivo'), async (req, res) => {
 });
 
 // --- ROTA: CONFIRMA E GRAVA AS TRANSAÇÕES REVISADAS PELO USUÁRIO ---
-app.post('/pdf-extrato/confirmar', async (req, res) => {
+app.post('/pdf-extrato/confirmar', exigirLogin, async (req, res) => {
     try {
-        const { userId, banco, transacoes } = req.body;
-        if (!userId) {
-            return res.status(400).json({ success: false, message: 'userId é obrigatório.' });
-        }
+        const { banco, transacoes } = req.body;
+        const userId = req.session.userId;
         if (!Array.isArray(transacoes) || transacoes.length === 0) {
             return res.status(400).json({ success: false, message: 'Nenhuma transação para importar.' });
         }
@@ -486,9 +543,10 @@ app.post('/enviar-codigo', async (req, res) => {
     }
 });
 // --- LÓGICA DE NEGÓCIO EVOLUÍDA: RECEITAS, DESPESAS E METAS ---
-app.get('/resumo-financeiro', async (req, res) => {
+app.get('/resumo-financeiro', exigirLogin, async (req, res) => {
     try {
-        const { mes, ano, userId } = req.query;
+        const { mes, ano } = req.query;
+        const userId = req.session.userId;
         let sql = `
             SELECT 
                 t.categoria, 
@@ -525,9 +583,10 @@ app.get('/resumo-financeiro', async (req, res) => {
 });
 
 // --- NOVA ROTA: ECONOMIA DO MÊS COMPARADA AO MÊS ANTERIOR ---
-app.get('/economia-mensal', async (req, res) => {
+app.get('/economia-mensal', exigirLogin, async (req, res) => {
     try {
-        const { userId, mes, ano } = req.query;
+        const { mes, ano } = req.query;
+        const userId = req.session.userId;
         const mesAtual = parseInt(mes);
         const anoAtual = parseInt(ano);
 
@@ -574,9 +633,10 @@ app.get('/economia-mensal', async (req, res) => {
 });
 
 // --- NOVA ROTA: COMPARATIVO DE TODOS OS MESES DE UM ANO ---
-app.get('/comparativo-mensal', async (req, res) => {
+app.get('/comparativo-mensal', exigirLogin, async (req, res) => {
     try {
-        const { userId, ano } = req.query;
+        const { ano } = req.query;
+        const userId = req.session.userId;
         const anoConsulta = ano || new Date().getFullYear();
 
         const sql = `
@@ -598,9 +658,9 @@ app.get('/comparativo-mensal', async (req, res) => {
 });
 
 // --- NOVA ROTA: ANOS QUE O USUÁRIO TEM DADOS (pra popular o seletor) ---
-app.get('/anos-disponiveis', async (req, res) => {
+app.get('/anos-disponiveis', exigirLogin, async (req, res) => {
     try {
-        const { userId } = req.query;
+        const userId = req.session.userId;
         const [rows] = await db.promise().query(
             `SELECT DISTINCT YEAR(t.data_transacao) as ano
              FROM transacoes t
@@ -617,9 +677,10 @@ app.get('/anos-disponiveis', async (req, res) => {
 });
 
 // --- NOVA ROTA: SALVAR/ATUALIZAR METAS DO USUÁRIO ---
-app.post('/metas', async (req, res) => {
+app.post('/metas', exigirLogin, async (req, res) => {
     try {
-        const { categoria, valor_limite, userId } = req.body;
+        const { categoria, valor_limite } = req.body;
+        const userId = req.session.userId;
         const sql = `
             INSERT INTO metas (categoria, valor_limite, usuario_id) 
             VALUES (?, ?, ?) 
@@ -634,9 +695,10 @@ app.post('/metas', async (req, res) => {
     }
 });
 // --- NOVA ROTA: REMOVER LIMITE (TORNAR GASTO FIXO / SEM LIMITE) ---
-app.delete('/metas', async (req, res) => {
+app.delete('/metas', exigirLogin, async (req, res) => {
     try {
-        const { categoria, userId } = req.body;
+        const { categoria } = req.body;
+        const userId = req.session.userId;
         await db.promise().query('DELETE FROM metas WHERE categoria = ? AND usuario_id = ?', [categoria, userId]);
         console.log(`🗑️ Limite removido. A categoria [${categoria}] agora é um gasto fixo.`);
         res.json({ success: true, message: 'Limite removido com sucesso!' });
@@ -646,11 +708,11 @@ app.delete('/metas', async (req, res) => {
     }
 });
 // --- LANÇAMENTO MANUAL ---
-app.post('/transacao-manual', async (req, res) => {
+app.post('/transacao-manual', exigirLogin, async (req, res) => {
     try {
         const { descricao, valor, tipo, categoria, data_transacao } = req.body;
         const transacaoIdGerado = 'MANUAL_' + Date.now();
-        const { userId } = req.body;
+        const userId = req.session.userId;
         const [contas] = await db.promise().query('SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1', [userId]);
         const contaInternaId = contas.length > 0 ? contas[0].id : 1; 
         const valorFinal = Math.abs(valor);
@@ -666,9 +728,8 @@ app.post('/transacao-manual', async (req, res) => {
     }
 });
 // --- ROTA: VERIFICAR STATUS DO USUÁRIO PARA PAGAMENTO ---
-app.get('/login-status', async (req, res) => {
-    const { userId } = req.query;
-    if (!userId) return res.status(400).json({ success: false });
+app.get('/login-status', exigirLogin, async (req, res) => {
+    const userId = req.session.userId;
     try {
         const [rows] = await db.promise().query(
             'SELECT status_pagamento, trial_expira FROM usuarios WHERE id = ?', [userId]
@@ -748,7 +809,7 @@ async function auditarMetas() {
         console.error("❌ Erro na auditoria de metas:", error);
     }
 }
-app.get('/configuracoes-alerta', async (req, res) => {
+app.get('/configuracoes-alerta', exigirLogin, async (req, res) => {
     try {
         const [rows] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
         res.json(rows[0] || { percentual_alerta: 80 });
@@ -757,7 +818,7 @@ app.get('/configuracoes-alerta', async (req, res) => {
         res.status(500).json({ percentual_alerta: 80 });
     }
 });
-app.post('/configuracoes-alerta', async (req, res) => {
+app.post('/configuracoes-alerta', exigirLogin, async (req, res) => {
     try {
         const { percentual } = req.body;
         await db.promise().query('UPDATE preferencias_notificacao SET percentual_alerta = ? WHERE id = 1', [percentual]);
@@ -767,10 +828,9 @@ app.post('/configuracoes-alerta', async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
-app.get('/alertas', async (req, res) => {
+app.get('/alertas', exigirLogin, async (req, res) => {
     try {
-        const { userId } = req.query;
-        if (!userId) return res.status(400).json({ error: 'userId é obrigatório.' });
+        const userId = req.session.userId;
         const [rows] = await db.promise().query(
             'SELECT * FROM alertas WHERE usuario_id = ? ORDER BY data_criacao DESC LIMIT 50',
             [userId]
@@ -781,10 +841,10 @@ app.get('/alertas', async (req, res) => {
         res.status(500).json({ error: 'Falha ao buscar alertas.' });
     }
 });
-app.post('/alertas/marcar-lida', async (req, res) => {
+app.post('/alertas/marcar-lida', exigirLogin, async (req, res) => {
     try {
-        const { id, userId } = req.body;
-        if (!userId) return res.status(400).json({ success: false, error: 'userId é obrigatório.' });
+        const { id } = req.body;
+        const userId = req.session.userId;
         await db.promise().query('UPDATE alertas SET lida = TRUE WHERE id = ? AND usuario_id = ?', [id, userId]);
         res.json({ success: true });
     } catch (error) {
@@ -792,10 +852,10 @@ app.post('/alertas/marcar-lida', async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
-app.get('/relatorio-mensal', async (req, res) => {
+app.get('/relatorio-mensal', exigirLogin, async (req, res) => {
     try {
-        const { mes, ano, userId } = req.query;
-        if (!userId) return res.status(400).json({ error: 'userId é obrigatório.' });
+        const { mes, ano } = req.query;
+        const userId = req.session.userId;
         const sql = `
             SELECT t.categoria, t.tipo, IFNULL(SUM(t.valor), 0) as total_movimentado
             FROM transacoes t
@@ -811,10 +871,10 @@ app.get('/relatorio-mensal', async (req, res) => {
     }
 });
 // --- ROTA: RELATÓRIO DETALHADO (transações individuais para editar categoria) ---
-app.get('/relatorio-detalhado', async (req, res) => {
+app.get('/relatorio-detalhado', exigirLogin, async (req, res) => {
     try {
-        const { mes, ano, userId, banco } = req.query;
-        if (!userId) return res.status(400).json({ error: 'userId é obrigatório.' });
+        const { mes, ano, banco } = req.query;
+        const userId = req.session.userId;
 
         let sql = `
             SELECT t.id, t.descricao, t.valor, t.tipo, t.categoria, t.data_transacao, t.banco
@@ -840,12 +900,10 @@ app.get('/relatorio-detalhado', async (req, res) => {
 });
 
 // --- ROTA: ATUALIZAR CATEGORIA DE UMA TRANSAÇÃO ---
-app.put('/atualizar-categoria/:id', async (req, res) => {
+app.put('/atualizar-categoria/:id', exigirLogin, async (req, res) => {
     const { id } = req.params;
-    const { categoria, userId } = req.body;
-    if (!userId) {
-        return res.status(400).json({ success: false, error: 'userId é obrigatório.' });
-    }
+    const { categoria } = req.body;
+    const userId = req.session.userId;
     try {
         const [result] = await db.promise().query(
             `UPDATE transacoes t
@@ -863,8 +921,8 @@ app.put('/atualizar-categoria/:id', async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
-app.get('/metas-resumo', async (req, res) => {
-    const { userId } = req.query;
+app.get('/metas-resumo', exigirLogin, async (req, res) => {
+    const userId = req.session.userId;
     const sql = `
         SELECT m.categoria, m.valor_limite as limite, 
         IFNULL(SUM(ABS(t.valor)), 0) as gasto
@@ -878,12 +936,10 @@ app.get('/metas-resumo', async (req, res) => {
     const [rows] = await db.promise().query(sql, [userId, userId]);
     res.json(rows);
 });
-app.post('/atualizar-meta-alerta', async (req, res) => {
+app.post('/atualizar-meta-alerta', exigirLogin, async (req, res) => {
     try {
-        const { categoria, valor_limite, percentual_alerta, userId } = req.body;
-        if (!userId) {
-            return res.status(400).json({ success: false, error: 'userId é obrigatório.' });
-        }
+        const { categoria, valor_limite, percentual_alerta } = req.body;
+        const userId = req.session.userId;
         await db.promise().query(
             `INSERT INTO metas (categoria, valor_limite, percentual_alerta, usuario_id)
              VALUES (?, ?, ?, ?)
@@ -909,6 +965,7 @@ app.post('/login', async (req, res) => {
         if (!senhaValida) {
             return res.status(401).json({ success: false, message: 'Senha incorreta.' });
         }
+        req.session.userId = usuario.id;
         // 🧠 O PULO DO GATO: O sistema agora verifica se a conta já foi ativada
         if (usuario.verificado == 1 || usuario.verificado === true) {
             return res.json({ 
@@ -959,7 +1016,7 @@ app.post('/validar-codigo', (req, res) => {
             // 🔥 O AJUSTE ESTÁ AQUI: Agora ele limpa o código E define verificado = 1
             db.query("UPDATE usuarios SET token_verificacao = NULL, verificado = 1 WHERE id = ?", [userId], (updateErr) => {
                 if (updateErr) console.error("Erro ao atualizar status:", updateErr);
-                
+                req.session.userId = userId;
                 res.json({ success: true, message: 'Conta validada com sucesso!' });
             });
         } else {
@@ -1050,11 +1107,8 @@ app.post('/redefinir-senha', async (req, res) => {
     }
 });
 // --- ROTA PARA DESFAZER O ÚLTIMO LANÇAMENTO (VERSÃO CORRIGIDA) ---
-app.delete('/desfazer-ultimo', (req, res) => {
-    const { userId } = req.body;
-    if (!userId) {
-        return res.status(400).json({ error: 'userId é obrigatório.' });
-    }
+app.delete('/desfazer-ultimo', exigirLogin, (req, res) => {
+    const userId = req.session.userId;
     // Apaga apenas a transação de maior ID PERTENCENTE AO USUÁRIO (a última que ele inseriu)
     const sql = `
         DELETE t FROM transacoes t
@@ -1073,16 +1127,18 @@ app.delete('/desfazer-ultimo', (req, res) => {
     });
 });
 // Buscar transações individuais do mês para o modal
-app.get('/transacoes-individuais', async (req, res) => {
+app.get('/transacoes-individuais', exigirLogin, async (req, res) => {
     try {
+        const userId = req.session.userId;
         const mes = req.query.mes || new Date().getMonth() + 1;
         const ano = req.query.ano || new Date().getFullYear();
         const [transacoes] = await db.promise().query(`
-            SELECT id, descricao, valor, tipo, categoria, data_transacao, banco
-            FROM transacoes
-            WHERE MONTH(data_transacao) = ? AND YEAR(data_transacao) = ?
-            ORDER BY data_transacao DESC
-        `, [mes, ano]);
+            SELECT t.id, t.descricao, t.valor, t.tipo, t.categoria, t.data_transacao, t.banco
+            FROM transacoes t
+            JOIN contas_bancarias cb ON t.conta_id = cb.id
+            WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
+            ORDER BY t.data_transacao DESC
+        `, [userId, mes, ano]);
         res.json(transacoes);
     } catch (err) {
         res.status(500).json({ error: 'Erro ao buscar transações.' });
@@ -1090,12 +1146,10 @@ app.get('/transacoes-individuais', async (req, res) => {
 });
 
 // Corrigir categoria e salvar como regra permanente
-app.post('/corrigir-categoria', async (req, res) => {
+app.post('/corrigir-categoria', exigirLogin, async (req, res) => {
     try {
-        const { transacaoId, descricao, novaCategoria, userId } = req.body;
-        if (!userId) {
-            return res.status(400).json({ success: false, error: 'userId é obrigatório.' });
-        }
+        const { transacaoId, descricao, novaCategoria } = req.body;
+        const userId = req.session.userId;
 
         // 1. Atualiza a transação (garantindo que ela pertence ao próprio usuário)
         await db.promise().query(
@@ -1141,10 +1195,9 @@ app.get('/bancos-info', (req, res) => {
 
 // Lista os bancos distintos que o usuário já usou em suas transações
 // (usado para popular o filtro de banco no relatório)
-app.get('/bancos-usados', async (req, res) => {
+app.get('/bancos-usados', exigirLogin, async (req, res) => {
     try {
-        const { userId } = req.query;
-        if (!userId) return res.status(400).json({ error: 'userId é obrigatório.' });
+        const userId = req.session.userId;
 
         const [rows] = await db.promise().query(
             `SELECT DISTINCT t.banco
@@ -1162,10 +1215,9 @@ app.get('/bancos-usados', async (req, res) => {
     }
 });
 
-app.get('/categorias', async (req, res) => {
+app.get('/categorias', exigirLogin, async (req, res) => {
     try {
-        const { userId } = req.query;
-        if (!userId) return res.status(400).json({ error: 'userId é obrigatório.' });
+        const userId = req.session.userId;
 
         const [rows] = await db.promise().query(
             'SELECT id, nome FROM categorias_personalizadas WHERE usuario_id = ? ORDER BY nome ASC',
@@ -1184,11 +1236,12 @@ app.get('/categorias', async (req, res) => {
 });
 
 // Cria uma nova categoria, vinculada apenas ao usuário que a criou
-app.post('/categorias', async (req, res) => {
+app.post('/categorias', exigirLogin, async (req, res) => {
     try {
-        const { userId, nome } = req.body;
-        if (!userId || !nome || !nome.trim()) {
-            return res.status(400).json({ success: false, error: 'Informe userId e nome da categoria.' });
+        const { nome } = req.body;
+        const userId = req.session.userId;
+        if (!nome || !nome.trim()) {
+            return res.status(400).json({ success: false, error: 'Informe o nome da categoria.' });
         }
         const nomeLimpo = nome.trim().slice(0, 100);
 
@@ -1213,10 +1266,10 @@ app.post('/categorias', async (req, res) => {
 });
 
 // Remove uma categoria personalizada (apenas o dono pode remover a sua)
-app.delete('/categorias/:id', async (req, res) => {
+app.delete('/categorias/:id', exigirLogin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { userId } = req.body;
+        const userId = req.session.userId;
         const [result] = await db.promise().query(
             'DELETE FROM categorias_personalizadas WHERE id = ? AND usuario_id = ?',
             [id, userId]
@@ -1231,9 +1284,8 @@ app.delete('/categorias/:id', async (req, res) => {
     }
 });
 // --- ROTA: BUSCAR DADOS DA ASSINATURA ---
-app.get('/minha-assinatura', async (req, res) => {
-    const { userId } = req.query;
-    if (!userId) return res.status(400).json({ error: 'Usuário não informado.' });
+app.get('/minha-assinatura', exigirLogin, async (req, res) => {
+    const userId = req.session.userId;
 
     try {
         const [rows] = await db.promise().query(
@@ -1250,8 +1302,8 @@ app.get('/minha-assinatura', async (req, res) => {
 });
 
 // --- ROTA: CANCELAR ASSINATURA ---
-app.post('/cancelar-assinatura', async (req, res) => {
-    const { userId } = req.body;
+app.post('/cancelar-assinatura', exigirLogin, async (req, res) => {
+    const userId = req.session.userId;
     try {
         // ATENÇÃO: Num cenário real com Mercado Pago, aqui você faria uma requisição à API 
         // do MP para cancelar o 'preapproval_id' vinculado a este usuário.
@@ -1271,7 +1323,8 @@ app.post('/cancelar-assinatura', async (req, res) => {
 // --- ROTA: RECEBER FEEDBACK DA PÁGINA "FALE CONOSCO" ---
 app.post('/api/enviar-feedback', async (req, res) => {
     try {
-        const { userId, assunto, mensagem } = req.body;
+        const { assunto, mensagem } = req.body;
+        const userId = req.session.userId;
         if (!mensagem || !assunto) {
             return res.status(400).json({ success: false, error: 'Assunto e mensagem são obrigatórios.' });
         }
