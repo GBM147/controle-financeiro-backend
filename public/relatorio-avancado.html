@@ -3,12 +3,26 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Relatório Avançado | GBM</title><link rel="stylesheet" href="gbm-pages.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         .resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
         .categoria-barra{display:grid;grid-template-columns:minmax(100px,180px) 1fr auto;gap:10px;align-items:center;margin:10px 0}
         .mini-barra{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}.mini-barra span{display:block;height:100%;background:var(--purple)}
+        #tabela-transacoes table{min-width:900px}
+        #tabela-transacoes th:last-child,#tabela-transacoes td:last-child{text-align:right;white-space:nowrap;font-weight:700}
         @media(max-width:700px){.resumo-grid{grid-template-columns:1fr}.categoria-barra{grid-template-columns:90px 1fr}.categoria-barra>strong{grid-column:2}}
-        @media print{.topbar,.filtros-card,.actions{display:none!important}body{background:#fff;color:#111}.card{box-shadow:none;border:1px solid #ccc;background:#fff;color:#111}.container{width:100%;padding:0}th,td{color:#111}}
+        @page{size:A4 landscape;margin:10mm}
+        @media print{
+            .topbar,.page-title,.filtros-card,.exportar-card,.actions,#gbm-tour-overlay,#gbm-tour-ajuda{display:none!important}
+            body{background:#fff;color:#111}
+            .card{box-shadow:none;border:1px solid #ccc;background:#fff;color:#111}
+            .container{width:100%;max-width:none;padding:0}
+            .grid-2{grid-template-columns:1fr!important}
+            .table-wrap{overflow:visible}
+            #tabela-transacoes table{min-width:0;width:100%;font-size:8.5pt}
+            th,td{color:#111;padding:5px 6px}
+        }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
@@ -34,7 +48,7 @@
             </div>
             <div class="grid grid-2" style="margin-top:18px">
                 <section class="card"><h2>Despesas por categoria</h2><div id="grafico-categorias"></div></section>
-                <section class="card"><h2>Exportar</h2><p style="color:var(--muted)">O CSV abre no Excel. A opção imprimir permite salvar o relatório como PDF pelo navegador.</p><div class="actions"><button id="baixar-csv" class="btn btn-primary">Baixar CSV</button><button class="btn" onclick="window.print()">Imprimir / PDF</button></div></section>
+                <section class="card exportar-card"><h2>Exportar</h2><p style="color:var(--muted)">Baixe o relatório com resumo e valores das transações.</p><div class="actions"><button id="baixar-csv" class="btn btn-primary">Baixar CSV</button><button id="baixar-pdf" class="btn">Baixar PDF</button></div></section>
             </div>
             <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap"></div></section>
         </section>
@@ -81,10 +95,173 @@
             document.getElementById('tabela-transacoes').innerHTML=relatorioAtual.transacoes.length?`<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Tipo</th><th>Valor</th></tr></thead><tbody>${relatorioAtual.transacoes.map(t=>`<tr><td>${gbmData(t.data_transacao)}</td><td>${gbmEscapar(t.descricao)}</td><td>${gbmEscapar(t.categoria)}</td><td>${gbmEscapar(t.conta)}</td><td>${gbmEscapar(t.tipo)}</td><td>${gbmMoeda(t.valor)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhuma transação encontrada.</div>';
             document.getElementById('resultado').hidden=false;
         }
+
+        const NOMES_MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+        function dataLocal(valor){
+            const [ano,mes,dia]=String(valor||'').split('-').map(Number);
+            return new Date(ano,mes-1,dia,12,0,0);
+        }
+
+        function dataArquivo(data){
+            return data.toLocaleDateString('pt-BR').replaceAll('/','-');
+        }
+
+        function periodoDoRelatorio(){
+            const inicio=dataLocal(document.getElementById('data-inicio').value);
+            const fim=dataLocal(document.getElementById('data-fim').value);
+            const mesmoMes=inicio.getFullYear()===fim.getFullYear()&&inicio.getMonth()===fim.getMonth();
+            const rotulo=mesmoMes
+                ?`${NOMES_MESES[inicio.getMonth()]} ${inicio.getFullYear()}`
+                :`${inicio.toLocaleDateString('pt-BR')} a ${fim.toLocaleDateString('pt-BR')}`;
+            const arquivo=mesmoMes
+                ?`${NOMES_MESES[inicio.getMonth()]} ${inicio.getFullYear()}`
+                :`${dataArquivo(inicio)} a ${dataArquivo(fim)}`;
+            return{rotulo,arquivo};
+        }
+
+        function moedaPdf(valor){
+            return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Math.abs(Number(valor)||0));
+        }
+
+        function textoSelect(id){
+            const select=document.getElementById(id);
+            return select.options[select.selectedIndex]?.text||'';
+        }
+
+        function baixarPDF(){
+            if(!relatorioAtual?.transacoes)return gbmToast('Gere o relatório antes de baixar.','erro');
+            if(!window.jspdf?.jsPDF)return gbmToast('Não foi possível carregar o gerador de PDF. Tente novamente.','erro');
+
+            const {jsPDF}=window.jspdf;
+            const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+            const periodo=periodoDoRelatorio();
+            const resumo=relatorioAtual.resumo;
+            const margem=12;
+            const larguraPagina=doc.internal.pageSize.getWidth();
+
+            doc.setFillColor(15,26,43);
+            doc.rect(0,0,larguraPagina,29,'F');
+            doc.setTextColor(255,255,255);
+            doc.setFont('helvetica','bold');
+            doc.setFontSize(18);
+            doc.text('GUARDIAN OF BUDGET & MONEY',margem,12);
+            doc.setFont('helvetica','normal');
+            doc.setFontSize(11);
+            doc.setTextColor(176,190,197);
+            doc.text(`Relatório financeiro - ${periodo.rotulo}`,margem,21);
+
+            const filtros=[];
+            if(document.getElementById('filtro-conta').value!=='todas')filtros.push(`Conta: ${textoSelect('filtro-conta')}`);
+            if(document.getElementById('filtro-categoria').value!=='todas')filtros.push(`Categoria: ${textoSelect('filtro-categoria')}`);
+            if(document.getElementById('filtro-tipo').value!=='todos')filtros.push(`Tipo: ${textoSelect('filtro-tipo')}`);
+            if(filtros.length){
+                doc.setFontSize(8);
+                doc.text(filtros.join('  |  '),larguraPagina-margem,21,{align:'right'});
+            }
+
+            const espacamentoCaixas=7;
+            const larguraCaixa=(larguraPagina-(margem*2)-(espacamentoCaixas*2))/3;
+            const caixas=[
+                {x:margem,titulo:'RECEITAS',valor:resumo.receitas,cor:[16,185,129]},
+                {x:margem+larguraCaixa+espacamentoCaixas,titulo:'DESPESAS',valor:resumo.despesas,cor:[239,68,68]},
+                {x:margem+(larguraCaixa+espacamentoCaixas)*2,titulo:'RESULTADO',valor:resumo.resultado,cor:Number(resumo.resultado)>=0?[16,185,129]:[239,68,68]}
+            ];
+            caixas.forEach(caixa=>{
+                doc.setFillColor(244,247,250);
+                doc.roundedRect(caixa.x,35,larguraCaixa,18,2,2,'F');
+                doc.setTextColor(80,94,112);
+                doc.setFont('helvetica','bold');
+                doc.setFontSize(8);
+                doc.text(caixa.titulo,caixa.x+3,41);
+                doc.setTextColor(...caixa.cor);
+                doc.setFontSize(11);
+                doc.text(moedaPdf(caixa.valor),caixa.x+3,49);
+            });
+
+            const categorias=Object.entries(resumo.por_categoria||{})
+                .sort((a,b)=>Number(b[1])-Number(a[1]))
+                .slice(0,10);
+
+            let inicioTransacoes=62;
+            if(categorias.length){
+                doc.autoTable({
+                    head:[['Despesas por categoria','Valor']],
+                    body:categorias.map(([categoria,valor])=>[categoria,moedaPdf(valor)]),
+                    startY:60,
+                    margin:{left:margem,right:larguraPagina-margem-138},
+                    theme:'grid',
+                    styles:{fontSize:8,cellPadding:2.2},
+                    headStyles:{fillColor:[46,139,87],textColor:[255,255,255],fontStyle:'bold'},
+                    columnStyles:{1:{halign:'right',fontStyle:'bold'}}
+                });
+                inicioTransacoes=doc.lastAutoTable.finalY+8;
+            }
+
+            doc.setTextColor(15,26,43);
+            doc.setFont('helvetica','bold');
+            doc.setFontSize(12);
+            doc.text('Transações',margem,inicioTransacoes-3);
+
+            doc.autoTable({
+                head:[['Data','Descrição','Categoria','Conta','Tipo','Valor']],
+                body:relatorioAtual.transacoes.map(t=>{
+                    const receita=String(t.tipo).toLowerCase()==='receita';
+                    return[
+                        gbmData(t.data_transacao),
+                        String(t.descricao||''),
+                        String(t.categoria||''),
+                        String(t.conta||''),
+                        String(t.tipo||''),
+                        `${receita?'+':'-'} ${moedaPdf(t.valor)}`
+                    ];
+                }),
+                startY:inicioTransacoes,
+                margin:{top:14,left:margem,right:margem,bottom:13},
+                theme:'striped',
+                showHead:'everyPage',
+                styles:{fontSize:8.8,cellPadding:2.6,overflow:'linebreak',valign:'middle'},
+                headStyles:{fillColor:[15,26,43],textColor:[255,255,255],fontStyle:'bold',fontSize:9},
+                alternateRowStyles:{fillColor:[245,247,250]},
+                columnStyles:{
+                    0:{cellWidth:23},
+                    1:{cellWidth:98},
+                    2:{cellWidth:47},
+                    3:{cellWidth:42},
+                    4:{cellWidth:25},
+                    5:{cellWidth:34,halign:'right',fontStyle:'bold'}
+                },
+                didParseCell(dado){
+                    if(dado.section!=='body')return;
+                    if(dado.column.index===4){
+                        dado.cell.styles.textColor=String(dado.cell.raw).toLowerCase()==='receita'?[16,135,86]:[210,55,55];
+                        dado.cell.styles.fontStyle='bold';
+                    }
+                    if(dado.column.index===5){
+                        dado.cell.styles.textColor=String(dado.cell.raw).startsWith('+')?[16,135,86]:[210,55,55];
+                    }
+                }
+            });
+
+            const paginas=doc.internal.getNumberOfPages();
+            for(let pagina=1;pagina<=paginas;pagina++){
+                doc.setPage(pagina);
+                doc.setFont('helvetica','normal');
+                doc.setFontSize(7.5);
+                doc.setTextColor(120,132,148);
+                doc.text('GBM - Relatório financeiro confidencial',margem,doc.internal.pageSize.getHeight()-6);
+                doc.text(`Página ${pagina} de ${paginas}`,larguraPagina-margem,doc.internal.pageSize.getHeight()-6,{align:'right'});
+            }
+
+            doc.save(`Relatório ${periodo.arquivo} - GBM.pdf`);
+        }
+
+        document.getElementById('baixar-pdf').addEventListener('click',baixarPDF);
+
         document.getElementById('baixar-csv').addEventListener('click',()=>{
             if(!relatorioAtual)return;const linhas=[['Data','Descrição','Categoria','Conta','Tipo','Valor'],...relatorioAtual.transacoes.map(t=>[String(t.data_transacao).slice(0,10),t.descricao,t.categoria,t.conta,t.tipo,Number(t.valor).toFixed(2).replace('.',',')])];
             const csv='\\ufeff'+linhas.map(l=>l.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\\n');
-            const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='relatorio-gbm.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+            const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`Relatório ${periodoDoRelatorio().arquivo} - GBM.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
         });
         carregarFiltros().then(gerar).catch(e=>gbmToast(e.message,'erro'));
     </script>
