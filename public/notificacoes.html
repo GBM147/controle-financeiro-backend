@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notificações | GBM</title>
+    <link rel="stylesheet" href="gbm-pages.css">
+    <style>
+        .notificacao { padding:15px; border:1px solid rgba(255,255,255,.09); border-radius:11px; background:rgba(255,255,255,.025); }
+        .notificacao.nao-lida { border-color:rgba(57,217,138,.34); background:rgba(57,217,138,.05); }
+        .notificacao + .notificacao { margin-top:10px; }
+        .switch-row { display:flex;justify-content:space-between;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08); }
+        .switch-row input { width:20px;height:20px;min-height:auto; }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="dashboard.html"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a>
+        <a class="btn btn-small" href="dashboard.html">← Dashboard</a>
+    </header>
+    <main class="container">
+        <div class="page-title">
+            <h1>Central de notificações</h1>
+            <p>Consulte alertas anteriores e escolha como deseja receber os próximos avisos.</p>
+        </div>
+        <div class="grid grid-3">
+            <section class="card" style="grid-column:span 2">
+                <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+                    <div class="actions">
+                        <select id="filtro-status" style="width:auto">
+                            <option value="todas">Todas</option>
+                            <option value="nao_lidas">Não lidas</option>
+                            <option value="lidas">Lidas</option>
+                        </select>
+                        <select id="filtro-tipo" style="width:auto">
+                            <option value="todos">Todos os tipos</option>
+                            <option value="limite">Limites</option>
+                            <option value="sistema">Sistema</option>
+                        </select>
+                    </div>
+                    <button id="marcar-todas" class="btn btn-small">Marcar todas como lidas</button>
+                </div>
+                <div class="divider"></div>
+                <div id="lista-notificacoes"><div class="empty">Carregando...</div></div>
+            </section>
+            <aside class="card">
+                <h2>Preferências</h2>
+                <label class="switch-row"><span>Avisos no site</span><input id="pref-site" type="checkbox"></label>
+                <label class="switch-row"><span>Avisos por e-mail</span><input id="pref-email" type="checkbox"></label>
+                <div class="divider"></div>
+                <div class="field"><label>Silenciar a partir de</label><input id="pref-inicio" type="time"></div>
+                <div class="field" style="margin-top:10px"><label>Até</label><input id="pref-fim" type="time"></div>
+                <button id="salvar-preferencias" class="btn btn-primary" style="width:100%;margin-top:16px">Salvar preferências</button>
+            </aside>
+        </div>
+    </main>
+    <script src="auth.js"></script><script src="gbm-pages.js"></script>
+    <script>
+        async function carregarNotificacoes() {
+            try {
+                const status = document.getElementById('filtro-status').value;
+                const tipo = document.getElementById('filtro-tipo').value;
+                const itens = await gbmJson(await fetchApi(`/notificacoes?status=${status}&tipo=${tipo}`));
+                document.getElementById('lista-notificacoes').innerHTML = itens.length ? itens.map((item) => `
+                    <article class="notificacao ${Number(item.lida) ? '' : 'nao-lida'}">
+                        <div style="display:flex;justify-content:space-between;gap:12px">
+                            <span class="pill ${Number(item.lida) ? '' : 'green'}">${Number(item.lida) ? 'Lida' : 'Nova'}</span>
+                            <small style="color:var(--muted)">${new Date(item.data_criacao).toLocaleString('pt-BR')}</small>
+                        </div>
+                        <p style="margin:11px 0 7px;line-height:1.5">${gbmEscapar(item.mensagem)}</p>
+                        <span class="pill">${gbmEscapar(item.categoria || item.tipo)}</span>
+                    </article>`).join('') : '<div class="empty">Nenhuma notificação encontrada.</div>';
+            } catch (erro) { gbmToast(erro.message,'erro'); }
+        }
+        async function carregarPreferencias() {
+            try {
+                const p = await gbmJson(await fetchApi('/notificacoes/preferencias'));
+                document.getElementById('pref-site').checked = Number(p.notificacao_site) === 1;
+                document.getElementById('pref-email').checked = Number(p.notificacao_email) === 1;
+                document.getElementById('pref-inicio').value = p.horario_silencio_inicio ? String(p.horario_silencio_inicio).slice(0,5) : '';
+                document.getElementById('pref-fim').value = p.horario_silencio_fim ? String(p.horario_silencio_fim).slice(0,5) : '';
+            } catch (erro) { gbmToast(erro.message,'erro'); }
+        }
+        document.getElementById('filtro-status').addEventListener('change',carregarNotificacoes);
+        document.getElementById('filtro-tipo').addEventListener('change',carregarNotificacoes);
+        document.getElementById('marcar-todas').addEventListener('click',async()=>{
+            try {
+                await gbmJson(await fetchApi('/notificacoes/marcar-todas-lidas',{method:'POST'}));
+                carregarNotificacoes();
+            } catch(erro){gbmToast(erro.message,'erro')}
+        });
+        document.getElementById('salvar-preferencias').addEventListener('click',async()=>{
+            try {
+                await gbmJson(await fetchApi('/notificacoes/preferencias',{
+                    method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+                        notificacao_site:document.getElementById('pref-site').checked,
+                        notificacao_email:document.getElementById('pref-email').checked,
+                        horario_silencio_inicio:document.getElementById('pref-inicio').value || null,
+                        horario_silencio_fim:document.getElementById('pref-fim').value || null
+                    })
+                }));
+                gbmToast('Preferências salvas.');
+            } catch(erro){gbmToast(erro.message,'erro')}
+        });
+        carregarNotificacoes();carregarPreferencias();
+    </script>
+</body>
+</html>

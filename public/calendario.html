@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calendário Financeiro | GBM</title>
+    <link rel="stylesheet" href="gbm-pages.css">
+    <style>
+        .resumo-calendario { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:18px; }
+        .evento { display:grid; grid-template-columns:70px 1fr auto; gap:13px; align-items:center; padding:13px 0; border-bottom:1px solid rgba(255,255,255,.08); }
+        .evento-data { text-align:center; font-weight:800; color:var(--blue); }
+        .evento-data strong { display:block; font-size:1.35rem; }
+        .evento-valor.receita { color:#7fffb7; }
+        .evento-valor.despesa { color:#ff909c; }
+        .tipo-receita { color:#7fffb7; }
+        .tipo-despesa { color:#ff909c; }
+        @media(max-width:600px){.evento{grid-template-columns:55px 1fr}.evento-valor{grid-column:2}}
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="dashboard.html"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a>
+        <a class="btn btn-small" href="dashboard.html">← Dashboard</a>
+    </header>
+    <main class="container">
+        <div class="page-title">
+            <h1>Calendário financeiro</h1>
+            <p>Cadastre salário, aluguel, assinaturas e outras movimentações mensais para prever seu saldo.</p>
+        </div>
+
+        <div class="grid grid-2">
+            <section class="card">
+                <h2>Nova recorrência</h2>
+                <form id="form-recorrencia" class="form-grid">
+                    <div class="field full"><label>Descrição</label><input id="rec-desc" maxlength="180" required placeholder="Ex.: Aluguel"></div>
+                    <div class="field"><label>Valor</label><input id="rec-valor" type="number" min="0.01" step="0.01" required></div>
+                    <div class="field"><label>Tipo</label><select id="rec-tipo"><option>Despesa</option><option>Receita</option></select></div>
+                    <div class="field"><label>Categoria</label><input id="rec-categoria" value="Outros" maxlength="120"></div>
+                    <div class="field"><label>Dia do mês</label><input id="rec-dia" type="number" min="1" max="31" value="10" required></div>
+                    <div class="field"><label>Conta</label><select id="rec-conta"></select></div>
+                    <div class="field"><label>Começa em</label><input id="rec-inicio" type="date" required></div>
+                    <div class="field"><label>Termina em (opcional)</label><input id="rec-fim" type="date"></div>
+                    <div class="field full"><div class="actions end"><button class="btn btn-primary">Salvar recorrência</button></div></div>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Recorrências cadastradas</h2>
+                <div id="lista-recorrencias"><div class="empty">Carregando...</div></div>
+            </section>
+        </div>
+
+        <section class="card" style="margin-top:18px">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+                <h2 style="margin:0">Movimentações do mês</h2>
+                <input id="mes-calendario" type="month" style="width:auto">
+            </div>
+            <div class="divider"></div>
+            <div class="resumo-calendario">
+                <div class="stat">Saldo atual<br><strong id="saldo-atual">R$ 0,00</strong></div>
+                <div class="stat">Após lançamentos previstos<br><strong id="saldo-previsto">R$ 0,00</strong></div>
+            </div>
+            <div id="eventos-calendario"><div class="empty">Carregando calendário...</div></div>
+        </section>
+    </main>
+    <script src="auth.js"></script>
+    <script src="gbm-pages.js"></script>
+    <script>
+        const hoje = new Date();
+        document.getElementById('rec-inicio').value = hoje.toISOString().slice(0,10);
+        document.getElementById('mes-calendario').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+
+        async function prepararContas() {
+            const contas = await gbmJson(await fetchApi('/contas'));
+            document.getElementById('rec-conta').innerHTML = contas
+                .filter((conta) => Number(conta.ativa) === 1)
+                .map((conta) => `<option value="${conta.id}">${gbmEscapar(conta.nome)}</option>`).join('');
+        }
+
+        document.getElementById('form-recorrencia').addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            try {
+                await gbmJson(await fetchApi('/recorrencias', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({
+                        descricao:document.getElementById('rec-desc').value,
+                        valor:Number(document.getElementById('rec-valor').value),
+                        tipo:document.getElementById('rec-tipo').value,
+                        categoria:document.getElementById('rec-categoria').value,
+                        dia_mes:Number(document.getElementById('rec-dia').value),
+                        conta_id:Number(document.getElementById('rec-conta').value),
+                        data_inicio:document.getElementById('rec-inicio').value,
+                        data_fim:document.getElementById('rec-fim').value || null
+                    })
+                }));
+                gbmToast('Recorrência criada.');
+                document.getElementById('form-recorrencia').reset();
+                document.getElementById('rec-inicio').value = hoje.toISOString().slice(0,10);
+                carregarRecorrencias();
+                carregarCalendario();
+            } catch (erro) { gbmToast(erro.message,'erro'); }
+        });
+
+        async function carregarRecorrencias() {
+            try {
+                const itens = await gbmJson(await fetchApi('/recorrencias'));
+                document.getElementById('lista-recorrencias').innerHTML = itens.length ? itens.map((item) => `
+                    <div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+                        <div style="display:flex;justify-content:space-between;gap:10px">
+                            <strong>${gbmEscapar(item.descricao)}</strong>
+                            <span class="${item.tipo === 'Receita' ? 'tipo-receita' : 'tipo-despesa'}">${gbmMoeda(item.valor)}</span>
+                        </div>
+                        <p style="color:var(--muted);font-size:.78rem">Todo dia ${item.dia_mes} · ${gbmEscapar(item.conta)}</p>
+                        <div class="actions">
+                            <button class="btn btn-small" onclick="alternarRecorrencia(${item.id}, ${Number(item.ativa) ? 'false' : 'true'})">${Number(item.ativa) ? 'Pausar' : 'Ativar'}</button>
+                            <button class="btn btn-danger btn-small" onclick="excluirRecorrencia(${item.id})">Excluir</button>
+                        </div>
+                    </div>`).join('') : '<div class="empty">Nenhuma recorrência cadastrada.</div>';
+            } catch (erro) { gbmToast(erro.message,'erro'); }
+        }
+
+        async function alternarRecorrencia(id, ativa) {
+            try {
+                await gbmJson(await fetchApi(`/recorrencias/${id}`, {
+                    method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativa})
+                }));
+                carregarRecorrencias(); carregarCalendario();
+            } catch (erro) { gbmToast(erro.message,'erro'); }
+        }
+
+        async function excluirRecorrencia(id) {
+            if (!confirm('Excluir esta recorrência? Os lançamentos já realizados serão mantidos.')) return;
+            try {
+                await gbmJson(await fetchApi(`/recorrencias/${id}`, {method:'DELETE'}));
+                carregarRecorrencias(); carregarCalendario();
+            } catch (erro) { gbmToast(erro.message,'erro'); }
+        }
+
+        async function carregarCalendario() {
+            const [ano, mes] = document.getElementById('mes-calendario').value.split('-');
+            try {
+                const dados = await gbmJson(await fetchApi(`/calendario-financeiro?ano=${ano}&mes=${Number(mes)}`));
+                document.getElementById('saldo-atual').textContent = gbmMoeda(dados.saldo_atual);
+                document.getElementById('saldo-previsto').textContent = gbmMoeda(dados.saldo_previsto);
+                document.getElementById('saldo-previsto').style.color = Number(dados.saldo_previsto) >= 0 ? 'var(--green)' : 'var(--red)';
+                document.getElementById('eventos-calendario').innerHTML = dados.eventos.length ? dados.eventos.map((item) => {
+                    const data = new Date(`${String(item.data).slice(0,10)}T12:00:00`);
+                    return `<div class="evento">
+                        <div class="evento-data"><strong>${data.getDate()}</strong>${data.toLocaleDateString('pt-BR',{weekday:'short'})}</div>
+                        <div><strong>${gbmEscapar(item.descricao)}</strong><br><span class="pill ${item.status === 'prevista' ? 'amber':'green'}">${gbmEscapar(item.status)}</span> <span class="pill">${gbmEscapar(item.categoria)}</span></div>
+                        <strong class="evento-valor ${item.tipo === 'Receita' ? 'receita':'despesa'}">${item.tipo === 'Receita' ? '+' : '-'} ${gbmMoeda(item.valor)}</strong>
+                    </div>`;
+                }).join('') : '<div class="empty">Nenhuma movimentação neste mês.</div>';
+            } catch (erro) { gbmToast(erro.message,'erro'); }
+        }
+        document.getElementById('mes-calendario').addEventListener('change', carregarCalendario);
+        Promise.all([prepararContas(),carregarRecorrencias(),carregarCalendario()]).catch((erro)=>gbmToast(erro.message,'erro'));
+    </script>
+</body>
+</html>

@@ -11,7 +11,7 @@
       "src": "logo-transparente.png",
       "sizes": "500x500",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }

@@ -1,394 +1,263 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>Gestão de Metas | GBM</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Metas Financeiras | GBM</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="gbm-pages.css">
     <style>
-        /* Partículas — garante que o conteúdo fique acima do canvas */
-        body > *:not(#particles-canvas) { position: relative; z-index: 1; }
-
-        /* Logo flutuante no cabeçalho */
-        .gbm-logo-img {
-            animation: float-logo 4s ease-in-out infinite;
-        }
-        @keyframes float-logo {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-5px); }
-        }
-
-        /* Botão shine — aplica em todos os .btn-acao e .btn-voltar */
-        .btn-acao, .btn-voltar, .btn-gerar, .btn-pdf {
-            position: relative;
-            overflow: hidden;
-        }
-        .btn-acao::after, .btn-voltar::after, .btn-gerar::after, .btn-pdf::after {
-            content: '';
+        .objetivo-card { position: relative; overflow: hidden; }
+        .objetivo-card::before {
+            content: "";
             position: absolute;
-            top: -50%; left: -60%;
-            width: 30%; height: 200%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%);
-            transform: rotate(30deg);
-            animation: btn-shine 4s infinite ease-in-out;
+            inset: 0 auto 0 0;
+            width: 4px;
+            background: var(--objetivo-cor, var(--purple));
         }
-        @keyframes btn-shine {
-            0%   { left: -60%; }
-            15%  { left: 130%; }
-            100% { left: 130%; }
+        .objetivo-topo { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+        .objetivo-topo h3 { margin-bottom:4px; font-size:1.25rem; }
+        .objetivo-valores { display:flex; justify-content:space-between; gap:12px; margin:14px 0 8px; color:var(--muted); font-size:.82rem; }
+        .objetivo-valores strong { color:var(--text); }
+        .objetivo-actions { margin-top:16px; }
+        dialog {
+            width:min(520px, calc(100% - 28px));
+            border:1px solid var(--border);
+            border-radius:16px;
+            background:var(--card);
+            color:var(--text);
+            padding:22px;
         }
-        :root {
-            --cor-destaque: #2E8B57;
-            --texto-principal: #ffffff;
-            --texto-mutado: #b0bec5;
-            --texto-mutated: #b0bec5;
-            --borda: rgba(255, 255, 255, 0.15);
-            --cor-receita: #10b981;
-            --cor-despesa: #ef4444;
-            --cor-alerta: #f59e0b;
-            --cor-poupanca: #8b5cf6;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('fundo-marmore.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: var(--texto-principal);
-            min-height: 100vh;
-        }
-
-        /* CABEÇALHO GBM */
-        .gbm-header {
-            background: transparent;
-            border-bottom: 1px solid var(--borda);
-            padding: 0 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 56px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
-        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; }
-        .gbm-title {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 26px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 0;
-            background: linear-gradient(90deg, #2E8B57 0%, #5fffa8 25%, #3d28ff 50%, #655aff 75%, #2E8B57 100%);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
-            animation: gbm-shine 4s linear infinite;
-        }
-        @keyframes gbm-shine {
-            0%   { background-position: 0% center; }
-            100% { background-position: 200% center; }
-        }
-
-        .btn-voltar {
-            text-decoration: none;
-            color: var(--texto-principal);
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 700;
-            letter-spacing: 1px;
-            background: #0f1a2b;
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(95, 255, 168, 0.25);
-            transition: 0.3s;
-        }
-        .btn-voltar:hover {
-            border-color: #5fffa8;
-            box-shadow: 0 0 14px rgba(95, 255, 168, 0.3);
-        }
-
-        .page-wrapper { max-width: 800px; margin: 0 auto; padding: 20px; }
-
-        .titulo-pagina {
-            font-family: 'Rajdhani', sans-serif;
-            text-align: center;
-            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            margin: 10px 0 25px 0;
-        }
-
-        /* CARD MODERNO */
-        .card {
-            background: #0f1a2b;
-            border: 1px solid rgba(95, 255, 168, 0.22);
-            border-radius: 14px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(95, 255, 168, 0.05) inset;
-            padding: 25px 30px;
-            font-family: 'Rajdhani', sans-serif;
-            transition: all 0.25s ease;
-        }
-        .card:hover {
-            border-color: rgba(95, 255, 168, 0.45);
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55), 0 0 14px rgba(95, 255, 168, 0.12);
-        }
-        .card h2 {
-            margin-top: 0;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1.4rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--borda);
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-
-        .meta-item { margin-bottom: 30px; }
-        .meta-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 1.05rem;
-            font-family: 'Rajdhani', sans-serif;
-            letter-spacing: 0.5px;
-        }
-        .barra-container {
-            width: 100%;
-            height: 10px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-        .barra-progresso { height: 100%; transition: width 0.5s ease-in-out; border-radius: 5px; }
-        .meta-footer {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            color: var(--texto-mutado);
-            font-family: 'Rajdhani', sans-serif;
-        }
-        .badge {
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            color: #fff;
-            margin-left: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        @media (max-width: 768px) {
-            .gbm-title { display: none; }
-            .gbm-logo-img { height: 40px; }
-            .card { padding: 18px; }
-        }
+        dialog::backdrop { background:rgba(0,0,0,.72); backdrop-filter:blur(5px); }
     </style>
 </head>
 <body>
-<canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
-<header class="gbm-header">
-    <div class="gbm-logo-container">
-        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
-        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
-    </div>
-    <a href="dashboard.html" class="btn-voltar">Voltar</a>
-</header>
-
-<div class="page-wrapper">
-    <div class="card" id="lista-metas">
-        <h2>Carregando suas metas...</h2>
-    </div>
-</div>
-
-<script src="auth.js"></script>
-    <script>
-       async function carregarMetas() {
-            try {
-                const userId = localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
-        const res = await fetchApi(`/metas-resumo?userId=${userId}`);
-                const json = await res.json();
-
-                let metas = json.data ? json.data : (Array.isArray(json) ? json : []);
-                
-                // Mostra todas as metas do usuário
-                metas = metas.filter(m => m.categoria);
-
-                const container = document.getElementById('lista-metas');
-                
-                if (metas.length === 0) {
-                    container.innerHTML = '<h2>Minhas Metas</h2><p style="color: var(--texto-mutated);">Nenhuma meta de economia definida ainda. Vá ao Dashboard e crie um Objetivo!</p>';
-                    return;
-                }
-
-                // Usamos uma variável para construir o HTML e injetar tudo de uma vez
-                let html = '<h2>Acompanhamento de Metas 🎯</h2>';
-
-                metas.forEach(m => {
-                    const limite = parseFloat(String(m.limite || 0).replace(/[R$\s+\-]/g, ''));
-                    const gasto = parseFloat(String(m.gasto || 0).replace(/[R$\s+\-]/g, ''));
-
-                    let percentual = limite > 0 ? (gasto / limite) * 100 : 0;
-                    const larguraBarra = Math.min(percentual, 100);
-
-                    let cor = '';
-                    const badge = '<span class="badge" style="background: var(--cor-poupanca);">Objetivo 🎯</span>';
-
-                    if (percentual < 50) cor = 'var(--cor-alerta)';
-                    else if (percentual < 100) cor = '#3b82f6';
-                    else cor = 'var(--cor-receita)';
-
-                    html += `
-                        <div class="meta-item">
-                            <div class="meta-header">
-                                <div>
-                                    <strong>${m.categoria}</strong>
-                                    ${badge}
-                                </div>
-                                <strong style="color: ${cor};">${percentual.toFixed(1)}%</strong>
-                            </div>
-                            <div class="barra-container">
-                                <div class="barra-progresso" style="width: ${larguraBarra}%; background: ${cor};"></div>
-                            </div>
-                            <div class="meta-footer">
-                                <span>R$ ${gasto.toFixed(2)} de R$ ${limite.toFixed(2)}</span>
-                                <span>Guardado</span>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                container.innerHTML = html;
-
-            } catch (error) {
-                console.error("Erro Fatal:", error);
-                document.getElementById('lista-metas').innerHTML = '<h2 style="color: #ff4d4d;">Erro de Sistema</h2><p style="color: var(--texto-mutated);">Ocorreu uma falha ao processar os dados. Verifique a conexão.</p>';
-            }
-        }
-        carregarMetas();
-
-        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
-        let _resolveConfirm = null;
-
-        function gbmAlerta(mensagem, tipo = 'info') {
-            const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
-                        : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
-                        :                    'rgba(95,255,168,0.3)';
-            const icone = tipo === 'erro'  ? '❌'
-                        : tipo === 'aviso' ? '⚠️'
-                        :                    '✅';
-
-            document.getElementById('lista-notificacoes-modal').innerHTML = `
-                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                    <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
-                    ${mensagem}
-                </div>`;
-
-            document.getElementById('btn-confirmar-modal').style.display = 'none';
-            document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
-            document.getElementById('modal-notificacoes').style.display = 'flex';
-            _resolveConfirm = null;
-        }
-
-        function gbmConfirmar(mensagem) {
-            return new Promise(resolve => {
-                _resolveConfirm = resolve;
-
-                document.getElementById('lista-notificacoes-modal').innerHTML = `
-                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                        <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
-                        ${mensagem}
-                    </div>`;
-
-                document.getElementById('btn-confirmar-modal').style.display = 'block';
-                document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
-                document.getElementById('modal-notificacoes').style.display = 'flex';
-            });
-        }
-
-        function fecharModalNotificacoes(confirmado = false) {
-            document.getElementById('modal-notificacoes').style.display = 'none';
-            if (_resolveConfirm) {
-                _resolveConfirm(confirmado);
-                _resolveConfirm = null;
-            }
-        }
-    </script>
-
-    <!-- MODAL DE NOTIFICAÇÕES GBM -->
-    <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
-        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="logo-transparente.jpg" alt="GBM" style="height:28px;">
-                    <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
-                </div>
-                <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
-            </div>
-            <div id="lista-notificacoes-modal"></div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#246e45'" onmouseout="this.style.background='#2E8B57'">CONFIRMAR</button>
-                <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
-            </div>
+    <header class="topbar">
+        <a class="brand" href="dashboard.html">
+            <img src="logo-transparente.jpg" alt="GBM">
+            <span>Guardian of Budget & Money</span>
+        </a>
+        <div class="top-actions">
+            <a class="btn btn-small" href="Limite-de-Gastos.html">Limites</a>
+            <a class="btn btn-small" href="dashboard.html">← Dashboard</a>
         </div>
-    </div>
-<script>
-    // --- PARTÍCULAS DOURADAS GBM ---
-    (function() {
-        const canvas = document.getElementById('particles-canvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let particles = [];
+    </header>
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+    <main class="container">
+        <div class="page-title">
+            <h1>Metas financeiras</h1>
+            <p>Crie objetivos reais, registre contribuições e acompanhe quanto falta para chegar lá.</p>
+        </div>
 
-        function Particle() {
-            this.x = Math.random() * canvas.width;
-            this.y = canvas.height + Math.random() * 100;
-            this.size = Math.random() * 2.5 + 0.8;
-            this.speedY = Math.random() * 1.2 + 0.3;
-            this.opacity = Math.random() * 0.4 + 0.2;
-        }
-        Particle.prototype.update = function() {
-            this.y -= this.speedY;
-            if (this.y < -10) {
-                this.y = canvas.height + 10;
-                this.x = Math.random() * canvas.width;
-                this.opacity = Math.random() * 0.4 + 0.2;
+        <section class="card">
+            <h2 id="titulo-form">Criar nova meta</h2>
+            <form id="form-objetivo" class="form-grid">
+                <input type="hidden" id="objetivo-id">
+                <div class="field">
+                    <label for="objetivo-nome">Nome do objetivo</label>
+                    <input id="objetivo-nome" maxlength="120" placeholder="Ex.: Viagem, reserva de emergência" required>
+                </div>
+                <div class="field">
+                    <label for="objetivo-valor">Valor desejado</label>
+                    <input id="objetivo-valor" type="number" min="0.01" step="0.01" placeholder="R$ 0,00" required>
+                </div>
+                <div class="field">
+                    <label for="objetivo-inicial">Já tenho guardado</label>
+                    <input id="objetivo-inicial" type="number" min="0" step="0.01" value="0">
+                </div>
+                <div class="field">
+                    <label for="objetivo-prazo">Prazo desejado</label>
+                    <input id="objetivo-prazo" type="date">
+                </div>
+                <div class="field">
+                    <label for="objetivo-cor">Cor</label>
+                    <input id="objetivo-cor" type="color" value="#8b5cf6">
+                </div>
+                <div class="field" style="justify-content:end">
+                    <div class="actions end">
+                        <button type="button" id="cancelar-edicao" class="btn" hidden>Cancelar</button>
+                        <button class="btn btn-primary" type="submit">Salvar meta</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <div class="divider"></div>
+        <section id="lista-objetivos" class="grid grid-2">
+            <div class="empty">Carregando suas metas...</div>
+        </section>
+    </main>
+
+    <dialog id="dialog-contribuicao">
+        <h2>Adicionar contribuição</h2>
+        <p id="contribuicao-titulo" style="color:var(--muted)"></p>
+        <form id="form-contribuicao" class="form-grid">
+            <input type="hidden" id="contribuicao-objetivo-id">
+            <div class="field">
+                <label for="contribuicao-valor">Valor guardado</label>
+                <input id="contribuicao-valor" type="number" min="0.01" step="0.01" required>
+            </div>
+            <div class="field">
+                <label for="contribuicao-data">Data</label>
+                <input id="contribuicao-data" type="date" required>
+            </div>
+            <div class="field full">
+                <label for="contribuicao-observacao">Observação</label>
+                <input id="contribuicao-observacao" maxlength="180" placeholder="Ex.: depósito mensal">
+            </div>
+            <div class="field full">
+                <div class="actions end">
+                    <button type="button" class="btn" onclick="document.getElementById('dialog-contribuicao').close()">Cancelar</button>
+                    <button class="btn btn-primary">Adicionar</button>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="auth.js"></script>
+    <script src="gbm-pages.js"></script>
+    <script>
+        let objetivos = [];
+        const hoje = new Date().toISOString().slice(0, 10);
+        document.getElementById('contribuicao-data').value = hoje;
+
+        async function carregarObjetivos() {
+            try {
+                objetivos = await gbmJson(await fetchApi('/objetivos'));
+                renderizarObjetivos();
+            } catch (erro) {
+                document.getElementById('lista-objetivos').innerHTML =
+                    `<div class="empty">${gbmEscapar(erro.message)}</div>`;
             }
-        };
-        Particle.prototype.draw = function() {
-            ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        };
-
-        const count = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 15000), 65);
-        for (let i = 0; i < count; i++) particles.push(new Particle());
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animate);
         }
-        animate();
-    })();
-</script>
+
+        function renderizarObjetivos() {
+            const container = document.getElementById('lista-objetivos');
+            if (!objetivos.length) {
+                container.innerHTML = '<div class="empty">Nenhuma meta criada ainda. Comece pela sua prioridade financeira.</div>';
+                return;
+            }
+            container.innerHTML = objetivos.map((objetivo) => {
+                const guardado = Number(objetivo.valor_guardado || 0);
+                const meta = Number(objetivo.valor_meta || 0);
+                const percentual = meta > 0 ? Math.min((guardado / meta) * 100, 100) : 0;
+                const concluido = objetivo.status === 'concluido' || guardado >= meta;
+                return `
+                    <article class="card objetivo-card" style="--objetivo-cor:${gbmEscapar(objetivo.cor)}">
+                        <div class="objetivo-topo">
+                            <div>
+                                <h3>${gbmEscapar(objetivo.nome)}</h3>
+                                <span class="pill ${concluido ? 'green' : 'blue'}">${concluido ? '✓ Concluída' : gbmData(objetivo.prazo)}</span>
+                            </div>
+                            <strong>${percentual.toFixed(1)}%</strong>
+                        </div>
+                        <div class="objetivo-valores">
+                            <span>Guardado<br><strong>${gbmMoeda(guardado)}</strong></span>
+                            <span style="text-align:right">Objetivo<br><strong>${gbmMoeda(meta)}</strong></span>
+                        </div>
+                        <div class="progress"><span style="width:${percentual}%;background:${gbmEscapar(objetivo.cor)}"></span></div>
+                        <p class="stat">Faltam <strong>${gbmMoeda(Math.max(meta - guardado, 0))}</strong></p>
+                        <div class="actions objetivo-actions">
+                            <button class="btn btn-primary btn-small" onclick="abrirContribuicao(${objetivo.id})">+ Contribuir</button>
+                            <button class="btn btn-small" onclick="editarObjetivo(${objetivo.id})">Editar</button>
+                            <button class="btn btn-danger btn-small" onclick="excluirObjetivo(${objetivo.id})">Excluir</button>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('form-objetivo').addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            const id = document.getElementById('objetivo-id').value;
+            const payload = {
+                nome: document.getElementById('objetivo-nome').value,
+                valor_meta: Number(document.getElementById('objetivo-valor').value),
+                valor_inicial: Number(document.getElementById('objetivo-inicial').value || 0),
+                prazo: document.getElementById('objetivo-prazo').value || null,
+                cor: document.getElementById('objetivo-cor').value
+            };
+            try {
+                await gbmJson(await fetchApi(id ? `/objetivos/${id}` : '/objetivos', {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }));
+                gbmToast(id ? 'Meta atualizada.' : 'Meta criada.');
+                limparFormulario();
+                carregarObjetivos();
+            } catch (erro) {
+                gbmToast(erro.message, 'erro');
+            }
+        });
+
+        function editarObjetivo(id) {
+            const objetivo = objetivos.find((item) => Number(item.id) === Number(id));
+            if (!objetivo) return;
+            document.getElementById('objetivo-id').value = objetivo.id;
+            document.getElementById('objetivo-nome').value = objetivo.nome;
+            document.getElementById('objetivo-valor').value = objetivo.valor_meta;
+            document.getElementById('objetivo-inicial').value = 0;
+            document.getElementById('objetivo-inicial').disabled = true;
+            document.getElementById('objetivo-prazo').value = objetivo.prazo ? String(objetivo.prazo).slice(0, 10) : '';
+            document.getElementById('objetivo-cor').value = objetivo.cor || '#8b5cf6';
+            document.getElementById('titulo-form').textContent = 'Editar meta';
+            document.getElementById('cancelar-edicao').hidden = false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function limparFormulario() {
+            document.getElementById('form-objetivo').reset();
+            document.getElementById('objetivo-id').value = '';
+            document.getElementById('objetivo-cor').value = '#8b5cf6';
+            document.getElementById('objetivo-inicial').disabled = false;
+            document.getElementById('titulo-form').textContent = 'Criar nova meta';
+            document.getElementById('cancelar-edicao').hidden = true;
+        }
+        document.getElementById('cancelar-edicao').addEventListener('click', limparFormulario);
+
+        function abrirContribuicao(id) {
+            const objetivo = objetivos.find((item) => Number(item.id) === Number(id));
+            document.getElementById('contribuicao-objetivo-id').value = id;
+            document.getElementById('contribuicao-titulo').textContent = objetivo?.nome || '';
+            document.getElementById('contribuicao-valor').value = '';
+            document.getElementById('contribuicao-observacao').value = '';
+            document.getElementById('dialog-contribuicao').showModal();
+        }
+
+        document.getElementById('form-contribuicao').addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            const id = document.getElementById('contribuicao-objetivo-id').value;
+            try {
+                await gbmJson(await fetchApi(`/objetivos/${id}/contribuicoes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        valor: Number(document.getElementById('contribuicao-valor').value),
+                        data: document.getElementById('contribuicao-data').value,
+                        observacao: document.getElementById('contribuicao-observacao').value
+                    })
+                }));
+                document.getElementById('dialog-contribuicao').close();
+                gbmToast('Contribuição adicionada.');
+                carregarObjetivos();
+            } catch (erro) {
+                gbmToast(erro.message, 'erro');
+            }
+        });
+
+        async function excluirObjetivo(id) {
+            if (!confirm('Excluir esta meta e todo o histórico de contribuições?')) return;
+            try {
+                await gbmJson(await fetchApi(`/objetivos/${id}`, { method: 'DELETE' }));
+                gbmToast('Meta excluída.');
+                carregarObjetivos();
+            } catch (erro) {
+                gbmToast(erro.message, 'erro');
+            }
+        }
+
+        carregarObjetivos();
+    </script>
 </body>
 </html>

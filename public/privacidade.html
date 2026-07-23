@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Privacidade e Dados | GBM</title><link rel="stylesheet" href="gbm-pages.css">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="dashboard.html"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a>
+        <a class="btn btn-small" href="configuracoes.html">← Configurações</a>
+    </header>
+    <main class="container">
+        <div class="page-title"><h1>Privacidade e seus dados</h1><p>Controle o consentimento, baixe uma cópia dos dados e veja como informações sensíveis são protegidas.</p></div>
+        <div class="grid grid-2">
+            <section class="card">
+                <h2>Exportar meus dados</h2>
+                <p style="color:var(--muted);line-height:1.6">Baixe um arquivo JSON com perfil, contas, transações, metas, contribuições, recorrências, notificações e histórico de importações.</p>
+                <button id="exportar" class="btn btn-primary">⬇ Baixar meus dados</button>
+            </section>
+            <section class="card">
+                <h2>Proteção de informações</h2>
+                <p id="status-criptografia" style="color:var(--muted)">Verificando...</p>
+                <p style="color:var(--muted);line-height:1.6">Senhas usam hash seguro. Quando a chave de criptografia está configurada no Render, telefone e CPF são armazenados criptografados.</p>
+            </section>
+            <section class="card">
+                <h2>Consentimento</h2>
+                <p id="data-consentimento" style="color:var(--muted)">Carregando...</p>
+                <label style="display:flex;align-items:center;gap:10px"><input id="consentimento" type="checkbox" style="width:20px;min-height:auto"> Aceito o tratamento dos meus dados para funcionamento do serviço.</label>
+                <button id="salvar-consentimento" class="btn" style="margin-top:15px">Salvar escolha</button>
+            </section>
+            <section class="card">
+                <h2>Exclusão definitiva</h2>
+                <p style="color:var(--muted);line-height:1.6">Para apagar a conta e todos os dados, use a Zona de exclusão. A operação também remove metas, importações e recorrências.</p>
+                <a class="btn btn-danger" href="configuracoes.html">Ir para Zona de exclusão</a>
+            </section>
+        </div>
+    </main>
+    <script src="auth.js"></script><script src="gbm-pages.js"></script>
+    <script>
+        async function carregarStatus(){
+            try{
+                const dados=await gbmJson(await fetchApi('/privacidade/status'));
+                document.getElementById('consentimento').checked=Boolean(dados.consentimento_privacidade_em);
+                document.getElementById('data-consentimento').textContent=dados.consentimento_privacidade_em
+                    ? `Consentimento registrado em ${new Date(dados.consentimento_privacidade_em).toLocaleString('pt-BR')}.`
+                    : 'O consentimento ainda não foi registrado.';
+                document.getElementById('status-criptografia').innerHTML=dados.criptografia_ativa
+                    ? '<span class="pill green">🔒 Criptografia ativa</span>'
+                    : '<span class="pill amber">Configuração pendente no Render</span>';
+            }catch(erro){gbmToast(erro.message,'erro')}
+        }
+        document.getElementById('salvar-consentimento').addEventListener('click',async()=>{
+            try{
+                await gbmJson(await fetchApi('/privacidade/consentimento',{
+                    method:'PUT',headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({aceito:document.getElementById('consentimento').checked})
+                }));
+                gbmToast('Escolha registrada.');carregarStatus();
+            }catch(erro){gbmToast(erro.message,'erro')}
+        });
+        document.getElementById('exportar').addEventListener('click',async()=>{
+            try{
+                const resposta=await fetchApi('/minha-conta/exportar');
+                if(!resposta.ok) throw new Error('Falha ao exportar.');
+                const blob=await resposta.blob();const url=URL.createObjectURL(blob);
+                const link=document.createElement('a');link.href=url;link.download='meus-dados-gbm.json';link.click();
+                setTimeout(()=>URL.revokeObjectURL(url),1000);
+            }catch(erro){gbmToast(erro.message,'erro')}
+        });
+        carregarStatus();
+    </script>
+</body>
+</html>

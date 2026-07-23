@@ -696,6 +696,18 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             box-sizing: border-box;
         }
         /* Apagamos as regras do celular, agora a caixa flutua normalmente em qualquer tela! */
+        .insights-panel {
+            margin: 0 20px 20px;
+            padding: 18px 20px;
+            border: 1px solid rgba(85,167,255,.28);
+            border-radius: 12px;
+            background: #0f1a2b;
+        }
+        .insights-panel h2 { margin: 0 0 12px; font-size: 1.05rem; }
+        .insights-lista { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+        .insight-item { padding: 11px; border-radius: 9px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); }
+        .insight-item strong { display: block; margin-bottom: 4px; color: #9dcbff; }
+        .insight-item span { color: var(--texto-mutado); font-size: .78rem; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -730,8 +742,11 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 
     <a href="#" class="menu-item" onclick="iniciarTutorial(); fecharMenuLateral(); return false;">❓ Como usar o site</a>
     <div class="divisor"></div>
+        <a href="contas.html" class="menu-item">🏦 Minhas Contas</a>
+        <a href="importacoes.html" class="menu-item">📥 Importações</a>
+        <a href="calendario.html" class="menu-item">🗓️ Calendário</a>
         <a href="Limite-de-Gastos.html" class="menu-item">🚧 Limite de Gastos</a>
-        <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio.html', 'Relatório Mensal'); return false;">
+        <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório Mensal'); return false;">
             <span class="menu-item-conteudo">📊 Relatório Mensal</span>
             <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
         </a>
@@ -744,7 +759,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         <a href="configuracoes.html" class="menu-item">⚙️ Configurações</a>
         
         <div class="divisor"></div>
-        <a href="#" id="item-notificacoes" class="menu-item menu-item-com-indicador" onclick="abrirPainelAlertas(); return false;">
+        <a href="notificacoes.html" id="item-notificacoes" class="menu-item menu-item-com-indicador">
             <span class="menu-item-conteudo">🔔 Notificações</span>
             <span class="menu-item-indicadores">
                 <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.7rem; padding:2px 8px; margin-left:8px;">0</span>
@@ -754,6 +769,13 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     </div>
 </div>
 
+<section style="position:relative; z-index:1; margin:18px 20px 0; display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap;">
+    <label for="filtro-conta-dashboard" style="color:var(--texto-mutado); font-weight:700;">Exibir dados de:</label>
+    <select id="filtro-conta-dashboard" onchange="trocarContaDashboard()" style="min-width:220px; padding:10px 12px; border-radius:8px; border:1px solid var(--borda); background:#0f1b2d; color:#fff;">
+        <option value="">Todas as contas</option>
+    </select>
+</section>
+
     <div class="grid-cards">
     <div class="card"><h3>Total Recebido (Entradas)</h3><p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p></div>
     <div class="card"><h3>Total Gasto (Saídas)</h3><p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p></div>
@@ -762,6 +784,12 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         <div id="detalhe-economia" style="font-size:0.75rem; color:var(--texto-mutado); margin-top:6px;"></div>
     </div>
 </div>
+<section class="insights-panel">
+    <h2>💡 O que merece atenção</h2>
+    <div id="insights-lista" class="insights-lista">
+        <div class="insight-item"><span>Analisando seu mês...</span></div>
+    </div>
+</section>
 <div id="modal-transacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; overflow-y:auto;">
     <div style="max-width:850px; margin:40px auto; background:#1e1e1e; border-radius:16px; padding:30px; border:1px solid rgba(255,255,255,0.15);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -777,6 +805,9 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 <div class="lancamento-rapido" style="margin: 0 20px 20px 20px; padding: 20px 25px;">
     <h3 style="margin: 0 0 15px 0; font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: var(--texto-mutado);">✍️ Lançamento Rápido</h3>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <select id="manual-conta" aria-label="Conta do lançamento" style="flex:1; min-width:150px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
+            <option value="">Carregando contas...</option>
+        </select>
         <input type="text"   id="manual-desc"  placeholder="Descrição"   style="flex:2; min-width:140px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
         <input type="number" id="manual-valor" placeholder="R$ 0,00"     style="flex:1; min-width:90px;  padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;" step="0.01">
         <select id="manual-tipo" style="flex:1; min-width:110px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
@@ -890,21 +921,13 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     </div>
 <div class="card" id="card-ofx" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; flex-wrap: wrap; gap: 12px;">
     <div>
-        <h3 style="margin: 0; color: var(--texto-principal);">Importar Extrato (OFX)</h3>
-        <p style="margin: 5px 0 0 0; color: var(--texto-mutated); font-size: 0.9rem;">Sincronize as suas contas com o ficheiro do banco.</p>
-        <a href="importar-pdf.html" style="display: inline-block; margin-top: 6px; color: #5fffa8; font-size: 0.85rem; text-decoration: none;">📄 Só tem o PDF do extrato? Converta aqui →</a>
+        <h3 style="margin: 0; color: var(--texto-principal);">Importar Extrato</h3>
+        <p style="margin: 5px 0 0 0; color: var(--texto-mutated); font-size: 0.9rem;">Escolha a conta, revise o extrato OFX ou PDF e confirme antes de salvar.</p>
     </div>
     
     <form id="form-upload-ofx" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
-        <input type="file" id="arquivo-ofx" name="file" accept=".ofx" style="display: none;" onchange="document.getElementById('nome-arquivo').innerText = this.files[0].name">
-        
-        <span id="nome-arquivo" style="color: var(--cor-destaque); font-size: 0.9rem; font-weight: bold;"></span>
-        
-        <button type="button" class="btn-acao" style="background: rgba(255,255,255,0.1); border: 1px solid var(--borda);" onclick="document.getElementById('arquivo-ofx').click()">
-            Selecionar Arquivo
-        </button>
-        
-        <button type="submit" class="btn-acao" style="background: #2E8B57;">Processar OFX </button><button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" style="background: #6366f1;">
+        <button type="button" class="btn-acao" style="background: #2E8B57;" onclick="window.location.href='importacoes.html'">Abrir Central de Importações</button>
+        <button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" style="background: #6366f1;">
     📋 Gerenciar Categorias
 </button>
     </form>
@@ -1149,7 +1172,8 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 const mes = hoje.getMonth() + 1;
                 const ano = hoje.getFullYear();
                 const userId = pegarUserId();
-                const res = await fetchApi(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}`);
+                const contaQuery = queryContaDashboard();
+                const res = await fetchApi(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}${contaQuery}`);
                 const json = await res.json();
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
                 const saldoBanco = parseFloat(json.saldo_banco) || 0;
@@ -1207,7 +1231,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 const ano = hoje.getFullYear();
                 const userId = pegarUserId();
 
-                const res = await fetchApi(`/economia-mensal?userId=${userId}&mes=${mes}&ano=${ano}`);
+                const res = await fetchApi(`/economia-mensal?userId=${userId}&mes=${mes}&ano=${ano}${queryContaDashboard()}`);
                 const dados = await res.json();
 
                 const elEconomia = document.getElementById('economia-mensal');
@@ -1337,13 +1361,45 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
         }
 
         // --- 4. FUNÇÕES DOS BOTÕES (Lançar e Metas) ---
+        function queryContaDashboard() {
+            const contaId = Number(document.getElementById('filtro-conta-dashboard')?.value || 0);
+            return contaId > 0 ? `&conta_id=${contaId}` : '';
+        }
+
+        function trocarContaDashboard() {
+            const contaId = document.getElementById('filtro-conta-dashboard').value;
+            if (contaId) document.getElementById('manual-conta').value = contaId;
+            carregarDados();
+            carregarInsights();
+        }
+
+        async function carregarContasLancamento() {
+            const seletor = document.getElementById('manual-conta');
+            const filtro = document.getElementById('filtro-conta-dashboard');
+            try {
+                const resposta = await fetchApi('/contas');
+                if (!resposta.ok) throw new Error('Não foi possível carregar as contas.');
+                const contas = (await resposta.json()).filter((conta) => Number(conta.ativa) !== 0);
+                const opcoes = contas.map((conta) => `<option value="${Number(conta.id)}">${String(conta.nome || conta.nome_personalizado || 'Conta').replace(/[<>&"]/g, '')}</option>`).join('');
+                seletor.innerHTML = contas.length
+                    ? opcoes
+                    : '<option value="">Cadastre uma conta primeiro</option>';
+                filtro.innerHTML = `<option value="">Todas as contas</option>${opcoes}`;
+            } catch (erro) {
+                seletor.innerHTML = '<option value="">Conta indisponível</option>';
+                filtro.innerHTML = '<option value="">Todas as contas</option>';
+            }
+        }
+
         async function salvarLancamentoManual() {
             const descricao = document.getElementById('manual-desc').value;
             const valor = document.getElementById('manual-valor').value;
             const tipo = document.getElementById('manual-tipo').value;
             const categoria = document.getElementById('manual-cat').value;
             const data_transacao = document.getElementById('manual-data').value;
+            const conta_id = Number(document.getElementById('manual-conta').value);
 
+            if (!conta_id) return gbmAlerta("Cadastre ou selecione uma conta.", 'aviso');
             if (!descricao || !valor || !data_transacao) return gbmAlerta("Preencha todos os campos!", 'erro');
 
             try {
@@ -1351,7 +1407,7 @@ document.getElementById('form-upload-ofx').addEventListener('submit', async (e) 
                 const resposta = await fetchApi('/transacao-manual', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ descricao, valor: parseFloat(valor), tipo, categoria, data_transacao, userId })
+                    body: JSON.stringify({ descricao, valor: parseFloat(valor), tipo, categoria, data_transacao, conta_id, userId })
                 });
                 const jsonRetorno = await resposta.json();
                 if (jsonRetorno.success) {
@@ -1489,7 +1545,9 @@ function fecharModalNotificacoes(confirmado = false) {
                 const res = await fetchApi('/desfazer-ultimo', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: pegarUserId() })
+                    body: JSON.stringify({
+                        conta_id: Number(document.getElementById('filtro-conta-dashboard')?.value || 0)
+                    })
                 });
 
                 if (res.ok) {
@@ -1605,7 +1663,7 @@ function categoriasOpcoes(selecionada) {
 async function abrirModalTransacoes() {
     document.getElementById('modal-transacoes').style.display = 'block';
     const hoje = new Date();
-    const res = await fetchApi(`/transacoes-individuais?mes=${hoje.getMonth() + 1}&ano=${hoje.getFullYear()}`);
+    const res = await fetchApi(`/transacoes-individuais?mes=${hoje.getMonth() + 1}&ano=${hoje.getFullYear()}${queryContaDashboard()}`);
     const transacoes = await res.json();
     const container = document.getElementById('lista-transacoes-modal');
 
@@ -1690,28 +1748,44 @@ async function salvarCorrecao(transacaoId, descricao) {
     }
 }
 async function salvarObjetivo() {
-            const categoria = document.getElementById('objetivo-nome').value.trim();
+            const nome = document.getElementById('objetivo-nome').value.trim();
             const valor = document.getElementById('objetivo-valor').value;
             
-            if (!categoria || !valor) return gbmAlerta('Digite o nome da meta e o valor objetivo.', 'aviso');
+            if (!nome || !valor) return gbmAlerta('Digite o nome da meta e o valor objetivo.', 'aviso');
             
             try {
-                // Reaproveitamos a API de metas que já existe e funciona perfeitamente!
-                const userId = pegarUserId();
-                await fetchApi('/metas', {
+                const resposta = await fetchApi('/objetivos', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ categoria, valor_limite: parseFloat(valor), userId })
+                    body: JSON.stringify({ nome, valor_meta: parseFloat(valor), valor_inicial: 0 })
                 });
+                if (!resposta.ok) throw new Error('Não foi possível criar a meta.');
                 document.getElementById('objetivo-nome').value = '';
                 document.getElementById('objetivo-valor').value = '';
-                carregarDados();
                 gbmAlerta("Meta criada! Acesse Metas no menu para acompanhar.");
             } catch (error) { gbmAlerta('Erro ao criar a meta.', 'erro'); }
         }
 
 function fecharModalTransacoes() {
     document.getElementById('modal-transacoes').style.display = 'none';
+}
+async function carregarInsights() {
+    const container = document.getElementById('insights-lista');
+    try {
+        const res = await fetchApi(`/insights?${queryContaDashboard().replace(/^&/, '')}`);
+        if (!res.ok) throw new Error('Falha ao carregar insights.');
+        const insights = await res.json();
+        container.innerHTML = insights.length
+            ? insights.map((item) => `
+                <div class="insight-item">
+                    <strong>${String(item.titulo || '').replace(/[<>&]/g, '')}</strong>
+                    <span>${String(item.texto || '').replace(/[<>&]/g, '')}</span>
+                </div>
+            `).join('')
+            : '<div class="insight-item"><span>Continue lançando seus dados para receber análises personalizadas.</span></div>';
+    } catch (erro) {
+        container.innerHTML = '<div class="insight-item"><span>Os insights estarão disponíveis quando houver dados suficientes.</span></div>';
+    }
 }
 async function carregarAlertas() {
     try {
@@ -1765,7 +1839,9 @@ window.promessaVerificacaoAcesso.then(() => {
         // --- 5. LIGAR O MOTOR ---
         carregarBancosInfo();
         carregarCategorias();
+        carregarContasLancamento();
         carregarDados();
+        carregarInsights();
     </script>
 
     <!-- TUTORIAL GUIADO GBM -->

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Relatório Avançado | GBM</title><link rel="stylesheet" href="gbm-pages.css">
+    <style>
+        .resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+        .categoria-barra{display:grid;grid-template-columns:minmax(100px,180px) 1fr auto;gap:10px;align-items:center;margin:10px 0}
+        .mini-barra{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}.mini-barra span{display:block;height:100%;background:var(--purple)}
+        @media(max-width:700px){.resumo-grid{grid-template-columns:1fr}.categoria-barra{grid-template-columns:90px 1fr}.categoria-barra>strong{grid-column:2}}
+        @media print{.topbar,.filtros-card,.actions{display:none!important}body{background:#fff;color:#111}.card{box-shadow:none;border:1px solid #ccc;background:#fff;color:#111}.container{width:100%;padding:0}th,td{color:#111}}
+    </style>
+</head>
+<body>
+    <header class="topbar"><a class="brand" href="dashboard.html"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a><a class="btn btn-small" href="dashboard.html">← Dashboard</a></header>
+    <main class="container">
+        <div class="page-title"><h1>Relatório avançado</h1><p>Escolha qualquer período, conta, categoria ou tipo e exporte o resultado.</p></div>
+        <section class="card filtros-card">
+            <form id="form-filtros" class="form-grid">
+                <div class="field"><label>Data inicial</label><input id="data-inicio" type="date" required></div>
+                <div class="field"><label>Data final</label><input id="data-fim" type="date" required></div>
+                <div class="field"><label>Conta</label><select id="filtro-conta"><option value="todas">Todas as contas</option></select></div>
+                <div class="field"><label>Categoria</label><select id="filtro-categoria"><option value="todas">Todas as categorias</option></select></div>
+                <div class="field"><label>Tipo</label><select id="filtro-tipo"><option value="todos">Receitas e despesas</option><option>Receita</option><option>Despesa</option></select></div>
+                <div class="field" style="justify-content:end"><div class="actions end"><button class="btn btn-primary">Gerar relatório</button></div></div>
+            </form>
+        </section>
+        <section id="resultado" style="margin-top:18px" hidden>
+            <div class="resumo-grid">
+                <div class="card stat">Receitas<br><strong id="total-receitas" style="color:var(--green)">R$ 0,00</strong></div>
+                <div class="card stat">Despesas<br><strong id="total-despesas" style="color:var(--red)">R$ 0,00</strong></div>
+                <div class="card stat">Resultado<br><strong id="total-resultado">R$ 0,00</strong></div>
+            </div>
+            <div class="grid grid-2" style="margin-top:18px">
+                <section class="card"><h2>Despesas por categoria</h2><div id="grafico-categorias"></div></section>
+                <section class="card"><h2>Exportar</h2><p style="color:var(--muted)">O CSV abre no Excel. A opção imprimir permite salvar o relatório como PDF pelo navegador.</p><div class="actions"><button id="baixar-csv" class="btn btn-primary">Baixar CSV</button><button class="btn" onclick="window.print()">Imprimir / PDF</button></div></section>
+            </div>
+            <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap"></div></section>
+        </section>
+    </main>
+    <script src="auth.js"></script><script src="gbm-pages.js"></script>
+    <script>
+        let relatorioAtual=null;
+        const hoje=new Date();const inicio=new Date(hoje.getFullYear(),hoje.getMonth(),1);
+        document.getElementById('data-inicio').value=inicio.toISOString().slice(0,10);
+        document.getElementById('data-fim').value=hoje.toISOString().slice(0,10);
+        async function carregarFiltros(){
+            const [contas,categorias]=await Promise.all([
+                gbmJson(await fetchApi('/contas')),
+                gbmJson(await fetchApi('/categorias'))
+            ]);
+            document.getElementById('filtro-conta').insertAdjacentHTML('beforeend',contas.map(c=>`<option value="${c.id}">${gbmEscapar(c.nome)}</option>`).join(''));
+            const lista=categorias.todas||categorias||[];
+            document.getElementById('filtro-categoria').insertAdjacentHTML('beforeend',lista.map(c=>`<option value="${gbmEscapar(c)}">${gbmEscapar(c)}</option>`).join(''));
+        }
+        document.getElementById('form-filtros').addEventListener('submit',async(e)=>{e.preventDefault();gerar()});
+        async function gerar(){
+            const p=new URLSearchParams({
+                data_inicio:document.getElementById('data-inicio').value,
+                data_fim:document.getElementById('data-fim').value,
+                conta_id:document.getElementById('filtro-conta').value,
+                categoria:document.getElementById('filtro-categoria').value,
+                tipo:document.getElementById('filtro-tipo').value
+            });
+            try{
+                relatorioAtual=await gbmJson(await fetchApi(`/relatorio-avancado?${p}`));renderizar();
+            }catch(erro){
+                if(erro.status===403){if(confirm('Este relatório é Premium. Deseja conhecer o plano?'))location.href='pagamento.html';return}
+                gbmToast(erro.message,'erro');
+            }
+        }
+        function renderizar(){
+            const r=relatorioAtual.resumo;
+            document.getElementById('total-receitas').textContent=gbmMoeda(r.receitas);
+            document.getElementById('total-despesas').textContent=gbmMoeda(r.despesas);
+            document.getElementById('total-resultado').textContent=gbmMoeda(r.resultado);
+            document.getElementById('total-resultado').style.color=Number(r.resultado)>=0?'var(--green)':'var(--red)';
+            const categorias=Object.entries(r.por_categoria).sort((a,b)=>b[1]-a[1]);const max=categorias[0]?.[1]||1;
+            document.getElementById('grafico-categorias').innerHTML=categorias.length?categorias.slice(0,10).map(([nome,valor])=>`<div class="categoria-barra"><span>${gbmEscapar(nome)}</span><div class="mini-barra"><span style="width:${(valor/max)*100}%"></span></div><strong>${gbmMoeda(valor)}</strong></div>`).join(''):'<div class="empty">Sem despesas no período.</div>';
+            document.getElementById('tabela-transacoes').innerHTML=relatorioAtual.transacoes.length?`<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Tipo</th><th>Valor</th></tr></thead><tbody>${relatorioAtual.transacoes.map(t=>`<tr><td>${gbmData(t.data_transacao)}</td><td>${gbmEscapar(t.descricao)}</td><td>${gbmEscapar(t.categoria)}</td><td>${gbmEscapar(t.conta)}</td><td>${gbmEscapar(t.tipo)}</td><td>${gbmMoeda(t.valor)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhuma transação encontrada.</div>';
+            document.getElementById('resultado').hidden=false;
+        }
+        document.getElementById('baixar-csv').addEventListener('click',()=>{
+            if(!relatorioAtual)return;const linhas=[['Data','Descrição','Categoria','Conta','Tipo','Valor'],...relatorioAtual.transacoes.map(t=>[String(t.data_transacao).slice(0,10),t.descricao,t.categoria,t.conta,t.tipo,Number(t.valor).toFixed(2).replace('.',',')])];
+            const csv='\\ufeff'+linhas.map(l=>l.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\\n');
+            const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='relatorio-gbm.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+        });
+        carregarFiltros().then(gerar).catch(e=>gbmToast(e.message,'erro'));
+    </script>
+</body>
+</html>

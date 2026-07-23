@@ -356,7 +356,7 @@
                 <label for="aceite-termos" style="color: #8a9ba8; font-size: 13px; line-height: 1.4; cursor: pointer;">
                     Eu li e concordo com os 
                     <a href="#" onclick="abrirModalTermos(); return false;" style="color: #c89f53; text-decoration: none; font-weight: 600; transition: color 0.2s;">Termos e Condições</a> 
-                    de uso da plataforma GBM.
+                    de uso e com a Política de Privacidade da plataforma GBM.
                 </label>
             </div>
             <!-- FIM DA CAIXA DOS TERMOS -->
@@ -623,7 +623,14 @@
                 const resposta = await fetch('/cadastro', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, sobrenome, email, telefone, senha })
+                    body: JSON.stringify({
+                        nome,
+                        sobrenome,
+                        email,
+                        telefone,
+                        senha,
+                        consentimento_privacidade: aceitouTermos
+                    })
                 });
                 
                 const json = await resposta.json();
