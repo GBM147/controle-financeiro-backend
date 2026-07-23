@@ -794,10 +794,12 @@
     }
 
     function iniciar() {
+        if (estado.aberto) return;
         criarInterface();
         estado.passo = 0;
         estado.aberto = true;
         estado.elementos.overlay.hidden = false;
+        marcarVisto();
         mostrarPasso();
     }
 
@@ -807,7 +809,6 @@
         estado.aberto = false;
         estado.alvo = null;
         document.body.classList.remove('gbm-tour-bloqueado');
-        marcarVisto();
         const ajuda = document.getElementById('gbm-tour-ajuda');
         if (ajuda) ajuda.focus();
     }
@@ -852,7 +853,9 @@
         window.addEventListener('resize', posicionar);
 
         if (!jaViu()) {
-            window.setTimeout(iniciar, estado.pagina === 'dashboard.html' ? 1200 : 700);
+            window.setTimeout(() => {
+                if (!jaViu() && !estado.aberto) iniciar();
+            }, estado.pagina === 'dashboard.html' ? 1200 : 700);
         }
     }
 
