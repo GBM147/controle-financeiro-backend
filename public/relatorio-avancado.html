@@ -253,8 +253,23 @@
         document.getElementById('baixar-pdf').addEventListener('click',baixarPDF);
 
         document.getElementById('baixar-csv').addEventListener('click',()=>{
-            if(!relatorioAtual)return;const linhas=[['Data','Descrição','Categoria','Conta','Valor'],...relatorioAtual.transacoes.map(t=>[String(t.data_transacao).slice(0,10),t.descricao,t.categoria, t.conta,Number(t.valor).toFixed(2).replace('.',',')])];
-            const csv='\\ufeff'+linhas.map(l=>l.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\\n');
+            if(!relatorioAtual)return;
+            const linhas=[
+                ['Data','Descrição','Categoria','Conta','Valor'],
+                ...relatorioAtual.transacoes.map(t=>[
+                    gbmData(t.data_transacao),
+                    t.descricao,
+                    t.categoria,
+                    t.conta,
+                    Number(t.valor).toFixed(2).replace('.',',')
+                ])
+            ];
+            const escaparCsv=valor=>`"${String(valor??'').replaceAll('"','""')}"`;
+            const csv='\uFEFFsep=;\r\n'+linhas.map((linha,indiceLinha)=>
+                linha.map((valor,indiceColuna)=>
+                    indiceLinha>0&&indiceColuna===4?String(valor):escaparCsv(valor)
+                ).join(';')
+            ).join('\r\n');
             const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`Relatório ${periodoDoRelatorio().arquivo} - GBM.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
         });
         carregarFiltros().then(gerar).catch(e=>gbmToast(e.message,'erro'));
