@@ -2,41 +2,6 @@
     'use strict';
 
     const PAGINAS = {
-        'index.html': {
-            titulo: 'Acesso ao GBM',
-            passos: [
-                {
-                    alvo: null,
-                    titulo: '👋 Bem-vindo ao GBM',
-                    texto: 'Esta é a área de acesso. Aqui você pode entrar, criar uma conta, validar seu e-mail ou recuperar sua senha.'
-                },
-                {
-                    alvo: '.logo',
-                    titulo: '🛡️ Sua área financeira',
-                    texto: 'Confirme sempre a marca GBM antes de informar seus dados de acesso.'
-                },
-                {
-                    alvo: '#form-login',
-                    titulo: '🔐 Entrar com segurança',
-                    texto: 'Informe seu e-mail ou telefone e sua senha. Marque “Manter conectado” somente em um aparelho pessoal.'
-                },
-                {
-                    alvo: '.signup-prompt',
-                    titulo: '✨ Criar uma conta',
-                    texto: 'Se ainda não possui cadastro, use o link de criação de conta e conclua a verificação enviada pelo GBM.'
-                },
-                {
-                    alvo: '#btn-instalar-app',
-                    titulo: '📱 Instalar como aplicativo',
-                    texto: 'Quando disponível, este botão instala o GBM no celular ou computador para acesso mais rápido.'
-                },
-                {
-                    alvo: null,
-                    titulo: '✅ Tudo pronto',
-                    texto: 'Você pode rever este tutorial pelo botão de ajuda no canto da tela.'
-                }
-            ]
-        },
         'dashboard.html': {
             titulo: 'Dashboard',
             mostrarBotao: false,

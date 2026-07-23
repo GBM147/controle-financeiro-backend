@@ -243,10 +243,10 @@
         .fechar-btn:hover { color: #ff4d4d; transform: scale(1.1); }
 
         .sidebar-content {
-            padding: 20px 0;
+            padding: 12px 0;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 0;
             flex: 1; 
             overflow-y: auto; /* Faz o menu ter a sua própria barra de rolagem */
         }
@@ -266,7 +266,7 @@
             font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            padding: 16px 28px;
+            padding: 13px 28px;
 
             background: linear-gradient(90deg, rgba(46,139,87,0.25), transparent);
 border-left: 4px solid var(--cor-destaque);
@@ -281,6 +281,49 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             font-weight: 600;
             display: block; /* Garante que o link ocupa a largura toda da gaveta */
             transition: all 0.2s ease;
+        }
+
+        .menu-grupo {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding-bottom: 7px;
+        }
+
+        .menu-grupo + .menu-grupo {
+            margin-top: 4px;
+        }
+
+        .menu-grupo-titulo {
+            margin: 0;
+            padding: 9px 28px 5px;
+            color: #7f91a8;
+            font-family: 'Inter', 'Montserrat', sans-serif;
+            font-size: .66rem;
+            font-weight: 800;
+            letter-spacing: .13em;
+            line-height: 1.25;
+            text-transform: uppercase;
+        }
+
+        .menu-grupo-premium {
+            padding-top: 5px;
+            border-top: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        .menu-grupo-premium .menu-grupo-titulo {
+            color: #fbbf24;
+        }
+
+        .menu-grupo-conta {
+            margin-top: auto !important;
+            padding-top: 8px;
+            padding-bottom: 0;
+            border-top: 1px solid var(--borda);
+        }
+
+        .menu-grupo-conta .menu-grupo-titulo {
+            color: #9fb2c8;
         }
         
         .sidebar-content .menu-item:hover {
@@ -723,33 +766,48 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         <button class="fechar-btn" onclick="fecharMenuLateral()">&times;</button>
     </div>
     <div class="sidebar-content">
+        <div class="menu-grupo menu-grupo-ajuda" aria-labelledby="menu-titulo-ajuda">
+            <p id="menu-titulo-ajuda" class="menu-grupo-titulo">Ajuda</p>
+            <a href="#" class="menu-item" onclick="iniciarTutorial(); fecharMenuLateral(); return false;">❓ Como usar o site</a>
+        </div>
 
-    <a href="#" class="menu-item" onclick="iniciarTutorial(); fecharMenuLateral(); return false;">❓ Como usar o site</a>
-    <div class="divisor"></div>
-        <a href="contas.html" class="menu-item">🏦 Minhas Contas</a>
-        <a href="importacoes.html" class="menu-item">📥 Importações</a>
-        <a href="calendario.html" class="menu-item">🗓️ Calendário</a>
-        <a href="Limite-de-Gastos.html" class="menu-item">🚧 Limite de Gastos</a>
-        <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório Mensal'); return false;">
-            <span class="menu-item-conteudo">📊 Relatório Mensal</span>
-            <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
-        </a>
-        <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo Mensal'); return false;">
-            <span class="menu-item-conteudo">📆 Comparativo Mensal</span>
-            <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
-        </a>
-        <div id="aviso-recursos-premium" class="aviso-recursos-premium" role="status"></div>
-        <a href="metas.html" class="menu-item">🎯 Metas</a>
-        <a href="configuracoes.html" class="menu-item">⚙️ Configurações</a>
-        
-        <div class="divisor"></div>
-        <a href="notificacoes.html" id="item-notificacoes" class="menu-item menu-item-com-indicador">
-            <span class="menu-item-conteudo">🔔 Notificações</span>
-            <span class="menu-item-indicadores">
-                <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.7rem; padding:2px 8px; margin-left:8px;">0</span>
-            </span>
-        </a>
-        <a href="#" class="menu-item texto-vermelho" onclick="fazerLogout(); return false;">🚪 Sair</a>
+        <div class="menu-grupo" aria-labelledby="menu-titulo-movimentacoes">
+            <p id="menu-titulo-movimentacoes" class="menu-grupo-titulo">Movimentações</p>
+            <a href="contas.html" class="menu-item">🏦 Minhas Contas</a>
+            <a href="importacoes.html" class="menu-item">📥 Importações</a>
+        </div>
+
+        <div class="menu-grupo" aria-labelledby="menu-titulo-planejamento">
+            <p id="menu-titulo-planejamento" class="menu-grupo-titulo">Planejamento</p>
+            <a href="calendario.html" class="menu-item">🗓️ Calendário</a>
+            <a href="Limite-de-Gastos.html" class="menu-item">🚧 Limite de Gastos</a>
+            <a href="metas.html" class="menu-item">🎯 Metas</a>
+        </div>
+
+        <div class="menu-grupo menu-grupo-premium" aria-labelledby="menu-titulo-premium">
+            <p id="menu-titulo-premium" class="menu-grupo-titulo">Recursos Premium</p>
+            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório Mensal'); return false;">
+                <span class="menu-item-conteudo">📊 Relatório Mensal</span>
+                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
+            </a>
+            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo Mensal'); return false;">
+                <span class="menu-item-conteudo">📆 Comparativo Mensal</span>
+                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
+            </a>
+            <div id="aviso-recursos-premium" class="aviso-recursos-premium" role="status"></div>
+        </div>
+
+        <div class="menu-grupo menu-grupo-conta" aria-labelledby="menu-titulo-conta">
+            <p id="menu-titulo-conta" class="menu-grupo-titulo">Conta e suporte</p>
+            <a href="configuracoes.html" class="menu-item">⚙️ Configurações</a>
+            <a href="notificacoes.html" id="item-notificacoes" class="menu-item menu-item-com-indicador">
+                <span class="menu-item-conteudo">🔔 Notificações</span>
+                <span class="menu-item-indicadores">
+                    <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.7rem; padding:2px 8px; margin-left:8px;">0</span>
+                </span>
+            </a>
+            <a href="#" class="menu-item texto-vermelho" onclick="fazerLogout(); return false;">🚪 Sair</a>
+        </div>
     </div>
 </div>
 
