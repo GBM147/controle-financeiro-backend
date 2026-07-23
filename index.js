@@ -238,7 +238,18 @@ app.post('/webhook-mercadopago', async (req, res) => {
                 const userId = pagamentoInfo.external_reference; // Lemos a nossa etiqueta!
                 console.log(`💰 PAGAMENTO APROVADO! Liberando usuário ID: ${userId}`);
                 
-                await db.promise().query("UPDATE usuarios SET status_pagamento = 'pago' WHERE id = ?", [userId]);
+                // Um webhook atrasado de uma cobrança antiga não pode reativar
+                // uma assinatura que já foi cancelada pelo usuário.
+                const [atualizacao] = await db.promise().query(
+                    `UPDATE usuarios
+                     SET status_pagamento = 'pago'
+                     WHERE id = ? AND assinatura_cancelada_no_mp = 0`,
+                    [userId]
+                );
+
+                if (atualizacao.affectedRows === 0) {
+                    console.log(`🛑 Pagamento ${paymentId} recebido, mas a conta ${userId} permanece cancelada.`);
+                }
             }
         } catch (err) {
             console.error("Erro ao checar status do pagamento no MP:", err);
@@ -1470,17 +1481,45 @@ app.post('/cancelar-assinatura', exigirLogin, async (req, res) => {
             usuarios[0].mercadopago_preapproval_id
         );
 
+        // Se não existe assinatura no Mercado Pago, o status "pago" foi apenas
+        // alterado localmente (por exemplo, em um teste no Adminer). Nesse caso
+        // não existe cobrança recorrente para cancelar: basta corrigir o estado local.
         if (!encontrada.assinatura || !encontrada.preapprovalId) {
-            return res.status(409).json({
-                success: false,
-                message: 'Não foi possível localizar a assinatura no Mercado Pago. Cancele-a pelo painel do Mercado Pago ou fale com o suporte.'
+            await db.promise().query(
+                `UPDATE usuarios
+                 SET mercadopago_preapproval_id = NULL,
+                     status_pagamento = 'cancelado',
+                     assinatura_cancelada_no_mp = 1
+                 WHERE id = ?`,
+                [userId]
+            );
+
+            return res.json({
+                success: true,
+                message: 'Plano local cancelado. Esta conta não possuía uma assinatura recorrente no Mercado Pago.'
             });
         }
 
-        if (!assinaturaEstaCanceladaNoMP(encontrada.assinatura.status)) {
-            await encontrada.preApproval.update({
+        let assinaturaConfirmada = encontrada.assinatura;
+        if (!assinaturaEstaCanceladaNoMP(assinaturaConfirmada.status)) {
+            assinaturaConfirmada = await encontrada.preApproval.update({
                 id: encontrada.preapprovalId,
                 body: { status: 'canceled' }
+            });
+        }
+
+        // Confere uma segunda vez no Mercado Pago. O banco local só recebe
+        // "cancelado" depois que o provedor confirmar o status real.
+        if (!assinaturaEstaCanceladaNoMP(assinaturaConfirmada?.status)) {
+            assinaturaConfirmada = await encontrada.preApproval.get({
+                preApprovalId: encontrada.preapprovalId
+            });
+        }
+
+        if (!assinaturaEstaCanceladaNoMP(assinaturaConfirmada?.status)) {
+            return res.status(502).json({
+                success: false,
+                message: 'O Mercado Pago ainda não confirmou o cancelamento. Nenhum status local foi alterado.'
             });
         }
 
@@ -1776,6 +1815,21 @@ app.delete('/minha-conta', exigirLogin, async (req, res) => {
                     [encontrada.preapprovalId, userId]
                 );
                 usuarios[0].mercadopago_preapproval_id = encontrada.preapprovalId;
+            } else {
+                // Não existe preapproval no Mercado Pago. Portanto, um eventual
+                // status "pago" foi colocado apenas no banco local e não pode
+                // produzir cobranças recorrentes.
+                await banco.query(
+                    `UPDATE usuarios
+                     SET mercadopago_preapproval_id = NULL,
+                         status_pagamento = 'cancelado',
+                         assinatura_cancelada_no_mp = 1
+                     WHERE id = ?`,
+                    [userId]
+                );
+                cancelamentoConfirmadoNoMP = true;
+                usuarios[0].mercadopago_preapproval_id = null;
+                usuarios[0].status_pagamento = 'cancelado';
             }
         } catch (erroMercadoPago) {
             console.error('Não foi possível conferir a assinatura no Mercado Pago antes de excluir:', erroMercadoPago);
