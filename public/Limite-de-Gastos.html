@@ -206,12 +206,6 @@
             border-color: var(--cor-destaque);
             box-shadow: 0 0 10px rgba(46, 139, 87, 0.4);
         }
-        #editor-container input[type="range"] {
-            accent-color: var(--cor-destaque);
-            cursor: pointer;
-            margin: 0 15px;
-        }
-
         @media (max-width: 768px) {
             .gbm-title { display: none; }
             .gbm-logo-img { height: 40px; }
@@ -264,6 +258,153 @@
             text-transform: uppercase; 
             letter-spacing: 0.5px; 
         }
+
+        /* Editor compacto de limites */
+        .form-limite {
+            display: grid;
+            grid-template-columns: minmax(170px, 1.2fr) minmax(140px, 0.8fr);
+            gap: 16px;
+            padding-bottom: 22px;
+            margin-bottom: 22px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .campo-form {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .campo-form label {
+            color: var(--texto-mutado);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .campo-form select,
+        .campo-form input {
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 42px;
+            padding: 10px 12px;
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            outline: none;
+            background: rgba(15, 23, 42, 0.72);
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .campo-form select:focus,
+        .campo-form input:focus {
+            border-color: var(--cor-destaque);
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.16);
+        }
+
+        .campo-percentuais {
+            grid-column: 1 / -1;
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            background: rgba(0,0,0,0.16);
+        }
+
+        .linha-adicionar-percentual {
+            display: grid;
+            grid-template-columns: minmax(120px, 180px) auto;
+            gap: 9px;
+            max-width: 330px;
+        }
+
+        .btn-secundario {
+            min-height: 42px;
+            padding: 8px 14px;
+            border: 1px solid rgba(95,255,168,0.32);
+            border-radius: 8px;
+            background: rgba(46,139,87,0.12);
+            color: #cffff0;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .chips-percentuais {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .chip-percentual {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 9px 6px 11px;
+            border: 1px solid rgba(95,255,168,0.32);
+            border-radius: 999px;
+            background: rgba(46,139,87,0.14);
+            color: #8dffc1;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .chip-percentual button {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .chips-visualizacao .chip-percentual {
+            padding-right: 11px;
+        }
+
+        .dica-percentuais {
+            margin: 7px 0 0;
+            color: var(--texto-mutado);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.72rem;
+            line-height: 1.45;
+        }
+
+        .acoes-form {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-editar-limite {
+            padding: 6px 12px;
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 7px;
+            background: rgba(255,255,255,0.05);
+            color: var(--texto-principal);
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .alertas-configurados {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 620px) {
+            .form-limite { grid-template-columns: 1fr; }
+            .campo-percentuais,
+            .acoes-form { grid-column: 1; }
+            .linha-adicionar-percentual { grid-template-columns: 1fr auto; }
+            .card { padding: 20px 16px; }
+        }
     </style>
 </head>
 <body>
@@ -281,29 +422,48 @@
     <div class="card">
         <h2>Definir ou Ajustar Limite</h2>
         
-        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-            <select id="nova-meta-cat" style="padding: 10px; border-radius: 8px; background: rgba(15, 23, 42, 0.6); color: white; border: 1px solid var(--borda); flex: 1; min-width: 150px;">
-                <option value="" disabled selected>Categoria...</option>
-                <option value="Alimentação">Alimentação</option>
-                <option value="Habitação">Habitação</option>
-                <option value="Transporte">Transporte</option>
-                <option value="Educação">Educação</option>
-                <option value="Lazer">Lazer</option>
-                <option value="Outros">Outros</option>
-            </select>
-
-            <div style="position: relative; flex: 1; min-width: 120px;">
-                <span style="position: absolute; left: 12px; top: 10px; color: var(--texto-mutated);">R$</span>
-                <input type="number" id="nova-meta-valor" placeholder="0.00" style="padding: 10px 10px 10px 35px; border-radius: 8px; background: rgba(15, 23, 42, 0.6); color: white; border: 1px solid var(--borda); width: calc(100% - 50px);">
+        <div class="form-limite" id="form-limite">
+            <div class="campo-form">
+                <label for="nova-meta-cat">Categoria</label>
+                <select id="nova-meta-cat">
+                    <option value="" disabled selected>Selecione...</option>
+                    <option value="Alimentação">Alimentação</option>
+                    <option value="Habitação">Habitação</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Eletricidade / Luz">Eletricidade / Luz</option>
+                    <option value="Telecomunicações / Internet">Telecomunicações / Internet</option>
+                    <option value="Pagamento de Fatura">Pagamento de Fatura</option>
+                    <option value="Pagamento de Boleto">Pagamento de Boleto</option>
+                    <option value="Streaming de Vídeo">Streaming de Vídeo</option>
+                    <option value="Streaming de Música">Streaming de Música</option>
+                    <option value="Academia e Fitness">Academia e Fitness</option>
+                    <option value="Saúde">Saúde</option>
+                    <option value="Educação">Educação</option>
+                    <option value="Supermercado">Supermercado</option>
+                    <option value="Restaurantes">Restaurantes</option>
+                    <option value="Lazer">Lazer</option>
+                    <option value="Outros">Outros</option>
+                </select>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 10px; flex: 2; min-width: 180px;">
-                <span style="font-size: 0.9rem; color: var(--texto-mutado);">Avisar em:</span>
-                <input type="range" id="nova-meta-alerta" value="80" min="10" max="100" step="10" oninput="document.getElementById('display-novo-alerta').innerText = this.value + '%'" style="flex: 1; accent-color: var(--cor-destaque);">
-                <span id="display-novo-alerta" style="font-weight: bold; color: var(--cor-destaque); width: 45px;">80%</span>
+            <div class="campo-form">
+                <label for="nova-meta-valor">Limite mensal</label>
+                <input type="number" id="nova-meta-valor" min="0.01" step="0.01" placeholder="R$ 0,00">
             </div>
 
-            <button onclick="salvarNovoLimite()" class="btn-acao" style="flex: 1; min-width: 130px;">Gravar</button>
+            <div class="campo-form campo-percentuais">
+                <label for="novo-percentual">Quando você quer ser avisado?</label>
+                <div class="linha-adicionar-percentual">
+                    <input type="number" id="novo-percentual" min="1" max="100" step="1" placeholder="Ex.: 50">
+                    <button type="button" class="btn-secundario" onclick="adicionarPercentual()">+ Adicionar</button>
+                </div>
+                <div id="chips-percentuais-novo" class="chips-percentuais"></div>
+                <p class="dica-percentuais">Você pode criar vários avisos, como 50%, 70% e 90%. Cada percentual será avisado apenas uma vez por mês.</p>
+            </div>
+
+            <div class="acoes-form">
+                <button onclick="salvarNovoLimite()" class="btn-acao">Salvar limite</button>
+            </div>
         </div>
 
         <div id="editor-container"></div>
@@ -319,9 +479,75 @@
         const userId = pegarUserId();
         if (!userId) window.location.href = 'index.html';
 
+        let percentuaisSelecionados = [50, 70];
+        let metasCarregadas = [];
+
+        function normalizarPercentuais(valores) {
+            return [...new Set(
+                (Array.isArray(valores) ? valores : [])
+                    .map(Number)
+                    .filter(valor => Number.isInteger(valor) && valor >= 1 && valor <= 100)
+            )].sort((a, b) => a - b);
+        }
+
+        function renderizarPercentuaisSelecionados() {
+            const container = document.getElementById('chips-percentuais-novo');
+            container.innerHTML = percentuaisSelecionados.map(percentual => `
+                <span class="chip-percentual">
+                    ${percentual}%
+                    <button type="button" onclick="removerPercentual(${percentual})" aria-label="Remover aviso de ${percentual}%">&times;</button>
+                </span>
+            `).join('');
+        }
+
+        function adicionarPercentual() {
+            const input = document.getElementById('novo-percentual');
+            const percentual = Number(input.value);
+
+            if (!Number.isInteger(percentual) || percentual < 1 || percentual > 100) {
+                gbmAlerta('Digite um percentual inteiro entre 1% e 100%.', 'aviso');
+                return;
+            }
+
+            percentuaisSelecionados = normalizarPercentuais([...percentuaisSelecionados, percentual]);
+            input.value = '';
+            renderizarPercentuaisSelecionados();
+            input.focus();
+        }
+
+        function removerPercentual(percentual) {
+            percentuaisSelecionados = percentuaisSelecionados.filter(valor => valor !== percentual);
+            renderizarPercentuaisSelecionados();
+        }
+
+        function escaparHtml(valor) {
+            return String(valor ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function editarLimite(indice) {
+            const meta = metasCarregadas[indice];
+            if (!meta) return;
+
+            const seletorCategoria = document.getElementById('nova-meta-cat');
+            if (![...seletorCategoria.options].some(opcao => opcao.value === meta.categoria)) {
+                seletorCategoria.add(new Option(meta.categoria, meta.categoria));
+            }
+            seletorCategoria.value = meta.categoria;
+            document.getElementById('nova-meta-valor').value = Number(meta.limite || 0).toFixed(2);
+            percentuaisSelecionados = normalizarPercentuais(meta.percentuais_alerta);
+            renderizarPercentuaisSelecionados();
+            document.getElementById('form-limite').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         async function carregarEditor() {
             try {
                 const res = await fetchApi('/metas-resumo?userId=' + userId);
+                if (!res.ok) throw new Error('Falha ao carregar limites.');
                 const json = await res.json();
                 let metas = json.data ? json.data : (Array.isArray(json) ? json : []);
                 
@@ -329,21 +555,20 @@
 
                 // FILTRO: Mantém apenas as Despesas Padrão (Limites)
                 metas = metas.filter(m => m.categoria && despesasPadrao.includes(m.categoria));
+                metasCarregadas = metas;
 
                 const container = document.getElementById('editor-container');
                 container.innerHTML = '';
 
                 if (metas.length === 0) {
-                    container.innerHTML = '<p style="color: var(--texto-mutated); text-align: center; padding: 20px;">Nenhum limite de gastos definido. Crie no Dashboard.</p>';
+                    container.innerHTML = '<p style="color: var(--texto-mutado); text-align: center; padding: 20px;">Você ainda não definiu limites. Use o formulário acima para criar o primeiro.</p>';
                     return;
                 }
 
-                metas.forEach(m => {
-                    const catId = m.categoria.replace(/\s+/g, '-');
-                    const valorAtual = m.percentual_alerta || 80;
-                    
+                metas.forEach((m, indice) => {
                     const limite = parseFloat(String(m.limite || 0).replace(/[R$\s+\-]/g, ''));
                     const gasto = parseFloat(String(m.gasto || 0).replace(/[R$\s+\-]/g, ''));
+                    const percentuais = normalizarPercentuais(m.percentuais_alerta);
 
                     let percentual = limite > 0 ? (gasto / limite) * 100 : 0;
                     const larguraBarra = Math.min(percentual, 100);
@@ -358,7 +583,7 @@
                         <div class="meta-item">
                             <div class="meta-header">
                                 <div>
-                                    <strong>${m.categoria}</strong>
+                                    <strong>${escaparHtml(m.categoria)}</strong>
                                 </div>
                                 <strong style="color: ${cor};">${percentual.toFixed(1)}%</strong>
                             </div>
@@ -370,11 +595,14 @@
                                 <span>Gasto</span>
                             </div>
 
-                            <div class="controles-edicao" style="justify-content: flex-end; padding: 10px 15px;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 0.9rem; color: var(--texto-mutado);">Aviso em:</span>
-                                    <strong style="color: var(--cor-destaque); font-size: 1.1rem;">${valorAtual}%</strong>
+                            <div class="alertas-configurados">
+                                <div>
+                                    <span style="font-size: 0.78rem; color: var(--texto-mutado);">Avisos configurados</span>
+                                    <div class="chips-percentuais chips-visualizacao">
+                                        ${percentuais.map(valor => `<span class="chip-percentual">${valor}%</span>`).join('')}
+                                    </div>
                                 </div>
+                                <button type="button" class="btn-editar-limite" onclick="editarLimite(${indice})">Editar</button>
                             </div>
                         </div>
                     `;
@@ -385,34 +613,18 @@
             }
         }
 
-        function ajustarSlider(catId, mudanca) {
-            const slider = document.getElementById(`alerta-${catId}`);
-            let novoValor = parseInt(slider.value) + mudanca;
-            if (novoValor > 100) novoValor = 100;
-            if (novoValor < 10) novoValor = 10;
-            slider.value = novoValor;
-            document.getElementById(`display-${catId}`).innerText = novoValor + '%';
-        }
-
-        async function salvarAlteracao(categoriaOriginal, catId) {
-            const valor_limite = document.getElementById(`limite-${catId}`).value;
-            const percentual_alerta = document.getElementById(`alerta-${catId}`).value;
-
-            await fetchApi('/atualizar-meta-alerta', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ categoria: categoriaOriginal, valor_limite, percentual_alerta, userId })
-            });
-            gbmAlerta("Regra gravada com sucesso!");
-        }
-async function salvarNovoLimite() {
+        async function salvarNovoLimite() {
             const categoria = document.getElementById('nova-meta-cat').value;
             const valor_limite = parseFloat(document.getElementById('nova-meta-valor').value);
-            const percentual_alerta = parseInt(document.getElementById('nova-meta-alerta').value, 10);
+            const percentuais_alerta = normalizarPercentuais(percentuaisSelecionados);
 
-            // Validação simples para não enviar campos vazios
-            if (!categoria || !valor_limite) {
-                gbmAlerta("Selecione uma categoria e insira um valor válido!", 'aviso');
+            if (!categoria || !Number.isFinite(valor_limite) || valor_limite <= 0) {
+                gbmAlerta('Selecione uma categoria e informe um limite maior que zero.', 'aviso');
+                return;
+            }
+
+            if (percentuais_alerta.length === 0) {
+                gbmAlerta('Adicione pelo menos um percentual de aviso.', 'aviso');
                 return;
             }
 
@@ -420,28 +632,34 @@ async function salvarNovoLimite() {
                 const res = await fetchApi('/atualizar-meta-alerta', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ categoria, valor_limite, percentual_alerta, userId })
+                    body: JSON.stringify({ categoria, valor_limite, percentuais_alerta })
                 });
 
                 if (res.ok) {
-                    gbmAlerta("Novo limite gravado com sucesso!");
+                    gbmAlerta('Limite e avisos salvos com sucesso!');
                     
-                    // Limpa os campos do formulário após salvar
                     document.getElementById('nova-meta-cat').value = "";
                     document.getElementById('nova-meta-valor').value = "";
-                    document.getElementById('nova-meta-alerta').value = "80";
-                    document.getElementById('display-novo-alerta').innerText = "80%";
+                    percentuaisSelecionados = [50, 70];
+                    renderizarPercentuaisSelecionados();
                     
-                    // Atualiza a lista de visualização abaixo automaticamente
                     carregarEditor();
                 } else {
-                    gbmAlerta("Erro ao gravar o limite no servidor.", 'erro');
+                    const erro = await res.json().catch(() => ({}));
+                    gbmAlerta(erro.error || 'Erro ao gravar o limite no servidor.', 'erro');
                 }
             } catch (error) {
                 console.error("Erro ao salvar:", error);
                 gbmAlerta("Erro de conexão ao tentar salvar o limite.", 'erro');
             }
         }
+        document.getElementById('novo-percentual').addEventListener('keydown', (evento) => {
+            if (evento.key === 'Enter') {
+                evento.preventDefault();
+                adicionarPercentual();
+            }
+        });
+        renderizarPercentuaisSelecionados();
         carregarEditor();
 
         // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---

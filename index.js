@@ -267,12 +267,56 @@ const db = mysql.createConnection({
         rejectUnauthorized: false
     }
 });
+
+let promessaEstruturaAlertasMultiplos = null;
+
+function garantirEstruturaAlertasMultiplos() {
+    if (promessaEstruturaAlertasMultiplos) return promessaEstruturaAlertasMultiplos;
+
+    promessaEstruturaAlertasMultiplos = (async () => {
+        await db.promise().query(`
+            CREATE TABLE IF NOT EXISTS metas_alertas_percentuais (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                usuario_id INT NOT NULL,
+                categoria VARCHAR(120) NOT NULL,
+                percentual TINYINT UNSIGNED NOT NULL,
+                criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY uk_meta_alerta_percentual (usuario_id, categoria, percentual),
+                KEY idx_meta_alerta_usuario_categoria (usuario_id, categoria)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+
+        await db.promise().query(`
+            CREATE TABLE IF NOT EXISTS metas_alertas_disparos (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                usuario_id INT NOT NULL,
+                categoria VARCHAR(120) NOT NULL,
+                percentual TINYINT UNSIGNED NOT NULL,
+                ano_mes CHAR(7) NOT NULL,
+                criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY uk_meta_alerta_disparo (usuario_id, categoria, percentual, ano_mes),
+                KEY idx_meta_disparo_usuario (usuario_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+    })().catch((erro) => {
+        promessaEstruturaAlertasMultiplos = null;
+        throw erro;
+    });
+
+    return promessaEstruturaAlertasMultiplos;
+}
+
 db.connect((err) => {
     if (err) {
         console.error('❌ Erro a ligar ao MySQL:', err.message);
         return;
     }
     console.log('📦 Ligado à base de dados MySQL com sucesso!');
+    garantirEstruturaAlertasMultiplos()
+        .then(() => console.log('🔔 Estrutura de múltiplos alertas pronta.'))
+        .catch((erroEstrutura) => console.error('❌ Erro ao preparar múltiplos alertas:', erroEstrutura));
 });
 async function obterOuCriarContaDoUsuario(userId) {
     const [contas] = await db.promise().query(
@@ -836,40 +880,70 @@ app.get('/login-status', exigirLogin, async (req, res) => {
 // =======================================================
 async function auditarMetas() {
     try {
+        await garantirEstruturaAlertasMultiplos();
         const [prefs] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
         const percentualAlertaGlobal = prefs.length > 0 ? prefs[0].percentual_alerta : 80;
 
         // Agora o gasto é calculado POR USUÁRIO (via a conta bancária a que a transação pertence),
         // não somado entre todos os usuários que têm a mesma categoria.
         const sql = `
-            SELECT cb.usuario_id, t.categoria, SUM(t.valor) as total_gasto, m.valor_limite, m.percentual_alerta as percentual_categoria
+            SELECT
+                cb.usuario_id,
+                t.categoria,
+                SUM(t.valor) AS total_gasto,
+                m.valor_limite,
+                COALESCE(map.percentual, m.percentual_alerta, ?) AS percentual_categoria
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
             JOIN metas m ON t.categoria = m.categoria AND m.usuario_id = cb.usuario_id
+            LEFT JOIN metas_alertas_percentuais map
+              ON map.usuario_id = m.usuario_id
+             AND map.categoria = m.categoria
             WHERE t.tipo = 'Despesa'
               AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE())
               AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
-            GROUP BY cb.usuario_id, t.categoria, m.valor_limite, m.percentual_alerta
+            GROUP BY cb.usuario_id, t.categoria, m.valor_limite, m.percentual_alerta, map.percentual
         `;
-        const [gastos] = await db.promise().query(sql);
+        const [gastos] = await db.promise().query(sql, [percentualAlertaGlobal]);
 
         for (const item of gastos) {
             const gastoAbs = Math.abs(item.total_gasto);
             const limite = parseFloat(item.valor_limite);
-            // Usa o % configurado NA META (por categoria). Se não tiver, cai no global.
-            const percentualAlerta = item.percentual_categoria != null ? item.percentual_categoria : percentualAlertaGlobal;
+            const percentualAlerta = Number(item.percentual_categoria);
             const porcentagemAtual = (gastoAbs / limite) * 100;
 
             if (porcentagemAtual >= percentualAlerta) {
-                const msg = `Atenção: Você atingiu ${porcentagemAtual.toFixed(1)}% do seu limite de R$ ${limite.toFixed(2)} na categoria ${item.categoria}.`;
-
-                const [check] = await db.promise().query(
-                    'SELECT id FROM alertas WHERE categoria = ? AND usuario_id = ? AND MONTH(data_criacao) = MONTH(CURRENT_DATE()) AND YEAR(data_criacao) = YEAR(CURRENT_DATE())',
-                    [item.categoria, item.usuario_id]
+                // A chave única garante que cada faixa (50%, 70% etc.) seja
+                // disparada somente uma vez por categoria em cada mês.
+                const [registroDisparo] = await db.promise().query(
+                    `INSERT IGNORE INTO metas_alertas_disparos
+                        (usuario_id, categoria, percentual, ano_mes)
+                     VALUES (?, ?, ?, DATE_FORMAT(CURRENT_DATE(), '%Y-%m'))`,
+                    [item.usuario_id, item.categoria, percentualAlerta]
                 );
 
-                if (check.length === 0) {
-                    await db.promise().query('INSERT INTO alertas (usuario_id, categoria, mensagem) VALUES (?, ?, ?)', [item.usuario_id, item.categoria, msg]);
+                if (registroDisparo.affectedRows === 1) {
+                    const msg = `Atenção: você ultrapassou o aviso de ${percentualAlerta}% e já atingiu ${porcentagemAtual.toFixed(1)}% do limite de R$ ${limite.toFixed(2)} na categoria ${item.categoria}.`;
+
+                    try {
+                        await db.promise().query(
+                            'INSERT INTO alertas (usuario_id, categoria, mensagem) VALUES (?, ?, ?)',
+                            [item.usuario_id, item.categoria, msg]
+                        );
+                    } catch (erroAlerta) {
+                        // Se não foi possível criar a notificação, libera a faixa
+                        // para uma nova tentativa na próxima auditoria.
+                        await db.promise().query(
+                            `DELETE FROM metas_alertas_disparos
+                             WHERE usuario_id = ?
+                               AND categoria = ?
+                               AND percentual = ?
+                               AND ano_mes = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')`,
+                            [item.usuario_id, item.categoria, percentualAlerta]
+                        );
+                        throw erroAlerta;
+                    }
+
                     console.log(`🔔 NOVO ALERTA GERADO (usuario ${item.usuario_id}): ${msg}`);
 
                     // --- ENVIO DO E-MAIL DE NOTIFICAÇÃO PARA O DONO DA META ---
@@ -880,13 +954,14 @@ async function auditarMetas() {
                             await resend.emails.send({
                                 from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
                                 to: usuario.email.toLowerCase().trim(),
-                                subject: `🚨 GBM - Limite de ${item.categoria} quase estourando!`,
+                                subject: `🚨 GBM - ${percentualAlerta}% do limite de ${item.categoria}`,
                                 html: `
                                     <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
                                         <h2 style="color: #c89f53;">Guardian of Budget & Money</h2>
                                         <p>Olá, ${usuario.nome}.</p>
                                         <h1 style="color: #ef4444;">${porcentagemAtual.toFixed(1)}%</h1>
-                                        <p>Você já gastou <strong>R$ ${gastoAbs.toFixed(2)}</strong> de um limite de <strong>R$ ${limite.toFixed(2)}</strong> na categoria <strong>${item.categoria}</strong>.</p>
+                                        <p>Você ultrapassou o aviso configurado de <strong>${percentualAlerta}%</strong>.</p>
+                                        <p>Já gastou <strong>R$ ${gastoAbs.toFixed(2)}</strong> de um limite de <strong>R$ ${limite.toFixed(2)}</strong> na categoria <strong>${item.categoria}</strong>.</p>
                                         <p style="color: #8a9ba8; font-size: 12px;">Acesse seu painel para mais detalhes.</p>
                                     </div>
                                 `
@@ -1015,32 +1090,124 @@ app.put('/atualizar-categoria/:id', exigirLogin, async (req, res) => {
     }
 });
 app.get('/metas-resumo', exigirLogin, async (req, res) => {
-    const userId = req.session.userId;
-    const sql = `
-        SELECT m.categoria, m.valor_limite as limite, 
-        IFNULL(SUM(ABS(t.valor)), 0) as gasto
-        FROM metas m
-        LEFT JOIN transacoes t ON m.categoria = t.categoria 
-        AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE())
-        LEFT JOIN contas_bancarias cb ON t.conta_id = cb.id AND cb.usuario_id = ?
-        WHERE m.usuario_id = ?
-        GROUP BY m.categoria, m.valor_limite
-    `;
-    const [rows] = await db.promise().query(sql, [userId, userId]);
-    res.json(rows);
+    try {
+        await garantirEstruturaAlertasMultiplos();
+        const userId = req.session.userId;
+        const sql = `
+            SELECT
+                m.categoria,
+                m.valor_limite AS limite,
+                m.percentual_alerta,
+                IFNULL(SUM(
+                    CASE WHEN t.tipo = 'Despesa' THEN ABS(t.valor) ELSE 0 END
+                ), 0) AS gasto
+            FROM metas m
+            LEFT JOIN contas_bancarias cb
+              ON cb.usuario_id = m.usuario_id
+            LEFT JOIN transacoes t
+              ON t.conta_id = cb.id
+             AND t.categoria = m.categoria
+             AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE())
+             AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
+            WHERE m.usuario_id = ?
+            GROUP BY m.categoria, m.valor_limite, m.percentual_alerta
+        `;
+        const [rows] = await db.promise().query(sql, [userId]);
+        const [faixas] = await db.promise().query(
+            `SELECT categoria, percentual
+             FROM metas_alertas_percentuais
+             WHERE usuario_id = ?
+             ORDER BY categoria, percentual`,
+            [userId]
+        );
+
+        const faixasPorCategoria = new Map();
+        for (const faixa of faixas) {
+            if (!faixasPorCategoria.has(faixa.categoria)) {
+                faixasPorCategoria.set(faixa.categoria, []);
+            }
+            faixasPorCategoria.get(faixa.categoria).push(Number(faixa.percentual));
+        }
+
+        const resposta = rows.map((meta) => ({
+            categoria: meta.categoria,
+            limite: meta.limite,
+            gasto: meta.gasto,
+            // Limites antigos continuam funcionando com o percentual que já existia.
+            percentuais_alerta: faixasPorCategoria.get(meta.categoria)
+                || [Number(meta.percentual_alerta || 80)]
+        }));
+
+        res.json(resposta);
+    } catch (error) {
+        console.error('❌ Erro ao carregar resumo dos limites:', error);
+        res.status(500).json({ success: false, error: 'Falha ao carregar os limites.' });
+    }
 });
 app.post('/atualizar-meta-alerta', exigirLogin, async (req, res) => {
+    const banco = db.promise();
+    let transacaoAberta = false;
+
     try {
-        const { categoria, valor_limite, percentual_alerta } = req.body;
+        await garantirEstruturaAlertasMultiplos();
+        const { categoria, valor_limite, percentual_alerta, percentuais_alerta } = req.body;
         const userId = req.session.userId;
-        await db.promise().query(
+        const categoriaLimpa = String(categoria || '').trim();
+        const valorLimite = Number(valor_limite);
+        const percentuaisRecebidos = Array.isArray(percentuais_alerta)
+            ? percentuais_alerta
+            : [percentual_alerta];
+        const percentuais = [...new Set(
+            percentuaisRecebidos
+                .map(Number)
+                .filter((valor) => Number.isInteger(valor) && valor >= 1 && valor <= 100)
+        )].sort((a, b) => a - b);
+
+        if (!categoriaLimpa || categoriaLimpa.length > 120) {
+            return res.status(400).json({ success: false, error: 'Informe uma categoria válida.' });
+        }
+        if (!Number.isFinite(valorLimite) || valorLimite <= 0) {
+            return res.status(400).json({ success: false, error: 'O limite precisa ser maior que zero.' });
+        }
+        if (percentuais.length === 0) {
+            return res.status(400).json({ success: false, error: 'Adicione ao menos um percentual entre 1% e 100%.' });
+        }
+
+        await banco.beginTransaction();
+        transacaoAberta = true;
+
+        await banco.query(
             `INSERT INTO metas (categoria, valor_limite, percentual_alerta, usuario_id)
              VALUES (?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE valor_limite = VALUES(valor_limite), percentual_alerta = VALUES(percentual_alerta)`,
-            [categoria, valor_limite, percentual_alerta, userId]
+            [categoriaLimpa, valorLimite, percentuais[0], userId]
         );
-        res.json({ success: true });
+
+        await banco.query(
+            'DELETE FROM metas_alertas_percentuais WHERE usuario_id = ? AND categoria = ?',
+            [userId, categoriaLimpa]
+        );
+
+        const marcadores = percentuais.map(() => '(?, ?, ?)').join(', ');
+        const valores = percentuais.flatMap((percentual) => [userId, categoriaLimpa, percentual]);
+        await banco.query(
+            `INSERT INTO metas_alertas_percentuais (usuario_id, categoria, percentual)
+             VALUES ${marcadores}`,
+            valores
+        );
+
+        await banco.commit();
+        transacaoAberta = false;
+        await auditarMetas();
+        res.json({ success: true, percentuais_alerta: percentuais });
     } catch (error) {
+        if (transacaoAberta) {
+            try {
+                await banco.rollback();
+            } catch (erroRollback) {
+                console.error('❌ Erro ao desfazer atualização do limite:', erroRollback);
+            }
+        }
         console.error('❌ Erro ao atualizar meta/alerta:', error);
         res.status(500).json({ success: false, error: 'Falha ao atualizar meta.' });
     }
@@ -1875,6 +2042,8 @@ app.delete('/minha-conta', exigirLogin, async (req, res) => {
         const tabelasDoUsuario = [
             'saldos_por_banco',
             'regras_categoria',
+            'metas_alertas_disparos',
+            'metas_alertas_percentuais',
             'metas',
             'categorias_personalizadas',
             'alertas'
@@ -1891,6 +2060,8 @@ app.delete('/minha-conta', exigirLogin, async (req, res) => {
               AND TABLE_NAME IN (
                   'saldos_por_banco',
                   'regras_categoria',
+                  'metas_alertas_disparos',
+                  'metas_alertas_percentuais',
                   'metas',
                   'categorias_personalizadas',
                   'alertas'
