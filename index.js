@@ -834,6 +834,37 @@ app.get('/login-status', exigirLogin, async (req, res) => {
 // =======================================================
 // --- MÓDULO DE NOTIFICAÇÕES E AUDITORIA DE METAS ---
 // =======================================================
+async function exigirAcessoNotificacoes(req, res, next) {
+    try {
+        const [rows] = await db.promise().query(`
+            SELECT (
+                status_pagamento = 'pago'
+                OR (
+                    status_pagamento IN ('trial', 'cancelado')
+                    AND trial_expira IS NOT NULL
+                    AND trial_expira >= NOW()
+                )
+            ) AS permitido
+            FROM usuarios
+            WHERE id = ?
+            LIMIT 1
+        `, [req.session.userId]);
+
+        if (!rows.length || !Number(rows[0].permitido)) {
+            return res.status(403).json({
+                success: false,
+                codigo: 'RECURSO_PREMIUM',
+                error: 'As notificações ficam indisponíveis no plano gratuito após o teste.'
+            });
+        }
+
+        next();
+    } catch (error) {
+        console.error('❌ Erro ao validar acesso às notificações:', error);
+        res.status(500).json({ success: false, error: 'Não foi possível validar o plano.' });
+    }
+}
+
 async function auditarMetas() {
     try {
         const [prefs] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
@@ -846,7 +877,18 @@ async function auditarMetas() {
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
             JOIN metas m ON t.categoria = m.categoria AND m.usuario_id = cb.usuario_id
-            WHERE t.tipo = 'Despesa' AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE()) AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
+            JOIN usuarios u ON u.id = cb.usuario_id
+            WHERE t.tipo = 'Despesa'
+              AND (
+                  u.status_pagamento = 'pago'
+                  OR (
+                      u.status_pagamento IN ('trial', 'cancelado')
+                      AND u.trial_expira IS NOT NULL
+                      AND u.trial_expira >= NOW()
+                  )
+              )
+              AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE())
+              AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
             GROUP BY cb.usuario_id, t.categoria, m.valor_limite, m.percentual_alerta
         `;
         const [gastos] = await db.promise().query(sql);
@@ -919,7 +961,7 @@ app.post('/configuracoes-alerta', exigirLogin, async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
-app.get('/alertas', exigirLogin, async (req, res) => {
+app.get('/alertas', exigirLogin, exigirAcessoNotificacoes, async (req, res) => {
     try {
         const userId = req.session.userId;
         const [rows] = await db.promise().query(
@@ -932,7 +974,7 @@ app.get('/alertas', exigirLogin, async (req, res) => {
         res.status(500).json({ error: 'Falha ao buscar alertas.' });
     }
 });
-app.post('/alertas/marcar-lida', exigirLogin, async (req, res) => {
+app.post('/alertas/marcar-lida', exigirLogin, exigirAcessoNotificacoes, async (req, res) => {
     try {
         const { id } = req.body;
         const userId = req.session.userId;
