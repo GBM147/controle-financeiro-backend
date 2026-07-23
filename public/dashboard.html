@@ -289,27 +289,27 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             color: var(--cor-destaque);
         }
 
-        .menu-item-notificacoes {
+        .menu-item-com-indicador {
             display: flex !important;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
         }
 
-        .menu-item-notificacoes .menu-item-conteudo {
+        .menu-item-com-indicador .menu-item-conteudo {
             display: inline-flex;
             align-items: center;
             min-width: 0;
         }
 
-        .menu-item-notificacoes .menu-item-indicadores {
+        .menu-item-com-indicador .menu-item-indicadores {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             flex-shrink: 0;
         }
 
-        .cadeado-notificacoes {
+        .cadeado-premium {
             display: none;
             align-items: center;
             justify-content: center;
@@ -323,7 +323,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             text-shadow: none;
         }
 
-        .aviso-notificacoes-gratis {
+        .aviso-recursos-premium {
             display: none;
             margin: -2px 22px 10px 28px;
             padding: 9px 11px;
@@ -337,11 +337,11 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             line-height: 1.4;
         }
 
-        .menu-item-notificacoes.recurso-bloqueado {
+        .menu-item-premium.recurso-bloqueado {
             opacity: 0.72;
         }
 
-        .menu-item-notificacoes.recurso-bloqueado:hover {
+        .menu-item-premium.recurso-bloqueado:hover {
             border-left-color: #f59e0b !important;
             color: #fbbf24 !important;
             background: rgba(245, 158, 11, 0.08) !important;
@@ -731,20 +731,25 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     <a href="#" class="menu-item" onclick="iniciarTutorial(); fecharMenuLateral(); return false;">❓ Como usar o site</a>
     <div class="divisor"></div>
         <a href="Limite-de-Gastos.html" class="menu-item">🚧 Limite de Gastos</a>
-        <a href="#" class="menu-item" onclick="acessarRotaPremium('relatorio.html', 'Relatório Mensal'); return false;">📊 Relatório Mensal</a>
-        <a href="#" class="menu-item" onclick="acessarRotaPremium('comparativo.html', 'Comparativo Mensal'); return false;">📆 Comparativo Mensal</a>
+        <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio.html', 'Relatório Mensal'); return false;">
+            <span class="menu-item-conteudo">📊 Relatório Mensal</span>
+            <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
+        </a>
+        <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo Mensal'); return false;">
+            <span class="menu-item-conteudo">📆 Comparativo Mensal</span>
+            <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
+        </a>
+        <div id="aviso-recursos-premium" class="aviso-recursos-premium" role="status"></div>
         <a href="metas.html" class="menu-item">🎯 Metas</a>
         <a href="configuracoes.html" class="menu-item">⚙️ Configurações</a>
         
         <div class="divisor"></div>
-        <a href="#" id="item-notificacoes" class="menu-item menu-item-notificacoes" onclick="abrirPainelAlertas(); return false;">
+        <a href="#" id="item-notificacoes" class="menu-item menu-item-com-indicador" onclick="abrirPainelAlertas(); return false;">
             <span class="menu-item-conteudo">🔔 Notificações</span>
             <span class="menu-item-indicadores">
                 <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.7rem; padding:2px 8px; margin-left:8px;">0</span>
-                <span id="cadeado-notificacoes" class="cadeado-notificacoes" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
             </span>
         </a>
-        <div id="aviso-notificacoes-gratis" class="aviso-notificacoes-gratis" role="status"></div>
         <a href="#" class="menu-item texto-vermelho" onclick="fazerLogout(); return false;">🚪 Sair</a>
     </div>
 </div>
@@ -908,14 +913,19 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 <script>
 // Variável global para sabermos o status do cliente em qualquer lugar da tela
         window.usuarioPremium = true; 
-        window.notificacoesDisponiveis = false;
         window.usuarioEmTesteGratuito = false;
 
-        function atualizarEstadoNotificacoes(statusPagamento, trialExpira) {
-            const item = document.getElementById('item-notificacoes');
-            const cadeado = document.getElementById('cadeado-notificacoes');
-            const aviso = document.getElementById('aviso-notificacoes-gratis');
-            if (!item || !cadeado || !aviso) return;
+        function atualizarEstadoRecursosPremium(statusPagamento, trialExpira) {
+            const itens = [
+                document.getElementById('item-relatorio-mensal'),
+                document.getElementById('item-comparativo-mensal')
+            ].filter(Boolean);
+            const cadeados = [
+                document.getElementById('cadeado-relatorio'),
+                document.getElementById('cadeado-comparativo')
+            ].filter(Boolean);
+            const aviso = document.getElementById('aviso-recursos-premium');
+            if (!itens.length || !cadeados.length || !aviso) return;
 
             const status = String(statusPagamento || '').toLowerCase();
             const dataExpiracao = trialExpira ? new Date(trialExpira) : null;
@@ -925,28 +935,28 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             const assinaturaPaga = status === 'pago';
             const testeOuPrazoAtivo = (status === 'trial' || status === 'cancelado') && prazoValido;
 
-            window.notificacoesDisponiveis = assinaturaPaga || testeOuPrazoAtivo;
             window.usuarioEmTesteGratuito = !assinaturaPaga && testeOuPrazoAtivo;
-
-            item.classList.toggle('recurso-bloqueado', !window.notificacoesDisponiveis);
+            const recursosBloqueados = !assinaturaPaga && !testeOuPrazoAtivo;
+            itens.forEach((item) => {
+                item.classList.toggle('recurso-bloqueado', recursosBloqueados);
+                if (recursosBloqueados) item.setAttribute('aria-disabled', 'true');
+                else item.removeAttribute('aria-disabled');
+            });
 
             if (assinaturaPaga) {
-                cadeado.style.display = 'none';
+                cadeados.forEach((cadeado) => { cadeado.style.display = 'none'; });
                 aviso.style.display = 'none';
                 aviso.textContent = '';
-                item.removeAttribute('aria-disabled');
                 return;
             }
 
-            cadeado.style.display = 'inline-flex';
+            cadeados.forEach((cadeado) => { cadeado.style.display = 'inline-flex'; });
             aviso.style.display = 'block';
 
             if (testeOuPrazoAtivo) {
-                item.removeAttribute('aria-disabled');
-                aviso.textContent = 'Recurso disponível durante seu teste gratuito. No plano grátis, as notificações serão bloqueadas quando o teste terminar.';
+                aviso.textContent = 'Relatório Mensal e Comparativo estão disponíveis durante o teste gratuito. Ao final do teste, esses recursos ficarão indisponíveis no plano grátis.';
             } else {
-                item.setAttribute('aria-disabled', 'true');
-                aviso.textContent = 'Recurso indisponível no plano grátis. Assine o Premium para liberar as notificações.';
+                aviso.textContent = '🔒 Relatório Mensal e Comparativo são recursos Premium e não estão disponíveis no plano grátis.';
             }
         }
 
@@ -987,7 +997,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
                     console.log("Modo Premium: Tela limpa e sem anúncios.");
                 }
 
-                atualizarEstadoNotificacoes(data.statusPagamento, data.trialExpira);
+                atualizarEstadoRecursosPremium(data.statusPagamento, data.trialExpira);
                 return data;
             } catch (e) {
                 window.location.href = 'index.html';
@@ -1706,14 +1716,6 @@ function fecharModalTransacoes() {
 async function carregarAlertas() {
     try {
         const res = await fetchApi('/alertas?userId=' + pegarUserId());
-        if (res.status === 403) {
-            atualizarEstadoNotificacoes('gratuito', null);
-            if (window.intervaloAlertas) {
-                clearInterval(window.intervaloAlertas);
-                window.intervaloAlertas = null;
-            }
-            return;
-        }
         if (!res.ok) throw new Error('Falha ao carregar notificações.');
 
         const alertas = await res.json();
@@ -1737,16 +1739,6 @@ async function carregarAlertas() {
 }
 
 function abrirPainelAlertas() {
-    if (!window.notificacoesDisponiveis) {
-        fecharMenuLateral();
-        gbmConfirmar('🔒 <strong>Notificações é um recurso Premium.</strong><br><br>No plano gratuito, essa função fica indisponível depois que o teste termina.<br><br>Deseja assinar agora e liberar as notificações?').then((confirmado) => {
-            if (confirmado) {
-                window.location.href = 'pagamento.html';
-            }
-        });
-        return;
-    }
-
     const alertas = window._alertasCache || [];
     if (alertas.length === 0) {
         gbmAlerta('Nenhuma notificação por enquanto 🎉');
@@ -1765,7 +1757,6 @@ function abrirPainelAlertas() {
 }
 
 window.promessaVerificacaoAcesso.then(() => {
-    if (!window.notificacoesDisponiveis) return;
     carregarAlertas();
     window.intervaloAlertas = setInterval(carregarAlertas, 60000);
 }).catch(() => {
