@@ -10,6 +10,7 @@
         @media(max-width:700px){.resumo-grid{grid-template-columns:1fr}.categoria-barra{grid-template-columns:90px 1fr}.categoria-barra>strong{grid-column:2}}
         @media print{.topbar,.filtros-card,.actions{display:none!important}body{background:#fff;color:#111}.card{box-shadow:none;border:1px solid #ccc;background:#fff;color:#111}.container{width:100%;padding:0}th,td{color:#111}}
     </style>
+    <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
 <body>
     <header class="topbar"><a class="brand" href="dashboard.html"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a><a class="btn btn-small" href="dashboard.html">← Dashboard</a></header>
@@ -87,5 +88,6 @@
         });
         carregarFiltros().then(gerar).catch(e=>gbmToast(e.message,'erro'));
     </script>
+    <script src="gbm-tutorial.js"></script>
 </body>
 </html>

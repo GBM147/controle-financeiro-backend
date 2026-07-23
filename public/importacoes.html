@@ -18,6 +18,7 @@
         .tipo-receita { color:#7fffb7; }
         .tipo-despesa { color:#ff909c; }
     </style>
+    <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
 <body>
     <header class="topbar">
@@ -219,5 +220,6 @@
 
         Promise.all([carregarContas(), carregarHistorico()]).catch((erro) => gbmToast(erro.message, 'erro'));
     </script>
+    <script src="gbm-tutorial.js"></script>
 </body>
 </html>

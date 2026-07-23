@@ -627,75 +627,6 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 }
         }
 
-        /* --- TUTORIAL GUIADO GBM --- */
-        #tour-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 999999;
-            pointer-events: none;
-        }
-        #tour-spotlight {
-            position: fixed;
-            border-radius: 12px;
-            box-shadow: 0 0 0 9999px rgba(0, 6, 14, 0.82);
-            border: 2px solid #5fffa8;
-            transition: all 0.35s ease;
-            pointer-events: none;
-        }
-        #tour-caixa {
-            position: fixed;
-            background: #0f1a2b;
-            border: 1px solid rgba(95,255,168,0.35);
-            border-radius: 14px;
-            padding: 18px 18px;
-            max-width: 300px;
-            width: calc(100vw - 20px);
-            box-sizing: border-box;
-            box-shadow: 0 15px 45px rgba(0,0,0,0.7);
-            font-family: 'Inter', sans-serif;
-            transition: top 0.25s ease, left 0.25s ease;
-            pointer-events: auto;
-            z-index: 9999999;
-        }
-        #tour-caixa.centralizado {
-            position: fixed;
-            top: 50% !important; left: 50% !important;
-            transform: translate(-50%, -50%);
-            max-width: 380px;
-            text-align: center;
-        }
-        #tour-titulo {
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 700;
-            letter-spacing: 1px;
-            font-size: 1.15rem;
-            color: #5fffa8;
-            margin: 0 0 10px 0;
-        }
-        #tour-texto {
-            font-size: 0.92rem;
-            line-height: 1.55;
-            color: var(--texto-principal);
-            margin: 0 0 16px 0;
-        }
-        .tour-rodape { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        .tour-passos { font-size: 0.78rem; color: var(--texto-mutado); font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; }
-        .tour-botoes { display: flex; gap: 8px; }
-        .tour-btn {
-            padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
-            font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 0.5px; font-size: 0.85rem;
-            transition: 0.2s;
-        }
-        .tour-btn-pular { background: rgba(255,255,255,0.08); color: var(--texto-mutado); }
-        .tour-btn-pular:hover { background: rgba(255,255,255,0.15); }
-        .tour-btn-avancar { background: #2E8B57; color: #fff; }
-        .tour-btn-avancar:hover { background: #246e45; }
-
-        #tour-spotlight {
-            box-sizing: border-box;
-        }
-        /* Apagamos as regras do celular, agora a caixa flutua normalmente em qualquer tela! */
         .insights-panel {
             margin: 0 20px 20px;
             padding: 18px 20px;
@@ -709,6 +640,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         .insight-item strong { display: block; margin-bottom: 4px; color: #9dcbff; }
         .insight-item span { color: var(--texto-mutado); font-size: .78rem; line-height: 1.4; }
     </style>
+    <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
 <body>
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
@@ -1844,23 +1776,6 @@ window.promessaVerificacaoAcesso.then(() => {
         carregarInsights();
     </script>
 
-    <!-- TUTORIAL GUIADO GBM -->
-    <div id="tour-overlay">
-        <div id="tour-spotlight"></div>
-        <div id="tour-caixa">
-            <div class="tour-passos" id="tour-contador">Passo 1 de 10</div>
-            <h3 id="tour-titulo"></h3>
-            <p id="tour-texto"></p>
-            <div class="tour-rodape">
-                <button class="tour-btn tour-btn-pular" onclick="pularTutorial()">Pular tutorial</button>
-                <div class="tour-botoes">
-                    <button class="tour-btn tour-btn-pular" id="tour-btn-voltar" onclick="voltarTutorial()" style="display:none;">Voltar</button>
-                    <button class="tour-btn tour-btn-avancar" id="tour-btn-avancar" onclick="avancarTutorial()">Próximo</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
         <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:480px; width:90%; box-shadow:0 0 30px rgba(95,255,168,0.1);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -1878,221 +1793,6 @@ window.promessaVerificacaoAcesso.then(() => {
         </div>
     </div>
 
-    <script>
-        // --- TUTORIAL GUIADO GBM ---
-        const PASSOS_TUTORIAL = [
-            {
-                selector: null,
-                titulo: '👋 Bem-vindo ao GBM!',
-                texto: 'Guardian Of Budget & Money é o seu painel de controle financeiro. Vamos fazer um tour rápido pelas principais funções — leva menos de 1 minuto.'
-            },
-            {
-                selector: '.grid-cards',
-                titulo: '📊 Resumo Financeiro',
-                texto: 'Aqui você vê, em tempo real: quanto entrou, quanto saiu, o resultado do período e quanto você economizou em relação ao mês anterior.'
-            },
-            {
-                selector: '.lancamento-rapido',
-                titulo: '✍️ Lançamento Rápido',
-                texto: 'Adicione uma receita ou despesa manualmente a qualquer momento, sem precisar importar um extrato do banco.'
-            },
-            {
-                selector: '#painel-limite',
-                titulo: '🚧 Limite de Gastos',
-                texto: 'Defina um limite mensal para cada categoria. Se você ultrapassar, o GBM te avisa automaticamente por notificação.'
-            },
-            {
-                selector: '#painel-categoria',
-                titulo: '🏷️ Criar Nova Categoria',
-                texto: 'Crie categorias próprias (ex: Pet, Cursos) para organizar seus gastos do seu jeito. Elas ficam disponíveis só na sua conta.'
-            },
-            {
-                selector: '#painel-meta',
-                titulo: '🎯 Nova Meta',
-                texto: 'Defina metas de economia, como uma viagem ou reserva de emergência, e acompanhe o progresso na página de Metas.'
-            },
-            {
-                selector: '#card-ofx',
-                titulo: '🏦 Sincronizar com o Banco',
-                texto: 'Importe o extrato do seu banco em formato .OFX e o GBM lança e categoriza tudo automaticamente pra você.'
-            },
-            {
-                selector: '#btn-gerenciar-categorias',
-                titulo: '📋 Gerenciar Categorias',
-                texto: 'Alguma categoria veio errada na importação? Corrija aqui — o sistema aprende e acerta sozinho da próxima vez.'
-            },
-            {
-                selector: '#painel-exibicao',
-                titulo: '📈 Exibição de Dados',
-                texto: 'Escolha ver seus lançamentos em formato de tabela ou de gráfico, como preferir.'
-            },
-            {
-                selector: '#menu-btn',
-                titulo: '☰ Menu Lateral',
-                texto: 'Aqui você acessa Notificações, Limite de Gastos, Relatório Mensal e Metas. E pode rever este tutorial quando quiser, em "Como usar o site".'
-            },
-            {
-                selector: null,
-                titulo: '🎉 Pronto!',
-                texto: 'Agora você já conhece o essencial do GBM. Qualquer dúvida, é só voltar aqui pelo menu. Bons controles financeiros!'
-            }
-        ];
-
-        let _passoAtual = 0;
-
-        function getTutorialKey() {
-    const uid = pegarUserId();
-    return uid ? `gbm_tutorial_${uid}` : 'gbm_tutorial_concluido';
-}
-
-function marcarTutorialVisto() {
-    try {
-        localStorage.setItem(getTutorialKey(), 'sim');
-        localStorage.setItem('gbm_tutorial_concluido', 'sim');
-    } catch(e) {}
-}
-
-function iniciarTutorial() {
-    _passoAtual = 0;
-    marcarTutorialVisto();
-    document.getElementById('tour-overlay').style.display = 'block';
-    document.body.style.overflow = 'hidden'; // 🔒 Congela o fundo (impede rolagem)
-    renderizarPassoTutorial();
-}
-
-        function encontrarElementoPasso(passo) {
-            let el = passo.selector ? document.querySelector(passo.selector) : null;
-            if (!el && passo.selectorFallback) el = document.querySelector(passo.selectorFallback);
-            return el;
-        }
-
-function renderizarPassoTutorial() {
-    const passo = PASSOS_TUTORIAL[_passoAtual];
-    const spot  = document.getElementById('tour-spotlight');
-    const caixa = document.getElementById('tour-caixa');
-
-    document.getElementById('tour-titulo').innerText   = passo.titulo;
-    document.getElementById('tour-texto').innerText    = passo.texto;
-    document.getElementById('tour-contador').innerText = `Passo ${_passoAtual + 1} de ${PASSOS_TUTORIAL.length}`;
-    document.getElementById('tour-btn-voltar').style.display   = _passoAtual === 0 ? 'none' : 'inline-block';
-    document.getElementById('tour-btn-avancar').innerText      = _passoAtual === PASSOS_TUTORIAL.length - 1 ? 'Concluir' : 'Próximo';
-
-    const elAlvo = encontrarElementoPasso(passo);
-
-    // --- Passo SEM elemento: caixa centralizada na tela ---
-    if (!elAlvo) {
-        spot.style.cssText = 'width:0;height:0;top:-9999px;left:-9999px;box-shadow:0 0 0 9999px rgba(0,6,14,0.88);';
-        caixa.classList.add('centralizado');
-        caixa.style.top = '';
-        caixa.style.left = '';
-        return;
-    }
-
-    caixa.classList.remove('centralizado');
-
-    // Altura real do header sticky (descontada no cálculo de posição)
-    const headerEl     = document.querySelector('.gbm-header');
-    const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 56;
-    const MARGEM       = 12; // px de respiro entre spotlight e caixa
-    const BORDA_TELA   = 10; // px mínimo das bordas laterais
-
-    // 🔓 Libera o scroll rapidinho só para conseguir mover a tela até o elemento
-    document.body.style.overflow = '';
-    
-    // Rola a tela para que o topo do elemento fique logo abaixo do cabeçalho
-    const posicaoElemento = elAlvo.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({ top: posicaoElemento - headerHeight - 15, behavior: 'instant' });
-
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            // 🔒 Trava o scroll de novo com a tela já no lugar exato
-            document.body.style.overflow = 'hidden';
-
-            const rect       = elAlvo.getBoundingClientRect();
-            const folga      = 6;
-            const vw         = window.innerWidth;
-            const vh         = window.innerHeight;
-
-            // Spotlight
-            spot.style.top        = (rect.top  - folga) + 'px';
-            spot.style.left       = (rect.left - folga) + 'px';
-            spot.style.width      = (rect.width  + folga * 2) + 'px';
-            spot.style.height     = (rect.height + folga * 2) + 'px';
-            spot.style.boxShadow  = '0 0 0 9999px rgba(0,6,14,0.88)';
-
-            // Caixa
-            const MARGEM       = 15;
-            const BORDA_TELA   = 10;
-            const caixaLargura = Math.min(320, vw - BORDA_TELA * 2);
-            caixa.style.maxWidth = caixaLargura + 'px';
-
-            const caixaAltura  = caixa.offsetHeight || 220;
-
-            // Posição vertical inteligente
-            let topo;
-            const espacoAbaixo = vh - rect.bottom - MARGEM;
-            const espacoAcima  = rect.top - headerHeight - MARGEM;
-
-            if (espacoAbaixo >= caixaAltura) {
-                // Se couber, coloca perfeitamente ABAIXO do elemento
-                topo = rect.bottom + MARGEM;
-            } else if (espacoAcima >= caixaAltura) {
-                // Se não couber embaixo, mas couber em CIMA do elemento
-                topo = rect.top - caixaAltura - MARGEM;
-            } else {
-                // Se o elemento for gigante (tampa a tela toda), prende a caixa no FUNDO da tela.
-                // Assim o topo do painel (título e campos) fica 100% livre e visível!
-                topo = vh - caixaAltura - BORDA_TELA;
-            }
-
-            // Nunca encobre o header, nunca vaza abaixo da tela
-            topo = Math.max(headerHeight + MARGEM, Math.min(topo, vh - caixaAltura - BORDA_TELA));
-
-            // Posição horizontal: centraliza sob o elemento, mas não vaza nas bordas
-            let esquerda = rect.left + (rect.width / 2) - (caixaLargura / 2);
-            esquerda = Math.max(BORDA_TELA, Math.min(esquerda, vw - caixaLargura - BORDA_TELA));
-
-            caixa.style.top  = topo + 'px';
-            caixa.style.left = esquerda + 'px';
-        });
-    });
-}
-
-        function avancarTutorial() {
-            if (_passoAtual >= PASSOS_TUTORIAL.length - 1) {
-                finalizarTutorial();
-                return;
-            }
-            _passoAtual++;
-            renderizarPassoTutorial();
-        }
-
-        function voltarTutorial() {
-            if (_passoAtual === 0) return;
-            _passoAtual--;
-            renderizarPassoTutorial();
-        }
-
-        function pularTutorial() {
-            finalizarTutorial();
-        }
-
-        function finalizarTutorial() {
-    document.getElementById('tour-overlay').style.display = 'none';
-    document.body.style.overflow = ''; // 🔓 Libera o fundo de volta ao normal
-    marcarTutorialVisto();
-}
-
-        // Auto-inicia no primeiro acesso (dá um tempinho pra tudo carregar na tela)
-        window.addEventListener('load', () => {
-    try {
-        const uid = pegarUserId();
-        const chave = uid ? `gbm_tutorial_${uid}` : 'gbm_tutorial_concluido';
-        const jaViu = localStorage.getItem(chave) || localStorage.getItem('gbm_tutorial_concluido');
-        if (!jaViu) setTimeout(iniciarTutorial, 1200);
-    } catch(e) {}
-});
-    </script>
 <script>
     (function() {
         const canvas = document.getElementById('particles-canvas');
@@ -2140,5 +1840,6 @@ function renderizarPassoTutorial() {
         animate();
     })();
 </script>
+    <script src="gbm-tutorial.js"></script>
 </body>
 </html>

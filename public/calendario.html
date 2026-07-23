@@ -16,6 +16,7 @@
         .tipo-despesa { color:#ff909c; }
         @media(max-width:600px){.evento{grid-template-columns:55px 1fr}.evento-valor{grid-column:2}}
     </style>
+    <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
 <body>
     <header class="topbar">
@@ -157,5 +158,6 @@
         document.getElementById('mes-calendario').addEventListener('change', carregarCalendario);
         Promise.all([prepararContas(),carregarRecorrencias(),carregarCalendario()]).catch((erro)=>gbmToast(erro.message,'erro'));
     </script>
+    <script src="gbm-tutorial.js"></script>
 </body>
 </html>

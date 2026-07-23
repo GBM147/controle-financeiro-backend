@@ -1,0 +1,281 @@
+:root {
+    --gbm-tour-fundo: #0d1b2d;
+    --gbm-tour-borda: rgba(80, 227, 170, .55);
+    --gbm-tour-verde: #50e3aa;
+    --gbm-tour-verde-escuro: #258f65;
+    --gbm-tour-texto: #f5f8fc;
+    --gbm-tour-mutado: #b7c4d4;
+}
+
+body.gbm-tour-bloqueado {
+    overflow: hidden !important;
+}
+
+#gbm-tour-overlay[hidden] {
+    display: none !important;
+}
+
+#gbm-tour-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    font-family: Inter, Arial, sans-serif;
+}
+
+.gbm-tour-spotlight {
+    position: fixed;
+    z-index: 1;
+    box-sizing: border-box;
+    border: 2px solid var(--gbm-tour-verde);
+    border-radius: 13px;
+    box-shadow:
+        0 0 0 9999px rgba(1, 7, 16, .86),
+        0 0 28px rgba(80, 227, 170, .5);
+    pointer-events: none;
+    transition:
+        top .22s ease,
+        left .22s ease,
+        width .22s ease,
+        height .22s ease;
+}
+
+.gbm-tour-spotlight.gbm-tour-sem-alvo {
+    top: -20px !important;
+    left: -20px !important;
+    width: 1px !important;
+    height: 1px !important;
+    border: 0;
+    border-radius: 0;
+    box-shadow: 0 0 0 9999px rgba(1, 7, 16, .9);
+}
+
+.gbm-tour-caixa {
+    position: fixed;
+    z-index: 2;
+    width: min(390px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+    padding: 20px;
+    border: 1px solid var(--gbm-tour-borda);
+    border-radius: 16px;
+    background: var(--gbm-tour-fundo);
+    color: var(--gbm-tour-texto);
+    box-shadow: 0 22px 65px rgba(0, 0, 0, .65);
+    box-sizing: border-box;
+    outline: none;
+}
+
+.gbm-tour-caixa.gbm-tour-centralizada {
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%);
+}
+
+.gbm-tour-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.gbm-tour-contador {
+    color: var(--gbm-tour-mutado);
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.gbm-tour-fechar {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .06);
+    color: var(--gbm-tour-texto);
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.gbm-tour-fechar:hover,
+.gbm-tour-fechar:focus-visible {
+    background: rgba(255, 255, 255, .14);
+}
+
+.gbm-tour-progresso {
+    height: 4px;
+    margin-bottom: 17px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .1);
+}
+
+.gbm-tour-progresso > span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #2e8b57, #50e3aa);
+    transition: width .2s ease;
+}
+
+.gbm-tour-caixa h2 {
+    margin: 0 0 10px;
+    color: var(--gbm-tour-verde);
+    font-family: Rajdhani, Inter, Arial, sans-serif;
+    font-size: 1.3rem;
+    line-height: 1.2;
+    letter-spacing: .02em;
+}
+
+.gbm-tour-caixa p {
+    margin: 0 0 20px;
+    color: var(--gbm-tour-texto);
+    font-size: .94rem;
+    line-height: 1.58;
+}
+
+.gbm-tour-rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.gbm-tour-navegacao {
+    display: flex;
+    gap: 8px;
+}
+
+.gbm-tour-botao {
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 9px;
+    font: inherit;
+    font-size: .84rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.gbm-tour-botao[hidden] {
+    display: none !important;
+}
+
+.gbm-tour-botao:focus-visible,
+#gbm-tour-ajuda:focus-visible {
+    outline: 3px solid rgba(80, 227, 170, .4);
+    outline-offset: 2px;
+}
+
+.gbm-tour-secundario {
+    border: 1px solid rgba(255, 255, 255, .14);
+    background: rgba(255, 255, 255, .07);
+    color: var(--gbm-tour-mutado);
+}
+
+.gbm-tour-secundario:hover {
+    background: rgba(255, 255, 255, .14);
+    color: #fff;
+}
+
+.gbm-tour-principal {
+    background: var(--gbm-tour-verde-escuro);
+    color: #fff;
+}
+
+.gbm-tour-principal:hover {
+    background: #2fb87e;
+}
+
+#gbm-tour-ajuda {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147482000;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 15px;
+    border: 1px solid rgba(80, 227, 170, .55);
+    border-radius: 999px;
+    background: #0d1b2d;
+    color: #fff;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .38);
+    font-family: Inter, Arial, sans-serif;
+    font-size: .84rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+#gbm-tour-ajuda:hover {
+    background: #142941;
+    border-color: var(--gbm-tour-verde);
+}
+
+#gbm-tour-ajuda .gbm-tour-ajuda-icone {
+    color: var(--gbm-tour-verde);
+    font-size: 1.05rem;
+}
+
+@media (max-width: 680px) {
+    .gbm-tour-caixa:not(.gbm-tour-centralizada) {
+        top: auto !important;
+        right: 10px !important;
+        bottom: 10px !important;
+        left: 10px !important;
+        width: auto;
+        max-height: min(48vh, 430px);
+        transform: none !important;
+    }
+
+    .gbm-tour-caixa.gbm-tour-centralizada {
+        width: calc(100vw - 20px);
+        max-height: calc(100vh - 20px);
+    }
+
+    .gbm-tour-rodape {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .gbm-tour-navegacao {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .gbm-tour-botao {
+        width: 100%;
+    }
+
+    #gbm-tour-ajuda {
+        right: 12px;
+        bottom: 12px;
+        width: 46px;
+        height: 46px;
+        justify-content: center;
+        padding: 0;
+    }
+
+    #gbm-tour-ajuda .gbm-tour-ajuda-texto {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gbm-tour-spotlight,
+    .gbm-tour-progresso > span {
+        transition: none;
+    }
+}
