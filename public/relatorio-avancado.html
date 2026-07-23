@@ -92,7 +92,7 @@
             document.getElementById('total-resultado').style.color=Number(r.resultado)>=0?'var(--green)':'var(--red)';
             const categorias=Object.entries(r.por_categoria).sort((a,b)=>b[1]-a[1]);const max=categorias[0]?.[1]||1;
             document.getElementById('grafico-categorias').innerHTML=categorias.length?categorias.slice(0,10).map(([nome,valor])=>`<div class="categoria-barra"><span>${gbmEscapar(nome)}</span><div class="mini-barra"><span style="width:${(valor/max)*100}%"></span></div><strong>${gbmMoeda(valor)}</strong></div>`).join(''):'<div class="empty">Sem despesas no período.</div>';
-            document.getElementById('tabela-transacoes').innerHTML=relatorioAtual.transacoes.length?`<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Tipo</th><th>Valor</th></tr></thead><tbody>${relatorioAtual.transacoes.map(t=>`<tr><td>${gbmData(t.data_transacao)}</td><td>${gbmEscapar(t.descricao)}</td><td>${gbmEscapar(t.categoria)}</td><td>${gbmEscapar(t.conta)}</td><td>${gbmEscapar(t.tipo)}</td><td>${gbmMoeda(t.valor)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhuma transação encontrada.</div>';
+            document.getElementById('tabela-transacoes').innerHTML=relatorioAtual.transacoes.length?`<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Valor</th></tr></thead><tbody>${relatorioAtual.transacoes.map(t=>`<tr><td>${gbmData(t.data_transacao)}</td><td>${gbmEscapar(t.descricao)}</td><td>${gbmEscapar(t.categoria)}</td><td>${gbmEscapar(t.conta)}</td><td>${gbmMoeda(t.valor)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhuma transação encontrada.</div>';
             document.getElementById('resultado').hidden=false;
         }
 
@@ -204,7 +204,7 @@
             doc.text('Transações',margem,inicioTransacoes-3);
 
             doc.autoTable({
-                head:[['Data','Descrição','Categoria','Conta','Tipo','Valor']],
+                head:[['Data','Descrição','Categoria','Conta','Valor']],
                 body:relatorioAtual.transacoes.map(t=>{
                     const receita=String(t.tipo).toLowerCase()==='receita';
                     return[
@@ -212,7 +212,6 @@
                         String(t.descricao||''),
                         String(t.categoria||''),
                         String(t.conta||''),
-                        String(t.tipo||''),
                         `${receita?'+':'-'} ${moedaPdf(t.valor)}`
                     ];
                 }),
@@ -225,19 +224,14 @@
                 alternateRowStyles:{fillColor:[245,247,250]},
                 columnStyles:{
                     0:{cellWidth:23},
-                    1:{cellWidth:98},
-                    2:{cellWidth:47},
-                    3:{cellWidth:42},
-                    4:{cellWidth:25},
-                    5:{cellWidth:34,halign:'right',fontStyle:'bold'}
+                    1:{cellWidth:120},
+                    2:{cellWidth:55},
+                    3:{cellWidth:40},
+                    4:{cellWidth:34,halign:'right',fontStyle:'bold'}
                 },
                 didParseCell(dado){
                     if(dado.section!=='body')return;
                     if(dado.column.index===4){
-                        dado.cell.styles.textColor=String(dado.cell.raw).toLowerCase()==='receita'?[16,135,86]:[210,55,55];
-                        dado.cell.styles.fontStyle='bold';
-                    }
-                    if(dado.column.index===5){
                         dado.cell.styles.textColor=String(dado.cell.raw).startsWith('+')?[16,135,86]:[210,55,55];
                     }
                 }
@@ -259,7 +253,7 @@
         document.getElementById('baixar-pdf').addEventListener('click',baixarPDF);
 
         document.getElementById('baixar-csv').addEventListener('click',()=>{
-            if(!relatorioAtual)return;const linhas=[['Data','Descrição','Categoria','Conta','Tipo','Valor'],...relatorioAtual.transacoes.map(t=>[String(t.data_transacao).slice(0,10),t.descricao,t.categoria,t.conta,t.tipo,Number(t.valor).toFixed(2).replace('.',',')])];
+            if(!relatorioAtual)return;const linhas=[['Data','Descrição','Categoria','Conta','Valor'],...relatorioAtual.transacoes.map(t=>[String(t.data_transacao).slice(0,10),t.descricao,t.categoria, t.conta,Number(t.valor).toFixed(2).replace('.',',')])];
             const csv='\\ufeff'+linhas.map(l=>l.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\\n');
             const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`Relatório ${periodoDoRelatorio().arquivo} - GBM.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
         });

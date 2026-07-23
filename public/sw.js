@@ -1,4 +1,4 @@
-const CACHE_GBM = 'gbm-estatico-v7';
+const CACHE_GBM = 'gbm-estatico-v8';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
     '/auth.js',
