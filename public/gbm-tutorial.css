@@ -226,32 +226,75 @@ body.gbm-tour-bloqueado {
 
 @media (max-width: 680px) {
     .gbm-tour-caixa:not(.gbm-tour-centralizada) {
-        top: auto !important;
-        right: 10px !important;
-        bottom: 10px !important;
-        left: 10px !important;
+        right: 8px !important;
+        left: 8px !important;
         width: auto;
-        max-height: min(48vh, 430px);
+        max-height: min(42vh, 350px);
+        padding: 14px;
+        border-radius: 14px;
         transform: none !important;
     }
 
     .gbm-tour-caixa.gbm-tour-centralizada {
-        width: calc(100vw - 20px);
-        max-height: calc(100vh - 20px);
+        width: calc(100vw - 16px);
+        max-height: calc(100vh - 16px);
+        padding: 16px;
+    }
+
+    .gbm-tour-topo {
+        gap: 10px;
+        margin-bottom: 7px;
+    }
+
+    .gbm-tour-fechar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .gbm-tour-progresso {
+        margin-bottom: 10px;
+    }
+
+    .gbm-tour-caixa h2 {
+        margin-bottom: 7px;
+        font-size: 1.15rem;
+    }
+
+    .gbm-tour-caixa p {
+        margin-bottom: 12px;
+        font-size: .86rem;
+        line-height: 1.42;
     }
 
     .gbm-tour-rodape {
+        display: grid;
+        grid-template-columns: minmax(0, .95fr) minmax(0, .75fr) minmax(0, 1fr);
         align-items: stretch;
-        flex-direction: column;
+        gap: 6px;
     }
 
     .gbm-tour-navegacao {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: contents;
     }
 
     .gbm-tour-botao {
         width: 100%;
+        min-height: 38px;
+        padding: 7px 5px;
+        font-size: .75rem;
+        line-height: 1.15;
+    }
+
+    .gbm-tour-pular {
+        grid-column: 1;
+    }
+
+    .gbm-tour-voltar {
+        grid-column: 2;
+    }
+
+    .gbm-tour-avancar {
+        grid-column: 3;
     }
 
     #gbm-tour-ajuda {

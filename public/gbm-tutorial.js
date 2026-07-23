@@ -747,10 +747,20 @@
         )}px`;
 
         if (larguraJanela <= 680) {
-            caixa.style.top = 'auto';
-            caixa.style.left = '10px';
-            caixa.style.right = '10px';
-            caixa.style.bottom = '10px';
+            const alturaCaixa = caixa.offsetHeight || Math.min(350, alturaJanela * 0.42);
+            const centroAlvo = retangulo.top + retangulo.height / 2;
+            const espacoAcima = retangulo.top;
+            const espacoAbaixo = alturaJanela - retangulo.bottom;
+            const caixaNoTopo =
+                (espacoAcima >= alturaCaixa + margemCaixa && espacoAcima > espacoAbaixo) ||
+                (espacoAbaixo < alturaCaixa + margemCaixa && centroAlvo >= alturaJanela / 2);
+
+            caixa.style.left = '8px';
+            caixa.style.right = '8px';
+            caixa.style.top = caixaNoTopo ? '8px' : 'auto';
+            caixa.style.bottom = caixaNoTopo
+                ? 'auto'
+                : 'max(8px, env(safe-area-inset-bottom))';
             return;
         }
 
@@ -809,10 +819,12 @@
             });
         }
 
-        document.body.classList.add('gbm-tour-bloqueado');
         window.requestAnimationFrame(() => {
-            posicionar();
-            caixa.focus({ preventScroll: true });
+            window.requestAnimationFrame(() => {
+                document.body.classList.add('gbm-tour-bloqueado');
+                posicionar();
+                caixa.focus({ preventScroll: true });
+            });
         });
     }
 

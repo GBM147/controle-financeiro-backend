@@ -469,162 +469,214 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
            📲 MODO CELULAR (RESPONSIVIDADE)
            ========================================= */
         @media (max-width: 768px) {
-            /* 1. Cabeçalho mais compacto */
-            .gbm-header { padding: 10px 15px; }
-            .gbm-title { display: none; } /* Esconde o nome grande para o menu caber perfeitamente */
-            .gbm-logo-img { height: 40px !important; }
-
-            /* 2. Empilhar as Caixas de Valores (Totais) */
-            .grid-cards { 
-                grid-template-columns: 1fr; /* Força 1 coluna apenas */
-                gap: 15px; 
-                margin: 15px; 
+            html,
+            body {
+                max-width: 100%;
+                overflow-x: hidden;
             }
 
-            /* 3 e 4. FORÇA BRUTA: Empilhar tudo no Lançamento Rápido */
-            .lancamento-rapido {
-                display: flex !important;
-                flex-direction: column !important;
-                height: auto !important;
+            .gbm-header {
+                padding: 10px 15px;
+            }
+
+            .gbm-title {
+                display: none;
+            }
+
+            .gbm-logo-img {
+                height: 40px !important;
+            }
+
+            /* O mesmo recuo lateral é usado em todos os blocos do dashboard. */
+            .grid-cards {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 12px;
+                margin: 15px;
+            }
+
+            .grid-cards .card,
+            .lancamento-rapido,
+            .painel-ajustes,
+            .chart-container,
+            .insights-panel,
+            #card-ofx {
+                box-sizing: border-box !important;
+                min-width: 0;
+            }
+
+            section[style*="margin:18px 20px 0"] {
+                margin: 15px 15px 0 !important;
+                justify-content: stretch !important;
+            }
+
+            #filtro-conta-dashboard {
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+
+            .insights-panel {
+                margin: 0 15px 15px !important;
                 padding: 15px !important;
             }
 
-            /* Força as divs e estruturas internas a virarem coluna */
-            .lancamento-rapido form,
-            .lancamento-rapido div {
-                display: flex !important;
-                flex-direction: column !important;
+            .insights-lista {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .lancamento-rapido {
+                display: block !important;
+                width: auto !important;
+                height: auto !important;
+                margin: 0 15px 15px !important;
+                padding: 15px !important;
+            }
+
+            .lancamento-rapido > div {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr);
+                gap: 10px !important;
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }
 
-            /* Força os inputs e botões a ocuparem 100% da tela do celular */
-            .lancamento-rapido input, 
-            .lancamento-rapido select, 
+            .lancamento-rapido input,
+            .lancamento-rapido select,
             .lancamento-rapido button {
+                display: block !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                min-width: 0 !important;
+                height: 48px !important;
+                margin: 0 !important;
                 box-sizing: border-box !important;
-                height: 50px !important; 
                 font-size: 16px !important;
-                margin-top: 10px !important; 
-                margin-left: 0 !important;
-                display: block !important;
             }
 
-            /* Garante que o botão de Desfazer fique utilizável no celular */
-            .lancamento-rapido button[onclick="desfazerUltimo()"] {
-                margin-top: 5px !important;
-                margin-left: 0 !important;
+            .linha-paineis {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr);
+                gap: 12px !important;
+                width: auto !important;
+                margin: 0 15px 15px !important;
             }
 
-            /* 5. Gráfico e Tabela */
-            .chart-container { margin: 15px; padding: 10px; }
-            .chart-container.hibrido {
-                flex-direction: column;
-                height: auto !important;
+            .linha-paineis .painel-ajustes,
+            #painel-exibicao {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
             }
 
-            .grafico-wrapper { height: 250px !important; max-height: 250px !important; margin-bottom: 20px; overflow: hidden; }
-            .grafico-wrapper canvas { max-height: 250px !important; }
-            
-            .container-tabela {
-                height: 400px !important;
-                overflow-x: auto; /* Permite rolar a tabela para os lados se a tela for muito estreita */
-                /* OFX — empilhar no mobile */
-            .card[style*="justify-content: space-between"] {
+            #painel-exibicao {
+                width: auto !important;
+                margin: 0 15px 15px !important;
+            }
+
+            .painel-ajustes {
                 flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 15px !important;
+                align-items: stretch !important;
                 padding: 15px !important;
             }
-            .card[style*="justify-content: space-between"] form {
-                display: flex !important;
-                flex-direction: column !important;
-                width: 100% !important;
-                gap: 10px !important;
+
+            .painel-ajustes .grupo-ajuste {
+                width: 100%;
+                min-width: 0;
             }
-            .card[style*="justify-content: space-between"] form .btn-acao {
+
+            .painel-ajustes .grupo-ajuste > div:not(#lista-categorias-personalizadas) {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr);
+                gap: 8px !important;
                 width: 100% !important;
-                box-sizing: border-box !important;
+            }
+
+            .painel-ajustes select,
+            .painel-ajustes input,
+            .painel-ajustes button:not(.chip-btn) {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
                 height: 46px !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+                font-size: 16px !important;
+            }
+
+            #lista-categorias-personalizadas {
+                display: flex !important;
+                flex-flow: row wrap !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }
+
+            #lista-categorias-personalizadas button,
+            #lista-categorias-personalizadas span button {
+                width: auto !important;
+                height: auto !important;
+                min-height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-size: .9rem !important;
+            }
+
+            .chart-container,
+            .chart-container.hibrido {
+                width: auto !important;
+                max-width: none !important;
+                min-height: 0 !important;
+                height: auto !important;
+                margin: 0 15px 15px !important;
+                padding: 12px !important;
+            }
+
+            .grafico-wrapper {
+                width: 100% !important;
+                height: 260px !important;
+                max-height: 260px !important;
+                margin-bottom: 12px;
+                overflow: hidden;
+            }
+
+            .grafico-wrapper canvas {
+                max-height: 260px !important;
+            }
+
+            .container-tabela {
+                width: 100% !important;
+                height: 360px !important;
+                overflow-x: auto;
+            }
+
+            #card-ofx {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                width: auto !important;
+                margin: 0 15px 15px !important;
+                padding: 15px !important;
+                gap: 12px !important;
+            }
+
+            #card-ofx form {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr);
+                width: 100% !important;
+                gap: 8px !important;
+            }
+
+            #card-ofx form button,
+            #card-ofx form span {
+                width: 100% !important;
+                height: 46px !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+                text-align: center !important;
                 font-size: 15px !important;
             }
-            #nome-arquivo {
-                font-size: 0.8rem !important;
-                word-break: break-all !important;
+
+            #card-ofx h3 {
+                font-size: 1rem !important;
             }
-            /* 7. Card OFX no celular */
-#card-ofx {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 15px;
-}
-
-#card-ofx form {
-    flex-direction: column !important;
-    width: 100% !important;
-}
-
-#card-ofx form button,
-#card-ofx form span {
-    width: 100% !important;
-    box-sizing: border-box !important;
-    text-align: center !important;
-    height: 46px !important;
-    font-size: 16px !important;
-    margin: 0 !important;
-}
-
-#card-ofx h3 { font-size: 1rem !important; }
-            }
-            /* 6. Empilhar o painel de Limite de Gastos e Nova Meta no celular */
-.painel-ajustes {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    padding: 15px !important;
-}
-
-.painel-ajustes .grupo-ajuste > div {
-    flex-direction: column !important;
-    flex-wrap: nowrap !important;
-    width: 100% !important;
-}
-
-.painel-ajustes select,
-.painel-ajustes input,
-.painel-ajustes button:not(.chip-btn) {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    margin: 0 0 8px 0 !important;
-    height: 46px !important;
-    font-size: 16px !important;
-}
-
-/* Exceção: botões ✕ das tags de categoria não podem ser 100% */
-#lista-categorias-personalizadas button,
-#lista-categorias-personalizadas span button {
-    width: auto !important;
-    height: auto !important;
-    min-height: unset !important;
-    font-size: 0.9rem !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Empilha os três painéis (Limite, Categoria, Meta) verticalmente */
-.linha-paineis {
-    flex-direction: column !important;
-    margin: 0 15px 15px 15px !important;
-}
-
-.linha-paineis .painel-ajustes {
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 0 12px 0 !important;
-}
         }
 
         .insights-panel {
