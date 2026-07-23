@@ -1408,39 +1408,17 @@ function assinaturaEstaCanceladaNoMP(status) {
     return statusNormalizado === 'canceled' || statusNormalizado === 'cancelled';
 }
 
-// Assinaturas antigas foram criadas antes de guardarmos o preapproval_id.
-// Como o projeto já gravava external_reference = userId, ainda é possível
-// localizar a assinatura certa pelo e-mail e por essa referência no MP.
+// O preapproval_id é a prova de que uma assinatura foi criada no Mercado Pago.
+// Sem esse ID, o status existente é apenas local e nenhuma chamada ao MP deve
+// ser feita: não existe assinatura remota para consultar ou cancelar.
 async function localizarAssinaturaNoMP(userId, email, preapprovalId) {
+    if (!preapprovalId) {
+        return { preApproval: null, preapprovalId: null, assinatura: null };
+    }
+
     const preApproval = new PreApproval(mpClient);
-
-    if (preapprovalId) {
-        const assinatura = await preApproval.get({ preApprovalId: String(preapprovalId) });
-        return { preApproval, preapprovalId: String(preapprovalId), assinatura };
-    }
-
-    if (!email) {
-        return { preApproval, preapprovalId: null, assinatura: null };
-    }
-
-    const busca = await preApproval.search({
-        options: { payer_email: email }
-    });
-    const resultados = Array.isArray(busca?.results) ? busca.results : [];
-    const candidatas = resultados
-        .filter((assinatura) => String(assinatura.external_reference) === String(userId))
-        .sort((a, b) => {
-            const dataA = new Date(a.last_modified || a.date_created || 0).getTime();
-            const dataB = new Date(b.last_modified || b.date_created || 0).getTime();
-            return dataB - dataA;
-        });
-    const assinatura = candidatas[0] || null;
-
-    return {
-        preApproval,
-        preapprovalId: assinatura?.id ? String(assinatura.id) : null,
-        assinatura
-    };
+    const assinatura = await preApproval.get({ preApprovalId: String(preapprovalId) });
+    return { preApproval, preapprovalId: String(preapprovalId), assinatura };
 }
 
 app.get('/minha-assinatura', exigirLogin, async (req, res) => {
