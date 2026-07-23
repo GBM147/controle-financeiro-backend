@@ -1878,7 +1878,32 @@ app.delete('/minha-conta', exigirLogin, async (req, res) => {
             'alertas'
         ];
 
+        // Nem todas as versões do banco possuem todas as tabelas acima.
+        // Confere o esquema real antes de apagar para que uma tabela opcional
+        // ausente não interrompa (e reverta) toda a exclusão da conta.
+        const [tabelasDisponiveis] = await banco.query(`
+            SELECT TABLE_NAME
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND COLUMN_NAME = 'usuario_id'
+              AND TABLE_NAME IN (
+                  'saldos_por_banco',
+                  'regras_categoria',
+                  'metas',
+                  'categorias_personalizadas',
+                  'alertas'
+              )
+        `);
+        const nomesTabelasDisponiveis = new Set(
+            tabelasDisponiveis.map((linha) => linha.TABLE_NAME)
+        );
+
         for (const tabela of tabelasDoUsuario) {
+            if (!nomesTabelasDisponiveis.has(tabela)) {
+                console.log(`ℹ️ Tabela opcional "${tabela}" ausente; exclusão continuará.`);
+                continue;
+            }
+
             await banco.query(`DELETE FROM ${identificar(tabela)} WHERE usuario_id = ?`, [userId]);
         }
 
