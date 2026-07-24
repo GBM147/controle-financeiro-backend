@@ -43,8 +43,8 @@
                 },
                 {
                     alvo: '#painel-meta',
-                    titulo: '🎯 Metas financeiras',
-                    texto: 'Crie um objetivo de economia. As contribuições e o progresso são acompanhados na página de Metas.'
+                    titulo: '🎯 Objetivos de poupança',
+                    texto: 'Crie um objetivo de poupança. Ele só avança com contribuições manuais ou transações que você destinar explicitamente.'
                 },
                 {
                     alvo: '#painel-exibicao',
@@ -59,7 +59,7 @@
                 {
                     alvo: '#menu-btn',
                     titulo: '☰ Menu principal',
-                    texto: 'Abra o menu para acessar contas, importações, calendário, limites, relatórios, metas, notificações e configurações.'
+                    texto: 'Abra o menu para acessar contas, importações, calendário, limites, relatórios, objetivos de poupança, notificações e configurações.'
                 },
                 {
                     alvo: null,
@@ -209,16 +209,16 @@
             ]
         },
         'metas.html': {
-            titulo: 'Metas financeiras',
+            titulo: 'Objetivos de poupança',
             passos: [
                 {
                     alvo: null,
-                    titulo: '🎯 Transforme planos em metas',
-                    texto: 'Use esta página para objetivos de economia, como viagem, reserva ou compra importante.'
+                    titulo: '🎯 Transforme planos em objetivos',
+                    texto: 'Use esta página para objetivos de poupança, como viagem, reserva ou compra importante. Categorias apenas classificam movimentações.'
                 },
                 {
                     alvo: '#form-objetivo',
-                    titulo: '➕ Criar uma meta',
+                    titulo: '➕ Criar um objetivo',
                     texto: 'Defina nome, valor desejado, valor inicial, prazo e cor de identificação.'
                 },
                 {
@@ -229,12 +229,12 @@
                 {
                     alvo: '#lista-objetivos',
                     titulo: '📈 Acompanhar progresso',
-                    texto: 'Os cartões mostram quanto já foi acumulado, quanto falta e o prazo de cada meta.'
+                    texto: 'Os cartões mostram quanto já foi acumulado, quanto falta e o prazo de cada objetivo.'
                 },
                 {
                     alvo: '#lista-objetivos',
                     titulo: '➕ Registrar contribuições',
-                    texto: 'Dentro de cada cartão, use a ação de contribuição sempre que separar mais dinheiro para o objetivo.'
+                    texto: 'Dentro de cada cartão, registre contribuições manuais. Você também pode destinar uma transação explicitamente pelo dashboard.'
                 }
             ]
         },

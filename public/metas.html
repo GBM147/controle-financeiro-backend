@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Metas Financeiras | GBM</title>
+    <title>Objetivos de Poupança | GBM</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="gbm-pages.css">
     <style>
@@ -46,12 +46,19 @@
 
     <main class="container">
         <div class="page-title">
-            <h1>Metas financeiras</h1>
-            <p>Crie objetivos reais, registre contribuições e acompanhe quanto falta para chegar lá.</p>
+            <h1>Objetivos de poupança</h1>
+            <p>Planeje valores que deseja guardar e acompanhe quanto falta para chegar lá.</p>
         </div>
+        <section class="card" style="border-color:rgba(139,92,246,.35);margin-bottom:18px">
+            <p style="margin:0;color:var(--muted);line-height:1.65">
+                <strong style="color:var(--text)">Categorias</strong> classificam suas movimentações.
+                <strong style="color:var(--text)">Objetivos de poupança</strong> só avançam quando você registra
+                uma contribuição manual ou destina explicitamente uma transação pelo dashboard. Nada é vinculado automaticamente por nome ou categoria.
+            </p>
+        </section>
 
         <section class="card">
-            <h2 id="titulo-form">Criar nova meta</h2>
+            <h2 id="titulo-form">Criar novo objetivo</h2>
             <form id="form-objetivo" class="form-grid">
                 <input type="hidden" id="objetivo-id">
                 <div class="field">
@@ -77,7 +84,7 @@
                 <div class="field" style="justify-content:end">
                     <div class="actions end">
                         <button type="button" id="cancelar-edicao" class="btn" hidden>Cancelar</button>
-                        <button class="btn btn-primary" type="submit">Salvar meta</button>
+                        <button class="btn btn-primary" type="submit">Salvar objetivo</button>
                     </div>
                 </div>
             </form>
@@ -85,7 +92,7 @@
 
         <div class="divider"></div>
         <section id="lista-objetivos" class="grid grid-2">
-            <div class="empty">Carregando suas metas...</div>
+            <div class="empty">Carregando seus objetivos...</div>
         </section>
     </main>
 
@@ -135,7 +142,7 @@
         function renderizarObjetivos() {
             const container = document.getElementById('lista-objetivos');
             if (!objetivos.length) {
-                container.innerHTML = '<div class="empty">Nenhuma meta criada ainda. Comece pela sua prioridade financeira.</div>';
+                container.innerHTML = '<div class="empty">Nenhum objetivo criado ainda. Comece pela sua prioridade de poupança.</div>';
                 return;
             }
             container.innerHTML = objetivos.map((objetivo) => {
@@ -184,7 +191,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 }));
-                gbmToast(id ? 'Meta atualizada.' : 'Meta criada.');
+                gbmToast(id ? 'Objetivo atualizado.' : 'Objetivo criado.');
                 limparFormulario();
                 carregarObjetivos();
             } catch (erro) {
@@ -202,7 +209,7 @@
             document.getElementById('objetivo-inicial').disabled = true;
             document.getElementById('objetivo-prazo').value = objetivo.prazo ? String(objetivo.prazo).slice(0, 10) : '';
             document.getElementById('objetivo-cor').value = objetivo.cor || '#8b5cf6';
-            document.getElementById('titulo-form').textContent = 'Editar meta';
+            document.getElementById('titulo-form').textContent = 'Editar objetivo';
             document.getElementById('cancelar-edicao').hidden = false;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -212,7 +219,7 @@
             document.getElementById('objetivo-id').value = '';
             document.getElementById('objetivo-cor').value = '#8b5cf6';
             document.getElementById('objetivo-inicial').disabled = false;
-            document.getElementById('titulo-form').textContent = 'Criar nova meta';
+            document.getElementById('titulo-form').textContent = 'Criar novo objetivo';
             document.getElementById('cancelar-edicao').hidden = true;
         }
         document.getElementById('cancelar-edicao').addEventListener('click', limparFormulario);
@@ -248,10 +255,10 @@
         });
 
         async function excluirObjetivo(id) {
-            if (!confirm('Excluir esta meta e todo o histórico de contribuições?')) return;
+            if (!confirm('Excluir este objetivo e todo o histórico de contribuições?')) return;
             try {
                 await gbmJson(await fetchApi(`/objetivos/${id}`, { method: 'DELETE' }));
-                gbmToast('Meta excluída.');
+                gbmToast('Objetivo excluído.');
                 carregarObjetivos();
             } catch (erro) {
                 gbmToast(erro.message, 'erro');

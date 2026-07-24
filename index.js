@@ -636,13 +636,15 @@ function garantirEstruturaProduto() {
                 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                 objetivo_id BIGINT UNSIGNED NOT NULL,
                 usuario_id INT NOT NULL,
+                transacao_id BIGINT NULL,
                 valor DECIMAL(15,2) NOT NULL,
                 data_contribuicao DATE NOT NULL,
                 observacao VARCHAR(180) NULL,
                 criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (id),
                 KEY idx_contribuicoes_objetivo (objetivo_id, data_contribuicao),
-                KEY idx_contribuicoes_usuario (usuario_id)
+                KEY idx_contribuicoes_usuario (usuario_id),
+                UNIQUE KEY uk_objetivo_contribuicao_transacao (usuario_id, transacao_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         `);
 
@@ -723,6 +725,7 @@ function garantirEstruturaProduto() {
         await garantirColuna('transacoes', 'recorrencia_id', 'BIGINT UNSIGNED NULL');
         await garantirColuna('transacoes', 'fitid_origem', 'VARCHAR(180) NULL');
         await garantirColuna('transacoes', 'identidade_importacao', 'CHAR(64) NULL');
+        await garantirColuna('objetivo_contribuicoes', 'transacao_id', 'BIGINT NULL');
         await garantirColuna('importacoes_extratos', 'saldo_anterior', 'DECIMAL(15,2) NULL');
         await garantirColuna('importacoes_extratos', 'saldo_importado', 'DECIMAL(15,2) NULL');
         await garantirColuna('importacoes_extratos', 'chave_arquivo_confirmado', 'CHAR(64) NULL');
@@ -752,6 +755,11 @@ function garantirEstruturaProduto() {
             'importacoes_extratos',
             'uk_importacao_arquivo_confirmado',
             'UNIQUE INDEX uk_importacao_arquivo_confirmado (chave_arquivo_confirmado)'
+        );
+        await garantirIndice(
+            'objetivo_contribuicoes',
+            'uk_objetivo_contribuicao_transacao',
+            'UNIQUE INDEX uk_objetivo_contribuicao_transacao (usuario_id, transacao_id)'
         );
 
         const [indiceEmailHash] = await db.promise().query(`
@@ -2150,14 +2158,31 @@ app.delete('/desfazer-ultimo', exigirLogin, async (req, res) => {
 // Buscar transações individuais do mês para o modal
 app.get('/transacoes-individuais', exigirLogin, async (req, res) => {
     try {
+        await garantirEstruturaProduto();
         const userId = req.session.userId;
         const mes = req.query.mes || new Date().getMonth() + 1;
         const ano = req.query.ano || new Date().getFullYear();
         const contaId = Number(req.query.conta_id || 0);
         let sql = `
-            SELECT t.id, t.descricao, t.valor, t.tipo, t.categoria, t.data_transacao, t.banco
+            SELECT
+                t.id,
+                t.descricao,
+                t.valor,
+                t.tipo,
+                t.categoria,
+                t.data_transacao,
+                t.banco,
+                oc.id AS contribuicao_objetivo_id,
+                o.id AS objetivo_id,
+                o.nome AS objetivo_nome
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
+            LEFT JOIN objetivo_contribuicoes oc
+              ON oc.transacao_id = t.id
+             AND oc.usuario_id = cb.usuario_id
+            LEFT JOIN objetivos_financeiros o
+              ON o.id = oc.objetivo_id
+             AND o.usuario_id = cb.usuario_id
             WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
         `;
         const parametros = [userId, mes, ano];
@@ -2926,6 +2951,29 @@ app.delete('/minha-conta', exigirLogin, async (req, res) => {
 // =======================================================
 // --- OBJETIVOS FINANCEIROS (SEPARADOS DOS LIMITES) ---
 // =======================================================
+async function recalcularStatusObjetivo(conexao, objetivoId, usuarioId) {
+    const [[resumo]] = await conexao.query(
+        `SELECT
+            o.valor_meta,
+            COALESCE(SUM(c.valor), 0) AS valor_guardado
+         FROM objetivos_financeiros o
+         LEFT JOIN objetivo_contribuicoes c
+           ON c.objetivo_id = o.id
+          AND c.usuario_id = o.usuario_id
+         WHERE o.id = ? AND o.usuario_id = ?
+         GROUP BY o.id, o.valor_meta`,
+        [objetivoId, usuarioId]
+    );
+    if (!resumo) return null;
+    const valorGuardado = Number(resumo.valor_guardado || 0);
+    const status = valorGuardado >= Number(resumo.valor_meta) ? 'concluido' : 'ativo';
+    await conexao.query(
+        'UPDATE objetivos_financeiros SET status = ? WHERE id = ? AND usuario_id = ?',
+        [status, objetivoId, usuarioId]
+    );
+    return { status, valor_guardado: valorGuardado };
+}
+
 app.get('/objetivos', exigirLogin, async (req, res) => {
     try {
         await garantirEstruturaProduto();
@@ -3042,20 +3090,209 @@ app.post('/objetivos/:id/contribuicoes', exigirLogin, async (req, res) => {
              VALUES (?, ?, ?, ?, ?)`,
             [req.params.id, req.session.userId, valor, data, observacao]
         );
-        const [[total]] = await db.promise().query(
-            'SELECT COALESCE(SUM(valor), 0) AS total FROM objetivo_contribuicoes WHERE objetivo_id = ? AND usuario_id = ?',
-            [req.params.id, req.session.userId]
+        const resumo = await recalcularStatusObjetivo(
+            db.promise(),
+            req.params.id,
+            req.session.userId
         );
-        if (Number(total.total) >= Number(objetivos[0].valor_meta)) {
-            await db.promise().query(
-                "UPDATE objetivos_financeiros SET status = 'concluido' WHERE id = ? AND usuario_id = ?",
-                [req.params.id, req.session.userId]
-            );
-        }
-        res.status(201).json({ success: true, valor_guardado: Number(total.total) });
+        res.status(201).json({ success: true, valor_guardado: resumo?.valor_guardado || 0 });
     } catch (erro) {
         console.error('Erro ao registrar contribuição:', erro);
         res.status(500).json({ success: false, error: 'Falha ao registrar contribuição.' });
+    }
+});
+
+app.put('/transacoes/:id/objetivo', exigirLogin, async (req, res) => {
+    const banco = db.promise();
+    let transacaoAberta = false;
+    try {
+        await garantirEstruturaProduto();
+        const usuarioId = req.session.userId;
+        const transacaoId = Number(req.params.id);
+        const objetivoId = Number(req.body.objetivo_id);
+        if (!Number.isInteger(transacaoId) || transacaoId <= 0 || !Number.isInteger(objetivoId) || objetivoId <= 0) {
+            return res.status(400).json({ success: false, error: 'Transação ou objetivo inválido.' });
+        }
+
+        await banco.beginTransaction();
+        transacaoAberta = true;
+        const [transacoes] = await banco.query(
+            `SELECT t.id, t.valor, t.tipo, t.data_transacao
+             FROM transacoes t
+             JOIN contas_bancarias cb ON cb.id = t.conta_id
+             WHERE t.id = ? AND cb.usuario_id = ?
+             FOR UPDATE`,
+            [transacaoId, usuarioId]
+        );
+        if (!transacoes.length) {
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(404).json({ success: false, error: 'Transação não encontrada.' });
+        }
+
+        const [objetivos] = await banco.query(
+            `SELECT id, nome, valor_meta, status
+             FROM objetivos_financeiros
+             WHERE id = ? AND usuario_id = ?
+             FOR UPDATE`,
+            [objetivoId, usuarioId]
+        );
+        if (!objetivos.length) {
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(404).json({ success: false, error: 'Objetivo não encontrado.' });
+        }
+        if (objetivos[0].status !== 'ativo') {
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(409).json({
+                success: false,
+                codigo: 'OBJETIVO_NAO_ATIVO',
+                error: 'Escolha um objetivo ativo para vincular a transação.'
+            });
+        }
+
+        const [vinculos] = await banco.query(
+            `SELECT id, objetivo_id
+             FROM objetivo_contribuicoes
+             WHERE usuario_id = ? AND transacao_id = ?
+             FOR UPDATE`,
+            [usuarioId, transacaoId]
+        );
+        if (vinculos.length) {
+            if (Number(vinculos[0].objetivo_id) === objetivoId) {
+                const resumo = await recalcularStatusObjetivo(banco, objetivoId, usuarioId);
+                await banco.commit();
+                transacaoAberta = false;
+                return res.json({
+                    success: true,
+                    idempotente: true,
+                    objetivo_id: objetivoId,
+                    objetivo_nome: objetivos[0].nome,
+                    tipo_transacao: transacoes[0].tipo,
+                    valor_guardado: resumo?.valor_guardado || 0
+                });
+            }
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(409).json({
+                success: false,
+                codigo: 'TRANSACAO_JA_VINCULADA',
+                error: 'Esta transação já está vinculada a outro objetivo.'
+            });
+        }
+
+        const valorContribuicao = Math.abs(Number(transacoes[0].valor));
+        if (!Number.isFinite(valorContribuicao) || valorContribuicao <= 0) {
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(400).json({ success: false, error: 'A transação não possui valor válido.' });
+        }
+        await banco.query(
+            `INSERT INTO objetivo_contribuicoes
+                (objetivo_id, usuario_id, transacao_id, valor, data_contribuicao, observacao)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                objetivoId,
+                usuarioId,
+                transacaoId,
+                valorContribuicao,
+                transacoes[0].data_transacao,
+                `Transação vinculada #${transacaoId}`
+            ]
+        );
+        const resumo = await recalcularStatusObjetivo(banco, objetivoId, usuarioId);
+        await banco.commit();
+        transacaoAberta = false;
+        res.status(201).json({
+            success: true,
+            objetivo_id: objetivoId,
+            objetivo_nome: objetivos[0].nome,
+            tipo_transacao: transacoes[0].tipo,
+            valor_contribuicao: valorContribuicao,
+            valor_guardado: resumo?.valor_guardado || 0,
+            status_objetivo: resumo?.status || 'ativo'
+        });
+    } catch (erro) {
+        if (transacaoAberta) {
+            try { await banco.rollback(); } catch {}
+        }
+        if (erro?.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({
+                success: false,
+                codigo: 'TRANSACAO_JA_VINCULADA',
+                error: 'Esta transação já está vinculada a um objetivo.'
+            });
+        }
+        console.error('Erro ao vincular transação ao objetivo:', erro);
+        res.status(500).json({ success: false, error: 'Falha ao vincular a transação ao objetivo.' });
+    }
+});
+
+app.delete('/transacoes/:id/objetivo', exigirLogin, async (req, res) => {
+    const banco = db.promise();
+    let transacaoAberta = false;
+    try {
+        await garantirEstruturaProduto();
+        const usuarioId = req.session.userId;
+        const transacaoId = Number(req.params.id);
+        if (!Number.isInteger(transacaoId) || transacaoId <= 0) {
+            return res.status(400).json({ success: false, error: 'Transação inválida.' });
+        }
+
+        await banco.beginTransaction();
+        transacaoAberta = true;
+        const [transacoes] = await banco.query(
+            `SELECT t.id
+             FROM transacoes t
+             JOIN contas_bancarias cb ON cb.id = t.conta_id
+             WHERE t.id = ? AND cb.usuario_id = ?
+             FOR UPDATE`,
+            [transacaoId, usuarioId]
+        );
+        if (!transacoes.length) {
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(404).json({ success: false, error: 'Transação não encontrada.' });
+        }
+
+        const [vinculos] = await banco.query(
+            `SELECT c.id, c.objetivo_id, o.nome AS objetivo_nome
+             FROM objetivo_contribuicoes c
+             JOIN objetivos_financeiros o
+               ON o.id = c.objetivo_id
+              AND o.usuario_id = c.usuario_id
+             WHERE c.usuario_id = ? AND c.transacao_id = ?
+             FOR UPDATE`,
+            [usuarioId, transacaoId]
+        );
+        if (!vinculos.length) {
+            await banco.commit();
+            transacaoAberta = false;
+            return res.json({ success: true, idempotente: true, desvinculada: true });
+        }
+
+        await banco.query(
+            'DELETE FROM objetivo_contribuicoes WHERE id = ? AND usuario_id = ? AND transacao_id = ?',
+            [vinculos[0].id, usuarioId, transacaoId]
+        );
+        const resumo = await recalcularStatusObjetivo(banco, vinculos[0].objetivo_id, usuarioId);
+        await banco.commit();
+        transacaoAberta = false;
+        res.json({
+            success: true,
+            desvinculada: true,
+            objetivo_id: vinculos[0].objetivo_id,
+            objetivo_nome: vinculos[0].objetivo_nome,
+            valor_guardado: resumo?.valor_guardado || 0,
+            status_objetivo: resumo?.status || 'ativo'
+        });
+    } catch (erro) {
+        if (transacaoAberta) {
+            try { await banco.rollback(); } catch {}
+        }
+        console.error('Erro ao desvincular transação do objetivo:', erro);
+        res.status(500).json({ success: false, error: 'Falha ao desvincular a transação do objetivo.' });
     }
 });
 
