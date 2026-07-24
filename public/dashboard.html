@@ -1085,47 +1085,6 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
                 });
             }
         }
-    // Captura o envio do formulário de extrato OFX
-document.getElementById('form-upload-ofx').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const arquivoInput = document.getElementById('arquivo-ofx');
-    if (arquivoInput.files.length === 0) {
-        gbmAlerta('Selecione um arquivo .OFX antes de processar.', 'aviso');
-        return;
-    }
-
-    // Prepara o arquivo dentro de um pacote de envio (FormData)
-    const formData = new FormData();
-    formData.append('file', arquivoInput.files[0]);
-    formData.append('userId', pegarUserId());
-
-    try {
-        // Feedback visual para o utilizador saber que o sistema está a pensar
-        const btnSubmeter = e.target.querySelector('button[type="submit"]');
-        const textoOriginal = btnSubmeter.innerText;
-        btnSubmeter.innerText = 'A processar... ⏳';
-        btnSubmeter.disabled = true;
-
-        const resposta = await fetchApi('/importar-ofx', {
-            method: 'POST',
-            body: formData
-        });
-        const resultado = await resposta.json();
-        // Restaura o botão
-        btnSubmeter.innerText = textoOriginal;
-        btnSubmeter.disabled = false;
-        if (resultado.success) {
-            gbmAlerta(resultado.message);
-            window.location.reload(); // Recarrega o ecrã na hora para recalcular os gráficos e tabelas com os dados reais!
-        } else {
-            gbmAlerta('Erro: ' + resultado.message, 'erro');
-        }
-    } catch (erro) {
-        console.error('Erro ao enviar ficheiro:', erro);
-        gbmAlerta('Não foi possível comunicar com o servidor.', 'erro');
-    }
-});
         // --- 1. TEMA ESCURO (Lembrar escolha) ---
         if (localStorage.getItem('tema') === 'dark') {
             document.body.classList.add('dark-theme');
@@ -1729,7 +1688,8 @@ async function abrirModalTransacoes() {
     transacoes.forEach(t => {
         const cor = t.tipo === 'Receita' ? '#10b981' : '#ef4444';
         const sinal = t.tipo === 'Receita' ? '+' : '-';
-        const data = new Date(t.data_transacao).toLocaleDateString('pt-BR');
+        const [ano, mes, dia] = String(t.data_transacao).slice(0, 10).split('-');
+        const data = ano && mes && dia ? `${dia}/${mes}/${ano}` : '—';
         const descEscapada = t.descricao.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
         html += `

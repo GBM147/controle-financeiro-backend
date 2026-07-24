@@ -150,8 +150,8 @@
         function alterarCategoria(indice, valor) { previa.transacoes[indice].categoria = valor.trim() || 'Outros'; }
         function alternarLinha(indice) { previa.transacoes[indice].selecionada = !previa.transacoes[indice].selecionada; renderizarPrevia(); }
 
-        document.getElementById('btn-confirmar').addEventListener('click', () => confirmarImportacao(false));
-        async function confirmarImportacao(permitirRepetir) {
+        document.getElementById('btn-confirmar').addEventListener('click', confirmarImportacao);
+        async function confirmarImportacao() {
             const transacoes = previa.transacoes.filter((item) => item.selecionada);
             if (!transacoes.length) return gbmToast('Selecione pelo menos uma transação.', 'erro');
             const botao = document.getElementById('btn-confirmar');
@@ -166,9 +166,9 @@
                         nome_arquivo: previa.nome_arquivo,
                         banco: previa.banco_detectado,
                         hash_arquivo: previa.hash_arquivo,
+                        assinatura_previa: previa.assinatura_previa,
                         saldo_detectado: previa.saldo_detectado,
-                        transacoes,
-                        permitir_repetir: permitirRepetir
+                        transacoes
                     })
                 }));
                 gbmToast(dados.message);
@@ -177,9 +177,6 @@
                 document.getElementById('arquivo-extrato').value = '';
                 carregarHistorico();
             } catch (erro) {
-                if (erro.codigo === 'ARQUIVO_JA_IMPORTADO' && confirm(`${erro.message}\n\nDeseja conferir novamente mesmo assim? As transações duplicadas continuarão sendo ignoradas.`)) {
-                    return confirmarImportacao(true);
-                }
                 gbmToast(erro.message, 'erro');
             } finally { botao.disabled = false; }
         }

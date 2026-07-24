@@ -80,6 +80,150 @@ function identificarBanco(rais) {
         return 'Outro banco';
     }
 }
+
+function normalizarDataBancaria(valor) {
+    const texto = String(valor ?? '').trim();
+    let ano;
+    let mes;
+    let dia;
+
+    let correspondencia = texto.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (correspondencia) {
+        [, ano, mes, dia] = correspondencia;
+    } else {
+        correspondencia = texto.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (correspondencia) {
+            [, dia, mes, ano] = correspondencia;
+        } else {
+            correspondencia = texto.match(/^(\d{4})(\d{2})(\d{2})(?:\d{6})?(?:\.\d+)?(?:\[[^\]]+\])?$/);
+            if (!correspondencia) return null;
+            [, ano, mes, dia] = correspondencia;
+        }
+    }
+
+    const anoNumero = Number(ano);
+    const mesNumero = Number(mes);
+    const diaNumero = Number(dia);
+    if (
+        !Number.isInteger(anoNumero)
+        || !Number.isInteger(mesNumero)
+        || !Number.isInteger(diaNumero)
+        || anoNumero < 1900
+        || anoNumero > 2200
+        || mesNumero < 1
+        || mesNumero > 12
+    ) {
+        return null;
+    }
+
+    const ultimoDiaDoMes = new Date(Date.UTC(anoNumero, mesNumero, 0)).getUTCDate();
+    if (diaNumero < 1 || diaNumero > ultimoDiaDoMes) return null;
+
+    return `${String(anoNumero).padStart(4, '0')}-${String(mesNumero).padStart(2, '0')}-${String(diaNumero).padStart(2, '0')}`;
+}
+
+function canonicalizarDescricaoImportacao(valor) {
+    return String(valor ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/[\u2010-\u2015\u2212-]+/g, ' ')
+        .replace(/[^A-Z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function normalizarFitid(valor) {
+    const fitid = String(valor ?? '').trim();
+    if (!fitid || /^0+$/.test(fitid)) return null;
+    return fitid.slice(0, 180);
+}
+
+function valorEmCentavos(valor) {
+    const numero = Math.abs(Number(valor));
+    if (!Number.isFinite(numero) || numero <= 0) return null;
+    return Math.round((numero + Number.EPSILON) * 100);
+}
+
+function criarChaveCanonicaImportacao(contaId, linha) {
+    return [
+        Number(contaId),
+        linha.data,
+        linha.tipo,
+        linha.valorCentavos,
+        linha.descricaoCanonica
+    ].join('|');
+}
+
+function criarIdentidadeImportacao(contaId, linha) {
+    if (linha.fitid) {
+        return crypto.createHash('sha256')
+            .update(`ofx-fitid|${Number(contaId)}|${linha.fitid}`)
+            .digest('hex');
+    }
+    return crypto.createHash('sha256')
+        .update(`gbm-importacao-v2|${criarChaveCanonicaImportacao(contaId, linha)}|${linha.ocorrencia}`)
+        .digest('hex');
+}
+
+function normalizarLoteImportacao(transacoes, contaId) {
+    const ocorrenciasPorDescricaoDeOrigem = new Map();
+    return transacoes.slice(0, 5000).map((linha, indice) => {
+        const descricao = String(linha?.descricao ?? '').trim().slice(0, 255);
+        const descricaoCanonica = canonicalizarDescricaoImportacao(descricao);
+        const data = normalizarDataBancaria(linha?.data ?? linha?.data_transacao);
+        const tipo = linha?.tipo === 'Receita' ? 'Receita' : linha?.tipo === 'Despesa' ? 'Despesa' : null;
+        const valorCentavos = valorEmCentavos(linha?.valor);
+        if (!descricao || !descricaoCanonica || !data || !tipo || valorCentavos === null) {
+            const erro = new Error(`Transação inválida na posição ${indice + 1}. Confira data, descrição, tipo e valor.`);
+            erro.statusHttp = 400;
+            erro.codigoPublico = 'TRANSACAO_IMPORTACAO_INVALIDA';
+            throw erro;
+        }
+
+        const normalizada = {
+            descricao,
+            descricaoCanonica,
+            data,
+            tipo,
+            valorCentavos,
+            valor: valorCentavos / 100,
+            categoria: String(linha?.categoria || 'Outros').trim().slice(0, 120) || 'Outros',
+            fitid: normalizarFitid(linha?.id_externo ?? linha?.fitid)
+        };
+        const chaveCanonica = criarChaveCanonicaImportacao(contaId, normalizada);
+        const descricaoDeOrigem = descricao
+            .normalize('NFC')
+            .toUpperCase()
+            .replace(/\s+/g, ' ')
+            .trim();
+        if (!ocorrenciasPorDescricaoDeOrigem.has(chaveCanonica)) {
+            ocorrenciasPorDescricaoDeOrigem.set(chaveCanonica, new Map());
+        }
+        const contagensDaChave = ocorrenciasPorDescricaoDeOrigem.get(chaveCanonica);
+        normalizada.ocorrencia = (contagensDaChave.get(descricaoDeOrigem) || 0) + 1;
+        contagensDaChave.set(descricaoDeOrigem, normalizada.ocorrencia);
+        normalizada.identidade = criarIdentidadeImportacao(contaId, normalizada);
+        return normalizada;
+    });
+}
+
+function assinarHashPrevia(usuarioId, tipoArquivo, hashArquivo) {
+    const segredo = String(process.env.SESSION_SECRET || '');
+    const hash = String(hashArquivo || '').toLowerCase();
+    if (!segredo || !/^[a-f0-9]{64}$/.test(hash)) return null;
+    return crypto.createHmac('sha256', segredo)
+        .update(`${Number(usuarioId)}|${String(tipoArquivo).toUpperCase()}|${hash}`)
+        .digest('hex');
+}
+
+function assinaturaHashPreviaValida(usuarioId, tipoArquivo, hashArquivo, assinatura) {
+    const esperada = assinarHashPrevia(usuarioId, tipoArquivo, hashArquivo);
+    const recebida = String(assinatura || '').toLowerCase();
+    if (!esperada || !/^[a-f0-9]{64}$/.test(recebida)) return false;
+    return crypto.timingSafeEqual(Buffer.from(esperada, 'hex'), Buffer.from(recebida, 'hex'));
+}
+
 // 1. Inicializamos o servidor Express
 const app = express();
 app.disable('x-powered-by');
@@ -435,6 +579,26 @@ async function garantirColuna(tabela, coluna, definicaoSql) {
     );
 }
 
+async function indiceExiste(tabela, indice) {
+    const [linhas] = await db.promise().query(
+        `SELECT 1
+         FROM INFORMATION_SCHEMA.STATISTICS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = ?
+           AND INDEX_NAME = ?
+         LIMIT 1`,
+        [tabela, indice]
+    );
+    return linhas.length > 0;
+}
+
+async function garantirIndice(tabela, indice, definicaoSql) {
+    if (await indiceExiste(tabela, indice)) return;
+    await db.promise().query(
+        `ALTER TABLE \`${tabela}\` ADD ${definicaoSql}`
+    );
+}
+
 function garantirEstruturaProduto() {
     if (promessaEstruturaProduto) return promessaEstruturaProduto;
 
@@ -496,11 +660,13 @@ function garantirEstruturaProduto() {
                 quantidade_duplicadas INT NOT NULL DEFAULT 0,
                 saldo_anterior DECIMAL(15,2) NULL,
                 saldo_importado DECIMAL(15,2) NULL,
+                chave_arquivo_confirmado CHAR(64) NULL,
                 criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 desfeito_em DATETIME NULL,
                 PRIMARY KEY (id),
                 KEY idx_importacoes_usuario (usuario_id, criado_em),
-                KEY idx_importacoes_conta (conta_id)
+                KEY idx_importacoes_conta (conta_id),
+                UNIQUE KEY uk_importacao_arquivo_confirmado (chave_arquivo_confirmado)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         `);
 
@@ -555,8 +721,11 @@ function garantirEstruturaProduto() {
         await garantirColuna('contas_bancarias', 'ativa', 'TINYINT(1) NOT NULL DEFAULT 1');
         await garantirColuna('transacoes', 'importacao_id', 'BIGINT UNSIGNED NULL');
         await garantirColuna('transacoes', 'recorrencia_id', 'BIGINT UNSIGNED NULL');
+        await garantirColuna('transacoes', 'fitid_origem', 'VARCHAR(180) NULL');
+        await garantirColuna('transacoes', 'identidade_importacao', 'CHAR(64) NULL');
         await garantirColuna('importacoes_extratos', 'saldo_anterior', 'DECIMAL(15,2) NULL');
         await garantirColuna('importacoes_extratos', 'saldo_importado', 'DECIMAL(15,2) NULL');
+        await garantirColuna('importacoes_extratos', 'chave_arquivo_confirmado', 'CHAR(64) NULL');
         await garantirColuna('usuarios', 'nome_criptografado', 'TEXT NULL');
         await garantirColuna('usuarios', 'sobrenome_criptografado', 'TEXT NULL');
         await garantirColuna('usuarios', 'email_criptografado', 'TEXT NULL');
@@ -568,6 +737,22 @@ function garantirEstruturaProduto() {
         await garantirColuna('usuarios', 'termos_aceitos_em', 'DATETIME NULL');
         await garantirColuna('usuarios', 'termos_versao', 'VARCHAR(20) NULL');
         await garantirColuna('alertas', 'tipo', "VARCHAR(40) NOT NULL DEFAULT 'limite'");
+
+        await garantirIndice(
+            'transacoes',
+            'uk_transacoes_conta_fitid_origem',
+            'UNIQUE INDEX uk_transacoes_conta_fitid_origem (conta_id, fitid_origem)'
+        );
+        await garantirIndice(
+            'transacoes',
+            'uk_transacoes_conta_identidade_importacao',
+            'UNIQUE INDEX uk_transacoes_conta_identidade_importacao (conta_id, identidade_importacao)'
+        );
+        await garantirIndice(
+            'importacoes_extratos',
+            'uk_importacao_arquivo_confirmado',
+            'UNIQUE INDEX uk_importacao_arquivo_confirmado (chave_arquivo_confirmado)'
+        );
 
         const [indiceEmailHash] = await db.promise().query(`
             SELECT 1
@@ -898,139 +1083,14 @@ function categorizarTransacao(descricao, regrasUsuario) {
     return 'Outros';
 }
 
-app.post('/importar-ofx', exigirLogin, upload.single('file'), async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: 'Nenhum ficheiro foi selecionado.' });
-        }
-        // 1. Converte o ficheiro binário recebido numa string de texto limpa
-        const ofxRawData = req.file.buffer.toString('utf8');
-        const dadosConvertidos = ofx.parse(ofxRawData);
-        // 2. Navega pela árvore estrutural padrão de um ficheiro OFX
-        const rais = dadosConvertidos.OFX || {};
-        const nomeBanco = identificarBanco(rais);
-        const bankMsg = rais.BANKMSGSRSV1 || {};
-        const stmtTrnRs = bankMsg.STMTTRNRS || {};
-        const stmtRs = stmtTrnRs.STMTRS || {};
-        const bankTranList = stmtRs.BANKTRANLIST || {};
-        let transacoesOfx = bankTranList.STMTTRN || [];
-        // Proteção: se o extrato tiver apenas 1 movimento, o parser gera um objeto único em vez de uma lista. Forçamos a ser lista.
-        if (!Array.isArray(transacoesOfx)) {
-            transacoesOfx = [transacoesOfx];
-        }
-        // 3. Localiza a conta do utilizador para vincular os lançamentos
-        const userId = req.session.userId;
-        const contaInternaId = Number(req.body.conta_id || 0);
-        if (!contaInternaId) {
-            return res.status(400).json({
-                success: false,
-                message: 'Selecione a conta antes de importar. Use a Central de Importações.'
-            });
-        }
-        const [contasPermitidas] = await db.promise().query(
-            'SELECT id FROM contas_bancarias WHERE id = ? AND usuario_id = ? AND ativa = 1',
-            [contaInternaId, userId]
-        );
-        if (!contasPermitidas.length) {
-            return res.status(403).json({
-                success: false,
-                message: 'A conta escolhida não pertence à sua sessão.'
-            });
-        }
-        console.log('🔐 [IMPORTAÇÃO OFX]', {
-            usuarioDaSessao: userId,
-            contaUsada: contaInternaId,
-            banco: nomeBanco,
-            quantidadeDeTransacoes: transacoesOfx.length
-        });
-        // Carrega as regras salvas pelo usuário para usar na categorização
-const [regrasUsuario] = await db.promise().query(
-    'SELECT descricao_contem, categoria FROM regras_categoria WHERE usuario_id = ?',
-    [userId]
-);
-        // --- NOVO: CAPTURA O SALDO EXATO DO BANCO PELO OFX ---
-        const ledgerBal = stmtRs.LEDGERBAL || {};
-        if (ledgerBal.BALAMT) {
-            const saldoReal = parseFloat(ledgerBal.BALAMT);
-            await db.promise().query('UPDATE contas_bancarias SET saldo = ? WHERE id = ?', [saldoReal, contaInternaId]);
-
-            // Guarda o saldo desse banco específico, sem apagar o saldo dos outros bancos já importados
-            await db.promise().query(
-                `INSERT INTO saldos_por_banco (usuario_id, banco, saldo)
-                 VALUES (?, ?, ?)
-                 ON DUPLICATE KEY UPDATE saldo = VALUES(saldo)`,
-                [userId, nomeBanco, saldoReal]
-            );
-        }
-        // -----------------------------------------------------
-
-        let inseridas = 0;
-        let duplicadas = 0;
-        // 4. Varre cada linha do extrato bancário
-        for (const tx of transacoesOfx) {
-    const descricao = tx.MEMO || tx.NAME || 'Transação Eletrónica';
-    let transacaoIdBancario = tx.FITID;
-    if (!transacaoIdBancario || transacaoIdBancario === '000000') {
-        const chaveUnica = `${contaInternaId}-${tx.DTPOSTED}-${tx.TRNAMT}-${descricao}`;
-        transacaoIdBancario = crypto.createHash('md5').update(chaveUnica).digest('hex');
-    }
-    transacaoIdBancario = crypto.createHash('sha256')
-        .update(`${contaInternaId}-${transacaoIdBancario}`)
-        .digest('hex');
-            
-            // --- A MÁGICA DA CONVERSÃO ENTRA AQUI ---
-            const valorOriginal = parseFloat(tx.TRNAMT);
-            let tipo = 'Receita'; // Assume como Receita por padrão
-            let valor = valorOriginal;
-
-            // Se o valor for menor que zero, é uma saída de dinheiro
-            if (valorOriginal < 0) {
-                tipo = 'Despesa';
-                valor = Math.abs(valorOriginal); // Transforma -100 em 100
-            }
-            // ----------------------------------------
-// Categoriza a transação usando as regras do usuário + keywords padrão
-let categoria = categorizarTransacao(descricao, regrasUsuario);
-            // Tratamento da Data (O padrão do OFX é YYYYMMDDHHMMSS)
-            let dataFormatada = new Date().toISOString().split('T')[0];
-            if (tx.DTPOSTED && tx.DTPOSTED.length >= 8) {
-                const ano = tx.DTPOSTED.substring(0, 4);
-                const mes = tx.DTPOSTED.substring(4, 6);
-                const dia = tx.DTPOSTED.substring(6, 8);
-                dataFormatada = `${ano}-${mes}-${dia}`;
-            }
-            
-            // 5. Salva na base de dados. Se o transacao_id_pluggy já existir, ele simplesmente ignora para não duplicar!
-            const sql = `
-                INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao, banco)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE conta_id = conta_id
-            `;
-            const [resultadoInsert] = await db.promise().query(sql, [
-                contaInternaId, transacaoIdBancario, descricao, valor, tipo, categoria, dataFormatada, nomeBanco
-            ]);
-            
-            // affectedRows = 1 significa nova linha. affectedRows = 0 ou 2 significa que já existia e foi ignorada.
-            if (resultadoInsert.affectedRows === 1) {
-                inseridas++;
-            } else {
-                duplicadas++;
-            }
-        }
-        
-        // Executa o seu auditor de alertas automático para verificar se o novo extrato estourou alguma meta
-        if (typeof auditarMetas === 'function') {
-            await auditarMetas();
-        }
-        res.json({
-            success: true,
-            message: `Sincronização concluída com sucesso! 🚀 Adicionadas: ${inseridas} novas movimentações. Duplicadas ignoradas: ${duplicadas}.`
-        });
-    } catch (error) {
-        console.error('❌ Erro crítico no processador OFX:', error);
-        res.status(500).json({ success: false, message: 'Falha interna ao decodificar o extrato bancário.' });
-    }
+app.post('/importar-ofx', exigirLogin, (req, res) => {
+    res.status(410).json({
+        success: false,
+        codigo: 'IMPORTADOR_LEGADO_DESATIVADO',
+        message: 'Use a Central de Importações para revisar o arquivo, escolher a conta e confirmar com proteção contra duplicidades.'
+    });
 });
+
 // --- ROTA: CONVERSOR DE PDF EM LANÇAMENTOS (PRÉVIA, NÃO GRAVA NO BANCO AINDA) ---
 // --- EXTRAÇÃO DE TEXTO DO PDF VIA PYTHON (pdfplumber) ---
 // Chama extrator_pdf.py como subprocesso, manda os bytes do PDF pela entrada
@@ -1070,15 +1130,36 @@ app.post('/pdf-extrato/preview', exigirLogin, upload.single('arquivo'), async (r
             [userId]
         );
 
-        const transacoesComCategoria = transacoes.map(t => ({
-            ...t,
-            categoria: categorizarTransacao(t.descricao, regrasUsuario)
-        }));
+        const transacoesComCategoria = transacoes.map((t) => {
+            const descricao = String(t?.descricao || '').trim().slice(0, 255);
+            const data = normalizarDataBancaria(t?.data ?? t?.data_transacao);
+            const tipo = t?.tipo === 'Receita' ? 'Receita' : t?.tipo === 'Despesa' ? 'Despesa' : null;
+            const centavos = valorEmCentavos(t?.valor);
+            if (!descricao || !data || !tipo || centavos === null) return null;
+            return {
+                ...t,
+                data,
+                descricao,
+                valor: centavos / 100,
+                tipo,
+                categoria: categorizarTransacao(descricao, regrasUsuario)
+            };
+        }).filter(Boolean);
+
+        if (!transacoesComCategoria.length) {
+            return res.status(422).json({
+                success: false,
+                message: 'As transações encontradas no PDF não possuem datas bancárias, tipos ou valores válidos.'
+            });
+        }
+
+        const hashArquivo = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
 
         res.json({
             success: true,
             nome_arquivo: req.file.originalname,
-            hash_arquivo: crypto.createHash('sha256').update(req.file.buffer).digest('hex'),
+            hash_arquivo: hashArquivo,
+            assinatura_previa: assinarHashPrevia(userId, 'PDF', hashArquivo),
             banco_detectado: bancoDetectado,
             confianca, // 'alta' (achou coluna de saldo, deu pra conferir) ou 'baixa' (modo simples)
             reconciliacao, // null quando não foi possível conferir o saldo
@@ -1090,83 +1171,13 @@ app.post('/pdf-extrato/preview', exigirLogin, upload.single('arquivo'), async (r
     }
 });
 
-// --- ROTA: CONFIRMA E GRAVA AS TRANSAÇÕES REVISADAS PELO USUÁRIO ---
-app.post('/pdf-extrato/confirmar', exigirLogin, async (req, res) => {
-    try {
-        const { banco, transacoes } = req.body;
-        const userId = req.session.userId;
-        if (!Array.isArray(transacoes) || transacoes.length === 0) {
-            return res.status(400).json({ success: false, message: 'Nenhuma transação para importar.' });
-        }
-
-        const contaInternaId = Number(req.body.conta_id || 0);
-        if (!contaInternaId) {
-            return res.status(400).json({
-                success: false,
-                message: 'Selecione a conta antes de importar. Use a Central de Importações.'
-            });
-        }
-        const [contasPermitidas] = await db.promise().query(
-            'SELECT id FROM contas_bancarias WHERE id = ? AND usuario_id = ? AND ativa = 1',
-            [contaInternaId, userId]
-        );
-        if (!contasPermitidas.length) {
-            return res.status(403).json({
-                success: false,
-                message: 'A conta escolhida não pertence à sua sessão.'
-            });
-        }
-        const nomeBanco = banco || 'Outro banco';
-        console.log('🔐 [IMPORTAÇÃO PDF]', {
-            usuarioDaSessao: userId,
-            contaUsada: contaInternaId,
-            banco: nomeBanco,
-            quantidadeDeTransacoes: transacoes.length
-        });
-
-        let inseridas = 0;
-        let duplicadas = 0;
-
-        for (const t of transacoes) {
-            const { data, descricao, valor, tipo, categoria } = t;
-            if (!data || !descricao || valor === undefined || valor === null || !tipo) continue;
-
-            const valorFinal = Math.abs(parseFloat(valor));
-            const valorComSinal = tipo === 'Despesa' ? -valorFinal : valorFinal;
-
-            // Como o PDF não tem um ID único de transação (como o FITID do OFX),
-            // criamos uma "impressão digital" da linha para evitar duplicar o mesmo lançamento
-            const chaveUnica = `${contaInternaId}-${data}-${valorComSinal}-${descricao}`;
-            const transacaoIdUnico = crypto.createHash('md5').update(chaveUnica).digest('hex');
-
-            const sql = `
-                INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao, banco)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE conta_id = conta_id
-            `;
-            const [resultado] = await db.promise().query(sql, [
-                contaInternaId, transacaoIdUnico, descricao, valorFinal, tipo, categoria || 'Outros', data, nomeBanco
-            ]);
-
-            if (resultado.affectedRows === 1) {
-                inseridas++;
-            } else {
-                duplicadas++;
-            }
-        }
-
-        if (typeof auditarMetas === 'function') {
-            await auditarMetas();
-        }
-
-        res.json({
-            success: true,
-            message: `Importação concluída! 🚀 Adicionadas: ${inseridas} novas movimentações. Duplicadas ignoradas: ${duplicadas}.`
-        });
-    } catch (error) {
-        console.error('❌ Erro ao confirmar importação de PDF:', error);
-        res.status(500).json({ success: false, message: 'Falha ao gravar as transações.' });
-    }
+// A confirmação sem hash/conta/importação rastreável foi desativada.
+app.post('/pdf-extrato/confirmar', exigirLogin, (req, res) => {
+    res.status(410).json({
+        success: false,
+        codigo: 'IMPORTADOR_LEGADO_DESATIVADO',
+        message: 'Confirme PDFs pela Central de Importações para usar hash do arquivo, conta e deduplicação segura.'
+    });
 });
 
 // --- ROTA 1: CADASTRO DE USUÁRIO ---
@@ -3254,20 +3265,16 @@ async function prepararOfxParaPrevia(buffer, usuarioId) {
     const linhas = transacoes.map((tx) => {
         const descricao = tx.MEMO || tx.NAME || 'Transação eletrônica';
         const valorOriginal = Number(tx.TRNAMT || 0);
-        let data = new Date().toISOString().slice(0, 10);
-        if (tx.DTPOSTED && String(tx.DTPOSTED).length >= 8) {
-            const textoData = String(tx.DTPOSTED);
-            data = `${textoData.slice(0, 4)}-${textoData.slice(4, 6)}-${textoData.slice(6, 8)}`;
-        }
+        const data = normalizarDataBancaria(tx.DTPOSTED);
         return {
-            id_externo: tx.FITID || null,
+            id_externo: normalizarFitid(tx.FITID),
             data,
             descricao,
             valor: Math.abs(valorOriginal),
             tipo: valorOriginal < 0 ? 'Despesa' : 'Receita',
             categoria: categorizarTransacao(descricao, regrasUsuario)
         };
-    }).filter((linha) => Number.isFinite(linha.valor) && linha.valor > 0);
+    }).filter((linha) => linha.data && Number.isFinite(linha.valor) && linha.valor > 0);
 
     return {
         banco: nomeBanco,
@@ -3283,14 +3290,17 @@ app.post('/ofx-extrato/preview', exigirLogin, upload.single('arquivo'), async (r
         if (!req.file) {
             return res.status(400).json({ success: false, error: 'Selecione um arquivo OFX.' });
         }
-        const previa = await prepararOfxParaPrevia(req.file.buffer, req.session.userId);
+        const usuarioId = req.session.userId;
+        const previa = await prepararOfxParaPrevia(req.file.buffer, usuarioId);
         if (!previa.transacoes.length) {
             return res.status(422).json({ success: false, error: 'Nenhuma transação foi encontrada no OFX.' });
         }
+        const hashArquivo = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
         res.json({
             success: true,
             nome_arquivo: req.file.originalname,
-            hash_arquivo: crypto.createHash('sha256').update(req.file.buffer).digest('hex'),
+            hash_arquivo: hashArquivo,
+            assinatura_previa: assinarHashPrevia(usuarioId, 'OFX', hashArquivo),
             banco_detectado: previa.banco,
             saldo_detectado: previa.saldo,
             confianca: 'alta',
@@ -3312,7 +3322,8 @@ app.post('/importacoes/confirmar', exigirLogin, async (req, res) => {
         const tipoArquivo = String(req.body.tipo_arquivo || '').toUpperCase();
         const nomeArquivo = String(req.body.nome_arquivo || '').slice(0, 180) || null;
         const nomeBanco = String(req.body.banco || 'Outro banco').slice(0, 120);
-        const hashArquivo = String(req.body.hash_arquivo || '').slice(0, 64) || null;
+        const hashArquivo = String(req.body.hash_arquivo || '').trim().toLowerCase();
+        const assinaturaPrevia = String(req.body.assinatura_previa || '').trim().toLowerCase();
         const saldoDetectado = req.body.saldo_detectado === null || req.body.saldo_detectado === undefined
             ? null
             : Number(req.body.saldo_detectado);
@@ -3320,6 +3331,13 @@ app.post('/importacoes/confirmar', exigirLogin, async (req, res) => {
 
         if (!['OFX', 'PDF'].includes(tipoArquivo) || !transacoes.length) {
             return res.status(400).json({ success: false, error: 'Importação sem dados válidos.' });
+        }
+        if (!assinaturaHashPreviaValida(usuarioId, tipoArquivo, hashArquivo, assinaturaPrevia)) {
+            return res.status(400).json({
+                success: false,
+                codigo: 'PREVIA_IMPORTACAO_INVALIDA',
+                error: 'A prévia não corresponde ao arquivo analisado. Analise o arquivo novamente antes de confirmar.'
+            });
         }
 
         const [contas] = await bancoDados.query(
@@ -3330,20 +3348,22 @@ app.post('/importacoes/confirmar', exigirLogin, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Selecione uma conta válida.' });
         }
 
-        if (hashArquivo) {
-            const [anteriores] = await bancoDados.query(
-                `SELECT id FROM importacoes_extratos
-                 WHERE usuario_id = ? AND conta_id = ? AND hash_arquivo = ? AND status = 'concluida'
-                 LIMIT 1`,
-                [usuarioId, contaId, hashArquivo]
-            );
-            if (anteriores.length && req.body.permitir_repetir !== true) {
-                return res.status(409).json({
-                    success: false,
-                    codigo: 'ARQUIVO_JA_IMPORTADO',
-                    error: 'Este mesmo arquivo já foi importado para a conta selecionada.'
-                });
-            }
+        const linhasNormalizadas = normalizarLoteImportacao(transacoes, contaId);
+        const chaveArquivoConfirmado = crypto.createHash('sha256')
+            .update(`${usuarioId}|${contaId}|${hashArquivo}`)
+            .digest('hex');
+        const [anteriores] = await bancoDados.query(
+            `SELECT id FROM importacoes_extratos
+             WHERE usuario_id = ? AND conta_id = ? AND hash_arquivo = ? AND status = 'concluida'
+             LIMIT 1`,
+            [usuarioId, contaId, hashArquivo]
+        );
+        if (anteriores.length) {
+            return res.status(409).json({
+                success: false,
+                codigo: 'ARQUIVO_JA_IMPORTADO',
+                error: 'Este mesmo arquivo já foi importado para a conta selecionada.'
+            });
         }
 
         await bancoDados.beginTransaction();
@@ -3351,8 +3371,8 @@ app.post('/importacoes/confirmar', exigirLogin, async (req, res) => {
         const [lote] = await bancoDados.query(
             `INSERT INTO importacoes_extratos
                 (usuario_id, conta_id, tipo_arquivo, nome_arquivo, banco, hash_arquivo,
-                 status, saldo_anterior, saldo_importado)
-             VALUES (?, ?, ?, ?, ?, ?, 'processando', ?, ?)`,
+                 status, saldo_anterior, saldo_importado, chave_arquivo_confirmado)
+             VALUES (?, ?, ?, ?, ?, ?, 'processando', ?, ?, ?)`,
             [
                 usuarioId,
                 contaId,
@@ -3361,49 +3381,90 @@ app.post('/importacoes/confirmar', exigirLogin, async (req, res) => {
                 nomeBanco,
                 hashArquivo,
                 Number(contas[0].saldo || 0),
-                Number.isFinite(saldoDetectado) ? saldoDetectado : null
+                Number.isFinite(saldoDetectado) ? saldoDetectado : null,
+                chaveArquivoConfirmado
             ]
         );
 
         let inseridas = 0;
         let duplicadas = 0;
-        for (const linha of transacoes.slice(0, 5000)) {
-            const descricao = String(linha.descricao || '').trim().slice(0, 255);
-            const data = String(linha.data || linha.data_transacao || '').slice(0, 10);
-            const valor = Math.abs(Number(linha.valor));
-            const tipo = linha.tipo === 'Receita' ? 'Receita' : 'Despesa';
-            const categoria = String(linha.categoria || 'Outros').trim().slice(0, 120);
-            if (!descricao || !/^\d{4}-\d{2}-\d{2}$/.test(data) || !Number.isFinite(valor) || valor <= 0) {
-                continue;
+        const candidatosPorChave = new Map();
+        const candidatosConsumidos = new Set();
+        for (const linha of linhasNormalizadas) {
+            let movimentoExistente = null;
+            let transacaoIdExterno;
+
+            if (linha.fitid) {
+                transacaoIdExterno = crypto.createHash('sha256')
+                    .update(`${contaId}-${linha.fitid}`)
+                    .digest('hex');
+                const [movimentosFitid] = await bancoDados.query(
+                    `SELECT id
+                     FROM transacoes
+                     WHERE conta_id = ?
+                       AND (
+                           fitid_origem = ?
+                           OR identidade_importacao = ?
+                           OR transacao_id_pluggy = ?
+                       )
+                     ORDER BY id
+                     LIMIT 1`,
+                    [contaId, linha.fitid, linha.identidade, transacaoIdExterno]
+                );
+                movimentoExistente = movimentosFitid[0] || null;
+            } else {
+                const chaveCanonica = criarChaveCanonicaImportacao(contaId, linha);
+                if (!candidatosPorChave.has(chaveCanonica)) {
+                    const [candidatos] = await bancoDados.query(
+                        `SELECT id, descricao, identidade_importacao
+                         FROM transacoes
+                         WHERE conta_id = ?
+                           AND data_transacao = ?
+                           AND tipo = ?
+                           AND valor = ?
+                         ORDER BY id`,
+                        [contaId, linha.data, linha.tipo, linha.valor]
+                    );
+                    candidatosPorChave.set(
+                        chaveCanonica,
+                        candidatos.filter((candidato) => (
+                            canonicalizarDescricaoImportacao(candidato.descricao) === linha.descricaoCanonica
+                        ))
+                    );
+                }
+                const candidatosCanonicos = candidatosPorChave.get(chaveCanonica);
+                movimentoExistente = candidatosCanonicos
+                    .find((candidato) => candidato.identidade_importacao === linha.identidade)
+                    || candidatosCanonicos.find((candidato) => !candidatosConsumidos.has(candidato.id))
+                    || null;
+                transacaoIdExterno = linha.identidade;
             }
-            const [movimentosIguais] = await bancoDados.query(
-                `SELECT id
-                 FROM transacoes
-                 WHERE conta_id = ?
-                   AND data_transacao = ?
-                   AND tipo = ?
-                   AND valor = ?
-                   AND descricao = ?
-                 LIMIT 1`,
-                [contaId, data, tipo, valor, descricao]
-            );
-            if (movimentosIguais.length) {
+
+            if (movimentoExistente) {
+                candidatosConsumidos.add(movimentoExistente.id);
                 duplicadas += 1;
                 continue;
             }
-            const identificadorBanco = linha.id_externo && linha.id_externo !== '000000'
-                ? String(linha.id_externo)
-                : `${data}-${tipo}-${valor}-${descricao}`;
-            const idExterno = crypto.createHash('sha256')
-                .update(`${contaId}-${identificadorBanco}`)
-                .digest('hex');
+
             const [resultado] = await bancoDados.query(
                 `INSERT INTO transacoes
                     (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria,
-                     data_transacao, banco, importacao_id)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     data_transacao, banco, importacao_id, fitid_origem, identidade_importacao)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                  ON DUPLICATE KEY UPDATE id = id`,
-                [contaId, idExterno, descricao, valor, tipo, categoria, data, nomeBanco, lote.insertId]
+                [
+                    contaId,
+                    transacaoIdExterno,
+                    linha.descricao,
+                    linha.valor,
+                    linha.tipo,
+                    linha.categoria,
+                    linha.data,
+                    nomeBanco,
+                    lote.insertId,
+                    linha.fitid,
+                    linha.identidade
+                ]
             );
             if (resultado.affectedRows === 1) inseridas += 1;
             else duplicadas += 1;
@@ -3445,6 +3506,23 @@ app.post('/importacoes/confirmar', exigirLogin, async (req, res) => {
     } catch (erro) {
         if (transacaoAberta) {
             try { await bancoDados.rollback(); } catch {}
+        }
+        if (
+            erro?.code === 'ER_DUP_ENTRY'
+            && String(erro?.message || '').includes('uk_importacao_arquivo_confirmado')
+        ) {
+            return res.status(409).json({
+                success: false,
+                codigo: 'ARQUIVO_JA_IMPORTADO',
+                error: 'Este mesmo arquivo já foi importado para a conta selecionada.'
+            });
+        }
+        if (erro?.statusHttp) {
+            return res.status(erro.statusHttp).json({
+                success: false,
+                codigo: erro.codigoPublico || 'IMPORTACAO_INVALIDA',
+                error: erro.message
+            });
         }
         console.error('Erro ao confirmar importação:', erro);
         res.status(500).json({ success: false, error: 'Falha ao concluir a importação.' });
@@ -3516,7 +3594,7 @@ app.delete('/importacoes/:id', exigirLogin, async (req, res) => {
         );
         await bancoDados.query(
             `UPDATE importacoes_extratos
-             SET status = 'desfeita', desfeito_em = NOW()
+             SET status = 'desfeita', desfeito_em = NOW(), chave_arquivo_confirmado = NULL
              WHERE id = ? AND usuario_id = ?`,
             [req.params.id, req.session.userId]
         );

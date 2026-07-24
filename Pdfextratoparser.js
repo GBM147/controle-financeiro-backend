@@ -31,10 +31,15 @@ async function extrairTransacoesDoPdf(texto) {
             Extraia apenas as transações financeiras reais. Ignore cabeçalhos, rodapés, saldos do dia, números de página e textos informativos.
             
             Retorne ESTRITAMENTE um array JSON puro (sem markdown, sem \`\`\`json) contendo objetos com as seguintes chaves:
-            - "data": A data da transação no formato "YYYY-MM-DD".
-            - "descricao": O nome do estabelecimento ou motivo (limpo, sem números de documento).
+            - "data": A data bancária explícita da linha no formato "YYYY-MM-DD". Se o extrato usar DD/MM/AAAA, converta os componentes explicitamente. Nunca use uma data mencionada dentro da descrição, nome do estabelecimento ou histórico para substituir a data da coluna/linha bancária. Não invente datas.
+            - "descricao": Preserve a descrição bancária completa da movimentação, inclusive identificadores relevantes como final de cartão ou referência. Não abrevie nem reformule o texto.
             - "valor": O valor numérico absoluto (ex: 150.50), use ponto para decimais.
             - "tipo": Exatamente "Receita" (se entrou dinheiro) ou "Despesa" (se saiu dinheiro).
+
+            Regras de integridade:
+            - Não repita uma movimentação só porque o texto do PDF aparece duplicado na camada de extração.
+            - Preserve duas ocorrências quando houver duas linhas bancárias reais, mesmo que tenham data, descrição e valor iguais.
+            - Débito e crédito do mesmo valor e da mesma data são movimentações distintas.
             
             Texto do extrato:
             ${texto}
