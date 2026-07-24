@@ -1,6 +1,8 @@
-const CACHE_GBM = 'gbm-estatico-v10';
+const CACHE_GBM = 'gbm-estatico-v11';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
+    '/termos.html',
+    '/politica-de-privacidade.html',
     '/auth.js',
     '/gbm-pages.css',
     '/gbm-pages.js',

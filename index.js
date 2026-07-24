@@ -47,6 +47,7 @@ function enviarImagemParaCloudinary(buffer, opcoes) {
 }
 // Inicializamos a API de Email (Resend)
 const resend = new Resend(process.env.RESEND_API_KEY);
+const TERMOS_VERSAO_ATUAL = '2026.07';
 
 // --- MAPA DE BANCOS (código Febraban -> nome + cor de referência) ---
 const BANCOS_INFO = {
@@ -564,6 +565,8 @@ function garantirEstruturaProduto() {
         await garantirColuna('usuarios', 'telefone_criptografado', 'TEXT NULL');
         await garantirColuna('usuarios', 'cpf_criptografado', 'TEXT NULL');
         await garantirColuna('usuarios', 'consentimento_privacidade_em', 'DATETIME NULL');
+        await garantirColuna('usuarios', 'termos_aceitos_em', 'DATETIME NULL');
+        await garantirColuna('usuarios', 'termos_versao', 'VARCHAR(20) NULL');
         await garantirColuna('alertas', 'tipo', "VARCHAR(40) NOT NULL DEFAULT 'limite'");
 
         const [indiceEmailHash] = await db.promise().query(`
@@ -1168,7 +1171,15 @@ app.post('/pdf-extrato/confirmar', exigirLogin, async (req, res) => {
 
 // --- ROTA 1: CADASTRO DE USUÁRIO ---
 app.post('/cadastro', limitarAutenticacao, async (req, res) => {
-    const { nome, sobrenome, email, telefone, senha, consentimento_privacidade } = req.body;
+    const {
+        nome,
+        sobrenome,
+        email,
+        telefone,
+        senha,
+        aceite_termos,
+        consentimento_privacidade
+    } = req.body;
     try {
         await garantirEstruturaProduto();
         if (!nome || !email || !senha || String(senha).length < 8) {
@@ -1181,6 +1192,12 @@ app.post('/cadastro', limitarAutenticacao, async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'É necessário aceitar a Política de Privacidade para criar a conta.'
+            });
+        }
+        if (aceite_termos !== true && aceite_termos !== 'true') {
+            return res.status(400).json({
+                success: false,
+                message: 'É necessário aceitar os Termos de Uso para criar a conta.'
             });
         }
 
@@ -1202,8 +1219,9 @@ app.post('/cadastro', limitarAutenticacao, async (req, res) => {
         const sql = `INSERT INTO usuarios 
             (nome, sobrenome, email, telefone, nome_criptografado, sobrenome_criptografado,
              email_criptografado, email_hash, telefone_criptografado, senha_hash,
-             status_pagamento, trial_expira, consentimento_privacidade_em) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'trial', DATE_ADD(NOW(), INTERVAL 30 DAY), NOW())`;
+             status_pagamento, trial_expira, consentimento_privacidade_em,
+             termos_aceitos_em, termos_versao) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'trial', DATE_ADD(NOW(), INTERVAL 30 DAY), NOW(), NOW(), ?)`;
         const [result] = await db.promise().query(sql, [
             nomeBanco,
             sobrenomeBanco,
@@ -1214,7 +1232,8 @@ app.post('/cadastro', limitarAutenticacao, async (req, res) => {
             emailCriptografado,
             emailHash,
             telefoneCriptografado,
-            senhaHash
+            senhaHash,
+            TERMOS_VERSAO_ATUAL
         ]);
         await registrarAuditoria(req, 'CONTA_CRIADA', null, result.insertId);
         res.json({ success: true, userId: result.insertId, message: 'Cadastro realizado!' });
@@ -3975,11 +3994,14 @@ app.get('/privacidade/status', exigirLogin, async (req, res) => {
     try {
         await garantirEstruturaProduto();
         const [linhas] = await db.promise().query(
-            'SELECT consentimento_privacidade_em FROM usuarios WHERE id = ?',
+            `SELECT consentimento_privacidade_em, termos_aceitos_em, termos_versao
+             FROM usuarios WHERE id = ?`,
             [req.session.userId]
         );
         res.json({
             consentimento_privacidade_em: linhas[0]?.consentimento_privacidade_em || null,
+            termos_aceitos_em: linhas[0]?.termos_aceitos_em || null,
+            termos_versao: linhas[0]?.termos_versao || null,
             criptografia_ativa: Boolean(chaveDados)
         });
     } catch (erro) {
@@ -4001,6 +4023,50 @@ app.put('/privacidade/consentimento', exigirLogin, async (req, res) => {
     }
 });
 
+app.get('/termos/status', exigirLogin, async (req, res) => {
+    try {
+        await garantirEstruturaProduto();
+        const [linhas] = await db.promise().query(
+            'SELECT termos_aceitos_em, termos_versao FROM usuarios WHERE id = ?',
+            [req.session.userId]
+        );
+        res.json({
+            termos_aceitos_em: linhas[0]?.termos_aceitos_em || null,
+            termos_versao: linhas[0]?.termos_versao || null,
+            termos_versao_atual: TERMOS_VERSAO_ATUAL
+        });
+    } catch (erro) {
+        res.status(500).json({ success: false, error: 'Falha ao carregar o aceite dos Termos.' });
+    }
+});
+
+app.put('/termos/aceitar', exigirLogin, async (req, res) => {
+    try {
+        const aceito = req.body.aceito === true || req.body.aceito === 1;
+        if (!aceito) {
+            return res.status(400).json({
+                success: false,
+                error: 'Confirme a leitura e o aceite dos Termos de Uso.'
+            });
+        }
+        await garantirEstruturaProduto();
+        await db.promise().query(
+            `UPDATE usuarios
+             SET termos_aceitos_em = NOW(), termos_versao = ?
+             WHERE id = ?`,
+            [TERMOS_VERSAO_ATUAL, req.session.userId]
+        );
+        await registrarAuditoria(req, 'TERMOS_ACEITOS', TERMOS_VERSAO_ATUAL);
+        res.json({
+            success: true,
+            termos_versao: TERMOS_VERSAO_ATUAL,
+            termos_aceitos_em: new Date().toISOString()
+        });
+    } catch (erro) {
+        res.status(500).json({ success: false, error: 'Falha ao registrar o aceite dos Termos.' });
+    }
+});
+
 app.get('/minha-conta/exportar', exigirLogin, async (req, res) => {
     try {
         await garantirEstruturaProduto();
@@ -4009,7 +4075,8 @@ app.get('/minha-conta/exportar', exigirLogin, async (req, res) => {
             `SELECT id, nome, sobrenome, email, telefone,
                     nome_criptografado, sobrenome_criptografado, email_criptografado,
                     telefone_criptografado,
-                    status_pagamento, trial_expira, criado_em, consentimento_privacidade_em
+                    status_pagamento, trial_expira, criado_em, consentimento_privacidade_em,
+                    termos_aceitos_em, termos_versao
              FROM usuarios WHERE id = ?`,
             [usuarioId]
         );

@@ -11,7 +11,13 @@
         <a class="btn btn-small" href="configuracoes.html">← Configurações</a>
     </header>
     <main class="container">
-        <div class="page-title"><h1>Privacidade e seus dados</h1><p>Controle o consentimento, baixe uma cópia dos dados e veja como informações sensíveis são protegidas.</p></div>
+        <div class="page-title">
+            <h1>Privacidade e seus dados</h1>
+            <p>Controle o consentimento, baixe uma cópia dos dados e veja como informações sensíveis são protegidas.</p>
+            <div class="actions" style="margin-top:14px">
+                <a class="btn btn-small" href="politica-de-privacidade.html">Ler Política de Privacidade</a>
+            </div>
+        </div>
         <div class="grid grid-2">
             <section class="card">
                 <h2>Exportar meus dados</h2>
@@ -30,6 +36,11 @@
                 <button id="salvar-consentimento" class="btn" style="margin-top:15px">Salvar escolha</button>
             </section>
             <section class="card">
+                <h2>Termos de Uso</h2>
+                <p id="data-termos" style="color:var(--muted);line-height:1.6">Carregando...</p>
+                <a class="btn" href="termos.html">Ler e gerenciar aceite</a>
+            </section>
+            <section class="card">
                 <h2>Exclusão definitiva</h2>
                 <p style="color:var(--muted);line-height:1.6">Para apagar a conta e todos os dados, use a Zona de exclusão. A operação também remove metas, importações e recorrências.</p>
                 <a class="btn btn-danger" href="configuracoes.html">Ir para Zona de exclusão</a>
@@ -45,6 +56,9 @@
                 document.getElementById('data-consentimento').textContent=dados.consentimento_privacidade_em
                     ? `Consentimento registrado em ${new Date(dados.consentimento_privacidade_em).toLocaleString('pt-BR')}.`
                     : 'O consentimento ainda não foi registrado.';
+                document.getElementById('data-termos').textContent=dados.termos_aceitos_em
+                    ? `Versão ${dados.termos_versao || 'não identificada'} aceita em ${new Date(dados.termos_aceitos_em).toLocaleString('pt-BR')}.`
+                    : 'O aceite dos Termos ainda não foi registrado nesta conta.';
                 document.getElementById('status-criptografia').innerHTML=dados.criptografia_ativa
                     ? '<span class="pill green">🔒 Criptografia ativa</span>'
                     : '<span class="pill amber">Configuração pendente no Render</span>';

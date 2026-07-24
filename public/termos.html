@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Termos de Uso do Guardian of Budget & Money (GBM).">
+    <title>Termos de Uso | GBM</title>
+    <link rel="stylesheet" href="gbm-pages.css">
+    <style>
+        .legal-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 22px;
+            align-items: start;
+        }
+        .legal-document { padding: clamp(20px, 4vw, 38px); }
+        .legal-document section {
+            padding: 8px 0 20px;
+            border-bottom: 1px solid rgba(255,255,255,.09);
+            scroll-margin-top: 98px;
+        }
+        .legal-document section:last-child { border-bottom: 0; }
+        .legal-document h2 {
+            margin: 14px 0 10px;
+            color: var(--text);
+            font-size: clamp(1.18rem, 2vw, 1.45rem);
+        }
+        .legal-document p, .legal-document li {
+            color: var(--muted);
+            line-height: 1.72;
+        }
+        .legal-document ul { padding-left: 22px; }
+        .legal-document a { color: #8bffc1; }
+        .legal-summary {
+            padding: 16px 18px;
+            border: 1px solid rgba(57,217,138,.36);
+            border-radius: 12px;
+            background: rgba(57,217,138,.07);
+        }
+        .legal-summary p { margin: 0; color: #c9f8df; }
+        .legal-nav {
+            position: sticky;
+            top: 98px;
+            padding: 18px;
+        }
+        .legal-nav strong { display: block; margin-bottom: 10px; }
+        .legal-nav a {
+            display: block;
+            padding: 7px 0;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: .84rem;
+        }
+        .legal-nav a:hover { color: var(--green); }
+        .provider-pending {
+            padding: 13px 15px;
+            border: 1px solid rgba(245,185,66,.5);
+            border-radius: 10px;
+            background: rgba(245,185,66,.08);
+            color: #ffe09b !important;
+        }
+        .acceptance-card { margin-bottom: 22px; }
+        .acceptance-card h2 { margin-top: 0; }
+        #termos-status { color: var(--muted); line-height: 1.55; }
+        #aceitar-termos[hidden] { display: none !important; }
+        .meta-line {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap;
+            margin-top: 13px;
+        }
+        @media (max-width: 860px) {
+            .legal-layout { grid-template-columns: 1fr; }
+            .legal-nav { display: none; }
+        }
+        @media (max-width: 520px) {
+            .top-actions .btn:first-child { display: none; }
+            .legal-document { padding: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="index.html">
+            <img src="logo-transparente.jpg" alt="GBM">
+            <span>Guardian of Budget &amp; Money</span>
+        </a>
+        <div class="top-actions">
+            <a class="btn btn-small" href="politica-de-privacidade.html">Privacidade</a>
+            <a class="btn btn-small" href="configuracoes.html">← Configurações</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-title">
+            <h1>Termos de Uso</h1>
+            <p>Regras para utilização do Guardian of Budget &amp; Money.</p>
+            <div class="meta-line">
+                <span class="pill green">Versão 2026.07</span>
+                <span class="pill">Atualizado em 24 de julho de 2026</span>
+            </div>
+        </div>
+
+        <section class="card acceptance-card" aria-labelledby="titulo-aceite">
+            <h2 id="titulo-aceite">Seu aceite</h2>
+            <p id="termos-status">Verificando se há uma sessão ativa...</p>
+            <button id="aceitar-termos" class="btn btn-primary" type="button" hidden>
+                Aceitar a versão 2026.07
+            </button>
+        </section>
+
+        <div class="legal-layout">
+            <article class="card legal-document">
+                <div class="legal-summary">
+                    <p><strong>Resumo:</strong> o GBM ajuda a organizar informações financeiras, mas não é banco e não substitui orientação financeira, contábil, tributária ou jurídica. Revise sempre os dados importados e as decisões tomadas com base neles.</p>
+                </div>
+
+                <section id="aceitacao">
+                    <h2>1. Aceitação e alcance</h2>
+                    <p>Estes Termos de Uso regulam o acesso e o uso do Guardian of Budget &amp; Money (“GBM”), inclusive o site, o aplicativo instalável, as páginas, os recursos gratuitos, o período de teste e os recursos Premium.</p>
+                    <p>Ao criar uma conta, a pessoa usuária declara ter lido e aceitado a versão indicada neste documento. A Política de Privacidade é apresentada separadamente e explica como os dados pessoais são tratados.</p>
+                </section>
+
+                <section id="fornecedor">
+                    <h2>2. Identificação e contato do serviço</h2>
+                    <p><strong>Nome do serviço:</strong> GBM — Guardian of Budget &amp; Money.<br>
+                    <strong>Canal eletrônico de atendimento:</strong> suporte@gbm-finance.com.</p>
+                    <p class="provider-pending"><strong>Atenção do responsável pelo GBM:</strong> antes da comercialização pública, substitua este aviso pela razão social ou nome completo do fornecedor, CPF ou CNPJ e endereço de atendimento. Essas informações não existem nos arquivos atuais e não podem ser inventadas.</p>
+                </section>
+
+                <section id="conta">
+                    <h2>3. Cadastro e segurança da conta</h2>
+                    <p>A conta deve ser criada por pessoa com capacidade legal para contratar ou por representante autorizado. Os dados informados devem ser verdadeiros, completos e atualizados.</p>
+                    <p>A pessoa usuária é responsável por proteger sua senha, não compartilhar a sessão e avisar o suporte ao suspeitar de acesso indevido. O GBM poderá solicitar validações razoáveis para proteger a conta.</p>
+                </section>
+
+                <section id="servico">
+                    <h2>4. O que o GBM oferece</h2>
+                    <p>O GBM disponibiliza recursos de organização financeira, como lançamentos manuais, cadastro de contas e categorias, importação de extratos OFX ou PDF, classificação de transações, limites, metas, calendário, alertas, comparativos e relatórios.</p>
+                    <p>O GBM não é instituição financeira, banco, correspondente bancário, gestora de investimentos ou serviço de pagamento. Também não concede crédito e não presta recomendação individual de investimento, contabilidade ou tributação.</p>
+                </section>
+
+                <section id="importacoes">
+                    <h2>5. Importações e automações</h2>
+                    <p>A leitura de OFX ou PDF, a identificação de transações e a categorização podem utilizar regras e sistemas automatizados. Esses resultados podem conter omissões, duplicidades ou classificações incorretas.</p>
+                    <p>Antes de confirmar uma importação, a pessoa usuária deve revisar datas, descrições, valores, tipos e conta de destino. Somente devem ser enviados arquivos próprios ou cujo tratamento tenha sido autorizado.</p>
+                </section>
+
+                <section id="planos">
+                    <h2>6. Plano gratuito, teste e Premium</h2>
+                    <p>O GBM pode oferecer plano gratuito, período de teste e assinatura Premium. Os recursos, a duração do teste, a presença de anúncios, o preço e a periodicidade aplicáveis serão exibidos antes da contratação.</p>
+                    <p>Na configuração atual, relatórios mensais detalhados e comparativos de gastos são recursos Premium, disponibilizados durante o teste e bloqueados ao final dele para quem permanecer no plano gratuito. Outros recursos podem ser reorganizados, desde que mudanças relevantes sejam comunicadas com clareza.</p>
+                </section>
+
+                <section id="pagamentos">
+                    <h2>7. Pagamento, renovação e cancelamento</h2>
+                    <p>Os pagamentos recorrentes são processados pelo Mercado Pago conforme a autorização apresentada na contratação. O GBM não armazena o número completo do cartão. A cobrança somente deve ocorrer enquanto existir autorização válida no provedor de pagamento.</p>
+                    <p>Ao solicitar o cancelamento, o GBM enviará o pedido ao Mercado Pago. O cancelamento será considerado concluído após a confirmação do provedor. Quando aplicável, o acesso Premium permanece até o fim do período já pago; no teste, o cancelamento confirmado impede a conversão para cobrança recorrente.</p>
+                    <p>O cancelamento não elimina direitos obrigatórios do consumidor. Contratações realizadas fora do estabelecimento comercial observam o direito de arrependimento e os demais prazos previstos na legislação brasileira. Reembolsos adicionais seguirão a oferta apresentada e a lei aplicável.</p>
+                </section>
+
+                <section id="dados">
+                    <h2>8. Privacidade e fornecedores de tecnologia</h2>
+                    <p>O tratamento de dados pessoais segue a <a href="politica-de-privacidade.html">Política de Privacidade</a>. Para operar o serviço, o GBM pode utilizar fornecedores de hospedagem, banco de dados, armazenamento de imagens, envio de e-mails, processamento de pagamentos e automação da leitura de documentos.</p>
+                    <p>Na versão atual, esses fornecedores podem incluir Render, Aiven, Cloudinary, Resend, Mercado Pago e serviços Google Gemini. São adotadas medidas de segurança compatíveis com a operação, como transporte criptografado, hash de senhas e criptografia em campos de identidade suportados. Nenhum sistema conectado à internet é completamente isento de risco.</p>
+                </section>
+
+                <section id="conteudo">
+                    <h2>9. Dados e conteúdo da pessoa usuária</h2>
+                    <p>A pessoa usuária mantém a titularidade dos dados e documentos que insere. Ela concede ao GBM autorização limitada para hospedar, processar, organizar e exibir esse conteúdo apenas na medida necessária para executar o serviço, proteger a conta e cumprir obrigações legais.</p>
+                </section>
+
+                <section id="uso-adequado">
+                    <h2>10. Uso adequado</h2>
+                    <p>É proibido usar o GBM para atividades ilícitas, enviar dados ou documentos sem autorização, tentar acessar contas alheias, explorar vulnerabilidades, interferir na disponibilidade do serviço, contornar limites técnicos ou copiar componentes protegidos fora das hipóteses permitidas por lei.</p>
+                </section>
+
+                <section id="disponibilidade">
+                    <h2>11. Disponibilidade e manutenção</h2>
+                    <p>O GBM empregará esforços razoáveis para manter o serviço disponível e seguro, mas poderá realizar manutenção, corrigir falhas ou sofrer interrupções de infraestrutura e de fornecedores externos. Sempre que possível, indisponibilidades relevantes e programadas serão comunicadas.</p>
+                </section>
+
+                <section id="decisoes">
+                    <h2>12. Relatórios, alertas e decisões financeiras</h2>
+                    <p>Gráficos, limites, alertas, metas, comparativos e relatórios são ferramentas informativas baseadas nos dados registrados. Eles não garantem resultados e não constituem recomendação profissional. A pessoa usuária deve verificar as informações antes de tomar decisões financeiras.</p>
+                </section>
+
+                <section id="propriedade">
+                    <h2>13. Propriedade intelectual</h2>
+                    <p>A marca GBM, a identidade visual, os textos, o código, as interfaces e os componentes do serviço pertencem aos seus titulares ou são utilizados mediante licença. Estes Termos não transferem esses direitos. Esta regra não altera a titularidade da pessoa usuária sobre seus próprios dados.</p>
+                </section>
+
+                <section id="suspensao">
+                    <h2>14. Suspensão e encerramento</h2>
+                    <p>O acesso poderá ser limitado ou suspenso em caso de fraude, risco de segurança, violação destes Termos ou obrigação legal. Quando a situação permitir, o GBM informará o motivo e oferecerá oportunidade razoável de correção. Riscos graves podem exigir ação imediata.</p>
+                </section>
+
+                <section id="exclusao">
+                    <h2>15. Exclusão da conta e retenção</h2>
+                    <p>A pessoa usuária pode exportar seus dados e solicitar a exclusão definitiva em Configurações. Se houver assinatura ativa, ela deverá ser cancelada antes. A exclusão remove os dados vinculados à conta, ressalvadas informações que precisem ser mantidas pelo prazo necessário ao cumprimento de obrigação legal, prevenção a fraude, exercício de direitos ou segurança.</p>
+                </section>
+
+                <section id="responsabilidade">
+                    <h2>16. Responsabilidades</h2>
+                    <p>Nenhuma disposição destes Termos exclui garantias ou responsabilidades que não possam ser afastadas pelo Código de Defesa do Consumidor ou por outra norma obrigatória.</p>
+                    <p>Nos limites permitidos pela lei, o GBM não responde por decisões tomadas com base em dados incorretos inseridos ou confirmados pela pessoa usuária, uso não autorizado causado por compartilhamento de senha, nem por eventos externos inevitáveis fora de seu controle razoável. Isso não afasta a responsabilidade do GBM por falhas que lhe sejam legalmente atribuíveis.</p>
+                </section>
+
+                <section id="alteracoes">
+                    <h2>17. Alterações destes Termos</h2>
+                    <p>Alterações relevantes serão informadas de maneira destacada antes de produzirem efeitos. Quando a mudança afetar significativamente direitos ou obrigações, poderá ser solicitado novo aceite. A versão e a data vigentes permanecerão identificadas no início desta página.</p>
+                </section>
+
+                <section id="legislacao">
+                    <h2>18. Legislação e solução de conflitos</h2>
+                    <p>Aplicam-se as leis da República Federativa do Brasil. A pessoa consumidora pode procurar o suporte do GBM e os canais públicos de proteção ao consumidor. Fica preservado o foro legalmente competente, inclusive o do domicílio do consumidor quando aplicável.</p>
+                    <p>Referências oficiais: <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm" target="_blank" rel="noopener">Lei Geral de Proteção de Dados</a>, <a href="https://www.gov.br/mj/pt-br/assuntos/sua-protecao/sedigi/LEIN12.965DE23DEABRILDE2014.pdf" target="_blank" rel="noopener">Marco Civil da Internet</a> e <a href="https://www.gov.br/mj/pt-br/assuntos/seus-direitos/consumidor/Anexos/cdc-versao-portugues-2013-1.pdf" target="_blank" rel="noopener">Código de Defesa do Consumidor</a>.</p>
+                </section>
+            </article>
+
+            <nav class="card legal-nav" aria-label="Índice dos Termos">
+                <strong>Nesta página</strong>
+                <a href="#aceitacao">Aceitação</a>
+                <a href="#fornecedor">Identificação</a>
+                <a href="#conta">Conta</a>
+                <a href="#servico">Serviço</a>
+                <a href="#importacoes">Importações</a>
+                <a href="#planos">Planos</a>
+                <a href="#pagamentos">Pagamentos</a>
+                <a href="#dados">Privacidade</a>
+                <a href="#exclusao">Exclusão</a>
+                <a href="#responsabilidade">Responsabilidades</a>
+                <a href="#legislacao">Legislação</a>
+            </nav>
+        </div>
+    </main>
+
+    <script>
+        const TERMOS_VERSAO = '2026.07';
+        const statusTermos = document.getElementById('termos-status');
+        const botaoAceitar = document.getElementById('aceitar-termos');
+
+        function mostrarStatus(texto, aceito) {
+            statusTermos.textContent = texto;
+            botaoAceitar.hidden = Boolean(aceito);
+        }
+
+        async function carregarAceite() {
+            try {
+                const resposta = await fetch('/termos/status', {
+                    credentials: 'same-origin',
+                    headers: { Accept: 'application/json' }
+                });
+                if (resposta.status === 401) {
+                    mostrarStatus('Entre na sua conta para consultar ou registrar o aceite. A leitura dos Termos é pública.', true);
+                    return;
+                }
+                const dados = await resposta.json();
+                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível consultar o aceite.');
+                if (dados.termos_versao === TERMOS_VERSAO && dados.termos_aceitos_em) {
+                    const data = new Date(dados.termos_aceitos_em).toLocaleString('pt-BR');
+                    mostrarStatus(`Versão ${TERMOS_VERSAO} aceita em ${data}.`, true);
+                    return;
+                }
+                mostrarStatus(`Sua conta ainda não aceitou a versão ${TERMOS_VERSAO}. Leia o documento antes de continuar.`, false);
+            } catch (erro) {
+                mostrarStatus(erro.message, true);
+            }
+        }
+
+        botaoAceitar.addEventListener('click', async () => {
+            botaoAceitar.disabled = true;
+            try {
+                const resposta = await fetch('/termos/aceitar', {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({ aceito: true })
+                });
+                const dados = await resposta.json();
+                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível registrar o aceite.');
+                await carregarAceite();
+            } catch (erro) {
+                mostrarStatus(erro.message, false);
+            } finally {
+                botaoAceitar.disabled = false;
+            }
+        });
+
+        carregarAceite();
+    </script>
+</body>
+</html>
