@@ -62,7 +62,8 @@
         .acceptance-card { margin-bottom: 22px; }
         .acceptance-card h2 { margin-top: 0; }
         #termos-status { color: var(--muted); line-height: 1.55; }
-        #aceitar-termos[hidden] { display: none !important; }
+        #aceitar-termos[hidden],
+        #cartao-aceite[hidden] { display: none !important; }
         .meta-line {
             display: flex;
             gap: 9px;
@@ -86,8 +87,8 @@
             <span>Guardian of Budget &amp; Money</span>
         </a>
         <div class="top-actions">
-            <a class="btn btn-small" href="politica-de-privacidade.html">Privacidade</a>
-            <a class="btn btn-small" href="configuracoes.html">← Configurações</a>
+            <a class="btn btn-small" data-link-legal href="politica-de-privacidade.html">Privacidade</a>
+            <a id="botao-retorno" class="btn btn-small" href="index.html">← Voltar</a>
         </div>
     </header>
 
@@ -101,7 +102,7 @@
             </div>
         </div>
 
-        <section class="card acceptance-card" aria-labelledby="titulo-aceite">
+        <section id="cartao-aceite" class="card acceptance-card" aria-labelledby="titulo-aceite">
             <h2 id="titulo-aceite">Seu aceite</h2>
             <p id="termos-status">Verificando se há uma sessão ativa...</p>
             <button id="aceitar-termos" class="btn btn-primary" type="button" hidden>
@@ -161,7 +162,7 @@
 
                 <section id="dados">
                     <h2>8. Privacidade e fornecedores de tecnologia</h2>
-                    <p>O tratamento de dados pessoais segue a <a href="politica-de-privacidade.html">Política de Privacidade</a>. Para operar o serviço, o GBM pode utilizar fornecedores de hospedagem, banco de dados, armazenamento de imagens, envio de e-mails, processamento de pagamentos e automação da leitura de documentos.</p>
+                    <p>O tratamento de dados pessoais segue a <a data-link-legal href="politica-de-privacidade.html">Política de Privacidade</a>. Para operar o serviço, o GBM pode utilizar fornecedores de hospedagem, banco de dados, armazenamento de imagens, envio de e-mails, processamento de pagamentos e automação da leitura de documentos.</p>
                     <p>Na versão atual, esses fornecedores podem incluir Render, Aiven, Cloudinary, Resend, Mercado Pago e serviços Google Gemini. São adotadas medidas de segurança compatíveis com a operação, como transporte criptografado, hash de senhas e criptografia em campos de identidade suportados. Nenhum sistema conectado à internet é completamente isento de risco.</p>
                 </section>
 
@@ -239,6 +240,36 @@
         const TERMOS_VERSAO = '2026.07';
         const statusTermos = document.getElementById('termos-status');
         const botaoAceitar = document.getElementById('aceitar-termos');
+        const cartaoAceite = document.getElementById('cartao-aceite');
+        const botaoRetorno = document.getElementById('botao-retorno');
+        const origensPermitidas = {
+            cadastro: { rotulo: 'Fechar e voltar ao cadastro', destino: 'index.html' },
+            configuracoes: { rotulo: '← Configurações', destino: 'configuracoes.html' },
+            privacidade: { rotulo: '← Privacidade e dados', destino: 'privacidade.html' }
+        };
+        const origemSolicitada = new URLSearchParams(window.location.search).get('origem');
+        const origem = Object.hasOwn(origensPermitidas, origemSolicitada) ? origemSolicitada : null;
+        const retorno = origem ? origensPermitidas[origem] : { rotulo: '← Voltar', destino: 'index.html' };
+
+        botaoRetorno.textContent = retorno.rotulo;
+        botaoRetorno.href = retorno.destino;
+
+        document.querySelectorAll('[data-link-legal]').forEach((link) => {
+            if (!origem) return;
+            const destino = new URL(link.getAttribute('href'), window.location.href);
+            destino.searchParams.set('origem', origem);
+            link.href = `${destino.pathname.split('/').pop()}${destino.search}${destino.hash}`;
+        });
+
+        botaoRetorno.addEventListener('click', (evento) => {
+            if (origem !== 'cadastro' || !window.opener || window.opener.closed) return;
+            evento.preventDefault();
+            window.opener.focus();
+            window.close();
+            window.setTimeout(() => {
+                if (!window.closed) window.location.replace(retorno.destino);
+            }, 150);
+        });
 
         function mostrarStatus(texto, aceito) {
             statusTermos.textContent = texto;
@@ -287,7 +318,11 @@
             }
         });
 
-        carregarAceite();
+        if (origem === 'cadastro') {
+            cartaoAceite.hidden = true;
+        } else {
+            carregarAceite();
+        }
     </script>
 </body>
 </html>
