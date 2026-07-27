@@ -259,6 +259,11 @@ app.use((req, res, next) => {
     next();
 });
 
+app.get('/health', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(200).json({ status: 'ok', service: 'gbm-api' });
+});
+
 function criarLimitador({ janelaMs, maximo, prefixo }) {
     const tentativas = new Map();
 
