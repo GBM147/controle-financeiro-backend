@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Link para o App (PWA) -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2E8B57">
+<meta name="theme-color" content="#2E8B57">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GBM Finance">
+<link rel="apple-touch-icon" href="logo-transparente.png">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2735805392775741"
      crossorigin="anonymous"></script>
     <style>
@@ -283,9 +287,9 @@
     <div class="login-container">
         
         <!-- BOTÃO DE INSTALAR O APP -->
-        <button id="btn-instalar-app" onclick="instalarGBM()" style="display:none; width:100%; margin-bottom: 20px; padding:12px; background:#c89f53; color:#09101a; border:none; border-radius:10px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 15px rgba(200, 159, 83, 0.4); transition: 0.3s;">
-            📲 Instalar Aplicativo GBM
-        </button>
+        <button id="btn-instalar-app" style="display:none; width:100%; margin-bottom: 20px; padding:12px; background:#c89f53; color:#09101a; border:none; border-radius:10px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 15px rgba(200, 159, 83, 0.4); transition: 0.3s;">
+    📲 Instalar Aplicativo GBM
+</button>
 
         <div id="form-login">
             <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
@@ -915,37 +919,50 @@
         </div>
     </div>
     <script>
-        // --- SISTEMA DE INSTALAÇÃO DO APLICATIVO (PWA) ---
-        // 1. Registar o motor (Service Worker)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(() => {
-                console.log("Service Worker Registado!");
+    // --- SISTEMA DE INSTALAÇÃO DO APLICATIVO (PWA) ---
+    // 1. Registar o motor (Service Worker)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(() => {
+            console.log("Service Worker Registado!");
+        });
+    }
+
+    const ehIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    const jaInstalado = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+    // 2. Capturar o evento de instalação do Chrome/Android
+    let promptInstalacao;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        promptInstalacao = e;
+        document.getElementById('btn-instalar-app').style.display = 'block';
+    });
+
+    // 3. No Safari/iOS não existe beforeinstallprompt — mostramos instrução manual
+    if (ehIOS && !jaInstalado) {
+        const btn = document.getElementById('btn-instalar-app');
+        btn.innerText = '📲 Como instalar no iPhone';
+        btn.style.display = 'block';
+        btn.onclick = function() {
+            gbmAlerta('Toque no ícone de compartilhar (quadrado com seta ↑) na barra do Safari e escolha "Adicionar à Tela de Início".', 'aviso');
+        };
+    } else {
+        document.getElementById('btn-instalar-app').onclick = instalarGBM;
+    }
+
+    // 4. Função que roda quando o utilizador clica no botão (Chrome/Android)
+    function instalarGBM() {
+        if (promptInstalacao) {
+            promptInstalacao.prompt();
+            promptInstalacao.userChoice.then((resultado) => {
+                if (resultado.outcome === 'accepted') {
+                    console.log('Usuário instalou o App GBM!');
+                }
+                promptInstalacao = null;
+                document.getElementById('btn-instalar-app').style.display = 'none';
             });
         }
-
-        // 2. Capturar o evento de instalação do Chrome
-        let promptInstalacao;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Impede o Chrome de mostrar o mini-aviso automático logo de cara
-            e.preventDefault();
-            promptInstalacao = e;
-            // Mostra o nosso botão dourado bonito
-            document.getElementById('btn-instalar-app').style.display = 'block';
-        });
-
-        // 3. Função que roda quando o utilizador clica no nosso botão dourado
-        function instalarGBM() {
-            if (promptInstalacao) {
-                promptInstalacao.prompt(); // Mostra a tela de instalação real do Android/Windows
-                promptInstalacao.userChoice.then((resultado) => {
-                    if (resultado.outcome === 'accepted') {
-                        console.log('Usuário instalou o App GBM!');
-                    }
-                    promptInstalacao = null;
-                    document.getElementById('btn-instalar-app').style.display = 'none';
-                });
-            }
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
