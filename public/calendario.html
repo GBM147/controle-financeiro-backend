@@ -20,7 +20,7 @@
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="dashboard.html"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a>
+        <a class="brand" href="dashboard.html" aria-label="Ir para o dashboard"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a>
         <a class="btn btn-small" href="dashboard.html">← Dashboard</a>
     </header>
     <main class="container">
@@ -33,15 +33,15 @@
             <section class="card">
                 <h2>Nova recorrência</h2>
                 <form id="form-recorrencia" class="form-grid">
-                    <div class="field full"><label>Descrição</label><input id="rec-desc" maxlength="180" required placeholder="Ex.: Aluguel"></div>
-                    <div class="field"><label>Valor</label><input id="rec-valor" type="number" min="0.01" step="0.01" required></div>
+                    <div class="field full"><label for="rec-desc">Descrição</label><input id="rec-desc" maxlength="180" required placeholder="Ex.: Aluguel" autocomplete="off"></div>
+                    <div class="field"><label for="rec-valor">Valor</label><input id="rec-valor" type="number" min="0.01" step="0.01" required inputmode="decimal"></div>
                     <div class="field"><label>Tipo</label><select id="rec-tipo"><option>Despesa</option><option>Receita</option></select></div>
-                    <div class="field"><label>Categoria</label><input id="rec-categoria" value="Outros" maxlength="120"></div>
-                    <div class="field"><label>Dia do mês</label><input id="rec-dia" type="number" min="1" max="31" value="10" required></div>
-                    <div class="field"><label>Conta</label><select id="rec-conta"></select></div>
-                    <div class="field"><label>Começa em</label><input id="rec-inicio" type="date" required></div>
-                    <div class="field"><label>Termina em (opcional)</label><input id="rec-fim" type="date"></div>
-                    <div class="field full"><div class="actions end"><button class="btn btn-primary">Salvar recorrência</button></div></div>
+                    <div class="field"><label for="rec-categoria">Categoria</label><input id="rec-categoria" value="Outros" maxlength="120" required></div>
+                    <div class="field"><label for="rec-dia">Dia do mês</label><input id="rec-dia" type="number" min="1" max="31" value="10" required inputmode="numeric"></div>
+                    <div class="field"><label for="rec-conta">Conta</label><select id="rec-conta" required></select></div>
+                    <div class="field"><label for="rec-inicio">Começa em</label><input id="rec-inicio" type="date" required></div>
+                    <div class="field"><label for="rec-fim">Termina em (opcional)</label><input id="rec-fim" type="date"></div>
+                    <div class="field full"><div class="actions end"><button class="btn btn-primary" type="submit">Salvar recorrência</button></div></div>
                 </form>
             </section>
 
@@ -80,6 +80,12 @@
 
         document.getElementById('form-recorrencia').addEventListener('submit', async (evento) => {
             evento.preventDefault();
+            const botao = evento.submitter || evento.currentTarget.querySelector('[type="submit"]');
+            const textoOriginal = botao?.textContent;
+            if (botao) {
+                botao.disabled = true;
+                botao.textContent = 'Salvando...';
+            }
             try {
                 await gbmJson(await fetchApi('/recorrencias', {
                     method:'POST',
@@ -95,12 +101,17 @@
                         data_fim:document.getElementById('rec-fim').value || null
                     })
                 }));
-                gbmToast('Recorrência criada.');
+                gbmToast('Recorrência criada com sucesso.');
                 document.getElementById('form-recorrencia').reset();
                 document.getElementById('rec-inicio').value = hoje.toISOString().slice(0,10);
-                carregarRecorrencias();
-                carregarCalendario();
+                await Promise.all([carregarRecorrencias(), carregarCalendario()]);
             } catch (erro) { gbmToast(erro.message,'erro'); }
+            finally {
+                if (botao) {
+                    botao.disabled = false;
+                    botao.textContent = textoOriginal;
+                }
+            }
         });
 
         async function carregarRecorrencias() {
@@ -126,7 +137,8 @@
                 await gbmJson(await fetchApi(`/recorrencias/${id}`, {
                     method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativa})
                 }));
-                carregarRecorrencias(); carregarCalendario();
+                gbmToast(`Recorrência ${ativa ? 'ativada' : 'pausada'} com sucesso.`);
+                await Promise.all([carregarRecorrencias(), carregarCalendario()]);
             } catch (erro) { gbmToast(erro.message,'erro'); }
         }
 
@@ -134,7 +146,8 @@
             if (!confirm('Excluir esta recorrência? Os lançamentos já realizados serão mantidos.')) return;
             try {
                 await gbmJson(await fetchApi(`/recorrencias/${id}`, {method:'DELETE'}));
-                carregarRecorrencias(); carregarCalendario();
+                gbmToast('Recorrência excluída com sucesso.');
+                await Promise.all([carregarRecorrencias(), carregarCalendario()]);
             } catch (erro) { gbmToast(erro.message,'erro'); }
         }
 

@@ -20,10 +20,12 @@ function gbmEscapar(valor) {
         .replaceAll("'", '&#039;');
 }
 
-function gbmToast(mensagem, tipo = 'info') {
+function gbmToast(mensagem, tipo = 'sucesso') {
     document.querySelector('.toast')?.remove();
     const toast = document.createElement('div');
     toast.className = `toast ${tipo}`;
+    toast.setAttribute('role', tipo === 'erro' ? 'alert' : 'status');
+    toast.setAttribute('aria-live', tipo === 'erro' ? 'assertive' : 'polite');
     toast.textContent = mensagem;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 4200);
@@ -39,3 +41,16 @@ async function gbmJson(resposta) {
     }
     return dados;
 }
+
+// Garante o mesmo comportamento de envio pelo Enter em desktop e celular.
+// A validação HTML5 do formulário continua sendo executada antes do submit.
+document.addEventListener('keydown', (evento) => {
+    if (evento.key !== 'Enter' || evento.isComposing) return;
+
+    const campo = evento.target;
+    if (!(campo instanceof HTMLInputElement) || !campo.form) return;
+    if (['button', 'checkbox', 'file', 'radio', 'range', 'reset', 'submit'].includes(campo.type)) return;
+
+    evento.preventDefault();
+    campo.form.requestSubmit();
+});
