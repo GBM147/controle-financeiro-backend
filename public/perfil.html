@@ -7,14 +7,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="gbm-pages.css">
     <style>
         :root {
-            --fundo: #09101a;
-            --painel: #101b2c;
-            --borda: rgba(95,255,168,.28);
+            --fundo: #07111f;
+            --painel: #0f1a2b;
+            --borda: rgba(95,255,168,.22);
             --destaque: #5fffa8;
-            --texto: #eef5ff;
-            --mutado: #a7b4c7;
+            --texto: #fff;
+            --mutado: #b0bec5;
             --erro: #ff6b6b;
         }
 
@@ -24,33 +25,16 @@
             margin: 0;
             color: var(--texto);
             font-family: Inter, sans-serif;
-            background: linear-gradient(rgba(9,16,26,.88), rgba(9,16,26,.94)), url('fundo-marmore.jpg') center/cover fixed;
         }
-
-        .cabecalho {
-            height: 64px;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--borda);
-            background: rgba(9,16,26,.72);
-            backdrop-filter: blur(10px);
-        }
-
-        .marca { display: flex; align-items: center; gap: 12px; }
-        .marca img { width: 44px; height: 44px; object-fit: contain; }
-        .marca strong { font-family: Rajdhani, sans-serif; letter-spacing: 2px; font-size: 1.1rem; color: var(--destaque); }
-        .voltar { color: var(--texto); text-decoration: none; font-weight: 700; }
-        .voltar:hover { color: var(--destaque); }
 
         main { max-width: 860px; margin: 36px auto; padding: 0 20px 48px; }
-        .perfil-card {
+        body.gbm-interna .perfil-card {
             overflow: hidden;
+            padding: 0;
             border: 1px solid var(--borda);
             border-radius: 18px;
-            background: rgba(16,27,44,.92);
-            box-shadow: 0 20px 50px rgba(0,0,0,.32);
+            background: #0f1a2b;
+            box-shadow: 0 2px 12px rgba(0,0,0,.45), 0 0 0 1px rgba(95,255,168,.05) inset;
         }
 
         .capa {
@@ -113,8 +97,6 @@
         #mensagem.sucesso { color: var(--destaque); }
 
         @media (max-width: 600px) {
-            .cabecalho { padding: 0 16px; }
-            .marca strong { display: none; }
             main { margin-top: 20px; padding: 0 12px 30px; }
             .conteudo { padding: 0 20px 24px; }
             .capa { height: 170px; }
@@ -124,13 +106,15 @@
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
-<body>
-    <header class="cabecalho">
-        <div class="marca">
+<body class="gbm-interna">
+    <header class="topbar">
+        <a class="brand" href="dashboard.html" aria-label="Ir para o Dashboard">
             <img src="logo-transparente.jpg" alt="Logo GBM">
-            <strong>GUARDIAN OF BUDGET &amp; MONEY</strong>
+            <span>Guardian of Budget &amp; Money</span>
+        </a>
+        <div class="top-actions">
+            <a class="btn-voltar" href="configuracoes.html" aria-label="Voltar às Configurações">Voltar</a>
         </div>
-        <a class="voltar" href="configuracoes.html">← Configurações</a>
     </header>
 
     <main>
@@ -282,6 +266,7 @@
 
         carregarPerfil();
     </script>
+    <script src="gbm-pages.js"></script>
     <script src="gbm-tutorial.js"></script>
 </body>
 </html>

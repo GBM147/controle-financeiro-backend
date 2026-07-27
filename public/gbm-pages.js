@@ -54,3 +54,103 @@ document.addEventListener('keydown', (evento) => {
     evento.preventDefault();
     campo.form.requestSubmit();
 });
+
+function gbmInicializarParticulas() {
+    const corpo = document.body;
+    if (!corpo?.classList.contains('gbm-interna')) return;
+    if (corpo.dataset.gbmParticulasInicializadas === 'true') return;
+
+    let canvas = document.getElementById('particles-canvas');
+    if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.id = 'particles-canvas';
+        corpo.prepend(canvas);
+    }
+
+    const contexto = canvas.getContext('2d');
+    if (!contexto) return;
+
+    corpo.dataset.gbmParticulasInicializadas = 'true';
+    canvas.setAttribute('aria-hidden', 'true');
+
+    const movimentoReduzido = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let largura = 0;
+    let altura = 0;
+    let particulas = [];
+    let quadroAnimacao = 0;
+    let quadroResize = 0;
+
+    function criarParticula() {
+        return {
+            x: Math.random() * largura,
+            y: Math.random() * altura,
+            tamanho: Math.random() * 2.5 + .8,
+            velocidade: Math.random() * 1.2 + .3,
+            opacidade: Math.random() * .4 + .2
+        };
+    }
+
+    function desenhar() {
+        contexto.clearRect(0, 0, largura, altura);
+        particulas.forEach((particula) => {
+            contexto.beginPath();
+            contexto.arc(particula.x, particula.y, particula.tamanho, 0, Math.PI * 2);
+            contexto.fillStyle = `rgba(200, 159, 83, ${particula.opacidade})`;
+            contexto.fill();
+        });
+    }
+
+    function animar() {
+        particulas.forEach((particula) => {
+            particula.y -= particula.velocidade;
+            if (particula.y < -particula.tamanho) {
+                particula.y = altura + particula.tamanho;
+                particula.x = Math.random() * largura;
+            }
+        });
+        desenhar();
+        quadroAnimacao = window.requestAnimationFrame(animar);
+    }
+
+    function atualizarAnimacao() {
+        window.cancelAnimationFrame(quadroAnimacao);
+        quadroAnimacao = 0;
+        desenhar();
+        if (!movimentoReduzido.matches) {
+            quadroAnimacao = window.requestAnimationFrame(animar);
+        }
+    }
+
+    function redimensionar() {
+        largura = window.innerWidth;
+        altura = window.innerHeight;
+        const proporcao = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.round(largura * proporcao);
+        canvas.height = Math.round(altura * proporcao);
+        contexto.setTransform(proporcao, 0, 0, proporcao, 0, 0);
+
+        const quantidade = Math.min(65, Math.floor((largura * altura) / 15000));
+        particulas = Array.from({ length: quantidade }, criarParticula);
+        atualizarAnimacao();
+    }
+
+    window.addEventListener('resize', () => {
+        window.cancelAnimationFrame(quadroResize);
+        quadroResize = window.requestAnimationFrame(redimensionar);
+    });
+
+    if (typeof movimentoReduzido.addEventListener === 'function') {
+        movimentoReduzido.addEventListener('change', atualizarAnimacao);
+    } else {
+        movimentoReduzido.addListener(atualizarAnimacao);
+    }
+
+    redimensionar();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', gbmInicializarParticulas, { once: true });
+} else {
+    gbmInicializarParticulas();
+}

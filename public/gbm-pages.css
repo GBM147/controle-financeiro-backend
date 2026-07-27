@@ -347,3 +347,197 @@ td { font-size: .86rem; }
     .brand span { max-width: 88px; }
     .top-actions .btn:not(:last-child) { display: none; }
 }
+
+/* Padronização visual exclusiva das páginas internas autenticadas. */
+body.gbm-interna {
+    --text: #fff;
+    --texto: #fff;
+    --muted: #b0bec5;
+    --mutado: #b0bec5;
+    --texto-mutado: #b0bec5;
+    color: #fff;
+    background-image:
+        linear-gradient(rgba(15, 23, 42, .85), rgba(15, 23, 42, .9)),
+        url("fundo-marmore.jpg");
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+body.gbm-interna > header,
+body.gbm-interna > main,
+body.gbm-interna > .container,
+body.gbm-interna > .page-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+body.gbm-interna #particles-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+body.gbm-interna .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    height: 56px;
+    min-height: 56px;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, .15);
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+body.gbm-interna .brand {
+    gap: 15px;
+}
+
+body.gbm-interna .brand img {
+    width: auto;
+    height: 50px;
+    border-radius: 8px;
+    animation: gbm-interna-float 4s ease-in-out infinite;
+}
+
+body.gbm-interna .brand span {
+    max-width: none;
+    font-family: Rajdhani, Inter, sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: linear-gradient(
+        90deg,
+        #2e8b57 0%,
+        #5fffa8 25%,
+        #3d28ff 50%,
+        #655aff 75%,
+        #2e8b57 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: gbm-shine 4s linear infinite;
+}
+
+@keyframes gbm-interna-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+body.gbm-interna :is(.card, .cartao, .zona-perigo, .perfil-card, .contato-card) {
+    border: 1px solid rgba(95, 255, 168, .22);
+    background: #0f1a2b;
+    box-shadow:
+        0 2px 12px rgba(0, 0, 0, .45),
+        0 0 0 1px rgba(95, 255, 168, .05) inset;
+    backdrop-filter: none;
+    transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+
+body.gbm-interna :is(.card, .cartao, .zona-perigo, .perfil-card, .contato-card):hover {
+    border-color: rgba(95, 255, 168, .45);
+    box-shadow:
+        0 4px 18px rgba(0, 0, 0, .55),
+        0 0 14px rgba(95, 255, 168, .12);
+}
+
+body.gbm-interna .zona-perigo,
+body.gbm-interna .zona-perigo:hover {
+    border-color: rgba(255, 100, 115, .55);
+}
+
+body.gbm-interna .btn-voltar {
+    position: relative;
+    display: inline-flex;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 8px 16px;
+    border: 1px solid rgba(95, 255, 168, .25);
+    border-radius: 8px;
+    background: #0f1a2b;
+    color: #fff;
+    text-decoration: none;
+    font-family: Rajdhani, Inter, sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: border-color .3s ease, box-shadow .3s ease, color .3s ease;
+}
+
+body.gbm-interna .btn-voltar::after {
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 30%;
+    height: 200%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, .18) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    content: "";
+    pointer-events: none;
+    transform: rotate(30deg);
+    animation: gbm-btn-shine 4s infinite ease-in-out;
+}
+
+body.gbm-interna .btn-voltar:hover {
+    border-color: #5fffa8;
+    color: #5fffa8;
+    box-shadow: 0 0 14px rgba(95, 255, 168, .3);
+}
+
+body.gbm-interna .btn-voltar:focus-visible {
+    outline: 2px solid #5fffa8;
+    outline-offset: 3px;
+}
+
+@keyframes gbm-btn-shine {
+    0% { left: -60%; }
+    15%, 100% { left: 130%; }
+}
+
+@media (max-width: 760px) {
+    body.gbm-interna .topbar {
+        height: 56px;
+        min-height: 56px;
+        padding: 0 20px;
+    }
+
+    body.gbm-interna .brand img {
+        height: 40px;
+    }
+
+    body.gbm-interna .brand span {
+        display: none;
+    }
+
+    body.gbm-interna :is(.card, .cartao, .zona-perigo, .perfil-card, .contato-card) {
+        padding: 18px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.gbm-interna .brand img,
+    body.gbm-interna .brand span,
+    body.gbm-interna .btn-voltar::after {
+        animation: none;
+    }
+}
+
+@media print {
+    body.gbm-interna #particles-canvas {
+        display: none;
+    }
+}
