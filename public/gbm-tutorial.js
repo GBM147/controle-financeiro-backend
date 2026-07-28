@@ -122,9 +122,9 @@
                     texto: 'A análise identifica banco, quantidade, valores e possíveis duplicidades sem salvar as transações.'
                 },
                 {
-                    alvo: '#secao-previa',
+                    alvo: ['#secao-previa:not([hidden])', '#btn-analisar'],
                     titulo: '✅ Revise a prévia',
-                    texto: 'Confira descrições, datas, categorias e valores. Só use “Confirmar” quando as informações estiverem corretas.'
+                    texto: 'Depois de analisar o arquivo, confira descrições, datas, categorias e valores. Só use “Confirmar” quando as informações estiverem corretas.'
                 },
                 {
                     alvo: '#historico-importacoes',
@@ -227,12 +227,12 @@
                     texto: 'Se você já começou a economizar, informe o valor inicial para o progresso começar corretamente.'
                 },
                 {
-                    alvo: '#lista-objetivos',
+                    alvo: ['.objetivo-card:first-child', '#lista-objetivos'],
                     titulo: '📈 Acompanhar progresso',
                     texto: 'Os cartões mostram quanto já foi acumulado, quanto falta e o prazo de cada objetivo.'
                 },
                 {
-                    alvo: '#lista-objetivos',
+                    alvo: ['.objetivo-card:first-child', '#lista-objetivos'],
                     titulo: '➕ Registrar contribuições',
                     texto: 'Dentro de cada cartão, registre contribuições manuais. Você também pode destinar uma transação explicitamente pelo dashboard.'
                 }
@@ -257,7 +257,7 @@
                     texto: 'Use o tipo para encontrar rapidamente avisos de limite ou mensagens específicas.'
                 },
                 {
-                    alvo: '#lista-notificacoes',
+                    alvo: ['.notificacao:first-child', '#lista-notificacoes'],
                     titulo: '📨 Seus avisos',
                     texto: 'Abra e acompanhe as notificações. Você também pode marcar todas como lidas.'
                 },
@@ -292,12 +292,12 @@
                     texto: 'O relatório é calculado com os filtros atuais. Altere os filtros e gere novamente sempre que precisar.'
                 },
                 {
-                    alvo: '#card-resultado',
+                    alvo: ['#card-resultado:not([hidden])', '.filtros'],
                     titulo: '📋 Resultado detalhado',
                     texto: 'Confira totais, movimentações e categorias encontradas no mês.'
                 },
                 {
-                    alvo: '.btn-pdf',
+                    alvo: ['.btn-pdf:not([hidden])', '.btn-gerar'],
                     titulo: '⬇ Exportar em PDF',
                     texto: 'Quando o resultado estiver correto, gere o documento para guardar ou compartilhar.'
                 }
@@ -322,17 +322,17 @@
                     texto: 'Veja receitas, despesas e resultado calculados para os filtros escolhidos.'
                 },
                 {
-                    alvo: '#grafico-categorias',
+                    alvo: ['#grafico-categorias:not(:empty)', '.resumo-grid', '#form-filtros'],
                     titulo: '📊 Despesas por categoria',
                     texto: 'Compare visualmente quais categorias mais pesaram no período.'
                 },
                 {
-                    alvo: '#baixar-excel',
+                    alvo: ['#baixar-excel:not([hidden])', '#form-filtros'],
                     titulo: '⬇ Exportar dados',
                     texto: 'Baixe o Excel para manter o relatório formatado. O CSV continua disponível para dados simples.'
                 },
                 {
-                    alvo: '#tabela-transacoes',
+                    alvo: ['#tabela-transacoes tr:first-child', '.table-wrap', '#form-filtros'],
                     titulo: '📋 Transações encontradas',
                     texto: 'Consulte a lista completa que compõe os totais e gráficos.'
                 }
@@ -352,12 +352,12 @@
                     texto: 'Selecione o ano que deseja analisar e gere o comparativo.'
                 },
                 {
-                    alvo: '#card-resultado',
+                    alvo: ['#card-resultado:not([hidden])', '.filtros'],
                     titulo: '📋 Resumo anual',
                     texto: 'O resultado destaca diferenças entre meses e os principais pontos do período.'
                 },
                 {
-                    alvo: '#graficoComparativo',
+                    alvo: ['#graficoComparativo', '#card-resultado:not([hidden])', '.filtros'],
                     titulo: '📊 Evolução visual',
                     texto: 'Use o gráfico para comparar entradas, saídas e resultado ao longo do ano.'
                 }
@@ -377,49 +377,19 @@
                     texto: 'Este cartão informa se o plano está ativo, em teste, cancelado ou aguardando alguma ação.'
                 },
                 {
-                    alvo: '.planos-grid',
+                    alvo: ['.planos-grid', '#card-assinatura'],
                     titulo: '⚖️ Compare os planos',
                     texto: 'Veja o que está incluído no Gratuito e no Premium antes de tomar uma decisão.'
                 },
                 {
-                    alvo: '.btn-upgrade',
+                    alvo: ['.btn-upgrade', '#card-assinatura'],
                     titulo: '🚀 Ativar Premium',
                     texto: 'Use este botão para iniciar o pagamento quando desejar liberar os recursos Premium.'
                 },
                 {
-                    alvo: '.btn-cancelar-assinatura',
+                    alvo: ['.btn-cancelar-assinatura', '#card-assinatura'],
                     titulo: '🛑 Cancelamento',
                     texto: 'Quando houver assinatura recorrente, o cancelamento precisa ser confirmado pelo Mercado Pago para impedir novas cobranças.'
-                }
-            ]
-        },
-        'pagamento.html': {
-            titulo: 'Ativar Premium',
-            passos: [
-                {
-                    alvo: null,
-                    titulo: '🚀 Ativação do Premium',
-                    texto: 'Revise preço e benefícios antes de continuar para o pagamento.'
-                },
-                {
-                    alvo: '.card',
-                    titulo: '💳 Detalhes do plano',
-                    texto: 'Confira o valor mensal e a lista de recursos liberados pelo Premium.'
-                },
-                {
-                    alvo: '#banner-trial',
-                    titulo: '⏳ Período de teste',
-                    texto: 'Quando existir um teste ativo, esta área mostra as informações correspondentes.'
-                },
-                {
-                    alvo: '#btn-action',
-                    titulo: '🔒 Pagamento seguro',
-                    texto: 'Ao continuar, você será direcionado ao ambiente de pagamento. Aguarde a confirmação antes de fechar.'
-                },
-                {
-                    alvo: '#btn-gratis',
-                    titulo: 'Plano Gratuito',
-                    texto: 'Você pode continuar no plano gratuito usando esta opção, com as limitações apresentadas na assinatura.'
                 }
             ]
         },
@@ -453,41 +423,6 @@
                 }
             ]
         },
-        'configuracoes.html': {
-            titulo: 'Configurações',
-            passos: [
-                {
-                    alvo: null,
-                    titulo: '⚙️ Central da sua conta',
-                    texto: 'Encontre assinatura, atendimento, perfil, contas bancárias e privacidade em um só lugar.'
-                },
-                {
-                    alvo: '.grade',
-                    titulo: '🧭 Atalhos de configuração',
-                    texto: 'Cada cartão leva diretamente à área correspondente.'
-                },
-                {
-                    alvo: 'a[href="assinatura.html"]',
-                    titulo: '🛡️ Minha assinatura',
-                    texto: 'Consulte o plano, faça upgrade ou confirme o cancelamento de uma recorrência.'
-                },
-                {
-                    alvo: 'a[href="perfil.html"]',
-                    titulo: '👤 Perfil e aparência',
-                    texto: 'Altere nome de exibição, foto e capa do seu perfil.'
-                },
-                {
-                    alvo: 'a[href="privacidade.html"]',
-                    titulo: '🔐 Privacidade e dados',
-                    texto: 'Exporte dados, acompanhe a proteção das informações e registre seu consentimento.'
-                },
-                {
-                    alvo: '.zona-perigo',
-                    titulo: '⚠️ Zona de exclusão',
-                    texto: 'A exclusão é definitiva. Informe a senha e a frase solicitada somente quando realmente quiser apagar toda a conta.'
-                }
-            ]
-        },
         'privacidade.html': {
             titulo: 'Privacidade e dados',
             passos: [
@@ -512,7 +447,7 @@
                     texto: 'Registre sua escolha sobre o tratamento necessário para o funcionamento do serviço.'
                 },
                 {
-                    alvo: 'a[href="configuracoes.html#excluir-conta"]',
+                    alvo: 'a[href="configuracoes.html"]',
                     titulo: '⚠️ Exclusão definitiva',
                     texto: 'A exclusão é realizada na Zona de exclusão das Configurações e não pode ser desfeita.'
                 }
@@ -551,6 +486,10 @@
         passo: 0,
         alvo: null,
         aberto: false,
+        rolagem: null,
+        quadroAnimacao: null,
+        ultimoFoco: null,
+        observadorAlvo: null,
         elementos: {}
     };
 
@@ -609,6 +548,97 @@
         return null;
     }
 
+    function obterViewport() {
+        const viewport = window.visualViewport;
+        return {
+            topo: viewport ? viewport.offsetTop : 0,
+            esquerda: viewport ? viewport.offsetLeft : 0,
+            largura: viewport ? viewport.width : window.innerWidth,
+            altura: viewport ? viewport.height : window.innerHeight
+        };
+    }
+
+    function restaurarEstilo(elemento, propriedade, valor) {
+        if (valor) {
+            elemento.style.setProperty(propriedade, valor);
+        } else {
+            elemento.style.removeProperty(propriedade);
+        }
+    }
+
+    function bloquearRolagem() {
+        if (estado.rolagem) return;
+
+        const html = document.documentElement;
+        const body = document.body;
+        const x = window.scrollX;
+        const y = window.scrollY;
+
+        estado.rolagem = {
+            x,
+            y,
+            htmlOverflow: html.style.overflow,
+            htmlOverscroll: html.style.overscrollBehavior,
+            bodyPosition: body.style.position,
+            bodyTop: body.style.top,
+            bodyLeft: body.style.left,
+            bodyRight: body.style.right,
+            bodyWidth: body.style.width,
+            bodyOverflow: body.style.overflow,
+            bodyOverscroll: body.style.overscrollBehavior
+        };
+
+        html.classList.add('gbm-tour-bloqueado');
+        body.classList.add('gbm-tour-bloqueado');
+        html.style.overflow = 'hidden';
+        html.style.overscrollBehavior = 'none';
+        body.style.position = 'fixed';
+        body.style.top = `-${y}px`;
+        body.style.left = `-${x}px`;
+        body.style.right = '0';
+        body.style.width = '100%';
+        body.style.overflow = 'hidden';
+        body.style.overscrollBehavior = 'none';
+    }
+
+    function desbloquearRolagem() {
+        if (!estado.rolagem) return;
+
+        const html = document.documentElement;
+        const body = document.body;
+        const rolagem = estado.rolagem;
+        estado.rolagem = null;
+
+        html.classList.remove('gbm-tour-bloqueado');
+        body.classList.remove('gbm-tour-bloqueado');
+        restaurarEstilo(html, 'overflow', rolagem.htmlOverflow);
+        restaurarEstilo(html, 'overscroll-behavior', rolagem.htmlOverscroll);
+        restaurarEstilo(body, 'position', rolagem.bodyPosition);
+        restaurarEstilo(body, 'top', rolagem.bodyTop);
+        restaurarEstilo(body, 'left', rolagem.bodyLeft);
+        restaurarEstilo(body, 'right', rolagem.bodyRight);
+        restaurarEstilo(body, 'width', rolagem.bodyWidth);
+        restaurarEstilo(body, 'overflow', rolagem.bodyOverflow);
+        restaurarEstilo(body, 'overscroll-behavior', rolagem.bodyOverscroll);
+        window.scrollTo(rolagem.x, rolagem.y);
+    }
+
+    function limparPosicaoCaixa(caixa) {
+        ['top', 'right', 'bottom', 'left', 'width', 'max-height', 'transform']
+            .forEach((propriedade) => caixa.style.removeProperty(propriedade));
+    }
+
+    function agendarPosicionamento() {
+        if (!estado.aberto) return;
+        if (estado.quadroAnimacao) {
+            window.cancelAnimationFrame(estado.quadroAnimacao);
+        }
+        estado.quadroAnimacao = window.requestAnimationFrame(() => {
+            estado.quadroAnimacao = null;
+            posicionar();
+        });
+    }
+
     function criarInterface() {
         if (document.getElementById('gbm-tour-overlay')) return;
 
@@ -647,6 +677,7 @@
             progresso: overlay.querySelector('.gbm-tour-progresso > span'),
             titulo: overlay.querySelector('#gbm-tour-titulo'),
             texto: overlay.querySelector('.gbm-tour-texto'),
+            rodape: overlay.querySelector('.gbm-tour-rodape'),
             fechar: overlay.querySelector('.gbm-tour-fechar'),
             pular: overlay.querySelector('.gbm-tour-pular'),
             voltar: overlay.querySelector('.gbm-tour-voltar'),
@@ -657,6 +688,16 @@
         estado.elementos.pular.addEventListener('click', finalizar);
         estado.elementos.voltar.addEventListener('click', voltar);
         estado.elementos.avancar.addEventListener('click', avancar);
+        overlay.addEventListener('touchmove', (evento) => {
+            if (!evento.target.closest('.gbm-tour-caixa')) {
+                evento.preventDefault();
+            }
+        }, { passive: false });
+        overlay.addEventListener('wheel', (evento) => {
+            if (!evento.target.closest('.gbm-tour-caixa')) {
+                evento.preventDefault();
+            }
+        }, { passive: false });
     }
 
     function criarBotaoAjuda() {
@@ -685,95 +726,191 @@
             estado.alvo = null;
             spotlight.classList.add('gbm-tour-sem-alvo');
             caixa.classList.add('gbm-tour-centralizada');
-            caixa.style.cssText = '';
+            limparPosicaoCaixa(caixa);
+            delete caixa.dataset.posicao;
             return;
         }
 
         spotlight.classList.remove('gbm-tour-sem-alvo');
         caixa.classList.remove('gbm-tour-centralizada');
-        caixa.style.transform = 'none';
+        limparPosicaoCaixa(caixa);
 
         const margemAlvo = 7;
         const margemCaixa = 14;
-        const borda = 12;
+        const borda = 10;
         const retangulo = alvo.getBoundingClientRect();
-        const larguraJanela = window.innerWidth;
-        const alturaJanela = window.innerHeight;
+        const viewport = obterViewport();
+        const viewportDireita = viewport.esquerda + viewport.largura;
+        const viewportBaixo = viewport.topo + viewport.altura;
+        const limitar = (valor, minimo, maximo) =>
+            Math.max(minimo, Math.min(valor, maximo));
 
-        spotlight.style.top = `${Math.max(3, retangulo.top - margemAlvo)}px`;
-        spotlight.style.left = `${Math.max(3, retangulo.left - margemAlvo)}px`;
-        spotlight.style.width = `${Math.min(
-            larguraJanela - 6,
-            retangulo.width + margemAlvo * 2
-        )}px`;
-        spotlight.style.height = `${Math.min(
-            alturaJanela - 6,
-            retangulo.height + margemAlvo * 2
-        )}px`;
+        const destaqueEsquerda = limitar(
+            retangulo.left - margemAlvo,
+            viewport.esquerda + 3,
+            viewportDireita - 4
+        );
+        const destaqueTopo = limitar(
+            retangulo.top - margemAlvo,
+            viewport.topo + 3,
+            viewportBaixo - 4
+        );
+        const destaqueDireita = limitar(
+            retangulo.right + margemAlvo,
+            destaqueEsquerda + 1,
+            viewportDireita - 3
+        );
+        const destaqueBaixo = limitar(
+            retangulo.bottom + margemAlvo,
+            destaqueTopo + 1,
+            viewportBaixo - 3
+        );
 
-        if (larguraJanela <= 680) {
-            const alturaCaixa = caixa.offsetHeight || Math.min(350, alturaJanela * 0.42);
-            const centroAlvo = retangulo.top + retangulo.height / 2;
-            const espacoAcima = retangulo.top;
-            const espacoAbaixo = alturaJanela - retangulo.bottom;
-            const caixaNoTopo =
-                (espacoAcima >= alturaCaixa + margemCaixa && espacoAcima > espacoAbaixo) ||
-                (espacoAbaixo < alturaCaixa + margemCaixa && centroAlvo >= alturaJanela / 2);
+        spotlight.style.top = `${destaqueTopo}px`;
+        spotlight.style.left = `${destaqueEsquerda}px`;
+        spotlight.style.width = `${destaqueDireita - destaqueEsquerda}px`;
+        spotlight.style.height = `${destaqueBaixo - destaqueTopo}px`;
 
-            caixa.style.left = '8px';
-            caixa.style.right = '8px';
-            caixa.style.top = caixaNoTopo ? '8px' : 'auto';
-            caixa.style.bottom = caixaNoTopo
-                ? 'auto'
-                : 'max(8px, env(safe-area-inset-bottom))';
+        if (viewport.largura <= 680) {
+            const margemMovel = 8;
+            caixa.style.left = `${viewport.esquerda + margemMovel}px`;
+            caixa.style.right = 'auto';
+            caixa.style.bottom = 'auto';
+            caixa.style.width = `${Math.max(0, viewport.largura - margemMovel * 2)}px`;
+            caixa.style.maxHeight = `${Math.max(210, Math.min(
+                360,
+                viewport.altura - margemMovel * 2
+            ))}px`;
+
+            const alturaCaixa = Math.min(
+                caixa.offsetHeight || 300,
+                viewport.altura - margemMovel * 2
+            );
+            const centroAlvo = (destaqueTopo + destaqueBaixo) / 2;
+            const centroViewport = viewport.topo + viewport.altura / 2;
+            const caixaNoTopo = centroAlvo >= centroViewport;
+            const topo = caixaNoTopo
+                ? viewport.topo + margemMovel
+                : viewportBaixo - alturaCaixa - margemMovel;
+
+            caixa.style.top = `${limitar(
+                topo,
+                viewport.topo + margemMovel,
+                viewportBaixo - alturaCaixa - margemMovel
+            )}px`;
+            caixa.dataset.posicao = caixaNoTopo ? 'topo' : 'baixo';
             return;
         }
 
-        caixa.style.right = 'auto';
-        caixa.style.bottom = 'auto';
-        const larguraCaixa = caixa.offsetWidth || 390;
-        const alturaCaixa = caixa.offsetHeight || 250;
-        const espacoAbaixo = alturaJanela - retangulo.bottom;
-        const espacoAcima = retangulo.top;
-        let topo;
+        caixa.style.maxHeight = `${Math.max(220, viewport.altura - borda * 2)}px`;
+        const larguraCaixa = Math.min(caixa.offsetWidth || 390, viewport.largura - borda * 2);
+        let alturaCaixa = Math.min(caixa.offsetHeight || 250, viewport.altura - borda * 2);
+        const minimoEsquerda = viewport.esquerda + borda;
+        const maximoEsquerda = viewportDireita - larguraCaixa - borda;
+        const minimoTopo = viewport.topo + borda;
+        const maximoTopo = viewportBaixo - alturaCaixa - borda;
+        const centroX = (destaqueEsquerda + destaqueDireita) / 2;
+        const centroY = (destaqueTopo + destaqueBaixo) / 2;
 
-        if (espacoAbaixo >= alturaCaixa + margemCaixa) {
-            topo = retangulo.bottom + margemCaixa;
-        } else if (espacoAcima >= alturaCaixa + margemCaixa) {
-            topo = retangulo.top - alturaCaixa - margemCaixa;
-        } else {
-            topo = Math.max(borda, alturaJanela - alturaCaixa - borda);
+        const candidatos = [
+            {
+                posicao: 'baixo',
+                cabe: destaqueBaixo + margemCaixa + alturaCaixa <= viewportBaixo - borda,
+                topo: destaqueBaixo + margemCaixa,
+                esquerda: limitar(centroX - larguraCaixa / 2, minimoEsquerda, maximoEsquerda)
+            },
+            {
+                posicao: 'topo',
+                cabe: destaqueTopo - margemCaixa - alturaCaixa >= viewport.topo + borda,
+                topo: destaqueTopo - margemCaixa - alturaCaixa,
+                esquerda: limitar(centroX - larguraCaixa / 2, minimoEsquerda, maximoEsquerda)
+            },
+            {
+                posicao: 'direita',
+                cabe: destaqueDireita + margemCaixa + larguraCaixa <= viewportDireita - borda,
+                topo: limitar(centroY - alturaCaixa / 2, minimoTopo, maximoTopo),
+                esquerda: destaqueDireita + margemCaixa
+            },
+            {
+                posicao: 'esquerda',
+                cabe: destaqueEsquerda - margemCaixa - larguraCaixa >= viewport.esquerda + borda,
+                topo: limitar(centroY - alturaCaixa / 2, minimoTopo, maximoTopo),
+                esquerda: destaqueEsquerda - margemCaixa - larguraCaixa
+            }
+        ];
+
+        let escolhido = candidatos.find((candidato) => candidato.cabe);
+
+        if (!escolhido) {
+            const espacoAcima = destaqueTopo - viewport.topo - borda - margemCaixa;
+            const espacoAbaixo = viewportBaixo - borda - destaqueBaixo - margemCaixa;
+            const maiorEspacoVertical = Math.max(espacoAcima, espacoAbaixo);
+
+            if (maiorEspacoVertical >= 150) {
+                caixa.style.maxHeight = `${maiorEspacoVertical}px`;
+                alturaCaixa = Math.min(caixa.offsetHeight, maiorEspacoVertical);
+                const usarTopo = espacoAcima >= espacoAbaixo;
+                escolhido = {
+                    posicao: usarTopo ? 'topo' : 'baixo',
+                    topo: usarTopo
+                        ? destaqueTopo - margemCaixa - alturaCaixa
+                        : destaqueBaixo + margemCaixa,
+                    esquerda: limitar(
+                        centroX - larguraCaixa / 2,
+                        minimoEsquerda,
+                        maximoEsquerda
+                    )
+                };
+            } else {
+                const usarTopo = centroY >= viewport.topo + viewport.altura / 2;
+                escolhido = {
+                    posicao: usarTopo ? 'topo-fixo' : 'baixo-fixo',
+                    topo: usarTopo
+                        ? viewport.topo + borda
+                        : viewportBaixo - alturaCaixa - borda,
+                    esquerda: limitar(
+                        centroX - larguraCaixa / 2,
+                        minimoEsquerda,
+                        maximoEsquerda
+                    )
+                };
+            }
         }
 
-        let esquerda = retangulo.left + retangulo.width / 2 - larguraCaixa / 2;
-        esquerda = Math.max(
-            borda,
-            Math.min(esquerda, larguraJanela - larguraCaixa - borda)
-        );
-        topo = Math.max(
-            borda,
-            Math.min(topo, alturaJanela - alturaCaixa - borda)
-        );
-
-        caixa.style.top = `${topo}px`;
-        caixa.style.left = `${esquerda}px`;
+        caixa.style.top = `${limitar(escolhido.topo, minimoTopo, maximoTopo)}px`;
+        caixa.style.left = `${limitar(
+            escolhido.esquerda,
+            minimoEsquerda,
+            maximoEsquerda
+        )}px`;
+        caixa.dataset.posicao = escolhido.posicao;
     }
 
     function mostrarPasso() {
         const passos = estado.configuracao.passos;
         const passo = passos[estado.passo];
-        const { caixa, contador, progresso, titulo, texto, voltar, avancar } =
+        const { caixa, contador, progresso, titulo, texto, rodape, voltar, avancar } =
             estado.elementos;
+
+        if (estado.quadroAnimacao) {
+            window.cancelAnimationFrame(estado.quadroAnimacao);
+            estado.quadroAnimacao = null;
+        }
+        if (estado.observadorAlvo) {
+            estado.observadorAlvo.disconnect();
+            estado.observadorAlvo = null;
+        }
+        desbloquearRolagem();
 
         titulo.textContent = passo.titulo;
         texto.textContent = passo.texto;
         contador.textContent = `Passo ${estado.passo + 1} de ${passos.length}`;
         progresso.style.width = `${((estado.passo + 1) / passos.length) * 100}%`;
         voltar.hidden = estado.passo === 0;
+        rodape.classList.toggle('gbm-tour-sem-voltar', estado.passo === 0);
         avancar.textContent =
             estado.passo === passos.length - 1 ? 'Concluir' : 'Próximo';
 
-        document.body.classList.remove('gbm-tour-bloqueado');
         estado.alvo = encontrarAlvo(passo.alvo);
 
         if (estado.alvo) {
@@ -784,11 +921,19 @@
             });
         }
 
-        window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(() => {
-                document.body.classList.add('gbm-tour-bloqueado');
+        bloquearRolagem();
+        estado.quadroAnimacao = window.requestAnimationFrame(() => {
+            estado.quadroAnimacao = window.requestAnimationFrame(() => {
+                estado.quadroAnimacao = null;
+                if (!estado.aberto) return;
                 posicionar();
                 caixa.focus({ preventScroll: true });
+
+                if (estado.alvo && 'ResizeObserver' in window) {
+                    estado.observadorAlvo = new ResizeObserver(agendarPosicionamento);
+                    estado.observadorAlvo.observe(estado.alvo);
+                    estado.observadorAlvo.observe(caixa);
+                }
             });
         });
     }
@@ -796,6 +941,7 @@
     function iniciar() {
         if (estado.aberto) return;
         criarInterface();
+        estado.ultimoFoco = document.activeElement;
         estado.passo = 0;
         estado.aberto = true;
         estado.elementos.overlay.hidden = false;
@@ -805,12 +951,25 @@
 
     function finalizar() {
         if (!estado.elementos.overlay) return;
+        if (estado.quadroAnimacao) {
+            window.cancelAnimationFrame(estado.quadroAnimacao);
+            estado.quadroAnimacao = null;
+        }
+        if (estado.observadorAlvo) {
+            estado.observadorAlvo.disconnect();
+            estado.observadorAlvo = null;
+        }
         estado.elementos.overlay.hidden = true;
         estado.aberto = false;
         estado.alvo = null;
-        document.body.classList.remove('gbm-tour-bloqueado');
+        desbloquearRolagem();
         const ajuda = document.getElementById('gbm-tour-ajuda');
-        if (ajuda) ajuda.focus();
+        if (ajuda) {
+            ajuda.focus({ preventScroll: true });
+        } else if (estado.ultimoFoco && estado.ultimoFoco.isConnected) {
+            estado.ultimoFoco.focus({ preventScroll: true });
+        }
+        estado.ultimoFoco = null;
     }
 
     function avancar() {
@@ -839,6 +998,24 @@
         } else if (evento.key === 'ArrowLeft') {
             evento.preventDefault();
             voltar();
+        } else if (evento.key === 'Tab') {
+            const focaveis = [...estado.elementos.caixa.querySelectorAll(
+                'button:not([hidden]):not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )];
+            if (!focaveis.length) {
+                evento.preventDefault();
+                estado.elementos.caixa.focus({ preventScroll: true });
+                return;
+            }
+            const primeiro = focaveis[0];
+            const ultimo = focaveis[focaveis.length - 1];
+            if (evento.shiftKey && document.activeElement === primeiro) {
+                evento.preventDefault();
+                ultimo.focus({ preventScroll: true });
+            } else if (!evento.shiftKey && document.activeElement === ultimo) {
+                evento.preventDefault();
+                primeiro.focus({ preventScroll: true });
+            }
         }
     }
 
@@ -850,7 +1027,12 @@
         criarInterface();
         criarBotaoAjuda();
         document.addEventListener('keydown', tratarTeclado);
-        window.addEventListener('resize', posicionar);
+        window.addEventListener('resize', agendarPosicionamento);
+        window.addEventListener('orientationchange', agendarPosicionamento);
+        window.visualViewport?.addEventListener('resize', agendarPosicionamento);
+        window.visualViewport?.addEventListener('scroll', agendarPosicionamento);
+        window.addEventListener('pagehide', desbloquearRolagem);
+        document.fonts?.ready.then(agendarPosicionamento).catch(() => {});
 
         if (!jaViu()) {
             window.setTimeout(() => {
