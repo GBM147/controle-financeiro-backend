@@ -5,6 +5,7 @@
     <title>Relatório Avançado | GBM</title><link rel="stylesheet" href="gbm-pages.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
         .resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
         .categoria-barra{display:grid;grid-template-columns:minmax(100px,180px) 1fr auto;gap:10px;align-items:center;margin:10px 0}
@@ -48,7 +49,7 @@
             </div>
             <div class="grid grid-2" style="margin-top:18px">
                 <section class="card"><h2>Despesas por categoria</h2><div id="grafico-categorias"></div></section>
-                <section class="card exportar-card"><h2>Exportar</h2><p style="color:var(--muted)">Baixe o relatório com resumo e valores das transações.</p><div class="actions"><button id="baixar-csv" class="btn btn-primary">Baixar CSV</button><button id="baixar-pdf" class="btn">Baixar PDF</button></div></section>
+                <section class="card exportar-card"><h2>Exportar</h2><p style="color:var(--muted)">O Excel preserva o relatório formatado; use o CSV quando precisar apenas dos dados simples.</p><div class="actions"><button id="baixar-excel" class="btn btn-primary" type="button">Baixar Excel</button><button id="baixar-csv" class="btn" type="button">Baixar CSV</button><button id="baixar-pdf" class="btn" type="button">Baixar PDF</button></div></section>
             </div>
             <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap"></div></section>
         </section>
@@ -78,7 +79,10 @@
                 tipo:document.getElementById('filtro-tipo').value
             });
             try{
-                relatorioAtual=await gbmJson(await fetchApi(`/relatorio-avancado?${p}`));renderizar();
+                const dados=await gbmJson(await fetchApi(`/relatorio-avancado?${p}`));
+                dados.filtros_exportacao=filtrosAtivos();
+                relatorioAtual=dados;
+                renderizar();
             }catch(erro){
                 if(erro.status===403){if(confirm('Este relatório é Premium. Deseja conhecer o plano?'))location.href='pagamento.html';return}
                 gbmToast(erro.message,'erro');
@@ -108,8 +112,8 @@
         }
 
         function periodoDoRelatorio(){
-            const inicio=dataLocal(document.getElementById('data-inicio').value);
-            const fim=dataLocal(document.getElementById('data-fim').value);
+            const inicio=dataLocal(relatorioAtual?.data_inicio||document.getElementById('data-inicio').value);
+            const fim=dataLocal(relatorioAtual?.data_fim||document.getElementById('data-fim').value);
             const mesmoMes=inicio.getFullYear()===fim.getFullYear()&&inicio.getMonth()===fim.getMonth();
             const rotulo=mesmoMes
                 ?`${NOMES_MESES[inicio.getMonth()]} ${inicio.getFullYear()}`
@@ -127,6 +131,312 @@
         function textoSelect(id){
             const select=document.getElementById(id);
             return select.options[select.selectedIndex]?.text||'';
+        }
+
+        function filtrosAtivos(){
+            const filtros=[];
+            if(document.getElementById('filtro-conta').value!=='todas')filtros.push(`Conta: ${textoSelect('filtro-conta')}`);
+            if(document.getElementById('filtro-categoria').value!=='todas')filtros.push(`Categoria: ${textoSelect('filtro-categoria')}`);
+            if(document.getElementById('filtro-tipo').value!=='todos')filtros.push(`Tipo: ${textoSelect('filtro-tipo')}`);
+            return filtros;
+        }
+
+        function filtrosDoRelatorio(){
+            return Array.isArray(relatorioAtual?.filtros_exportacao)
+                ?relatorioAtual.filtros_exportacao
+                :filtrosAtivos();
+        }
+
+        function valorAssinado(transacao){
+            const valor=Math.abs(Number(transacao?.valor)||0);
+            return String(transacao?.tipo||'').trim().toLowerCase()==='receita'?valor:(valor===0?0:-valor);
+        }
+
+        function dataExcel(valor){
+            const partes=String(valor||'').slice(0,10).split('-').map(Number);
+            if(partes.length!==3||partes.some(parte=>!Number.isInteger(parte)))return null;
+            const [ano,mes,dia]=partes;
+            const data=new Date(ano,mes-1,dia,12,0,0);
+            if(data.getFullYear()!==ano||data.getMonth()!==mes-1||data.getDate()!==dia)return null;
+            return data;
+        }
+
+        async function baixarExcel(){
+            if(!relatorioAtual?.transacoes)return gbmToast('Gere o relatório antes de baixar.','erro');
+            if(!window.ExcelJS?.Workbook)return gbmToast('Não foi possível carregar o ExcelJS. Verifique sua conexão e tente novamente.','erro');
+
+            const botao=document.getElementById('baixar-excel');
+            const textoOriginal=botao.textContent;
+            let urlExcel='';
+            botao.disabled=true;
+            botao.textContent='Gerando Excel...';
+
+            try{
+                const workbook=new window.ExcelJS.Workbook();
+                workbook.creator='Guardian of Budget & Money';
+                workbook.subject='Relatório financeiro GBM';
+                workbook.created=new Date();
+
+                const worksheet=workbook.addWorksheet('Relatório',{
+                    properties:{defaultRowHeight:19},
+                    views:[{
+                        state:'frozen',
+                        ySplit:3,
+                        topLeftCell:'A4',
+                        activeCell:'A4',
+                        showGridLines:false
+                    }],
+                    pageSetup:{
+                        paperSize:9,
+                        orientation:'landscape',
+                        fitToPage:true,
+                        fitToWidth:1,
+                        fitToHeight:0,
+                        showGridLines:false,
+                        horizontalCentered:true,
+                        margins:{left:.25,right:.25,top:.4,bottom:.4,header:.2,footer:.2}
+                    }
+                });
+
+                worksheet.columns=[
+                    {width:14},
+                    {width:38},
+                    {width:26},
+                    {width:26},
+                    {width:24},
+                    {width:28}
+                ];
+
+                const cores={
+                    navy:'FF0F1A2B',
+                    verde:'FF2E8B57',
+                    positivo:'FF108756',
+                    vermelho:'FFD23737',
+                    despesa:'FFEF4444',
+                    branco:'FFFFFFFF',
+                    mutado:'FFB0BEC5',
+                    texto:'FF0F1A2B',
+                    claro:'FFF4F7FA',
+                    alternado:'FFF5F7FA',
+                    borda:'FFD7DEE8'
+                };
+                const formatoMoedaNormal='"R$" #,##0.00;[Red]-"R$" #,##0.00;"R$" 0.00';
+                const formatoMoedaAssinada='"+" "R$" #,##0.00;"-" "R$" #,##0.00;"R$" 0.00';
+                const borda={
+                    top:{style:'thin',color:{argb:cores.borda}},
+                    left:{style:'thin',color:{argb:cores.borda}},
+                    bottom:{style:'thin',color:{argb:cores.borda}},
+                    right:{style:'thin',color:{argb:cores.borda}}
+                };
+
+                function estilizarFaixa(linha,inicioColuna,fimColuna,{fundo,fonte,alinhamento,comBorda=false}={}){
+                    for(let coluna=inicioColuna;coluna<=fimColuna;coluna++){
+                        const celula=worksheet.getRow(linha).getCell(coluna);
+                        if(fundo)celula.fill={type:'pattern',pattern:'solid',fgColor:{argb:fundo}};
+                        if(fonte)celula.font={...fonte};
+                        if(alinhamento)celula.alignment={...alinhamento};
+                        if(comBorda)celula.border=borda;
+                    }
+                }
+
+                const periodo=periodoDoRelatorio();
+                const filtros=filtrosDoRelatorio();
+
+                worksheet.mergeCells('A1:F1');
+                worksheet.mergeCells('A2:F2');
+                worksheet.mergeCells('A3:F3');
+                [1,2,3].forEach(linha=>estilizarFaixa(linha,1,6,{
+                    fundo:cores.navy,
+                    alinhamento:{vertical:'middle',wrapText:true}
+                }));
+                worksheet.getRow(1).height=27;
+                worksheet.getRow(2).height=22;
+                worksheet.getRow(3).height=19;
+                worksheet.getCell('A1').value='GUARDIAN OF BUDGET & MONEY';
+                worksheet.getCell('A1').font={name:'Arial',size:17,bold:true,color:{argb:cores.branco}};
+                worksheet.getCell('A2').value=`Relatório financeiro - ${periodo.rotulo}`;
+                worksheet.getCell('A2').font={name:'Arial',size:11,color:{argb:cores.mutado}};
+                worksheet.getCell('A3').value=filtros.length?filtros.join('  |  '):'';
+                worksheet.getCell('A3').font={name:'Arial',size:9,italic:true,color:{argb:cores.mutado}};
+
+                const resumo=relatorioAtual.resumo||{};
+                const cards=[
+                    {inicio:1,fim:2,titulo:'RECEITAS',valor:Math.abs(Number(resumo.receitas)||0),cor:cores.positivo},
+                    {inicio:3,fim:4,titulo:'DESPESAS',valor:Math.abs(Number(resumo.despesas)||0),cor:cores.despesa},
+                    {inicio:5,fim:6,titulo:'RESULTADO',valor:Number(resumo.resultado)||0,cor:Number(resumo.resultado)>=0?cores.positivo:cores.despesa}
+                ];
+                cards.forEach(card=>{
+                    if(card.inicio!==card.fim){
+                        worksheet.mergeCells(5,card.inicio,5,card.fim);
+                        worksheet.mergeCells(6,card.inicio,6,card.fim);
+                    }
+                    estilizarFaixa(5,card.inicio,card.fim,{
+                        fundo:cores.claro,
+                        fonte:{name:'Arial',size:9,bold:true,color:{argb:'FF505E70'}},
+                        alinhamento:{vertical:'middle',wrapText:true},
+                        comBorda:true
+                    });
+                    estilizarFaixa(6,card.inicio,card.fim,{
+                        fundo:cores.claro,
+                        fonte:{name:'Arial',size:12,bold:true,color:{argb:card.cor}},
+                        alinhamento:{vertical:'middle',wrapText:true},
+                        comBorda:true
+                    });
+                    const titulo=worksheet.getRow(5).getCell(card.inicio);
+                    const valor=worksheet.getRow(6).getCell(card.inicio);
+                    titulo.value=card.titulo;
+                    valor.value=card.valor;
+                    valor.numFmt=formatoMoedaNormal;
+                });
+                worksheet.getRow(5).height=20;
+                worksheet.getRow(6).height=25;
+
+                const categorias=Object.entries(resumo.por_categoria||{})
+                    .filter(([,valor])=>Number.isFinite(Number(valor))&&Number(valor)>0)
+                    .sort((a,b)=>Number(b[1])-Number(a[1]))
+                    .slice(0,10);
+                let linhaAtual=8;
+
+                worksheet.mergeCells(`A${linhaAtual}:F${linhaAtual}`);
+                estilizarFaixa(linhaAtual,1,6,{
+                    fundo:cores.verde,
+                    fonte:{name:'Arial',size:11,bold:true,color:{argb:cores.branco}},
+                    alinhamento:{vertical:'middle'}
+                });
+                worksheet.getCell(`A${linhaAtual}`).value='Despesas por categoria';
+                worksheet.getRow(linhaAtual).height=22;
+                linhaAtual++;
+
+                worksheet.mergeCells(`A${linhaAtual}:E${linhaAtual}`);
+                estilizarFaixa(linhaAtual,1,6,{
+                    fundo:cores.verde,
+                    fonte:{name:'Arial',size:9,bold:true,color:{argb:cores.branco}},
+                    alinhamento:{vertical:'middle',wrapText:true},
+                    comBorda:true
+                });
+                worksheet.getCell(`A${linhaAtual}`).value='Categoria';
+                worksheet.getCell(`F${linhaAtual}`).value='Valor';
+                worksheet.getCell(`F${linhaAtual}`).alignment={horizontal:'right',vertical:'middle'};
+                linhaAtual++;
+
+                if(categorias.length){
+                    categorias.forEach(([categoria,valor],indice)=>{
+                        worksheet.mergeCells(`A${linhaAtual}:E${linhaAtual}`);
+                        estilizarFaixa(linhaAtual,1,6,{
+                            fundo:indice%2?cores.alternado:cores.branco,
+                            fonte:{name:'Arial',size:9,color:{argb:cores.texto}},
+                            alinhamento:{vertical:'middle',wrapText:true},
+                            comBorda:true
+                        });
+                        worksheet.getCell(`A${linhaAtual}`).value=String(categoria||'Sem categoria');
+                        worksheet.getCell(`F${linhaAtual}`).value=Math.abs(Number(valor)||0);
+                        worksheet.getCell(`F${linhaAtual}`).numFmt=formatoMoedaNormal;
+                        worksheet.getCell(`F${linhaAtual}`).font={name:'Arial',size:9,bold:true,color:{argb:cores.despesa}};
+                        worksheet.getCell(`F${linhaAtual}`).alignment={horizontal:'right',vertical:'middle'};
+                        linhaAtual++;
+                    });
+                }else{
+                    worksheet.mergeCells(`A${linhaAtual}:F${linhaAtual}`);
+                    estilizarFaixa(linhaAtual,1,6,{
+                        fundo:cores.branco,
+                        fonte:{name:'Arial',size:9,italic:true,color:{argb:'FF788494'}},
+                        alinhamento:{vertical:'middle'},
+                        comBorda:true
+                    });
+                    worksheet.getCell(`A${linhaAtual}`).value='Sem despesas no período.';
+                    linhaAtual++;
+                }
+
+                linhaAtual++;
+                worksheet.mergeCells(`A${linhaAtual}:F${linhaAtual}`);
+                estilizarFaixa(linhaAtual,1,6,{
+                    fundo:cores.navy,
+                    fonte:{name:'Arial',size:11,bold:true,color:{argb:cores.branco}},
+                    alinhamento:{vertical:'middle'}
+                });
+                worksheet.getCell(`A${linhaAtual}`).value='Transações';
+                worksheet.getRow(linhaAtual).height=22;
+                linhaAtual++;
+
+                const linhaCabecalhoTransacoes=linhaAtual;
+                ['Data','Descrição','Categoria','Conta','Valor'].forEach((titulo,indice)=>{
+                    worksheet.getRow(linhaAtual).getCell(indice+1).value=titulo;
+                });
+                estilizarFaixa(linhaAtual,1,5,{
+                    fundo:cores.navy,
+                    fonte:{name:'Arial',size:9,bold:true,color:{argb:cores.branco}},
+                    alinhamento:{vertical:'middle',wrapText:true},
+                    comBorda:true
+                });
+                worksheet.getRow(linhaAtual).getCell(5).alignment={horizontal:'right',vertical:'middle'};
+                linhaAtual++;
+
+                const transacoes=Array.isArray(relatorioAtual.transacoes)?relatorioAtual.transacoes:[];
+                transacoes.forEach((transacao,indice)=>{
+                    const linha=worksheet.getRow(linhaAtual);
+                    const data=dataExcel(transacao.data_transacao);
+                    const valor=valorAssinado(transacao);
+                    linha.getCell(1).value=data||gbmData(transacao.data_transacao);
+                    if(data)linha.getCell(1).numFmt='dd/mm/yyyy';
+                    linha.getCell(2).value=String(transacao.descricao||'');
+                    linha.getCell(3).value=String(transacao.categoria||'');
+                    linha.getCell(4).value=String(transacao.conta||'');
+                    linha.getCell(5).value=valor;
+                    linha.getCell(5).numFmt=formatoMoedaAssinada;
+                    estilizarFaixa(linhaAtual,1,5,{
+                        fundo:indice%2?cores.alternado:cores.branco,
+                        fonte:{name:'Arial',size:9,color:{argb:cores.texto}},
+                        alinhamento:{vertical:'middle',wrapText:true},
+                        comBorda:true
+                    });
+                    linha.getCell(1).alignment={horizontal:'center',vertical:'middle'};
+                    linha.getCell(5).alignment={horizontal:'right',vertical:'middle'};
+                    linha.getCell(5).font={
+                        name:'Arial',
+                        size:9,
+                        bold:true,
+                        color:{argb:valor>=0?cores.positivo:cores.vermelho}
+                    };
+                    linhaAtual++;
+                });
+
+                const ultimaLinhaTransacao=transacoes.length?linhaAtual-1:linhaCabecalhoTransacoes;
+                if(!transacoes.length){
+                    worksheet.mergeCells(`A${linhaAtual}:E${linhaAtual}`);
+                    estilizarFaixa(linhaAtual,1,5,{
+                        fundo:cores.branco,
+                        fonte:{name:'Arial',size:9,italic:true,color:{argb:'FF788494'}},
+                        alinhamento:{vertical:'middle'},
+                        comBorda:true
+                    });
+                    worksheet.getCell(`A${linhaAtual}`).value='Nenhuma transação encontrada.';
+                    linhaAtual++;
+                }
+
+                worksheet.autoFilter=`A${linhaCabecalhoTransacoes}:E${ultimaLinhaTransacao}`;
+                worksheet.pageSetup.printArea=`A1:F${linhaAtual-1}`;
+                worksheet.pageSetup.printTitlesRow='1:3';
+
+                const buffer=await workbook.xlsx.writeBuffer();
+                const blob=new Blob([buffer],{
+                    type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                urlExcel=URL.createObjectURL(blob);
+                const link=document.createElement('a');
+                link.href=urlExcel;
+                link.download=`Relatório ${periodo.arquivo} - GBM.xlsx`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                gbmToast('Excel formatado gerado com sucesso.');
+            }catch(erro){
+                console.error('Falha ao gerar Excel:',erro);
+                gbmToast('Não foi possível gerar o arquivo Excel. Tente novamente.','erro');
+            }finally{
+                if(urlExcel)setTimeout(()=>URL.revokeObjectURL(urlExcel),1000);
+                botao.disabled=false;
+                botao.textContent=textoOriginal;
+            }
         }
 
         function baixarPDF(){
@@ -151,10 +461,7 @@
             doc.setTextColor(176,190,197);
             doc.text(`Relatório financeiro - ${periodo.rotulo}`,margem,21);
 
-            const filtros=[];
-            if(document.getElementById('filtro-conta').value!=='todas')filtros.push(`Conta: ${textoSelect('filtro-conta')}`);
-            if(document.getElementById('filtro-categoria').value!=='todas')filtros.push(`Categoria: ${textoSelect('filtro-categoria')}`);
-            if(document.getElementById('filtro-tipo').value!=='todos')filtros.push(`Tipo: ${textoSelect('filtro-tipo')}`);
+            const filtros=filtrosDoRelatorio();
             if(filtros.length){
                 doc.setFontSize(8);
                 doc.text(filtros.join('  |  '),larguraPagina-margem,21,{align:'right'});
@@ -250,6 +557,7 @@
             doc.save(`Relatório ${periodo.arquivo} - GBM.pdf`);
         }
 
+        document.getElementById('baixar-excel').addEventListener('click',baixarExcel);
         document.getElementById('baixar-pdf').addEventListener('click',baixarPDF);
 
         document.getElementById('baixar-csv').addEventListener('click',()=>{
@@ -261,7 +569,7 @@
                     t.descricao,
                     t.categoria,
                     t.conta,
-                    Number(t.valor).toFixed(2).replace('.',',')
+                    valorAssinado(t).toFixed(2).replace('.',',')
                 ])
             ];
             const escaparCsv=valor=>`"${String(valor??'').replaceAll('"','""')}"`;

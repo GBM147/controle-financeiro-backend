@@ -327,9 +327,9 @@
                     texto: 'Compare visualmente quais categorias mais pesaram no período.'
                 },
                 {
-                    alvo: '#baixar-csv',
+                    alvo: '#baixar-excel',
                     titulo: '⬇ Exportar dados',
-                    texto: 'Baixe um CSV para trabalhar os resultados em uma planilha.'
+                    texto: 'Baixe o Excel para manter o relatório formatado. O CSV continua disponível para dados simples.'
                 },
                 {
                     alvo: '#tabela-transacoes',

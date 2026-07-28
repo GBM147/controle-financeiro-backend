@@ -1,4 +1,4 @@
-const CACHE_GBM = 'gbm-estatico-v13';
+const CACHE_GBM = 'gbm-estatico-v14';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
     '/termos.html',
