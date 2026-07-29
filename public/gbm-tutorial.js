@@ -1,6 +1,8 @@
 (function () {
     'use strict';
 
+    const VERSAO_TUTORIAL = '1.1.46';
+
     const PAGINAS = {
         'dashboard.html': {
             titulo: 'Dashboard',
@@ -490,6 +492,7 @@
         quadroAnimacao: null,
         ultimoFoco: null,
         observadorAlvo: null,
+        toqueY: null,
         elementos: {}
     };
 
@@ -556,6 +559,48 @@
             largura: viewport ? viewport.width : window.innerWidth,
             altura: viewport ? viewport.height : window.innerHeight
         };
+    }
+
+    function obterTopoSeguro(viewport) {
+        const margem = viewport.largura <= 680 ? 10 : 16;
+        let topo = viewport.topo + margem;
+
+        document.querySelectorAll('header, .topbar').forEach((elemento) => {
+            if (!elementoVisivel(elemento)) return;
+            const estilo = window.getComputedStyle(elemento);
+            if (!['fixed', 'sticky'].includes(estilo.position)) return;
+
+            const retangulo = elemento.getBoundingClientRect();
+            const encostaNoTopo = retangulo.top <= viewport.topo + margem;
+            if (encostaNoTopo && retangulo.bottom < viewport.topo + viewport.altura * 0.35) {
+                topo = Math.max(topo, retangulo.bottom + margem);
+            }
+        });
+
+        return topo;
+    }
+
+    function alinharAlvoNaAreaVisivel(alvo) {
+        if (!elementoVisivel(alvo)) return;
+
+        const viewport = obterViewport();
+        alvo.scrollIntoView({
+            behavior: 'auto',
+            block: 'start',
+            inline: 'nearest'
+        });
+
+        const retangulo = alvo.getBoundingClientRect();
+        const topoSeguro = obterTopoSeguro(viewport);
+        const deslocamento = retangulo.top - topoSeguro;
+
+        if (Math.abs(deslocamento) > 1) {
+            window.scrollBy({
+                top: deslocamento,
+                left: 0,
+                behavior: 'auto'
+            });
+        }
     }
 
     function restaurarEstilo(elemento, propriedade, valor) {
@@ -688,13 +733,51 @@
         estado.elementos.pular.addEventListener('click', finalizar);
         estado.elementos.voltar.addEventListener('click', voltar);
         estado.elementos.avancar.addEventListener('click', avancar);
+        overlay.addEventListener('touchstart', (evento) => {
+            estado.toqueY = evento.touches[0]?.clientY ?? null;
+        }, { passive: true });
         overlay.addEventListener('touchmove', (evento) => {
-            if (!evento.target.closest('.gbm-tour-caixa')) {
+            const caixa = evento.target.closest('.gbm-tour-caixa');
+            const toqueAtual = evento.touches[0]?.clientY;
+            if (!caixa || toqueAtual == null) {
+                evento.preventDefault();
+                return;
+            }
+
+            const deslocamento = estado.toqueY == null
+                ? 0
+                : estado.toqueY - toqueAtual;
+            const possuiRolagem = caixa.scrollHeight > caixa.clientHeight + 1;
+            const chegouAoTopo = caixa.scrollTop <= 0 && deslocamento < 0;
+            const chegouAoFim =
+                caixa.scrollTop + caixa.clientHeight >= caixa.scrollHeight - 1
+                && deslocamento > 0;
+
+            if (!possuiRolagem || chegouAoTopo || chegouAoFim) {
                 evento.preventDefault();
             }
+            estado.toqueY = toqueAtual;
         }, { passive: false });
+        overlay.addEventListener('touchend', () => {
+            estado.toqueY = null;
+        }, { passive: true });
+        overlay.addEventListener('touchcancel', () => {
+            estado.toqueY = null;
+        }, { passive: true });
         overlay.addEventListener('wheel', (evento) => {
-            if (!evento.target.closest('.gbm-tour-caixa')) {
+            const caixa = evento.target.closest('.gbm-tour-caixa');
+            if (!caixa) {
+                evento.preventDefault();
+                return;
+            }
+
+            const possuiRolagem = caixa.scrollHeight > caixa.clientHeight + 1;
+            const chegouAoTopo = caixa.scrollTop <= 0 && evento.deltaY < 0;
+            const chegouAoFim =
+                caixa.scrollTop + caixa.clientHeight >= caixa.scrollHeight - 1
+                && evento.deltaY > 0;
+
+            if (!possuiRolagem || chegouAoTopo || chegouAoFim) {
                 evento.preventDefault();
             }
         }, { passive: false });
@@ -717,6 +800,22 @@
         document.body.appendChild(botao);
     }
 
+    function atualizarServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+
+        navigator.serviceWorker.register(
+            `/sw.js?v=${encodeURIComponent(VERSAO_TUTORIAL)}`,
+            {
+                scope: '/',
+                updateViaCache: 'none'
+            }
+        )
+            .then((registro) => registro.update())
+            .catch((erro) => {
+                console.warn('Não foi possível atualizar o cache do GBM.', erro);
+            });
+    }
+
     function posicionar() {
         if (!estado.aberto) return;
         const { spotlight, caixa } = estado.elementos;
@@ -737,9 +836,14 @@
 
         const margemAlvo = 7;
         const margemCaixa = 14;
-        const borda = 10;
-        const retangulo = alvo.getBoundingClientRect();
         const viewport = obterViewport();
+        const movel = viewport.largura <= 680;
+        const borda = movel ? 8 : 10;
+        const alturaMinima = movel ? 145 : 160;
+        const larguraMinima = movel
+            ? Math.max(0, viewport.largura - borda * 2)
+            : 260;
+        const retangulo = alvo.getBoundingClientRect();
         const viewportDireita = viewport.esquerda + viewport.largura;
         const viewportBaixo = viewport.topo + viewport.altura;
         const limitar = (valor, minimo, maximo) =>
@@ -771,119 +875,138 @@
         spotlight.style.width = `${destaqueDireita - destaqueEsquerda}px`;
         spotlight.style.height = `${destaqueBaixo - destaqueTopo}px`;
 
-        if (viewport.largura <= 680) {
-            const margemMovel = 8;
-            caixa.style.left = `${viewport.esquerda + margemMovel}px`;
-            caixa.style.right = 'auto';
-            caixa.style.bottom = 'auto';
-            caixa.style.width = `${Math.max(0, viewport.largura - margemMovel * 2)}px`;
-            caixa.style.maxHeight = `${Math.max(210, Math.min(
-                360,
-                viewport.altura - margemMovel * 2
-            ))}px`;
+        caixa.style.width = movel
+            ? `${Math.max(0, viewport.largura - borda * 2)}px`
+            : `${Math.min(390, viewport.largura - borda * 2)}px`;
+        caixa.style.maxHeight = `${Math.max(0, viewport.altura - borda * 2)}px`;
 
-            const alturaCaixa = Math.min(
-                caixa.offsetHeight || 300,
-                viewport.altura - margemMovel * 2
-            );
-            const centroAlvo = (destaqueTopo + destaqueBaixo) / 2;
-            const centroViewport = viewport.topo + viewport.altura / 2;
-            const caixaNoTopo = centroAlvo >= centroViewport;
-            const topo = caixaNoTopo
-                ? viewport.topo + margemMovel
-                : viewportBaixo - alturaCaixa - margemMovel;
-
-            caixa.style.top = `${limitar(
-                topo,
-                viewport.topo + margemMovel,
-                viewportBaixo - alturaCaixa - margemMovel
-            )}px`;
-            caixa.dataset.posicao = caixaNoTopo ? 'topo' : 'baixo';
-            return;
-        }
-
-        caixa.style.maxHeight = `${Math.max(220, viewport.altura - borda * 2)}px`;
-        const larguraCaixa = Math.min(caixa.offsetWidth || 390, viewport.largura - borda * 2);
-        let alturaCaixa = Math.min(caixa.offsetHeight || 250, viewport.altura - borda * 2);
-        const minimoEsquerda = viewport.esquerda + borda;
-        const maximoEsquerda = viewportDireita - larguraCaixa - borda;
-        const minimoTopo = viewport.topo + borda;
-        const maximoTopo = viewportBaixo - alturaCaixa - borda;
+        const acrescimoBordas = Math.max(0, caixa.offsetHeight - caixa.clientHeight);
+        const larguraNatural = Math.min(
+            caixa.offsetWidth || 390,
+            viewport.largura - borda * 2
+        );
+        const alturaNatural = Math.min(
+            (caixa.scrollHeight || caixa.offsetHeight || 250) + acrescimoBordas,
+            viewport.altura - borda * 2
+        );
         const centroX = (destaqueEsquerda + destaqueDireita) / 2;
         const centroY = (destaqueTopo + destaqueBaixo) / 2;
 
-        const candidatos = [
+        const regioesVerticais = [
             {
                 posicao: 'baixo',
-                cabe: destaqueBaixo + margemCaixa + alturaCaixa <= viewportBaixo - borda,
+                esquerda: viewport.esquerda + borda,
                 topo: destaqueBaixo + margemCaixa,
-                esquerda: limitar(centroX - larguraCaixa / 2, minimoEsquerda, maximoEsquerda)
+                direita: viewportDireita - borda,
+                baixo: viewportBaixo - borda
             },
             {
                 posicao: 'topo',
-                cabe: destaqueTopo - margemCaixa - alturaCaixa >= viewport.topo + borda,
-                topo: destaqueTopo - margemCaixa - alturaCaixa,
-                esquerda: limitar(centroX - larguraCaixa / 2, minimoEsquerda, maximoEsquerda)
-            },
+                esquerda: viewport.esquerda + borda,
+                topo: viewport.topo + borda,
+                direita: viewportDireita - borda,
+                baixo: destaqueTopo - margemCaixa
+            }
+        ];
+        const regioesLaterais = [
             {
                 posicao: 'direita',
-                cabe: destaqueDireita + margemCaixa + larguraCaixa <= viewportDireita - borda,
-                topo: limitar(centroY - alturaCaixa / 2, minimoTopo, maximoTopo),
-                esquerda: destaqueDireita + margemCaixa
+                esquerda: destaqueDireita + margemCaixa,
+                topo: viewport.topo + borda,
+                direita: viewportDireita - borda,
+                baixo: viewportBaixo - borda
             },
             {
                 posicao: 'esquerda',
-                cabe: destaqueEsquerda - margemCaixa - larguraCaixa >= viewport.esquerda + borda,
-                topo: limitar(centroY - alturaCaixa / 2, minimoTopo, maximoTopo),
-                esquerda: destaqueEsquerda - margemCaixa - larguraCaixa
+                esquerda: viewport.esquerda + borda,
+                topo: viewport.topo + borda,
+                direita: destaqueEsquerda - margemCaixa,
+                baixo: viewportBaixo - borda
             }
         ];
+        const candidatos = (movel
+            ? regioesVerticais
+            : [...regioesVerticais, ...regioesLaterais])
+            .map((regiao) => ({
+                ...regiao,
+                largura: Math.max(0, regiao.direita - regiao.esquerda),
+                altura: Math.max(0, regiao.baixo - regiao.topo)
+            }));
 
-        let escolhido = candidatos.find((candidato) => candidato.cabe);
+        const completos = candidatos.filter((regiao) =>
+            regiao.largura >= larguraNatural && regiao.altura >= alturaNatural
+        );
+        let escolhido = completos[0] || candidatos
+            .filter((regiao) =>
+                regiao.largura >= larguraMinima && regiao.altura >= alturaMinima
+            )
+            .sort((a, b) => (b.largura * b.altura) - (a.largura * a.altura))[0];
 
         if (!escolhido) {
-            const espacoAcima = destaqueTopo - viewport.topo - borda - margemCaixa;
-            const espacoAbaixo = viewportBaixo - borda - destaqueBaixo - margemCaixa;
-            const maiorEspacoVertical = Math.max(espacoAcima, espacoAbaixo);
-
-            if (maiorEspacoVertical >= 150) {
-                caixa.style.maxHeight = `${maiorEspacoVertical}px`;
-                alturaCaixa = Math.min(caixa.offsetHeight, maiorEspacoVertical);
-                const usarTopo = espacoAcima >= espacoAbaixo;
-                escolhido = {
-                    posicao: usarTopo ? 'topo' : 'baixo',
-                    topo: usarTopo
-                        ? destaqueTopo - margemCaixa - alturaCaixa
-                        : destaqueBaixo + margemCaixa,
-                    esquerda: limitar(
-                        centroX - larguraCaixa / 2,
-                        minimoEsquerda,
-                        maximoEsquerda
-                    )
-                };
-            } else {
-                const usarTopo = centroY >= viewport.topo + viewport.altura / 2;
-                escolhido = {
-                    posicao: usarTopo ? 'topo-fixo' : 'baixo-fixo',
-                    topo: usarTopo
-                        ? viewport.topo + borda
-                        : viewportBaixo - alturaCaixa - borda,
-                    esquerda: limitar(
-                        centroX - larguraCaixa / 2,
-                        minimoEsquerda,
-                        maximoEsquerda
-                    )
-                };
-            }
+            spotlight.classList.add('gbm-tour-sem-alvo');
+            caixa.classList.add('gbm-tour-centralizada');
+            limparPosicaoCaixa(caixa);
+            caixa.dataset.posicao = 'centro-sem-destaque';
+            return;
         }
 
-        caixa.style.top = `${limitar(escolhido.topo, minimoTopo, maximoTopo)}px`;
-        caixa.style.left = `${limitar(
-            escolhido.esquerda,
-            minimoEsquerda,
-            maximoEsquerda
-        )}px`;
+        caixa.style.width = `${Math.min(larguraNatural, escolhido.largura)}px`;
+        caixa.style.maxHeight = `${escolhido.altura}px`;
+
+        const larguraCaixa = Math.min(caixa.offsetWidth, escolhido.largura);
+        const alturaCaixa = Math.min(caixa.offsetHeight, escolhido.altura);
+        const maximoEsquerda = escolhido.direita - larguraCaixa;
+        const maximoTopo = escolhido.baixo - alturaCaixa;
+        let esquerda;
+        let topo;
+
+        if (escolhido.posicao === 'baixo') {
+            esquerda = limitar(
+                centroX - larguraCaixa / 2,
+                escolhido.esquerda,
+                maximoEsquerda
+            );
+            topo = escolhido.topo;
+        } else if (escolhido.posicao === 'topo') {
+            esquerda = limitar(
+                centroX - larguraCaixa / 2,
+                escolhido.esquerda,
+                maximoEsquerda
+            );
+            topo = escolhido.baixo - alturaCaixa;
+        } else if (escolhido.posicao === 'direita') {
+            esquerda = escolhido.esquerda;
+            topo = limitar(
+                centroY - alturaCaixa / 2,
+                escolhido.topo,
+                maximoTopo
+            );
+        } else {
+            esquerda = escolhido.direita - larguraCaixa;
+            topo = limitar(
+                centroY - alturaCaixa / 2,
+                escolhido.topo,
+                maximoTopo
+            );
+        }
+
+        caixa.style.top = `${topo}px`;
+        caixa.style.left = `${esquerda}px`;
         caixa.dataset.posicao = escolhido.posicao;
+
+        const destaqueFinal = spotlight.getBoundingClientRect();
+        const caixaFinal = caixa.getBoundingClientRect();
+        const aindaSobrepoe = destaqueFinal.left < caixaFinal.right
+            && destaqueFinal.right > caixaFinal.left
+            && destaqueFinal.top < caixaFinal.bottom
+            && destaqueFinal.bottom > caixaFinal.top;
+
+        if (aindaSobrepoe) {
+            spotlight.classList.add('gbm-tour-sem-alvo');
+            caixa.classList.add('gbm-tour-centralizada');
+            limparPosicaoCaixa(caixa);
+            caixa.dataset.posicao = 'centro-sem-destaque';
+        }
     }
 
     function mostrarPasso() {
@@ -904,7 +1027,8 @@
 
         titulo.textContent = passo.titulo;
         texto.textContent = passo.texto;
-        contador.textContent = `Passo ${estado.passo + 1} de ${passos.length}`;
+        contador.textContent =
+            `Passo ${estado.passo + 1} de ${passos.length} · v${VERSAO_TUTORIAL}`;
         progresso.style.width = `${((estado.passo + 1) / passos.length) * 100}%`;
         voltar.hidden = estado.passo === 0;
         rodape.classList.toggle('gbm-tour-sem-voltar', estado.passo === 0);
@@ -914,11 +1038,7 @@
         estado.alvo = encontrarAlvo(passo.alvo);
 
         if (estado.alvo) {
-            estado.alvo.scrollIntoView({
-                behavior: 'auto',
-                block: 'center',
-                inline: 'nearest'
-            });
+            alinharAlvoNaAreaVisivel(estado.alvo);
         }
 
         bloquearRolagem();
@@ -1024,6 +1144,7 @@
         estado.configuracao = PAGINAS[estado.pagina];
         if (!estado.configuracao) return;
 
+        atualizarServiceWorker();
         criarInterface();
         criarBotaoAjuda();
         document.addEventListener('keydown', tratarTeclado);
