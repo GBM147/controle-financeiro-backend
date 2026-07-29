@@ -99,6 +99,7 @@ body.gbm-tour-bloqueado {
     font-size: .76rem;
     font-weight: 800;
     letter-spacing: .08em;
+    white-space: nowrap;
     text-transform: uppercase;
 }
 
@@ -258,6 +259,11 @@ body.gbm-tour-bloqueado {
     .gbm-tour-topo {
         gap: 10px;
         margin-bottom: 7px;
+    }
+
+    .gbm-tour-contador {
+        font-size: .68rem;
+        letter-spacing: .04em;
     }
 
     .gbm-tour-fechar {
