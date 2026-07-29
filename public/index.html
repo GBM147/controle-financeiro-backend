@@ -922,8 +922,14 @@
     // --- SISTEMA DE INSTALAÇÃO DO APLICATIVO (PWA) ---
     // 1. Registar o motor (Service Worker)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(() => {
+        navigator.serviceWorker.register('/sw.js?v=1.1.46', {
+            scope: '/',
+            updateViaCache: 'none'
+        }).then((registro) => {
             console.log("Service Worker Registado!");
+            return registro.update();
+        }).catch((erro) => {
+            console.warn('Não foi possível atualizar o aplicativo GBM.', erro);
         });
     }
 
