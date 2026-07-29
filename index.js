@@ -301,8 +301,27 @@ const limitarFeedback = criarLimitador({
     maximo: 10,
     prefixo: 'feedback'
 });
-// Isso faz o servidor ler e entregar automaticamente os seus ficheiros HTML/CSS da pasta public
-app.use(express.static('public'));
+// Entrega os arquivos públicos. Tutorial e service worker nunca podem ficar
+// presos no cache do navegador ou do proxy após uma atualização.
+app.use(express.static('public', {
+    setHeaders(res, caminhoArquivo) {
+        const caminhoNormalizado = String(caminhoArquivo).replace(/\\/g, '/');
+        const exigeAtualizacaoImediata =
+            caminhoNormalizado.endsWith('/sw.js')
+            || caminhoNormalizado.endsWith('/gbm-tutorial.js')
+            || caminhoNormalizado.endsWith('/gbm-tutorial.css');
+
+        if (exigeAtualizacaoImediata) {
+            res.setHeader(
+                'Cache-Control',
+                'no-store, no-cache, must-revalidate, proxy-revalidate'
+            );
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+            res.setHeader('Surrogate-Control', 'no-store');
+        }
+    }
+}));
 
 // --- SESSÃO DE SERVIDOR (corrige o IDOR: userId deixa de vir do cliente) ---
 const session = require('express-session');
