@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Acesso - GBM Finance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Link para o App (PWA) -->
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2E8B57">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GBM Finance">
+<link rel="apple-touch-icon" href="logo-transparente.png">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2735805392775741"
+     crossorigin="anonymous"></script>
+    <style>
+        /* --- ESTILOS GERAIS & BACKGROUND --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(9, 16, 26, 0.6) 0%, rgba(9, 16, 26, 0.85) 100%), 
+                        url('fundo-marmore.jpg') no-repeat center center fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Canvas de Partículas Douradas */
+        #particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- CARD DE LOGIN TRANSLÚCIDO (GLASSMORPHISM) --- */
+        .login-container {
+            position: relative;
+            z-index: 2;
+            background: rgba(17, 28, 46, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                max-width: 100%;
+                border-radius: 12px;
+            }
+        }
+
+        /* Logo Animado */
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            color: #b3b3b3;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        /* --- INPUTS COM LABELS FLUTUANTES --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #060a12;
+            border: 1px solid #1f3047;
+            border-radius: 10px;
+            outline: none;
+            color: #ffffff;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a9ba8;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        /* Comportamento de flutuar quando focado ou preenchido */
+        .input-group input:focus ~ label,
+        .input-group input:not(:placeholder-shown) ~ label {
+            top: -10px;
+            left: 10px;
+            transform: translateY(0) scale(0.85);
+            color: #c89f53; /* Dourado GBM */
+            font-weight: 600;
+            background: #060a12; /* Fundo para cobrir a borda ao flutuar */
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        /* Borda dourada e glow ao focar */
+        .input-group input:focus {
+            border-color: #c89f53;
+            box-shadow: 0 0 12px rgba(200, 159, 83, 0.25);
+        }
+
+        /* --- CONFIGURAÇÕES EXTRAS --- */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+
+        .remember-me {
+            color: #8a9ba8;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember-me input {
+            margin-right: 8px;
+            accent-color: #10b981;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .forgot-pass {
+            color: #c89f53;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .forgot-pass:hover {
+            color: #e0b769;
+            text-decoration: underline;
+        }
+
+        /* --- BOTÃO ESMERALDA COM SHINE --- */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #205c4e; /* Esmeralda escuro do seu projeto */
+            border: 1px solid #18473c;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(32, 92, 78, 0.3);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .btn-login:hover {
+            background: #297a66;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(32, 92, 78, 0.5);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        /* Efeito de Brilho Correndo (Shine) */
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 30%;
+            height: 200%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(30deg);
+            animation: shine 4s infinite ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { left: -60%; }
+            15% { left: 130%; }
+            100% { left: 130%; }
+        }
+
+        .signup-prompt {
+            margin-top: 25px;
+            color: #8a9ba8;
+            font-size: 14px;
+        }
+
+        .signup-prompt span {
+            color: #10b981;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .signup-prompt span:hover {
+            color: #34d399;
+            text-decoration: underline;
+        }
+
+        /* --- RODAPÉ COM VERSÍCULO --- */
+        .login-footer {
+            position: relative;
+            z-index: 2;
+            margin-top: 25px;
+            max-width: 420px;
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        .verse {
+            font-style: italic;
+            color: #e2e8f0;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .reference {
+            color: #c89f53;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="login-container">
+        
+        <!-- BOTÃO DE INSTALAR O APP -->
+        <button id="btn-instalar-app" style="display:none; width:100%; margin-bottom: 20px; padding:12px; background:#c89f53; color:#09101a; border:none; border-radius:10px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 15px rgba(200, 159, 83, 0.4); transition: 0.3s;">
+    📲 Instalar Aplicativo GBM
+</button>
+
+        <div id="form-login">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Bem-vindo de volta</h2>
+            <p class="subtitle">Entre na sua conta para continuar</p>
+
+            <div class="input-group">
+                <input type="email" id="login-identificacao" placeholder=" " required>
+                <label>E-mail</label>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="login-senha" placeholder=" " required>
+                <label>Senha</label>
+            </div>
+
+            <div class="form-options">
+                <label class="remember-me" for="login-manter-conectado">
+                    <input type="checkbox" id="login-manter-conectado">
+                    <span>Manter conectado</span>
+                </label>
+                <span class="forgot-pass" onclick="mostrarRecuperacao()">Esqueceu sua senha?</span>
+            </div>
+
+            <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+
+            <p class="signup-prompt">
+                Ainda não tem conta? <span onclick="alternarForms('cadastro')">Criar uma agora</span>
+            </p>
+        </div>
+
+        <div id="form-cadastro" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo" style="width: 90px; margin-bottom: 15px;">
+            <h2>Criar Conta</h2>
+            
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex: 1;">
+                    <input type="text" id="cad-nome" placeholder=" ">
+                    <label>Nome</label>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <input type="text" id="cad-sobrenome" placeholder=" ">
+                    <label>Sobrenome</label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <input type="email" id="cad-email" placeholder=" ">
+                <label>E-mail</label>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="cad-telefone" placeholder=" " maxlength="15" oninput="mascaraTelefone(this)">
+                <label>Telefone</label>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 10px;">
+                <input type="password" id="cad-senha" placeholder=" ">
+                <label>Senha</label>
+            </div>
+            <div style="text-align: left; margin-bottom: 25px;">
+                <small style="color: #8a9ba8; font-size: 0.75rem;">Deve conter letras maiúsculas, minúsculas e números.</small>
+            </div>
+
+            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; text-align: left;">
+                <input type="checkbox" id="aceite-termos" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #10b981; cursor: pointer;">
+                <label for="aceite-termos" style="color: #8a9ba8; font-size: 13px; line-height: 1.4; cursor: pointer;">
+                    Li e concordo com os
+                    <a href="termos.html?origem=cadastro" target="_blank" rel="opener" style="color: #c89f53; text-decoration: none; font-weight: 600;">Termos de Uso</a>
+                    (versão 2026.07).
+                </label>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 25px; text-align: left;">
+                <input type="checkbox" id="aceite-privacidade" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #10b981; cursor: pointer;">
+                <label for="aceite-privacidade" style="color: #8a9ba8; font-size: 13px; line-height: 1.4; cursor: pointer;">
+                    Li a <a href="politica-de-privacidade.html?origem=cadastro" target="_blank" rel="opener" style="color: #c89f53; text-decoration: none; font-weight: 600;">Política de Privacidade</a>
+                    e estou ciente do tratamento necessário para o funcionamento do serviço.
+                </label>
+            </div>
+
+            <button class="btn-login" onclick="registrarUsuario()" style="background: #10b981; border-color: #059669;">Registrar e Validar</button>
+            
+            <p class="signup-prompt">
+                Já tem uma conta? <span onclick="alternarForms('login')">Fazer login</span>
+            </p>
+        </div>
+
+        <div id="form-escolha-validacao" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Verificação</h2>
+            <p class="subtitle" style="margin-bottom: 25px;">Enviaremos um código de 6 dígitos para o seu e-mail.</p>
+            
+            <button class="btn-login" onclick="enviarCodigo('email')" style="margin-bottom: 15px;">📧 Receber Código por E-mail</button>
+            <input type="hidden" id="temp-user-id">
+        </div>
+
+        <div id="form-validar-codigo" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Código Enviado</h2>
+            <p class="subtitle">Insira os 6 dígitos que recebeu:</p>
+            
+            <div class="input-group">
+                <input type="text" id="codigo-input" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 12px; font-size: 1.5rem; font-weight: bold; padding-left: 24px;">
+                <label style="left: 50%; transform: translate(-50%, -50%);">000000</label>
+            </div>
+            
+            <button class="btn-login" onclick="verificarCodigo()">Validar Agora</button>
+            
+            <p class="signup-prompt">
+                <span id="reenviar-link-codigo" onclick="reenviarCodigoEmail()">Reenviar código</span>
+                <span id="reenviar-timer-codigo" style="display:none; color: #8a9ba8; cursor: default;"></span>
+            </p>
+        </div>
+
+        <div id="form-esqueci-senha" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Recuperar Senha</h2>
+            <p class="subtitle">Informe seu e-mail cadastrado:</p>
+            
+            <div class="input-group">
+                <input type="email" id="recuperar-email" placeholder=" ">
+                <label>E-mail</label>
+            </div>
+            
+            <button class="btn-login" onclick="solicitarRecuperacao()">Enviar Código</button>
+            
+            <p class="signup-prompt">
+                <span onclick="alternarForms('login')">Voltar ao login</span>
+            </p>
+        </div>
+
+        <div id="form-redefinir-senha" style="display: none;">
+            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
+            <h2>Nova Senha</h2>
+            <p class="subtitle">Insira o código recebido e a nova senha:</p>
+            
+            <input type="hidden" id="temp-recuperar-email">
+            
+            <div class="input-group">
+                <input type="text" id="redefinir-codigo" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.2rem; font-weight: bold;">
+                <label>Código de 6 dígitos</label>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="redefinir-senha-nova" placeholder=" ">
+                <label>Nova Senha</label>
+            </div>
+            
+            <button class="btn-login" onclick="redefinirSenha()">Salvar Nova Senha</button>
+            
+            <p class="signup-prompt">
+                <span id="reenviar-link-senha" onclick="reenviarCodigoSenha()">Reenviar código</span>
+                <span id="reenviar-timer-senha" style="display:none; color: #8a9ba8; cursor: default;"></span>
+            </p>
+        </div>
+    </div>
+
+    <footer class="login-footer">
+        <p class="verse">“O sábio economiza e tem sempre bastante comida e dinheiro em sua casa, mas o tolo gasta todo o seu dinheiro assim que o recebe.”</p>
+        <span class="reference">PROVÉRBIOS 21:20</span>
+    </footer>
+
+    <script>
+        // --- 1. SCRIPT DAS PARTÍCULAS DOURADAS ---
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.size = Math.random() * 2.5 + 0.8;
+                this.speedY = Math.random() * 1.2 + 0.3;
+                this.opacity = Math.random() * 0.4 + 0.2;
+            }
+            update() {
+                this.y -= this.speedY;
+                if (this.y < -10) {
+                    this.y = canvas.height + 10;
+                    this.x = Math.random() * canvas.width;
+                    this.opacity = Math.random() * 0.4 + 0.2;
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`; 
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const numberOfParticles = Math.floor((canvas.width * canvas.height) / 15000);
+            for (let i = 0; i < Math.min(numberOfParticles, 65); i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        initParticles();
+        animate();
+
+        // --- 2. SCRIPT ORIGINAL DO SEU BACKEND ---
+
+        // Recupera o userId salvo (permanente com "Manter conectado", ou só da aba atual)
+        function pegarUserId() {
+            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        }
+
+        // Se já existe uma sessão salva, pula a tela de login e vai direto pro sistema
+        (async function verificarSessaoExistente() {
+            const userId = pegarUserId();
+            if (!userId) return;
+
+            try {
+                const res = await fetch(`/login-status?userId=${userId}`);
+                const data = await res.json();
+                if (data.statusPagamento) {
+                    // Todos os usuários (Premium e Gratuitos) entram direto no sistema
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (e) {
+                console.error('Erro ao verificar sessão existente:', e);
+            }
+        })();
+
+        function mascaraTelefone(input) {
+            let v = input.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+            input.value = v;
+        }
+
+        // Função para alternar entre as telas de Login e Cadastro
+        function alternarForms(tela) {
+            document.getElementById('form-login').style.display = tela === 'login' ? 'block' : 'none';
+            document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
+        }
+
+        function fazerLogin() {
+            const emailCpf = document.getElementById('login-identificacao').value;
+            const senha = document.getElementById('login-senha').value;
+
+            if (!emailCpf || !senha) {
+                gbmAlerta("Por favor, preencha o e-mail e a senha.", 'aviso');
+                return;
+            }
+
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identificacao: emailCpf, senha: senha }) 
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const manterConectado = document.getElementById('login-manter-conectado').checked;
+                    document.getElementById('temp-user-id').value = data.userId;
+
+                    if (manterConectado) {
+                        localStorage.setItem('userIdAtual', data.userId);
+                        sessionStorage.removeItem('userIdAtual');
+                    } else {
+                        sessionStorage.setItem('userIdAtual', data.userId);
+                        localStorage.removeItem('userIdAtual');
+                    }
+
+                    if (data.verificado) {
+                        // Todos os usuários (Premium e Gratuitos) entram direto no sistema
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        document.getElementById('form-login').style.display = 'none';
+                        document.getElementById('form-escolha-validacao').style.display = 'block';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro de conexão:', error);
+                gbmAlerta('Erro ao tentar conectar com o servidor.', 'erro');
+            });
+        }
+
+        async function registrarUsuario() {
+            const inputs = {
+                nome: document.getElementById('cad-nome'),
+                sobrenome: document.getElementById('cad-sobrenome'),
+                email: document.getElementById('cad-email'),
+                telefone: document.getElementById('cad-telefone'),
+                senha: document.getElementById('cad-senha')
+            };
+
+            let camposVazios = false;
+
+            for (const key in inputs) {
+                inputs[key].style.border = "1px solid #1f3047"; 
+                if (!inputs[key].value.trim()) {
+                    inputs[key].style.border = "1px solid red";
+                    camposVazios = true;
+                }
+            }
+
+            if (camposVazios) {
+                return gbmAlerta("Todos os campos devem ser preenchidos. Por favor, verifique os campos destacados em vermelho.", 'aviso');
+            }
+
+            const nome = inputs.nome.value.trim();
+            const sobrenome = inputs.sobrenome.value.trim();
+            const email = inputs.email.value.trim();
+            const telefone = inputs.telefone.value.trim();
+            const senha = inputs.senha.value;
+
+            const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            if (!regexSenha.test(senha)) {
+                inputs.senha.style.border = "1px solid red";
+                return gbmAlerta("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.", 'aviso');
+            }
+
+            const aceitouTermos = document.getElementById('aceite-termos').checked;
+            const aceitouPrivacidade = document.getElementById('aceite-privacidade').checked;
+            if (!aceitouTermos) {
+                return gbmAlerta("Você precisa aceitar os Termos de Uso para criar a sua conta.", 'aviso');
+            }
+            if (!aceitouPrivacidade) {
+                return gbmAlerta("Você precisa ler e confirmar a Política de Privacidade para criar a sua conta.", 'aviso');
+            }
+
+            try {
+                const resposta = await fetch('/cadastro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome,
+                        sobrenome,
+                        email,
+                        telefone,
+                        senha,
+                        aceite_termos: aceitouTermos,
+                        termos_versao: '2026.07',
+                        consentimento_privacidade: aceitouPrivacidade
+                    })
+                });
+                
+                const json = await resposta.json();
+
+                if (json.success) {
+                    document.getElementById('form-cadastro').style.display = 'none';
+                    document.getElementById('form-escolha-validacao').style.display = 'block';
+                    document.getElementById('temp-user-id').value = json.userId;
+                } else {
+                    gbmAlerta("Erro: " + json.message, 'erro');
+                }
+            } catch (err) {
+                console.error(err);
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        async function enviarCodigo(canal) {
+            const userId = document.getElementById('temp-user-id').value;
+            gbmAlerta("Enviando código via " + canal + "...", 'aviso');
+
+            const resposta = await fetch('/enviar-codigo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, canal })
+            });
+
+            const json = await resposta.json();
+            if (json.success) {
+                document.getElementById('form-escolha-validacao').style.display = 'none';
+                document.getElementById('form-validar-codigo').style.display = 'block';
+                iniciarCronometroReenvio('reenviar-link-codigo', 'reenviar-timer-codigo');
+            } else {
+                gbmAlerta("Erro ao enviar código: " + json.message, 'erro');
+            }
+        }
+
+        function iniciarCronometroReenvio(linkId, timerId, segundos = 30) {
+            const link = document.getElementById(linkId);
+            const timer = document.getElementById(timerId);
+            let restante = segundos;
+
+            link.style.display = 'none';
+            timer.style.display = 'inline';
+            timer.innerText = `Reenviar em ${restante}s`;
+
+            const intervalo = setInterval(() => {
+                restante--;
+                if (restante <= 0) {
+                    clearInterval(intervalo);
+                    timer.style.display = 'none';
+                    link.style.display = 'inline';
+                } else {
+                    timer.innerText = `Reenviar em ${restante}s`;
+                }
+            }, 1000);
+        }
+
+        async function reenviarCodigoEmail() {
+            const userId = document.getElementById('temp-user-id').value;
+            try {
+                const resposta = await fetch('/enviar-codigo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, canal: 'email' })
+                });
+                const json = await resposta.json();
+                if (json.success) {
+                    iniciarCronometroReenvio('reenviar-link-codigo', 'reenviar-timer-codigo');
+                } else {
+                    gbmAlerta("Erro ao reenviar: " + json.message, 'erro');
+                }
+            } catch (err) {
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        async function reenviarCodigoSenha() {
+            const email = document.getElementById('temp-recuperar-email').value;
+            try {
+                const resposta = await fetch('/esqueci-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const json = await resposta.json();
+                if (json.success) {
+                    iniciarCronometroReenvio('reenviar-link-senha', 'reenviar-timer-senha');
+                } else {
+                    gbmAlerta("Erro ao reenviar: " + json.message, 'erro');
+                }
+            } catch (err) {
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        async function verificarCodigo() {
+            const userId = document.getElementById('temp-user-id').value;
+            const codigoDigitado = document.getElementById('codigo-input').value.trim();
+
+            if (codigoDigitado.length !== 6) {
+                return gbmAlerta("Por favor, insira o código completo de 6 dígitos.", 'aviso');
+            }
+
+            try {
+                const resposta = await fetch('/validar-codigo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, codigo: codigoDigitado })
+                });
+
+                const json = await resposta.json();
+
+                if (json.success) {
+                    localStorage.setItem('userIdAtual', userId);
+                    gbmAlerta("Conta validada com sucesso! Seu período gratuito de 30 dias começou! 🎉", 'info');
+                    window.location.href = 'pagamento.html';
+                } else {
+                    gbmAlerta("Erro: " + json.message, 'erro');
+                }
+            } catch (err) {
+                console.error(err);
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        function mostrarRecuperacao() {
+            document.getElementById('form-login').style.display = 'none';
+            document.getElementById('form-esqueci-senha').style.display = 'block';
+        }
+
+        async function solicitarRecuperacao() {
+            const email = document.getElementById('recuperar-email').value.trim();
+            if (!email) {
+                return gbmAlerta("Digite seu e-mail.", 'aviso');
+            }
+            try {
+                const resposta = await fetch('/esqueci-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const json = await resposta.json();
+                if (json.success) {
+                    document.getElementById('temp-recuperar-email').value = email;
+                    document.getElementById('form-esqueci-senha').style.display = 'none';
+                    document.getElementById('form-redefinir-senha').style.display = 'block';
+                    iniciarCronometroReenvio('reenviar-link-senha', 'reenviar-timer-senha');
+                    gbmAlerta("Se o e-mail existir, um código foi enviado.", 'aviso');
+                } else {
+                    gbmAlerta("Erro: " + json.message, 'erro');
+                }
+            } catch (err) {
+                console.error(err);
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        async function redefinirSenha() {
+            const email = document.getElementById('temp-recuperar-email').value;
+            const codigo = document.getElementById('redefinir-codigo').value.trim();
+            const novaSenha = document.getElementById('redefinir-senha-nova').value;
+
+            const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            if (!regexSenha.test(novaSenha)) {
+                return gbmAlerta("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.", 'aviso');
+            }
+
+            try {
+                const resposta = await fetch('/redefinir-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, codigo, novaSenha })
+                });
+                const json = await resposta.json();
+                if (json.success) {
+                    gbmAlerta("Senha redefinida com sucesso! Faça login.", 'info');
+                    document.getElementById('form-redefinir-senha').style.display = 'none';
+                    document.getElementById('form-login').style.display = 'block';
+                } else {
+                    gbmAlerta("Erro: " + json.message, 'erro');
+                }
+            } catch (err) {
+                console.error(err);
+                gbmAlerta("Falha na comunicação com o servidor.", 'erro');
+            }
+        }
+
+        // --- ATALHO: ENTER SUBMETE O FORMULÁRIO VISÍVEL ---
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter') return;
+
+            const mapaFormularios = {
+                'form-login': fazerLogin,
+                'form-cadastro': registrarUsuario,
+                'form-validar-codigo': verificarCodigo,
+                'form-esqueci-senha': solicitarRecuperacao,
+                'form-redefinir-senha': redefinirSenha
+            };
+
+            for (const [id, funcao] of Object.entries(mapaFormularios)) {
+                const el = document.getElementById(id);
+                if (el && el.style.display !== 'none') {
+                    e.preventDefault();
+                    funcao();
+                    break;
+                }
+            }
+        });
+
+        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES ---
+        let _resolveConfirm = null;
+
+        function gbmAlerta(mensagem, tipo = 'info') {
+            const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
+                        : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
+                        :                    'rgba(95,255,168,0.3)';
+            const icone = tipo === 'erro'  ? '❌'
+                        : tipo === 'aviso' ? '⚠️'
+                        :                    '✅';
+
+            document.getElementById('lista-notificacoes-modal').innerHTML = `
+                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
+                    <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
+                    ${mensagem}
+                </div>`;
+
+            document.getElementById('btn-confirmar-modal').style.display = 'none';
+            document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
+            document.getElementById('modal-notificacoes').style.display = 'flex';
+            _resolveConfirm = null;
+        }
+
+        function gbmConfirmar(mensagem) {
+            return new Promise(resolve => {
+                _resolveConfirm = resolve;
+
+                document.getElementById('lista-notificacoes-modal').innerHTML = `
+                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
+                        <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
+                        ${mensagem}
+                    </div>`;
+
+                document.getElementById('btn-confirmar-modal').style.display = 'block';
+                document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
+                document.getElementById('modal-notificacoes').style.display = 'flex';
+            });
+        }
+
+        function fecharModalNotificacoes(confirmado = false) {
+            document.getElementById('modal-notificacoes').style.display = 'none';
+            if (_resolveConfirm) {
+                _resolveConfirm(confirmado);
+                _resolveConfirm = null;
+            }
+        }
+    </script>
+
+    <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
+        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="logo-transparente.jpg" alt="GBM" style="height:28px;">
+                    <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
+                </div>
+                <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            <div id="lista-notificacoes-modal"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#205c4e; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#297a66'" onmouseout="this.style.background='#205c4e'">CONFIRMAR</button>
+                <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    // --- SISTEMA DE INSTALAÇÃO DO APLICATIVO (PWA) ---
+    // 1. Registar o motor (Service Worker)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js?v=1.1.46', {
+            scope: '/',
+            updateViaCache: 'none'
+        }).then((registro) => {
+            console.log("Service Worker Registado!");
+            return registro.update();
+        }).catch((erro) => {
+            console.warn('Não foi possível atualizar o aplicativo GBM.', erro);
+        });
+    }
+
+    const ehIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    const jaInstalado = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+    // 2. Capturar o evento de instalação do Chrome/Android
+    let promptInstalacao;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        promptInstalacao = e;
+        document.getElementById('btn-instalar-app').style.display = 'block';
+    });
+
+    // 3. No Safari/iOS não existe beforeinstallprompt — mostramos instrução manual
+    if (ehIOS && !jaInstalado) {
+        const btn = document.getElementById('btn-instalar-app');
+        btn.innerText = '📲 Como instalar no iPhone';
+        btn.style.display = 'block';
+        btn.onclick = function() {
+            gbmAlerta('Toque no ícone de compartilhar (quadrado com seta ↑) na barra do Safari e escolha "Adicionar à Tela de Início".', 'aviso');
+        };
+    } else {
+        document.getElementById('btn-instalar-app').onclick = instalarGBM;
+    }
+
+    // 4. Função que roda quando o utilizador clica no botão (Chrome/Android)
+    function instalarGBM() {
+        if (promptInstalacao) {
+            promptInstalacao.prompt();
+            promptInstalacao.userChoice.then((resultado) => {
+                if (resultado.outcome === 'accepted') {
+                    console.log('Usuário instalou o App GBM!');
+                }
+                promptInstalacao = null;
+                document.getElementById('btn-instalar-app').style.display = 'none';
+            });
+        }
+    }
+</script>
+</body>
+</html>
