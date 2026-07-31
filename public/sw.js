@@ -3,6 +3,7 @@ const CACHE_GBM = 'gbm-estatico-v16';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
+    '/login.html',
     '/termos.html',
     '/politica-de-privacidade.html',
     '/auth.js',
