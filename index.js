@@ -603,6 +603,60 @@ async function garantirColuna(tabela, coluna, definicaoSql) {
     );
 }
 
+// --- CICLO FINANCEIRO PERSONALIZADO (dia de fechamento do mes) ---
+// O usuario escolhe em que dia o "mes financeiro" dele vira (1, 5, 15, 20...).
+// Truque: deslocando a data para tras em (dia - 1) dias, o ciclo passa a cair
+// exatamente dentro de um mes de calendario, entao todo o SQL continua simples.
+const DIA_FECHAMENTO_PADRAO = 1;
+
+function normalizarDiaFechamento(valor) {
+    const numero = Number.parseInt(valor, 10);
+    if (!Number.isFinite(numero) || numero < 1 || numero > 31) return DIA_FECHAMENTO_PADRAO;
+    return numero;
+}
+
+function deslocamentoCiclo(diaFechamento) {
+    return normalizarDiaFechamento(diaFechamento) - 1;
+}
+
+// Expressao SQL que devolve a data "deslocada" para o ciclo do usuario.
+function sqlDataCiclo(coluna, diaFechamento) {
+    const desloc = deslocamentoCiclo(diaFechamento);
+    return desloc === 0 ? coluna : `DATE_SUB(${coluna}, INTERVAL ${desloc} DAY)`;
+}
+
+function sqlMesCiclo(coluna, diaFechamento) {
+    return `MONTH(${sqlDataCiclo(coluna, diaFechamento)})`;
+}
+
+function sqlAnoCiclo(coluna, diaFechamento) {
+    return `YEAR(${sqlDataCiclo(coluna, diaFechamento)})`;
+}
+
+// Datas reais (inclusive/exclusiva) do ciclo de um mes/ano.
+function calcularPeriodoFechamento(mes, ano, diaFechamento) {
+    const desloc = deslocamentoCiclo(diaFechamento);
+    const mesNum = Number(mes);
+    const anoNum = Number(ano);
+    const inicio = new Date(Date.UTC(anoNum, mesNum - 1, 1 + desloc));
+    const fim = new Date(Date.UTC(anoNum, mesNum, 1 + desloc));
+    const iso = (d) => d.toISOString().slice(0, 10);
+    return { inicio: iso(inicio), fim: iso(fim) };
+}
+
+async function obterDiaFechamento(userId) {
+    try {
+        const [linhas] = await db.promise().query(
+            'SELECT dia_fechamento FROM usuarios WHERE id = ?',
+            [userId]
+        );
+        if (!linhas.length) return DIA_FECHAMENTO_PADRAO;
+        return normalizarDiaFechamento(linhas[0].dia_fechamento);
+    } catch (erro) {
+        return DIA_FECHAMENTO_PADRAO;
+    }
+}
+
 async function indiceExiste(tabela, indice) {
     const [linhas] = await db.promise().query(
         `SELECT 1
@@ -763,6 +817,7 @@ function garantirEstruturaProduto() {
         await garantirColuna('usuarios', 'consentimento_privacidade_em', 'DATETIME NULL');
         await garantirColuna('usuarios', 'termos_aceitos_em', 'DATETIME NULL');
         await garantirColuna('usuarios', 'termos_versao', 'VARCHAR(20) NULL');
+        await garantirColuna('usuarios', 'dia_fechamento', 'TINYINT UNSIGNED NOT NULL DEFAULT 1');
         await garantirColuna('alertas', 'tipo', "VARCHAR(40) NOT NULL DEFAULT 'limite'");
 
         await garantirIndice(
@@ -1337,6 +1392,7 @@ app.get('/resumo-financeiro', exigirLogin, async (req, res) => {
     try {
         const { mes, ano, conta_id } = req.query;
         const userId = req.session.userId;
+        const diaFechamento = await obterDiaFechamento(userId);
         let sql = `
             SELECT 
                 t.categoria, 
@@ -1359,11 +1415,11 @@ app.get('/resumo-financeiro', exigirLogin, async (req, res) => {
         if (mes && mes !== 'todos') {
             const mesesArray = mes.split(',');
             const placeholders = mesesArray.map(() => '?').join(',');
-            sql += ` AND MONTH(t.data_transacao) IN (${placeholders})`;
+            sql += ` AND ${sqlMesCiclo('t.data_transacao', diaFechamento)} IN (${placeholders})`;
             params.push(...mesesArray);
         }
         if (ano && ano !== 'todos') {
-            sql += ` AND YEAR(t.data_transacao) = ?`;
+            sql += ` AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ?`;
             params.push(ano);
         }
         sql += ` GROUP BY t.categoria, t.tipo, t.banco ORDER BY total_movimentado ASC;`;
@@ -1381,6 +1437,7 @@ app.get('/economia-mensal', exigirLogin, async (req, res) => {
     try {
         const { mes, ano, conta_id } = req.query;
         const userId = req.session.userId;
+        const diaFechamento = await obterDiaFechamento(userId);
         const mesAtual = parseInt(mes);
         const anoAtual = parseInt(ano);
 
@@ -1392,7 +1449,8 @@ app.get('/economia-mensal', exigirLogin, async (req, res) => {
         }
 
         let sql = `
-            SELECT MONTH(t.data_transacao) as mes, YEAR(t.data_transacao) as ano,
+            SELECT ${sqlMesCiclo('t.data_transacao', diaFechamento)} as mes,
+                   ${sqlAnoCiclo('t.data_transacao', diaFechamento)} as ano,
                    SUM(CASE WHEN t.tipo = 'Despesa' THEN t.valor ELSE 0 END) as despesas,
                    SUM(CASE WHEN t.tipo = 'Receita' THEN t.valor ELSE 0 END) as receitas
             FROM transacoes t
@@ -1405,9 +1463,9 @@ app.get('/economia-mensal', exigirLogin, async (req, res) => {
             parametros.push(Number(conta_id));
         }
         sql += `
-              AND ((MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?)
-                OR (MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?))
-            GROUP BY YEAR(t.data_transacao), MONTH(t.data_transacao)
+              AND ((${sqlMesCiclo('t.data_transacao', diaFechamento)} = ? AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ?)
+                OR (${sqlMesCiclo('t.data_transacao', diaFechamento)} = ? AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ?))
+            GROUP BY ${sqlAnoCiclo('t.data_transacao', diaFechamento)}, ${sqlMesCiclo('t.data_transacao', diaFechamento)}
         `;
         parametros.push(mesAtual, anoAtual, mesAnterior, anoAnterior);
         const [rows] = await db.promise().query(sql, parametros);
@@ -1440,15 +1498,16 @@ app.get('/comparativo-mensal', exigirLogin, exigirPremium, async (req, res) => {
         const { ano } = req.query;
         const userId = req.session.userId;
         const anoConsulta = ano || new Date().getFullYear();
+        const diaFechamento = await obterDiaFechamento(userId);
 
         const sql = `
-            SELECT MONTH(t.data_transacao) as mes,
+            SELECT ${sqlMesCiclo('t.data_transacao', diaFechamento)} as mes,
                    SUM(CASE WHEN t.tipo = 'Receita' THEN t.valor ELSE 0 END) as entradas,
                    SUM(CASE WHEN t.tipo = 'Despesa' THEN t.valor ELSE 0 END) as saidas
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
-            WHERE cb.usuario_id = ? AND YEAR(t.data_transacao) = ?
-            GROUP BY MONTH(t.data_transacao)
+            WHERE cb.usuario_id = ? AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ?
+            GROUP BY ${sqlMesCiclo('t.data_transacao', diaFechamento)}
             ORDER BY mes ASC
         `;
         const [rows] = await db.promise().query(sql, [userId, anoConsulta]);
@@ -1464,7 +1523,7 @@ app.get('/anos-disponiveis', exigirLogin, exigirPremium, async (req, res) => {
     try {
         const userId = req.session.userId;
         const [rows] = await db.promise().query(
-            `SELECT DISTINCT YEAR(t.data_transacao) as ano
+            `SELECT DISTINCT ${sqlAnoCiclo('t.data_transacao', await obterDiaFechamento(userId))} as ano
              FROM transacoes t
              JOIN contas_bancarias cb ON t.conta_id = cb.id
              WHERE cb.usuario_id = ?
@@ -1588,17 +1647,21 @@ async function auditarMetas() {
                 t.categoria,
                 SUM(t.valor) AS total_gasto,
                 m.valor_limite,
-                COALESCE(map.percentual, m.percentual_alerta, ?) AS percentual_categoria
+                COALESCE(map.percentual, m.percentual_alerta, ?) AS percentual_categoria,
+                COALESCE(u.dia_fechamento, 1) AS dia_fechamento
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
             JOIN metas m ON t.categoria = m.categoria AND m.usuario_id = cb.usuario_id
+            JOIN usuarios u ON u.id = cb.usuario_id
             LEFT JOIN metas_alertas_percentuais map
               ON map.usuario_id = m.usuario_id
              AND map.categoria = m.categoria
             WHERE t.tipo = 'Despesa'
-              AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE())
-              AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
-            GROUP BY cb.usuario_id, t.categoria, m.valor_limite, m.percentual_alerta, map.percentual
+              AND MONTH(DATE_SUB(t.data_transacao, INTERVAL (COALESCE(u.dia_fechamento, 1) - 1) DAY))
+                  = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL (COALESCE(u.dia_fechamento, 1) - 1) DAY))
+              AND YEAR(DATE_SUB(t.data_transacao, INTERVAL (COALESCE(u.dia_fechamento, 1) - 1) DAY))
+                  = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL (COALESCE(u.dia_fechamento, 1) - 1) DAY))
+            GROUP BY cb.usuario_id, t.categoria, m.valor_limite, m.percentual_alerta, map.percentual, u.dia_fechamento
         `;
         const [gastos] = await db.promise().query(sql, [percentualAlertaGlobal]);
 
@@ -1614,8 +1677,8 @@ async function auditarMetas() {
                 const [registroDisparo] = await db.promise().query(
                     `INSERT IGNORE INTO metas_alertas_disparos
                         (usuario_id, categoria, percentual, ano_mes)
-                     VALUES (?, ?, ?, DATE_FORMAT(CURRENT_DATE(), '%Y-%m'))`,
-                    [item.usuario_id, item.categoria, percentualAlerta]
+                     VALUES (?, ?, ?, DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL ? DAY), '%Y-%m'))`,
+                    [item.usuario_id, item.categoria, percentualAlerta, deslocamentoCiclo(item.dia_fechamento)]
                 );
 
                 if (registroDisparo.affectedRows === 1) {
@@ -1653,8 +1716,8 @@ async function auditarMetas() {
                              WHERE usuario_id = ?
                                AND categoria = ?
                                AND percentual = ?
-                               AND ano_mes = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')`,
-                            [item.usuario_id, item.categoria, percentualAlerta]
+                               AND ano_mes = DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL ? DAY), '%Y-%m')`,
+                            [item.usuario_id, item.categoria, percentualAlerta, deslocamentoCiclo(item.dia_fechamento)]
                         );
                         throw erroAlerta;
                     }
@@ -1745,11 +1808,12 @@ app.get('/relatorio-mensal', exigirLogin, exigirPremium, async (req, res) => {
     try {
         const { mes, ano } = req.query;
         const userId = req.session.userId;
+        const diaFechamento = await obterDiaFechamento(userId);
         const sql = `
             SELECT t.categoria, t.tipo, IFNULL(SUM(t.valor), 0) as total_movimentado
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
-            WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
+            WHERE cb.usuario_id = ? AND ${sqlMesCiclo('t.data_transacao', diaFechamento)} = ? AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ?
             GROUP BY t.categoria, t.tipo
         `;
         const [rows] = await db.promise().query(sql, [userId, mes, ano]);
@@ -1764,12 +1828,13 @@ app.get('/relatorio-detalhado', exigirLogin, exigirPremium, async (req, res) => 
     try {
         const { mes, ano, banco } = req.query;
         const userId = req.session.userId;
+        const diaFechamento = await obterDiaFechamento(userId);
 
         let sql = `
             SELECT t.id, t.descricao, t.valor, t.tipo, t.categoria, t.data_transacao, t.banco
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
-            WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
+            WHERE cb.usuario_id = ? AND ${sqlMesCiclo('t.data_transacao', diaFechamento)} = ? AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ?
         `;
         const params = [userId, mes, ano];
 
@@ -1814,6 +1879,7 @@ app.get('/metas-resumo', exigirLogin, async (req, res) => {
     try {
         await garantirEstruturaAlertasMultiplos();
         const userId = req.session.userId;
+        const diaFechamento = await obterDiaFechamento(userId);
         const sql = `
             SELECT
                 m.categoria,
@@ -1828,8 +1894,8 @@ app.get('/metas-resumo', exigirLogin, async (req, res) => {
             LEFT JOIN transacoes t
               ON t.conta_id = cb.id
              AND t.categoria = m.categoria
-             AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE())
-             AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
+             AND ${sqlMesCiclo('t.data_transacao', diaFechamento)} = ${sqlMesCiclo('CURRENT_DATE()', diaFechamento)}
+             AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ${sqlAnoCiclo('CURRENT_DATE()', diaFechamento)}
             WHERE m.usuario_id = ?
             GROUP BY m.categoria, m.valor_limite, m.percentual_alerta
         `;
@@ -2187,6 +2253,7 @@ app.get('/transacoes-individuais', exigirLogin, async (req, res) => {
         const mes = req.query.mes || new Date().getMonth() + 1;
         const ano = req.query.ano || new Date().getFullYear();
         const contaId = Number(req.query.conta_id || 0);
+        const diaFechamento = await obterDiaFechamento(userId);
         let sql = `
             SELECT
                 t.id,
@@ -2207,7 +2274,7 @@ app.get('/transacoes-individuais', exigirLogin, async (req, res) => {
             LEFT JOIN objetivos_financeiros o
               ON o.id = oc.objetivo_id
              AND o.usuario_id = cb.usuario_id
-            WHERE cb.usuario_id = ? AND MONTH(t.data_transacao) = ? AND YEAR(t.data_transacao) = ?
+            WHERE cb.usuario_id = ? AND ${sqlMesCiclo('t.data_transacao', diaFechamento)} = ? AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ?
         `;
         const parametros = [userId, mes, ano];
         if (contaId > 0) {
@@ -2546,7 +2613,7 @@ app.get('/perfil', exigirLogin, async (req, res) => {
             `SELECT id, nome, sobrenome, nome_exibicao,
                     nome_criptografado, sobrenome_criptografado,
                     nome_exibicao_criptografado,
-                    foto_perfil_url, capa_perfil_url
+                    foto_perfil_url, capa_perfil_url, dia_fechamento
              FROM usuarios
              WHERE id = ?`,
             [userId]
@@ -2561,7 +2628,10 @@ app.get('/perfil', exigirLogin, async (req, res) => {
 
         res.json({
             success: true,
-            perfil: revelarIdentidade(usuarios[0])
+            perfil: {
+                ...revelarIdentidade(usuarios[0]),
+                dia_fechamento: normalizarDiaFechamento(usuarios[0].dia_fechamento)
+            }
         });
     } catch (erro) {
         console.error('Erro ao buscar perfil:', erro);
@@ -2575,7 +2645,7 @@ app.get('/perfil', exigirLogin, async (req, res) => {
 app.put('/perfil', exigirLogin, async (req, res) => {
     try {
         const userId = req.session.userId;
-        const { nome_exibicao } = req.body;
+        const { nome_exibicao, dia_fechamento } = req.body;
 
         const nomeLimpo = String(nome_exibicao || '').trim();
 
@@ -2586,22 +2656,40 @@ app.put('/perfil', exigirLogin, async (req, res) => {
             });
         }
 
+        // O dia de fechamento é opcional: só valida quando vier no corpo.
+        let diaFechamento = null;
+        if (dia_fechamento !== undefined && dia_fechamento !== null && dia_fechamento !== '') {
+            const diaNumero = Number.parseInt(dia_fechamento, 10);
+            if (!Number.isFinite(diaNumero) || diaNumero < 1 || diaNumero > 31) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Escolha um dia de fechamento entre 1 e 31.'
+                });
+            }
+            diaFechamento = diaNumero;
+        }
+
         const nomeExibicaoCriptografado = criptografarDado(nomeLimpo);
+        const camposExtras = diaFechamento !== null ? ', dia_fechamento = ?' : '';
+        const parametros = [
+            nomeExibicaoCriptografado ? 'PROTEGIDO' : nomeLimpo,
+            nomeExibicaoCriptografado
+        ];
+        if (diaFechamento !== null) parametros.push(diaFechamento);
+        parametros.push(userId);
+
         await db.promise().query(
             `UPDATE usuarios
              SET nome_exibicao = ?,
-                 nome_exibicao_criptografado = ?
+                 nome_exibicao_criptografado = ?${camposExtras}
              WHERE id = ?`,
-            [
-                nomeExibicaoCriptografado ? 'PROTEGIDO' : nomeLimpo,
-                nomeExibicaoCriptografado,
-                userId
-            ]
+            parametros
         );
 
         res.json({
             success: true,
-            message: 'Perfil atualizado com sucesso.'
+            message: 'Perfil atualizado com sucesso.',
+            dia_fechamento: diaFechamento
         });
     } catch (erro) {
         console.error('Erro ao atualizar perfil:', erro);

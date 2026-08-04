@@ -913,6 +913,12 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     <select id="filtro-conta-dashboard" onchange="trocarContaDashboard()" style="min-width:220px; padding:10px 12px; border-radius:8px; border:1px solid var(--borda); background:#0f1b2d; color:#fff;">
         <option value="">Todas as contas</option>
     </select>
+
+    <label for="dia-fechamento" style="color:var(--texto-mutado); font-weight:700;">Fechamento do mês:</label>
+    <select id="dia-fechamento" onchange="salvarDiaFechamento()" title="Dia em que o seu mês financeiro vira" style="min-width:120px; padding:10px 12px; border-radius:8px; border:1px solid var(--borda); background:#0f1b2d; color:#fff;">
+    </select>
+
+    <span id="rotulo-periodo-ciclo" style="width:100%; text-align:right; color:var(--texto-mutado); font-size:0.85rem;"></span>
 </section>
 
     <div class="grid-cards">
@@ -1234,6 +1240,11 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
                 }
 
                 nome.innerText = perfil.nome_exibicao || perfil.nome || 'Meu perfil';
+
+                DIA_FECHAMENTO = Number(perfil.dia_fechamento) || 1;
+                montarSeletorDiaFechamento();
+                atualizarRotuloPeriodo();
+                carregarDados();
             } catch (erro) {
                 console.warn('Não foi possível carregar o atalho de perfil.', erro);
             }
@@ -1248,6 +1259,76 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 
         let dadosAPI = [];
         let BANCOS_CORES = {};
+
+        // --- CICLO FINANCEIRO PERSONALIZADO ---
+        // O usuário escolhe o dia em que o mês financeiro dele fecha (1, 5, 15, 20...).
+        let DIA_FECHAMENTO = 1;
+        const NOMES_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                             'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+        // Devolve o mês/ano do ciclo vigente: se hoje ainda é antes do dia de
+        // fechamento, o ciclo em andamento é o do mês anterior.
+        function cicloAtual() {
+            const hoje = new Date();
+            const deslocado = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - (DIA_FECHAMENTO - 1));
+            return { mes: deslocado.getMonth() + 1, ano: deslocado.getFullYear() };
+        }
+
+        function intervaloCiclo(mes, ano) {
+            const desloc = DIA_FECHAMENTO - 1;
+            const inicio = new Date(ano, mes - 1, 1 + desloc);
+            const fim = new Date(ano, mes, desloc); // último dia do ciclo
+            const fmt = (d) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+            return `${fmt(inicio)} a ${fmt(fim)}`;
+        }
+
+        function atualizarRotuloPeriodo() {
+            const el = document.getElementById('rotulo-periodo-ciclo');
+            if (!el) return;
+            const { mes, ano } = cicloAtual();
+            el.innerText = `Período: ${NOMES_MESES[mes - 1]} ${ano} • ${intervaloCiclo(mes, ano)}`;
+        }
+
+        function montarSeletorDiaFechamento() {
+            const select = document.getElementById('dia-fechamento');
+            if (!select) return;
+            select.innerHTML = '';
+            for (let dia = 1; dia <= 31; dia++) {
+                select.innerHTML += `<option value="${dia}">Dia ${dia}</option>`;
+            }
+            select.value = String(DIA_FECHAMENTO);
+        }
+
+        async function salvarDiaFechamento() {
+            const select = document.getElementById('dia-fechamento');
+            const novoDia = Number(select.value) || 1;
+            const anterior = DIA_FECHAMENTO;
+            try {
+                const respostaPerfil = await fetchApi('/perfil');
+                const dadosPerfil = await respostaPerfil.json();
+                const nomeAtual = (dadosPerfil.perfil && (dadosPerfil.perfil.nome_exibicao || dadosPerfil.perfil.nome)) || 'Meu perfil';
+
+                const res = await fetchApi('/perfil', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome_exibicao: nomeAtual, dia_fechamento: novoDia })
+                });
+                const dados = await res.json();
+                if (!res.ok || !dados.success) throw new Error(dados.message || 'Não foi possível salvar o dia de fechamento.');
+
+                DIA_FECHAMENTO = novoDia;
+                atualizarRotuloPeriodo();
+                carregarDados();
+                if (typeof carregarInsights === 'function') carregarInsights();
+                gbmAlerta(`Fechamento do mês definido para o dia ${novoDia}.`, 'sucesso');
+            } catch (erro) {
+                select.value = String(anterior);
+                gbmAlerta(erro.message, 'erro');
+            }
+        }
+
+        montarSeletorDiaFechamento();
+        atualizarRotuloPeriodo();
 
         async function carregarBancosInfo() {
             try {
@@ -1287,9 +1368,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         // --- 3. CARREGAR E DESENHAR DADOS ---
         async function carregarDados() {
             try {
-                const hoje = new Date();
-                const mes = hoje.getMonth() + 1;
-                const ano = hoje.getFullYear();
+                const { mes, ano } = cicloAtual();
                 const userId = pegarUserId();
                 const contaQuery = queryContaDashboard();
                 const res = await fetchApi(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}${contaQuery}`);
@@ -1345,9 +1424,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         // Card 4: quanto você economizou (ou gastou a mais) comparado ao mês anterior
         async function carregarEconomiaMensal() {
             try {
-                const hoje = new Date();
-                const mes = hoje.getMonth() + 1;
-                const ano = hoje.getFullYear();
+                const { mes, ano } = cicloAtual();
                 const userId = pegarUserId();
 
                 const res = await fetchApi(`/economia-mensal?userId=${userId}&mes=${mes}&ano=${ano}${queryContaDashboard()}`);
@@ -1827,15 +1904,15 @@ async function abrirModalTransacoes() {
     modal.setAttribute('aria-hidden', 'false');
     container.innerHTML = '<p style="color:#a0a0a0;text-align:center;">Carregando...</p>';
     try {
-        const hoje = new Date();
-        const res = await fetchApi(`/transacoes-individuais?mes=${hoje.getMonth() + 1}&ano=${hoje.getFullYear()}${queryContaDashboard()}`);
+        const { mes: mesCiclo, ano: anoCiclo } = cicloAtual();
+        const res = await fetchApi(`/transacoes-individuais?mes=${mesCiclo}&ano=${anoCiclo}${queryContaDashboard()}`);
         const dados = await res.json();
         if (!res.ok) throw new Error(dados.error || 'Não foi possível carregar as transações.');
         transacoesModal = dados;
         carregarObjetivosVinculo().catch(() => {});
 
         if (!transacoesModal.length) {
-            container.innerHTML = '<p style="color:#a0a0a0; text-align:center;">Nenhuma transação este mês.</p>';
+            container.innerHTML = `<p style="color:#a0a0a0; text-align:center;">Nenhuma transação no período (${intervaloCiclo(mesCiclo, anoCiclo)}).</p>`;
             return;
         }
 
@@ -2197,4 +2274,3 @@ window.promessaVerificacaoAcesso.then(() => {
     <script src="gbm-tutorial.js"></script>
 </body>
 </html>
-
