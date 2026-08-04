@@ -558,25 +558,28 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    const manterConectado = document.getElementById('login-manter-conectado').checked;
-                    document.getElementById('temp-user-id').value = data.userId;
+                if (!data.success) {
+                    gbmAlerta(data.message || 'E-mail ou senha incorretos.', 'erro');
+                    return;
+                }
 
-                    if (manterConectado) {
-                        localStorage.setItem('userIdAtual', data.userId);
-                        sessionStorage.removeItem('userIdAtual');
-                    } else {
-                        sessionStorage.setItem('userIdAtual', data.userId);
-                        localStorage.removeItem('userIdAtual');
-                    }
+                const manterConectado = document.getElementById('login-manter-conectado').checked;
+                document.getElementById('temp-user-id').value = data.userId;
 
-                    if (data.verificado) {
-                        // Todos os usuários (Premium e Gratuitos) entram direto no sistema
-                        window.location.href = 'dashboard.html';
-                    } else {
-                        document.getElementById('form-login').style.display = 'none';
-                        document.getElementById('form-escolha-validacao').style.display = 'block';
-                    }
+                if (manterConectado) {
+                    localStorage.setItem('userIdAtual', data.userId);
+                    sessionStorage.removeItem('userIdAtual');
+                } else {
+                    sessionStorage.setItem('userIdAtual', data.userId);
+                    localStorage.removeItem('userIdAtual');
+                }
+
+                if (data.verificado) {
+                    // Todos os usuários (Premium e Gratuitos) entram direto no sistema
+                    window.location.href = 'dashboard.html';
+                } else {
+                    document.getElementById('form-login').style.display = 'none';
+                    document.getElementById('form-escolha-validacao').style.display = 'block';
                 }
             })
             .catch(error => {

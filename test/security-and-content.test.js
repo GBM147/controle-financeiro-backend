@@ -48,6 +48,12 @@ test('configuração evita regressões de segurança conhecidas', () => {
     assert.match(pacote.dependencies.multer, /^\^2\.[12]\./);
 });
 
+test('login informa ao usuário quando as credenciais são recusadas', () => {
+    const login = ler('public/login.html');
+    assert.match(login, /if \(!data\.success\)/);
+    assert.match(login, /gbmAlerta\(data\.message \|\| 'E-mail ou senha incorretos\.'/);
+});
+
 test('scripts embutidos e links locais das páginas são válidos', () => {
     const paginas = fs.readdirSync(path.join(raiz, 'public'), { recursive: true })
         .filter((arquivo) => String(arquivo).endsWith('.html'));
