@@ -5,6 +5,9 @@
     --gbm-tour-verde-escuro: #258f65;
     --gbm-tour-texto: #f5f8fc;
     --gbm-tour-mutado: #b7c4d4;
+    /* Lidos pelo JS para respeitar notch / barra de gestos. */
+    --gbm-tour-inset-top: env(safe-area-inset-top, 0px);
+    --gbm-tour-inset-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 html.gbm-tour-bloqueado,
@@ -240,13 +243,32 @@ body.gbm-tour-bloqueado {
 
 @media (max-width: 680px) {
     .gbm-tour-caixa:not(.gbm-tour-centralizada) {
+        display: flex;
+        flex-direction: column;
         max-width: calc(100% - 16px);
-        max-height: min(46vh, 360px);
-        max-height: min(46dvh, 360px);
         padding: 14px;
         border-radius: 14px;
+        overflow: hidden;
         transform: none !important;
     }
+
+    /* Topo, progresso, titulo e rodape ficam sempre visiveis;
+       apenas o texto rola dentro da caixa. */
+    .gbm-tour-caixa:not(.gbm-tour-centralizada) .gbm-tour-topo,
+    .gbm-tour-caixa:not(.gbm-tour-centralizada) .gbm-tour-progresso,
+    .gbm-tour-caixa:not(.gbm-tour-centralizada) h2,
+    .gbm-tour-caixa:not(.gbm-tour-centralizada) .gbm-tour-rodape {
+        flex: 0 0 auto;
+    }
+
+    .gbm-tour-caixa:not(.gbm-tour-centralizada) .gbm-tour-texto {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
 
     .gbm-tour-caixa.gbm-tour-centralizada {
         width: calc(100% - 16px);

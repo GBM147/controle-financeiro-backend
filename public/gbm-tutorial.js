@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    const VERSAO_TUTORIAL = '1.1.46';
+    const VERSAO_TUTORIAL = '1.1.47';
 
     const PAGINAS = {
         'dashboard.html': {
@@ -563,7 +563,7 @@
 
     function obterTopoSeguro(viewport) {
         const margem = viewport.largura <= 680 ? 10 : 16;
-        let topo = viewport.topo + margem;
+        let topo = viewport.topo + margem + lerInset('top');
 
         document.querySelectorAll('header, .topbar').forEach((elemento) => {
             if (!elementoVisivel(elemento)) return;
@@ -571,7 +571,7 @@
             if (!['fixed', 'sticky'].includes(estilo.position)) return;
 
             const retangulo = elemento.getBoundingClientRect();
-            const encostaNoTopo = retangulo.top <= viewport.topo + margem;
+            const encostaNoTopo = retangulo.top <= viewport.topo + margem + 2;
             if (encostaNoTopo && retangulo.bottom < viewport.topo + viewport.altura * 0.35) {
                 topo = Math.max(topo, retangulo.bottom + margem);
             }
@@ -580,7 +580,72 @@
         return topo;
     }
 
-    function alinharAlvoNaAreaVisivel(alvo) {
+    function lerInset(lado) {
+        const valor = window
+            .getComputedStyle(document.documentElement)
+            .getPropertyValue(`--gbm-tour-inset-${lado}`);
+        const numero = parseFloat(valor);
+        return Number.isFinite(numero) ? numero : 0;
+    }
+
+    // Mede a altura real que a caixa vai ocupar no celular, com limite e
+    // rolagem interna, para que sempre sobre espaco visivel para o alvo.
+    function medirCaixaMovel(caixa, viewport, borda) {
+        const largura = Math.max(0, viewport.largura - borda * 2);
+        const limite = Math.max(
+            140,
+            Math.min(360, Math.round(viewport.altura * 0.46))
+        );
+        const texto = caixa.querySelector('.gbm-tour-texto');
+        const overflowAnterior = texto ? texto.style.overflow : '';
+
+        caixa.style.width = `${largura}px`;
+        caixa.style.maxHeight = 'none';
+        if (texto) texto.style.overflow = 'visible';
+
+        const bordas = Math.max(0, caixa.offsetHeight - caixa.clientHeight);
+        const natural =
+            (caixa.scrollHeight || caixa.offsetHeight || 240) + bordas;
+
+        if (texto) {
+            if (overflowAnterior) {
+                texto.style.overflow = overflowAnterior;
+            } else {
+                texto.style.removeProperty('overflow');
+            }
+        }
+
+        const altura = Math.max(140, Math.min(Math.ceil(natural), limite));
+        caixa.style.maxHeight = `${altura}px`;
+        return { largura, altura };
+    }
+
+    // Reserva de espaco (altura da caixa + margens) usada antes de rolar
+    // o alvo, para que ele nao termine embaixo da caixa.
+    function calcularReservaMovel() {
+        const caixa = estado.elementos?.caixa;
+        if (!caixa) return 0;
+
+        const viewport = obterViewport();
+        if (viewport.largura > 680) return 0;
+
+        const anterior = {
+            centralizada: caixa.classList.contains('gbm-tour-centralizada'),
+            width: caixa.style.width,
+            maxHeight: caixa.style.maxHeight
+        };
+        caixa.classList.remove('gbm-tour-centralizada');
+        const { altura } = medirCaixaMovel(caixa, viewport, 8);
+        if (anterior.centralizada) {
+            caixa.classList.add('gbm-tour-centralizada');
+            restaurarEstilo(caixa, 'width', anterior.width);
+            restaurarEstilo(caixa, 'max-height', anterior.maxHeight);
+        }
+
+        return altura + 14 + 8 + lerInset('bottom');
+    }
+
+    function alinharAlvoNaAreaVisivel(alvo, espacoReservado = 0) {
         if (!elementoVisivel(alvo)) return;
 
         const viewport = obterViewport();
@@ -592,7 +657,14 @@
 
         const retangulo = alvo.getBoundingClientRect();
         const topoSeguro = obterTopoSeguro(viewport);
-        const deslocamento = retangulo.top - topoSeguro;
+        const baixoLivre = viewport.topo + viewport.altura - espacoReservado;
+        const faixaLivre = Math.max(0, baixoLivre - topoSeguro);
+
+        // Quando o alvo cabe na faixa livre, centraliza-o nela.
+        // Quando nao cabe, encosta-o no topo da faixa.
+        const sobra = Math.max(0, faixaLivre - retangulo.height);
+        const alvoDesejado = topoSeguro + Math.min(sobra / 2, 24);
+        const deslocamento = retangulo.top - alvoDesejado;
 
         if (Math.abs(deslocamento) > 1) {
             window.scrollBy({
@@ -736,10 +808,18 @@
         overlay.addEventListener('touchstart', (evento) => {
             estado.toqueY = evento.touches[0]?.clientY ?? null;
         }, { passive: true });
+        // O elemento que rola pode ser o texto (celular) ou a propria caixa.
+        const obterRolador = (alvoEvento) => {
+            if (!alvoEvento || !alvoEvento.closest) return null;
+            if (!alvoEvento.closest('.gbm-tour-caixa')) return null;
+            const texto = alvoEvento.closest('.gbm-tour-texto');
+            if (texto && texto.scrollHeight > texto.clientHeight + 1) return texto;
+            return alvoEvento.closest('.gbm-tour-caixa');
+        };
         overlay.addEventListener('touchmove', (evento) => {
-            const caixa = evento.target.closest('.gbm-tour-caixa');
+            const rolador = obterRolador(evento.target);
             const toqueAtual = evento.touches[0]?.clientY;
-            if (!caixa || toqueAtual == null) {
+            if (!rolador || toqueAtual == null) {
                 evento.preventDefault();
                 return;
             }
@@ -747,10 +827,10 @@
             const deslocamento = estado.toqueY == null
                 ? 0
                 : estado.toqueY - toqueAtual;
-            const possuiRolagem = caixa.scrollHeight > caixa.clientHeight + 1;
-            const chegouAoTopo = caixa.scrollTop <= 0 && deslocamento < 0;
+            const possuiRolagem = rolador.scrollHeight > rolador.clientHeight + 1;
+            const chegouAoTopo = rolador.scrollTop <= 0 && deslocamento < 0;
             const chegouAoFim =
-                caixa.scrollTop + caixa.clientHeight >= caixa.scrollHeight - 1
+                rolador.scrollTop + rolador.clientHeight >= rolador.scrollHeight - 1
                 && deslocamento > 0;
 
             if (!possuiRolagem || chegouAoTopo || chegouAoFim) {
@@ -765,16 +845,16 @@
             estado.toqueY = null;
         }, { passive: true });
         overlay.addEventListener('wheel', (evento) => {
-            const caixa = evento.target.closest('.gbm-tour-caixa');
-            if (!caixa) {
+            const rolador = obterRolador(evento.target);
+            if (!rolador) {
                 evento.preventDefault();
                 return;
             }
 
-            const possuiRolagem = caixa.scrollHeight > caixa.clientHeight + 1;
-            const chegouAoTopo = caixa.scrollTop <= 0 && evento.deltaY < 0;
+            const possuiRolagem = rolador.scrollHeight > rolador.clientHeight + 1;
+            const chegouAoTopo = rolador.scrollTop <= 0 && evento.deltaY < 0;
             const chegouAoFim =
-                caixa.scrollTop + caixa.clientHeight >= caixa.scrollHeight - 1
+                rolador.scrollTop + rolador.clientHeight >= rolador.scrollHeight - 1
                 && evento.deltaY > 0;
 
             if (!possuiRolagem || chegouAoTopo || chegouAoFim) {
@@ -848,6 +928,87 @@
         const viewportBaixo = viewport.topo + viewport.altura;
         const limitar = (valor, minimo, maximo) =>
             Math.max(minimo, Math.min(valor, maximo));
+
+        // ---- Celular: a caixa vira um painel ancorado no topo ou no rodape.
+        // Ela nunca cobre o alvo e o destaque nunca e abandonado.
+        if (movel) {
+            const insetTopo = lerInset('top');
+            const insetBaixo = lerInset('bottom');
+            const { largura: larguraCaixa, altura: alturaCaixa } =
+                medirCaixaMovel(caixa, viewport, borda);
+            const reserva = alturaCaixa + margemCaixa;
+            const topoSeguro = obterTopoSeguro(viewport);
+            const limiteBaixo = viewportBaixo - borda - insetBaixo;
+
+            const faixas = [
+                {
+                    posicao: 'rodape',
+                    topo: topoSeguro,
+                    baixo: limiteBaixo - reserva
+                },
+                {
+                    posicao: 'topo',
+                    topo: viewport.topo + borda + insetTopo + reserva,
+                    baixo: limiteBaixo
+                }
+            ];
+            const visivelNaFaixa = (faixa) => Math.max(
+                0,
+                Math.min(retangulo.bottom, faixa.baixo)
+                - Math.max(retangulo.top, faixa.topo)
+            );
+            const faixa = visivelNaFaixa(faixas[1]) > visivelNaFaixa(faixas[0]) + 8
+                ? faixas[1]
+                : faixas[0];
+
+            const alturaUtil = Math.max(0, faixa.baixo - faixa.topo);
+            if (alturaUtil < 24) {
+                // Sem espaco algum para destacar: mostra so a caixa centralizada.
+                spotlight.classList.add('gbm-tour-sem-alvo');
+                caixa.classList.add('gbm-tour-centralizada');
+                limparPosicaoCaixa(caixa);
+                caixa.dataset.posicao = 'centro-sem-destaque';
+                return;
+            }
+
+            const destaqueTopoMovel = limitar(
+                retangulo.top - margemAlvo,
+                faixa.topo,
+                faixa.baixo - 8
+            );
+            const destaqueBaixoMovel = limitar(
+                retangulo.bottom + margemAlvo,
+                destaqueTopoMovel + 8,
+                faixa.baixo
+            );
+            const destaqueEsquerdaMovel = limitar(
+                retangulo.left - margemAlvo,
+                viewport.esquerda + 3,
+                viewportDireita - 12
+            );
+            const destaqueDireitaMovel = limitar(
+                retangulo.right + margemAlvo,
+                destaqueEsquerdaMovel + 8,
+                viewportDireita - 3
+            );
+
+            spotlight.style.top = `${destaqueTopoMovel}px`;
+            spotlight.style.left = `${destaqueEsquerdaMovel}px`;
+            spotlight.style.width =
+                `${destaqueDireitaMovel - destaqueEsquerdaMovel}px`;
+            spotlight.style.height =
+                `${destaqueBaixoMovel - destaqueTopoMovel}px`;
+
+            caixa.style.width = `${larguraCaixa}px`;
+            caixa.style.maxHeight = `${alturaCaixa}px`;
+            caixa.style.left = `${viewport.esquerda + borda}px`;
+            caixa.style.top = faixa.posicao === 'rodape'
+                ? `${limiteBaixo - alturaCaixa}px`
+                : `${viewport.topo + borda + insetTopo}px`;
+            caixa.dataset.posicao = faixa.posicao;
+            return;
+        }
+
 
         const destaqueEsquerda = limitar(
             retangulo.left - margemAlvo,
@@ -1038,7 +1199,7 @@
         estado.alvo = encontrarAlvo(passo.alvo);
 
         if (estado.alvo) {
-            alinharAlvoNaAreaVisivel(estado.alvo);
+            alinharAlvoNaAreaVisivel(estado.alvo, calcularReservaMovel());
         }
 
         bloquearRolagem();
