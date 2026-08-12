@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /login.html
+Disallow: /dashboard.html
+Disallow: /assinatura.html
+Disallow: /calendario.html
+Disallow: /comparativo.html
+Disallow: /configuracoes.html
+Disallow: /contas.html
+Disallow: /importacoes.html
+Disallow: /importar-pdf.html
+Disallow: /Limite-de-Gastos.html
+Disallow: /metas.html
+Disallow: /notificacoes.html
+Disallow: /pagamento.html
+Disallow: /perfil.html
+Disallow: /privacidade.html
+Disallow: /relatorio.html
+Disallow: /relatorio-avancado.html
+
+Sitemap: https://gbm-finance.com/sitemap.xml

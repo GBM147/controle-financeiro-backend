@@ -10,7 +10,7 @@ const cron = require('node-cron');
 const bcrypt = require('bcrypt');
 const { Resend } = require('resend');
 const multer = require('multer');
-const ofx = require('node-ofx-parser');
+const { parseOfx } = require('./ofx-parser');
 const path = require('path');
 const pdfParse = require('pdf-parse');
 const { renderComEspacamento } = require('./pdfrender');
@@ -22,7 +22,35 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
-const upload = multer({ storage: multer.memoryStorage() }); // Guarda o ficheiro temporariamente na memória do servidor
+const LIMITE_EXTRATO_BYTES = 10 * 1024 * 1024;
+
+function criarUploadExtrato({ extensoes, tiposMime, mensagem }) {
+    return multer({
+        storage: multer.memoryStorage(),
+        limits: { fileSize: LIMITE_EXTRATO_BYTES, files: 1 },
+        fileFilter: (req, file, cb) => {
+            const extensao = path.extname(String(file.originalname || '')).toLowerCase();
+            const mime = String(file.mimetype || '').toLowerCase();
+            if (!extensoes.includes(extensao) || !tiposMime.includes(mime)) {
+                const erro = new Error(mensagem);
+                erro.codigoPublico = 'ARQUIVO_INVALIDO';
+                return cb(erro);
+            }
+            return cb(null, true);
+        }
+    });
+}
+
+const uploadPdf = criarUploadExtrato({
+    extensoes: ['.pdf'],
+    tiposMime: ['application/pdf', 'application/octet-stream'],
+    mensagem: 'Envie apenas um arquivo PDF válido.'
+});
+const uploadOfx = criarUploadExtrato({
+    extensoes: ['.ofx', '.qfx'],
+    tiposMime: ['application/x-ofx', 'application/ofx', 'application/octet-stream', 'text/plain'],
+    mensagem: 'Envie apenas um arquivo OFX ou QFX válido.'
+});
 const uploadImagem = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 }, // máximo: 5 MB
@@ -30,7 +58,9 @@ const uploadImagem = multer({
         const tiposAceitos = ['image/jpeg', 'image/png', 'image/webp'];
 
         if (!tiposAceitos.includes(file.mimetype)) {
-            return cb(new Error('Envie apenas imagens JPG, PNG ou WebP.'));
+            const erro = new Error('Envie apenas imagens JPG, PNG ou WebP.');
+            erro.codigoPublico = 'ARQUIVO_INVALIDO';
+            return cb(erro);
         }
 
         cb(null, true);
@@ -242,9 +272,9 @@ const origensPermitidas = String(
 app.use(cors({
     credentials: true,
     origin(origem, callback) {
-        // Requisições sem Origin incluem navegação direta, webhooks e ferramentas
-        // internas. Se nenhuma origem foi configurada, mantém compatibilidade.
-        if (!origem || origensPermitidas.length === 0 || origensPermitidas.includes(origem)) {
+        // Navegação direta e webhooks normalmente não enviam Origin. Em produção,
+        // uma origem de navegador só é aceita quando foi configurada explicitamente.
+        if (!origem || origensPermitidas.includes(origem)) {
             return callback(null, true);
         }
         return callback(new Error('Origem não autorizada pelo CORS.'));
@@ -259,18 +289,40 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
-    res.status(200).json({ status: 'ok', service: 'gbm-api' });
+    try {
+        await Promise.race([
+            db.promise().ping(),
+            new Promise((resolve, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+        ]);
+        return res.status(200).json({ status: 'ok', service: 'gbm-api', database: 'ok' });
+    } catch (erro) {
+        return res.status(503).json({ status: 'indisponivel', service: 'gbm-api', database: 'erro' });
+    }
 });
 
 function criarLimitador({ janelaMs, maximo, prefixo }) {
     const tentativas = new Map();
+    let chamadasDesdeLimpeza = 0;
 
     return (req, res, next) => {
         const agora = Date.now();
         const identificador = `${prefixo}:${req.ip || req.socket.remoteAddress || 'desconhecido'}`;
         const registro = tentativas.get(identificador);
+
+        chamadasDesdeLimpeza += 1;
+        if (chamadasDesdeLimpeza >= 256) {
+            chamadasDesdeLimpeza = 0;
+            for (const [chave, tentativa] of tentativas) {
+                if (tentativa.expiraEm <= agora) tentativas.delete(chave);
+            }
+        }
+
+        if (!registro && tentativas.size >= 10000) {
+            const chaveMaisAntiga = tentativas.keys().next().value;
+            if (chaveMaisAntiga) tentativas.delete(chaveMaisAntiga);
+        }
 
         if (!registro || registro.expiraEm <= agora) {
             tentativas.set(identificador, { quantidade: 1, expiraEm: agora + janelaMs });
@@ -301,11 +353,20 @@ const limitarFeedback = criarLimitador({
     maximo: 10,
     prefixo: 'feedback'
 });
+const PAGINAS_PRIVADAS_OU_DE_ACAO = new Set([
+    'assinatura.html', 'calendario.html', 'comparativo.html', 'configuracoes.html',
+    'contas.html', 'dashboard.html', 'importacoes.html', 'importar-pdf.html',
+    'limite-de-gastos.html', 'login.html', 'metas.html', 'notificacoes.html',
+    'pagamento.html', 'perfil.html', 'privacidade.html', 'relatorio.html',
+    'relatorio-avancado.html'
+]);
+
 // Entrega os arquivos públicos. Tutorial e service worker nunca podem ficar
 // presos no cache do navegador ou do proxy após uma atualização.
 app.use(express.static('public', {
     setHeaders(res, caminhoArquivo) {
         const caminhoNormalizado = String(caminhoArquivo).replace(/\\/g, '/');
+        const nomeArquivo = path.basename(caminhoNormalizado).toLowerCase();
         const exigeAtualizacaoImediata =
             caminhoNormalizado.endsWith('/sw.js')
             || caminhoNormalizado.endsWith('/gbm-tutorial.js')
@@ -319,6 +380,11 @@ app.use(express.static('public', {
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');
             res.setHeader('Surrogate-Control', 'no-store');
+        }
+
+        if (PAGINAS_PRIVADAS_OU_DE_ACAO.has(nomeArquivo)) {
+            res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+            res.setHeader('Cache-Control', 'private, no-store');
         }
     }
 }));
@@ -353,6 +419,12 @@ app.use(session({
     }
 }));
 
+function salvarSessao(req) {
+    return new Promise((resolve, reject) => {
+        req.session.save((erro) => (erro ? reject(erro) : resolve()));
+    });
+}
+
 async function exigirLogin(req, res, next) {
     if (!req.session.userId) {
         return res.status(401).json({ success: false, error: 'Sessão expirada. Faça login novamente.' });
@@ -362,7 +434,7 @@ async function exigirLogin(req, res, next) {
         // Também confirma que a conta ainda existe. Assim, ao excluir uma conta,
         // sessões abertas em outros dispositivos deixam de funcionar imediatamente.
         const [usuarios] = await db.promise().query(
-            'SELECT id FROM usuarios WHERE id = ? LIMIT 1',
+            'SELECT id, verificado FROM usuarios WHERE id = ? LIMIT 1',
             [req.session.userId]
         );
 
@@ -376,6 +448,17 @@ async function exigirLogin(req, res, next) {
                 res.clearCookie('gbm_sid', opcoesCookie);
                 res.clearCookie('connect.sid', opcoesCookie); // limpa o cookie usado por versões anteriores
                 return res.status(401).json({ success: false, error: 'Esta conta não existe mais. Faça login novamente.' });
+            });
+        }
+
+        if (!(usuarios[0].verificado == 1 || usuarios[0].verificado === true)) {
+            const usuarioId = req.session.userId;
+            delete req.session.userId;
+            req.session.pendingVerificationUserId = usuarioId;
+            await salvarSessao(req);
+            return res.status(403).json({
+                success: false,
+                error: 'Confirme o código enviado por e-mail antes de acessar sua conta.'
             });
         }
 
@@ -535,9 +618,11 @@ const db = mysql.createConnection({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT, 
-    ssl: {
-        rejectUnauthorized: false
+    port: process.env.DB_PORT,
+    ssl: process.env.DB_SSL === 'false' ? undefined : {
+        // A validação do certificado fica ativa por padrão. Só desative
+        // explicitamente em um ambiente legado que não ofereça CA válida.
+        rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
     }
 });
 
@@ -818,6 +903,7 @@ function garantirEstruturaProduto() {
         await garantirColuna('usuarios', 'termos_aceitos_em', 'DATETIME NULL');
         await garantirColuna('usuarios', 'termos_versao', 'VARCHAR(20) NULL');
         await garantirColuna('usuarios', 'dia_fechamento', 'TINYINT UNSIGNED NOT NULL DEFAULT 1');
+        await garantirColuna('usuarios', 'token_finalidade', 'VARCHAR(32) NULL');
         await garantirColuna('alertas', 'tipo', "VARCHAR(40) NOT NULL DEFAULT 'limite'");
 
         await garantirIndice(
@@ -1190,7 +1276,7 @@ async function extrairTextoPdf(bufferPdf) {
     return dados.text || '';
 }
 
-app.post('/pdf-extrato/preview', exigirLogin, upload.single('arquivo'), async (req, res) => {
+app.post('/pdf-extrato/preview', exigirLogin, uploadPdf.single('arquivo'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'Nenhum ficheiro PDF foi selecionado.' });
@@ -1334,6 +1420,9 @@ app.post('/cadastro', limitarAutenticacao, async (req, res) => {
             TERMOS_VERSAO_ATUAL
         ]);
         await registrarAuditoria(req, 'CONTA_CRIADA', null, result.insertId);
+        req.session.pendingVerificationUserId = result.insertId;
+        delete req.session.userId;
+        await salvarSessao(req);
         res.json({ success: true, userId: result.insertId, message: 'Cadastro realizado!' });
     } catch (error) {
         console.error(error);
@@ -1345,20 +1434,37 @@ app.post('/cadastro', limitarAutenticacao, async (req, res) => {
 });
 // --- ROTA 2: GERAR E ENVIAR O CÓDIGO (RESEND + ASYNC/AWAIT) ---
 app.post('/enviar-codigo', limitarAutenticacao, async (req, res) => {
-    const { userId, canal } = req.body;
+    const { canal } = req.body;
+    const userId = Number(req.session.pendingVerificationUserId);
+    if (!Number.isInteger(userId) || userId <= 0) {
+        return res.status(401).json({
+            success: false,
+            message: 'Inicie o cadastro ou faça login novamente antes de solicitar o código.'
+        });
+    }
     try {
-        const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-        await db.promise().query("UPDATE usuarios SET token_verificacao = ? WHERE id = ?", [codigo, userId]);
+        await garantirEstruturaProduto();
+        const codigo = crypto.randomInt(100000, 1000000).toString();
+        const expira = new Date(Date.now() + 15 * 60 * 1000);
         if (canal === 'email') {
             const [rows] = await db.promise().query(
-                `SELECT email, nome, email_criptografado, nome_criptografado
+                `SELECT email, nome, email_criptografado, nome_criptografado, verificado
                  FROM usuarios WHERE id = ?`,
                 [userId]
             );
             if (rows.length === 0) {
                 return res.status(404).json({ success: false, message: 'Usuário não encontrado no banco.' });
             }
+            if (rows[0].verificado == 1 || rows[0].verificado === true) {
+                return res.status(409).json({ success: false, message: 'Esta conta já foi verificada. Faça login novamente.' });
+            }
             const usuario = revelarIdentidade(rows[0]);
+            await db.promise().query(
+                `UPDATE usuarios
+                 SET token_verificacao = ?, token_expira_em = ?, token_finalidade = 'verificacao_conta'
+                 WHERE id = ?`,
+                [codigo, expira, userId]
+            );
             const { error } = await resend.emails.send({
                 from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
                 to: usuario.email.toLowerCase().trim(),
@@ -1366,11 +1472,11 @@ app.post('/enviar-codigo', limitarAutenticacao, async (req, res) => {
                 html: `
                     <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
                         <h2 style="color: #c89f53;">Guardian of Budget & Money</h2>
-                        <p>Olá, ${usuario.nome}. Seu código de verificação é:</p>
+                        <p>Olá, ${escaparHtmlServidor(usuario.nome)}. Seu código de verificação é:</p>
                         <h1 style="letter-spacing: 5px; color: #10b981; background: #111c2e; padding: 15px; border-radius: 8px; display: inline-block;">
                             ${codigo}
                         </h1>
-                        <p style="color: #8a9ba8; font-size: 12px;">Se você não solicitou este acesso, ignore este e-mail.</p>
+                        <p style="color: #8a9ba8; font-size: 12px;">O código expira em 15 minutos. Se você não solicitou este acesso, ignore este e-mail.</p>
                     </div>
                 `
             });
@@ -2026,6 +2132,7 @@ app.post('/login', limitarAutenticacao, async (req, res) => {
         if (!senhaValida) {
             return res.status(401).json({ success: false, message: 'Senha incorreta.' });
         }
+        const verificado = usuario.verificado == 1 || usuario.verificado === true;
 
         // Cria um novo identificador de sessão em cada login. Isso impede que
         // uma sessão anterior seja reutilizada por outro usuário.
@@ -2035,7 +2142,13 @@ app.post('/login', limitarAutenticacao, async (req, res) => {
                 return res.status(500).json({ success: false, message: 'Não foi possível iniciar uma nova sessão.' });
             }
 
-            req.session.userId = usuario.id;
+            if (verificado) {
+                req.session.userId = usuario.id;
+                delete req.session.pendingVerificationUserId;
+            } else {
+                req.session.pendingVerificationUserId = usuario.id;
+                delete req.session.userId;
+            }
 
             req.session.save(async (erroSalvar) => {
                 if (erroSalvar) {
@@ -2043,8 +2156,12 @@ app.post('/login', limitarAutenticacao, async (req, res) => {
                     return res.status(500).json({ success: false, message: 'Não foi possível salvar a sessão.' });
                 }
 
-                const verificado = usuario.verificado == 1 || usuario.verificado === true;
-                await registrarAuditoria(req, 'LOGIN_REALIZADO', null, usuario.id);
+                await registrarAuditoria(
+                    req,
+                    verificado ? 'LOGIN_REALIZADO' : 'LOGIN_AGUARDANDO_VERIFICACAO',
+                    null,
+                    usuario.id
+                );
 
                 return res.json({
                     success: true,
@@ -2058,62 +2175,62 @@ app.post('/login', limitarAutenticacao, async (req, res) => {
         });
     });
 });
-// --- ROTA: VERIFICAR STATUS DO USUÁRIO --- (duplicada removida — já definida acima)
-// --- ROTA DE VERIFICAÇÃO ---
-app.post('/verificar-conta', limitarAutenticacao, (req, res) => {
-    const { userId, codigoDigitado } = req.body;
-    const sql = "SELECT * FROM usuarios WHERE id = ? AND token_verificacao = ?";
-    db.query(sql, [userId, codigoDigitado], (err, results) => {
-        if (err || results.length === 0) {
-            return res.status(400).json({ success: false, message: 'Código inválido!' });
-        }
-        db.query("UPDATE usuarios SET verificado = 1 WHERE id = ?", [userId], (err) => {
-            if (err) return res.status(500).json({ success: false, message: 'Erro ao ativar conta.' });
-            res.json({ success: true, message: 'Conta ativada com sucesso!' });
+// A identidade da conta a verificar fica vinculada à sessão criada no cadastro
+// ou no login. O navegador nunca escolhe qual userId será ativado.
+async function validarCodigoConta(req, res) {
+    const userId = Number(req.session.pendingVerificationUserId);
+    const codigo = String(req.body.codigo || req.body.codigoDigitado || '').trim();
+
+    if (!Number.isInteger(userId) || userId <= 0) {
+        return res.status(401).json({
+            success: false,
+            message: 'Inicie o cadastro ou faça login novamente antes de validar o código.'
         });
-    });
-});
-// --- ROTA PARA VALIDAR O CÓDIGO (AGORA SALVA A VERIFICAÇÃO DEFINITIVA) ---
-app.post('/validar-codigo', limitarAutenticacao, (req, res) => {
-    const { userId, codigo } = req.body;
-    db.query("SELECT token_verificacao FROM usuarios WHERE id = ?", [userId], (err, results) => {
-        if (err) return res.status(500).json({ success: false, message: 'Erro no servidor.' });
+    }
+    if (!/^\d{6}$/.test(codigo)) {
+        return res.status(400).json({ success: false, message: 'Código inválido ou expirado.' });
+    }
 
-        if (results.length === 0) {
-            return res.status(404).json({ success: false, message: 'Utilizador não encontrado.' });
+    try {
+        await garantirEstruturaProduto();
+        const [atualizacao] = await db.promise().query(
+            `UPDATE usuarios
+             SET token_verificacao = NULL, token_expira_em = NULL,
+                 token_finalidade = NULL, verificado = 1
+             WHERE id = ?
+               AND token_verificacao = ?
+               AND token_finalidade = 'verificacao_conta'
+               AND token_expira_em > NOW()`,
+            [userId, codigo]
+        );
+
+        if (atualizacao.affectedRows !== 1) {
+            return res.status(400).json({ success: false, message: 'Código inválido ou expirado.' });
         }
-        const codigoNoBanco = results[0].token_verificacao;
-        if (codigo === codigoNoBanco) {
-            db.query("UPDATE usuarios SET token_verificacao = NULL, verificado = 1 WHERE id = ?", [userId], (updateErr) => {
-                if (updateErr) {
-                    console.error('Erro ao atualizar status:', updateErr);
-                    return res.status(500).json({ success: false, message: 'Não foi possível validar a conta.' });
+
+        return req.session.regenerate((erroSessao) => {
+            if (erroSessao) {
+                console.error('Erro ao renovar sessão na validação:', erroSessao);
+                return res.status(500).json({ success: false, message: 'Não foi possível iniciar uma nova sessão.' });
+            }
+
+            req.session.userId = userId;
+            req.session.save((erroSalvar) => {
+                if (erroSalvar) {
+                    console.error('Erro ao salvar sessão na validação:', erroSalvar);
+                    return res.status(500).json({ success: false, message: 'Não foi possível salvar a sessão.' });
                 }
-
-                // A validação também autentica o usuário; nunca reutilize uma
-                // sessão iniciada antes da confirmação do código.
-                req.session.regenerate((erroSessao) => {
-                    if (erroSessao) {
-                        console.error('Erro ao renovar sessão na validação:', erroSessao);
-                        return res.status(500).json({ success: false, message: 'Não foi possível iniciar uma nova sessão.' });
-                    }
-
-                    req.session.userId = userId;
-                    req.session.save((erroSalvar) => {
-                        if (erroSalvar) {
-                            console.error('Erro ao salvar sessão na validação:', erroSalvar);
-                            return res.status(500).json({ success: false, message: 'Não foi possível salvar a sessão.' });
-                        }
-
-                        return res.json({ success: true, message: 'Conta validada com sucesso!' });
-                    });
-                });
+                return res.json({ success: true, message: 'Conta validada com sucesso!' });
             });
-        } else {
-            res.status(400).json({ success: false, message: 'Código de verificação incorreto.' });
-        }
-    });
-});
+        });
+    } catch (erro) {
+        console.error('Erro ao validar conta:', erro);
+        return res.status(500).json({ success: false, message: 'Não foi possível validar a conta.' });
+    }
+}
+
+app.post('/verificar-conta', limitarAutenticacao, validarCodigoConta);
+app.post('/validar-codigo', limitarAutenticacao, validarCodigoConta);
 // --- ROTA: SOLICITAR RECUPERAÇÃO DE SENHA ---
 app.post('/esqueci-senha', limitarAutenticacao, async (req, res) => {
     const { email } = req.body;
@@ -2135,11 +2252,13 @@ app.post('/esqueci-senha', limitarAutenticacao, async (req, res) => {
         }
 
         const usuario = revelarIdentidade(rows[0]);
-        const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+        const codigo = crypto.randomInt(100000, 1000000).toString();
         const expira = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
 
         await db.promise().query(
-            "UPDATE usuarios SET token_verificacao = ?, token_expira_em = ? WHERE id = ?",
+            `UPDATE usuarios
+             SET token_verificacao = ?, token_expira_em = ?, token_finalidade = 'recuperacao_senha'
+             WHERE id = ?`,
             [codigo, expira, usuario.id]
         );
 
@@ -2150,7 +2269,7 @@ app.post('/esqueci-senha', limitarAutenticacao, async (req, res) => {
             html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
                     <h2 style="color: #c89f53;">Guardian of Budget & Money</h2>
-                    <p>Olá, ${usuario.nome}. Use o código abaixo para redefinir sua senha:</p>
+                    <p>Olá, ${escaparHtmlServidor(usuario.nome)}. Use o código abaixo para redefinir sua senha:</p>
                     <h1 style="letter-spacing: 5px; color: #10b981; background: #111c2e; padding: 15px; border-radius: 8px; display: inline-block;">
                         ${codigo}
                     </h1>
@@ -2184,7 +2303,7 @@ app.post('/redefinir-senha', limitarAutenticacao, async (req, res) => {
         }
         const emailNormalizado = normalizarEmail(email);
         const [rows] = await db.promise().query(
-            `SELECT id, token_verificacao, token_expira_em
+            `SELECT id, token_verificacao, token_expira_em, token_finalidade
              FROM usuarios
              WHERE email_hash = ?
                 OR (email_hash IS NULL AND LOWER(email) = ?)
@@ -2199,7 +2318,7 @@ app.post('/redefinir-senha', limitarAutenticacao, async (req, res) => {
         const usuario = rows[0];
         const expirado = !usuario.token_expira_em || new Date(usuario.token_expira_em) < new Date();
 
-        if (usuario.token_verificacao !== codigo || expirado) {
+        if (usuario.token_verificacao !== codigo || expirado || usuario.token_finalidade !== 'recuperacao_senha') {
             return res.status(400).json({ success: false, message: 'Código inválido ou expirado.' });
         }
 
@@ -2207,7 +2326,9 @@ app.post('/redefinir-senha', limitarAutenticacao, async (req, res) => {
         const novaSenhaHash = await bcrypt.hash(novaSenha, salt);
 
         await db.promise().query(
-            "UPDATE usuarios SET senha_hash = ?, token_verificacao = NULL, token_expira_em = NULL WHERE id = ?",
+            `UPDATE usuarios
+             SET senha_hash = ?, token_verificacao = NULL, token_expira_em = NULL, token_finalidade = NULL
+             WHERE id = ?`,
             [novaSenhaHash, usuario.id]
         );
 
@@ -3599,7 +3720,7 @@ app.delete('/contas/:id', exigirLogin, async (req, res) => {
 // =======================================================
 async function prepararOfxParaPrevia(buffer, usuarioId) {
     const texto = buffer.toString('utf8');
-    const dadosConvertidos = ofx.parse(texto);
+    const dadosConvertidos = parseOfx(texto);
     const raiz = dadosConvertidos.OFX || {};
     const nomeBanco = identificarBanco(raiz);
     const extrato = raiz?.BANKMSGSRSV1?.STMTTRNRS?.STMTRS || {};
@@ -3634,7 +3755,7 @@ async function prepararOfxParaPrevia(buffer, usuarioId) {
     };
 }
 
-app.post('/ofx-extrato/preview', exigirLogin, upload.single('arquivo'), async (req, res) => {
+app.post('/ofx-extrato/preview', exigirLogin, uploadOfx.single('arquivo'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, error: 'Selecione um arquivo OFX.' });
@@ -4544,6 +4665,22 @@ app.get('/minha-conta/exportar', exigirLogin, async (req, res) => {
         console.error('Erro ao exportar dados:', erro);
         res.status(500).json({ success: false, error: 'Falha ao exportar seus dados.' });
     }
+});
+
+app.use((erro, req, res, next) => {
+    if (erro instanceof multer.MulterError) {
+        const mensagem = erro.code === 'LIMIT_FILE_SIZE'
+            ? 'O arquivo excede o limite permitido.'
+            : 'Não foi possível receber o arquivo.';
+        return res.status(400).json({ success: false, error: mensagem, message: mensagem });
+    }
+    if (erro && erro.codigoPublico === 'ARQUIVO_INVALIDO') {
+        return res.status(400).json({ success: false, error: erro.message, message: erro.message });
+    }
+    if (erro && erro.message === 'Origem não autorizada pelo CORS.') {
+        return res.status(403).json({ success: false, error: erro.message });
+    }
+    return next(erro);
 });
 
 // 4. Liga o servidor

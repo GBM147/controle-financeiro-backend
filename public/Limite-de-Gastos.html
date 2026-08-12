@@ -666,6 +666,10 @@
         // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
         let _resolveConfirm = null;
 
+        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[caractere]);
+
         function gbmAlerta(mensagem, tipo = 'info') {
             const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
                         : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
@@ -677,7 +681,7 @@
             document.getElementById('lista-notificacoes-modal').innerHTML = `
                 <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
                     <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
-                    ${mensagem}
+                    ${escaparMensagemModal(mensagem)}
                 </div>`;
 
             document.getElementById('btn-confirmar-modal').style.display = 'none';
@@ -693,7 +697,7 @@
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
                     <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
                         <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
-                        ${mensagem}
+                        ${escaparMensagemModal(mensagem)}
                     </div>`;
 
                 document.getElementById('btn-confirmar-modal').style.display = 'block';

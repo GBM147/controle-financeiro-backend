@@ -1,11 +1,14 @@
 const VERSAO_TUTORIAL = '1.1.46';
-const CACHE_GBM = 'gbm-estatico-v16';
+const CACHE_GBM = 'gbm-estatico-v17';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
     '/login.html',
     '/termos.html',
     '/politica-de-privacidade.html',
+    '/educacao-financeira.html',
+    '/sobre.html',
+    '/guias.css',
     '/auth.js',
     '/gbm-pages.css',
     '/gbm-pages.js',

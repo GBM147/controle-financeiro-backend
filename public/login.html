@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Acesso - GBM Finance</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <!-- Link para o App (PWA) -->
     <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2E8B57">
@@ -11,8 +12,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GBM Finance">
 <link rel="apple-touch-icon" href="logo-transparente.png">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2735805392775741"
-     crossorigin="anonymous"></script>
     <style>
         /* --- ESTILOS GERAIS & BACKGROUND --- */
         * {
@@ -857,6 +856,10 @@
         // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES ---
         let _resolveConfirm = null;
 
+        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[caractere]);
+
         function gbmAlerta(mensagem, tipo = 'info') {
             const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
                         : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
@@ -868,7 +871,7 @@
             document.getElementById('lista-notificacoes-modal').innerHTML = `
                 <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
                     <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
-                    ${mensagem}
+                    ${escaparMensagemModal(mensagem)}
                 </div>`;
 
             document.getElementById('btn-confirmar-modal').style.display = 'none';
@@ -884,7 +887,7 @@
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
                     <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
                         <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
-                        ${mensagem}
+                        ${escaparMensagemModal(mensagem)}
                     </div>`;
 
                 document.getElementById('btn-confirmar-modal').style.display = 'block';

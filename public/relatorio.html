@@ -429,7 +429,16 @@ carregarBancosInfo();
 function etiquetaBanco(nomeBanco) {
     if (!nomeBanco) return '';
     const cor = BANCOS_CORES[nomeBanco] || '#607d8b';
-    return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;">🏦 ${nomeBanco}</span>`;
+    return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;">🏦 ${escaparHtmlRelatorio(nomeBanco)}</span>`;
+}
+
+function escaparHtmlRelatorio(valor) {
+    return String(valor ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
 }
 document.getElementById('mes-ref').value = new Date().getMonth() + 1;
 
@@ -455,7 +464,7 @@ async function carregarBancosUsados() {
         const bancos = await res.json();
         const select = document.getElementById('banco-ref');
         bancos.forEach(nome => {
-            select.innerHTML += `<option value="${nome}">${nome}</option>`;
+            select.appendChild(new Option(String(nome), String(nome)));
         });
     } catch (e) {
         console.error('Erro ao carregar bancos usados:', e);
@@ -476,7 +485,7 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
                 dadosRelatorio = await res.json();
 
                 if (dadosRelatorio.length === 0) {
-                    const sufixoBanco = banco !== 'todos' ? ` (${banco})` : '';
+                    const sufixoBanco = banco !== 'todos' ? ` (${escaparHtmlRelatorio(banco)})` : '';
                     container.innerHTML = `<p class="texto-vazio">Nenhum dado encontrado para ${NOMES_MESES[mes]}/${ano}${sufixoBanco}.</p>`;
                     return;
                 }
@@ -492,7 +501,7 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
 
                 let html = `
                     <div class="resultado-header">
-                        <h3>${NOMES_MESES[mes]} / ${ano}${banco !== 'todos' ? ' — ' + banco : ''}</h3>
+                        <h3>${NOMES_MESES[mes]} / ${ano}${banco !== 'todos' ? ' — ' + escaparHtmlRelatorio(banco) : ''}</h3>
                         <div class="resumo-rapido">
                             <div class="resumo-item">Entradas
                                 <strong style="color: var(--cor-receita);">R$ ${totalReceita.toFixed(2)}</strong>
@@ -524,13 +533,13 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
                         ? '<span class="badge-tipo badge-receita">Receita</span>'
                         : '<span class="badge-tipo badge-despesa">Despesa</span>';
                     const valor  = Math.abs(parseFloat(item.valor) || 0).toFixed(2);
-                    const descEscapada = (item.descricao || item.categoria).replace(/'/g, "\\'");
+                    const itemId = Number(item.id);
 
                     html += `
                         <tr>
                             <td style="font-weight: 500;">
-                                ${item.categoria}
-                                <br><button class="btn-editar-cat" onclick="abrirModal(${item.id}, '${descEscapada}', '${item.categoria}')">✏️ editar</button>
+                                ${escaparHtmlRelatorio(item.categoria || 'Sem categoria')}
+                                <br><button class="btn-editar-cat" data-editar-id="${Number.isInteger(itemId) ? itemId : 0}">✏️ editar</button>
                             </td>
                             <td>${etiquetaBanco(item.banco)}</td>
                             <td>${badge}</td>
@@ -540,6 +549,14 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
 
                 html += '</tbody></table>';
                 container.innerHTML = html;
+                container.querySelectorAll('[data-editar-id]').forEach((botao) => {
+                    botao.addEventListener('click', () => {
+                        const id = Number(botao.dataset.editarId);
+                        const item = dadosRelatorio.find((registro) => Number(registro.id) === id);
+                        if (!item) return;
+                        abrirModal(id, item.descricao || item.categoria || '', item.categoria || 'Outros');
+                    });
+                });
 
             } catch (error) {
                 container.innerHTML = '<p class="texto-vazio">Erro ao carregar o relatório. Tente novamente.</p>';
@@ -648,7 +665,7 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
     const select = document.getElementById('modal-select-cat');
     if (CATEGORIAS_TODAS.length > 0) {
         select.innerHTML = CATEGORIAS_TODAS
-            .map(c => `<option value="${c}">${c}</option>`)
+            .map(c => `<option value="${escaparHtmlRelatorio(c)}">${escaparHtmlRelatorio(c)}</option>`)
             .join('');
     }
     document.getElementById('modal-select-cat').value = categoriaAtual;
@@ -689,6 +706,10 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
         // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
         let _resolveConfirm = null;
 
+        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[caractere]);
+
         function gbmAlerta(mensagem, tipo = 'info') {
             const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
                         : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
@@ -700,7 +721,7 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
             document.getElementById('lista-notificacoes-modal').innerHTML = `
                 <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
                     <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
-                    ${mensagem}
+                    ${escaparMensagemModal(mensagem)}
                 </div>`;
 
             document.getElementById('btn-confirmar-modal').style.display = 'none';
@@ -716,7 +737,7 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
                     <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
                         <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
-                        ${mensagem}
+                        ${escaparMensagemModal(mensagem)}
                     </div>`;
 
                 document.getElementById('btn-confirmar-modal').style.display = 'block';

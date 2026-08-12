@@ -7,6 +7,7 @@
     <meta charset="UTF-8">
     <title>Controlador Financeiro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -1174,14 +1175,9 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 
                 if (!isPremium) {
                     window.usuarioPremium = false; // Grava na memória que é gratuito
-                    
-                    // USUÁRIO GRATUITO: Injeta o script do Google AdSense
-                    const scriptAds = document.createElement('script');
-                    scriptAds.async = true;
-                    scriptAds.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2735805392775741"; // LEMBRE DE COLOCAR SEU CÓDIGO
-                    scriptAds.crossOrigin = "anonymous";
-                    document.head.appendChild(scriptAds);
-                    console.log("Modo Gratuito: Anúncios ativados.");
+                    // O dashboard é uma tela de ferramenta/navegação. As políticas
+                    // do AdSense não permitem anúncios nesse tipo de página.
+                    console.log("Modo Gratuito: recursos básicos ativos.");
                 } else {
                     console.log("Modo Premium: Tela limpa e sem anúncios.");
                 }
@@ -1343,7 +1339,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         function etiquetaBanco(nomeBanco) {
             if (!nomeBanco) return '';
             const cor = BANCOS_CORES[nomeBanco] || '#607d8b';
-            return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;">🏦 ${nomeBanco}</span>`;
+            return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;">🏦 ${escaparHtmlDashboard(nomeBanco)}</span>`;
         }
         // Preenche a data de hoje no lançamento rápido para facilitar
         const inputData = document.getElementById('manual-data');
@@ -1396,9 +1392,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         if (!categoriasUnicas.includes(padrao)) categoriasUnicas.push(padrao);
     });
 
-    categoriasUnicas.forEach(cat => {
-        selectMeta.innerHTML += `<option value="${cat}">${cat}</option>`;
-    });
+    categoriasUnicas.forEach(cat => selectMeta.appendChild(new Option(String(cat), String(cat))));
 
     if (selecionadaAntes) selectMeta.value = selecionadaAntes;
 }
@@ -1491,7 +1485,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
                         
                        corpoTabela.innerHTML += `
                                 <tr>
-                                    <td style="font-weight: 600;">${item.categoria || 'Sem Categoria'}${etiquetaBanco(item.banco)}</td>
+                                    <td style="font-weight: 600;">${escaparHtmlDashboard(item.categoria || 'Sem Categoria')}${etiquetaBanco(item.banco)}</td>
                                     <td style="font-weight: bold;">${sinal} R$ ${valorLimpo.toFixed(2)}</td>
                                 </tr>
                             `;
@@ -1576,7 +1570,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
                 const resposta = await fetchApi('/contas');
                 if (!resposta.ok) throw new Error('Não foi possível carregar as contas.');
                 const contas = (await resposta.json()).filter((conta) => Number(conta.ativa) !== 0);
-                const opcoes = contas.map((conta) => `<option value="${Number(conta.id)}">${String(conta.nome || conta.nome_personalizado || 'Conta').replace(/[<>&"]/g, '')}</option>`).join('');
+                const opcoes = contas.map((conta) => `<option value="${Number(conta.id)}">${escaparHtmlDashboard(conta.nome || conta.nome_personalizado || 'Conta')}</option>`).join('');
                 seletor.innerHTML = contas.length
                     ? opcoes
                     : '<option value="">Cadastre uma conta primeiro</option>';
@@ -1673,6 +1667,10 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         }
         let _resolveConfirm = null;
 
+        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[caractere]);
+
         function gbmAlerta(mensagem, tipo = 'info') {
     const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
                 : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
@@ -1684,7 +1682,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     document.getElementById('lista-notificacoes-modal').innerHTML = `
         <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
             <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
-            ${mensagem}
+            ${escaparMensagemModal(mensagem)}
         </div>`;
 
     document.getElementById('btn-confirmar-modal').style.display = 'none';
@@ -1700,7 +1698,7 @@ function gbmConfirmar(mensagem) {
         document.getElementById('lista-notificacoes-modal').innerHTML = `
             <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
                 <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
-                ${mensagem}
+                ${escaparMensagemModal(mensagem)}
             </div>`;
 
         document.getElementById('btn-confirmar-modal').style.display = 'block';
@@ -1798,8 +1796,8 @@ function renderizarCategoriasPersonalizadas() {
 
     container.innerHTML = lista.map(c => `
         <span style="display:inline-flex; align-items:center; gap:6px; background:rgba(26,86,160,0.25); border:1px solid rgba(95,255,168,0.2); padding:5px 10px; border-radius:20px; font-size:0.8rem;">
-            ${c.nome}
-            <button onclick="removerCategoriaPersonalizada(${c.id})" title="Remover categoria" style="background:none; border:none; color:#ff8080; cursor:pointer; font-size:0.9rem; line-height:1;">✕</button>
+            ${escaparHtmlDashboard(c.nome)}
+            <button onclick="removerCategoriaPersonalizada(${Number(c.id)})" title="Remover categoria" style="background:none; border:none; color:#ff8080; cursor:pointer; font-size:0.9rem; line-height:1;">✕</button>
         </span>
     `).join('');
 }
@@ -1852,7 +1850,7 @@ async function criarNovaCategoria() {
 
 function categoriasOpcoes(selecionada) {
     return CATEGORIAS_DISPONIVEIS.map(c =>
-        `<option value="${c}" ${c === selecionada ? 'selected' : ''}>${c}</option>`
+        `<option value="${escaparHtmlDashboard(c)}" ${c === selecionada ? 'selected' : ''}>${escaparHtmlDashboard(c)}</option>`
     ).join('');
 }
 
@@ -2141,8 +2139,8 @@ async function carregarInsights() {
         container.innerHTML = insights.length
             ? insights.map((item) => `
                 <div class="insight-item">
-                    <strong>${String(item.titulo || '').replace(/[<>&]/g, '')}</strong>
-                    <span>${String(item.texto || '').replace(/[<>&]/g, '')}</span>
+                    <strong>${escaparHtmlDashboard(item.titulo || '')}</strong>
+                    <span>${escaparHtmlDashboard(item.texto || '')}</span>
                 </div>
             `).join('')
             : '<div class="insight-item"><span>Continue lançando seus dados para receber análises personalizadas.</span></div>';
