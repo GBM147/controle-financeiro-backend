@@ -57,7 +57,7 @@
     margin: 0;
     cursor: default;
 
-    /* Gradiente animado verde → dourado → verde */
+    /* Gradiente animado verde e azul */
     background: linear-gradient(
         90deg,
         #2E8B57 0%,
@@ -287,7 +287,7 @@
         }
 
         .menu-grupo-premium .menu-grupo-titulo {
-            color: #fbbf24;
+            color: #9dcbff;
         }
 
         .menu-grupo-conta {
@@ -333,10 +333,10 @@
             justify-content: center;
             min-height: 26px;
             padding: 3px 8px;
-            border: 1px solid rgba(245, 158, 11, 0.5);
+            border: 1px solid rgba(85, 167, 255, 0.5);
             border-radius: 999px;
-            background: rgba(245, 158, 11, 0.12);
-            color: #fbbf24;
+            background: rgba(85, 167, 255, 0.12);
+            color: #9dcbff;
             font-size: 0.66rem;
             font-weight: 700;
             text-shadow: none;
@@ -346,10 +346,10 @@
             display: none;
             margin: -2px 22px 10px 28px;
             padding: 9px 11px;
-            border: 1px solid rgba(245, 158, 11, 0.35);
+            border: 1px solid rgba(85, 167, 255, 0.35);
             border-radius: 8px;
-            background: rgba(245, 158, 11, 0.08);
-            color: #fcd98d;
+            background: rgba(85, 167, 255, 0.08);
+            color: #b7d8f6;
             font-family: 'Inter', 'Montserrat', sans-serif;
             font-size: 0.72rem;
             font-weight: 500;
@@ -361,9 +361,9 @@
         }
 
         .menu-item-premium.recurso-bloqueado:hover {
-            border-left-color: #f59e0b !important;
-            color: #fbbf24 !important;
-            background: rgba(245, 158, 11, 0.08) !important;
+            border-left-color: #55a7ff !important;
+            color: #9dcbff !important;
+            background: rgba(85, 167, 255, 0.08) !important;
         }
 
         .divisor {
@@ -807,13 +807,13 @@
             align-items: center;
             gap: 6px;
             margin-bottom: 7px;
-            color: #c4b5fd;
+            color: #9dcbff;
             font-size: .8rem;
             font-weight: 700;
         }
         .btn-objetivo-transacao {
             padding: 8px 12px;
-            background: #6d28d9;
+            background: #286da8;
             font: 700 .78rem 'Inter', sans-serif;
         }
         .btn-objetivo-transacao.secundario { background: #374151; }
@@ -830,10 +830,10 @@
         }
         .aviso-vinculo {
             padding: 12px;
-            border: 1px solid rgba(245,158,11,.4);
+            border: 1px solid rgba(85,167,255,.4);
             border-radius: 9px;
-            background: rgba(245,158,11,.1);
-            color: #fde68a;
+            background: rgba(85,167,255,.1);
+            color: #b7d8f6;
             line-height: 1.5;
         }
         .acoes-vinculo { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
@@ -846,6 +846,123 @@
             .btn-salvar-categorias { width: 100%; }
             .acoes-vinculo { flex-direction: column-reverse; }
             .acoes-vinculo button { width: 100%; }
+        }
+
+        /* Redesign aprovado: fundo original, paleta verde/azul e superfícies mais profundas. */
+        .gbm-header {
+            min-height: 74px;
+            height: 74px;
+            padding: 0 34px;
+            background: rgba(7,17,31,.3);
+            border-bottom-color: rgba(255,255,255,.12);
+            backdrop-filter: blur(9px);
+        }
+        .atalho-perfil,
+        .gbm-menu-btn {
+            min-height: 40px;
+            padding: 0;
+            border: 0 !important;
+            border-radius: 0;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+        .atalho-perfil { gap: 10px; }
+        .atalho-perfil:hover,
+        .gbm-menu-btn:hover {
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            color: #5fffa8;
+            transform: none;
+        }
+        .gbm-menu-btn { width: 34px; justify-content: center; }
+        .hamburger-icon { width: 27px; gap: 5px; }
+        .hamburger-icon span { background: currentColor; }
+        .avatar-perfil-cabecalho { width: 37px; height: 37px; }
+        .sidebar-menu { background: rgba(7,17,31,.94); border-left-color: rgba(85,167,255,.2); }
+        .menu-grupo-premium .menu-grupo-titulo,
+        .cadeado-premium { color: #9dcbff; }
+        .cadeado-premium { border-color: rgba(85,167,255,.45); background: rgba(85,167,255,.12); }
+        .aviso-recursos-premium { border-color: rgba(85,167,255,.35); background: rgba(85,167,255,.08); color: #b7d8f6; }
+        .menu-item-premium.recurso-bloqueado:hover { border-left-color: #55a7ff !important; color: #9dcbff !important; background: rgba(85,167,255,.08) !important; }
+
+        .grid-cards { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; }
+        .card,
+        .painel-ajustes,
+        .chart-container,
+        .lancamento-rapido,
+        .resumo-container,
+        .insights-panel {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(85,167,255,.2) !important;
+            border-radius: 17px !important;
+            background: rgba(15,26,43,.96) !important;
+            box-shadow: 0 14px 34px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.025) !important;
+        }
+        .card::before,
+        .painel-ajustes::before,
+        .chart-container::before,
+        .lancamento-rapido::before,
+        .resumo-container::before,
+        .insights-panel::before {
+            position: absolute;
+            inset: 0 0 auto;
+            height: 1px;
+            background: linear-gradient(90deg,transparent,rgba(85,167,255,.4),transparent);
+            content: "";
+            pointer-events: none;
+        }
+        .card:hover,
+        .painel-ajustes:hover,
+        .chart-container:hover,
+        .lancamento-rapido:hover,
+        .resumo-container:hover,
+        .insights-panel:hover {
+            border-color: rgba(85,167,255,.38) !important;
+            box-shadow: 0 17px 38px rgba(0,0,0,.46), inset 0 1px rgba(255,255,255,.035) !important;
+        }
+        .grid-cards .card { min-height: 138px; display: grid; align-content: space-between; padding: 21px; }
+        .grid-cards .card h3 { font-size: .72rem; letter-spacing: .75px; text-transform: uppercase; }
+        .grid-cards .card p { font-size: clamp(1.45rem,2.5vw,1.95rem); letter-spacing: -.35px; }
+        .insights-panel { padding: 21px 22px; }
+        .insight-item { min-height: 94px; padding: 15px 17px; border-color: rgba(85,167,255,.14); border-radius: 12px; background: rgba(20,34,57,.88); }
+        .lancamento-rapido { padding: 22px 25px !important; }
+        .grupo-ajuste select,
+        .grupo-ajuste input,
+        .lancamento-rapido :is(input,select),
+        section :is(input,select) {
+            border-color: rgba(255,255,255,.11) !important;
+            border-radius: 10px !important;
+            background: rgba(12,27,45,.86) !important;
+        }
+        .grupo-ajuste select:focus,
+        .grupo-ajuste input:focus,
+        .lancamento-rapido :is(input,select):focus,
+        section :is(input,select):focus {
+            border-color: rgba(85,167,255,.65) !important;
+            box-shadow: 0 0 0 3px rgba(85,167,255,.11) !important;
+        }
+        .btn-acao:hover { box-shadow: 0 8px 22px rgba(0,0,0,.3); }
+        #painel-meta .btn-acao,
+        #btn-gerenciar-categorias,
+        .btn-objetivo-transacao { background: #286da8 !important; }
+        .vinculo-objetivo-atual { color: #9dcbff; }
+        .aviso-vinculo { border-color: rgba(85,167,255,.4); background: rgba(85,167,255,.1); color: #b7d8f6; }
+        #painel-exibicao { max-width: none !important; }
+        .painel-controles-grafico { align-items: flex-end; }
+        .painel-controles-grafico .grupo-ajuste { flex: 1 1 190px; }
+        .chart-container { max-width: calc(100% - 40px); min-height: 450px; }
+        .chart-container.somente-grafico { max-width: calc(100% - 40px) !important; }
+
+        @media (max-width: 1020px) {
+            .grid-cards { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        }
+        @media (max-width: 768px) {
+            .gbm-header { min-height: 62px; height: 62px; padding: 0 15px; }
+            .nome-perfil-cabecalho { display: none; }
+            .grid-cards { grid-template-columns: minmax(0,1fr); }
+            .painel-controles-grafico { align-items: stretch; }
         }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
@@ -1073,18 +1190,27 @@
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança..." style="width: 160px;">
             <input type="number" id="objetivo-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
-            <button class="btn-acao" onclick="salvarObjetivo()" style="background: #8b5cf6;">Adicionar objetivo</button>
+            <button class="btn-acao" onclick="salvarObjetivo()" style="background: #286da8;">Adicionar objetivo</button>
         </div>
     </div>
 </div>
 
 </div>
-<div class="painel-ajustes" id="painel-exibicao" style="max-width: 260px;">
+<div class="painel-ajustes painel-controles-grafico" id="painel-exibicao">
     <div class="grupo-ajuste">
-        <label for="select-tipo">Exibição de Dados</label>
+        <label for="select-tipo">Exibição de dados</label>
         <select id="select-tipo" onchange="renderizarVisualizacao()">
-            <option value="table">Apenas Tabela</option>
-            <option value="both-doughnut" selected>Tabela e Gráfico</option>
+            <option value="table">Apenas tabela</option>
+            <option value="chart">Apenas gráfico</option>
+            <option value="both" selected>Tabela e gráfico</option>
+        </select>
+    </div>
+    <div class="grupo-ajuste">
+        <label for="select-grafico-dashboard">Tipo de gráfico</label>
+        <select id="select-grafico-dashboard" onchange="renderizarVisualizacao()">
+            <option value="bar">Barras</option>
+            <option value="doughnut">Rosca</option>
+            <option value="line">Linha</option>
         </select>
     </div>
 </div>
@@ -1109,7 +1235,7 @@
     
     <form id="form-upload-ofx" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
         <button type="button" class="btn-acao" style="background: #2E8B57;" onclick="window.location.href='importacoes.html'">Abrir Central de Importações</button>
-        <button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" style="background: #6366f1;">
+        <button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" style="background: #286da8;">
      Gerenciar Categorias
 </button>
     </form>
@@ -1454,20 +1580,20 @@
         }
 
         function renderizarVisualizacao() {
-            const tipo = document.getElementById('select-tipo').value;
+            const tipoExibicao = document.getElementById('select-tipo').value;
+            const tipoGrafico = document.getElementById('select-grafico-dashboard')?.value || 'bar';
             const containerPai = document.getElementById('container-do-grafico');
             const tabelaDiv = document.getElementById('minhaTabelaContainer');
             const graficoDiv = document.getElementById('wrapper-do-grafico');
             const corpoTabela = document.getElementById('corpo-tabela');
 
-            const isHibrido = tipo.includes('both');
-            const showTable = tipo === 'table' || isHibrido;
-            const showChart = tipo !== 'table';
+            const isHibrido = tipoExibicao === 'both';
+            const showTable = tipoExibicao !== 'chart';
+            const showChart = tipoExibicao !== 'table';
 
-            // Arruma o layout lado a lado
             if (containerPai) {
-                if (isHibrido) containerPai.classList.add('hibrido');
-                else containerPai.classList.remove('hibrido');
+                containerPai.classList.toggle('hibrido', isHibrido);
+                containerPai.classList.toggle('somente-grafico', tipoExibicao === 'chart');
             }
 
             if (tabelaDiv) tabelaDiv.style.display = showTable ? 'block' : 'none';
@@ -1477,12 +1603,11 @@
             if (showTable && corpoTabela) {
                 corpoTabela.innerHTML = ''; 
                 if (dadosAPI.length === 0) {
-                    corpoTabela.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 30px;">Sem dados registrados.</td></tr>`;
+                    corpoTabela.innerHTML = `<tr><td colspan="2" style="text-align: center; padding: 30px;">Sem dados registrados.</td></tr>`;
                 } else {
                     dadosAPI.forEach(item => {
                         const isCredit = item.tipo === 'Receita';
                         const valorLimpo = Math.abs(parseFloat(String(item.total_movimentado || item.valor || 0).replace(/[R$\s+\-]/g, '')));
-                        const cor = isCredit ? 'var(--cor-receita)' : 'var(--cor-despesa)';
                         const sinal = isCredit ? '+' : '-';
                         
                        corpoTabela.innerHTML += `
@@ -1496,7 +1621,6 @@
                 }
             }
 
-            // Constrói o Gráfico
             if (showChart) {
                 if (meuChart) meuChart.destroy();
                 const ctx = document.getElementById('meuGrafico').getContext('2d');
@@ -1504,51 +1628,58 @@
                 // Só mostra o banco no rótulo do eixo se houver mais de 1 banco nos dados
                 const bancosDistintos = new Set(dadosAPI.map(i => i.banco).filter(Boolean));
                 const mostrarBancoNoRotulo = bancosDistintos.size > 1;
+                const circular = tipoGrafico === 'doughnut';
+                const valores = dadosAPI.map(i => Math.abs(parseFloat(String(i.total_movimentado || i.valor || 0).replace(',', '.'))) || 0);
+                const fundos = dadosAPI.map(i => i.tipo === 'Receita' ? 'rgba(57, 217, 138, .76)' : 'rgba(85, 167, 255, .76)');
+                const bordas = dadosAPI.map(i => i.tipo === 'Receita' ? '#39d98a' : '#55a7ff');
+                const dataset = {
+                    label: 'Valor movimentado',
+                    data: valores,
+                    backgroundColor: tipoGrafico === 'line' ? 'rgba(85, 167, 255, .14)' : fundos,
+                    borderColor: tipoGrafico === 'line' ? '#55a7ff' : bordas,
+                    borderWidth: tipoGrafico === 'line' ? 2.5 : 1.5,
+                    borderRadius: tipoGrafico === 'bar' ? 7 : 0,
+                    borderSkipped: false,
+                    fill: tipoGrafico === 'line',
+                    tension: tipoGrafico === 'line' ? .35 : 0,
+                    pointBackgroundColor: tipoGrafico === 'line' ? bordas : undefined,
+                    pointRadius: tipoGrafico === 'line' ? 3 : undefined
+                };
 
                 meuChart = new Chart(ctx, {
-                    type: 'bar', // Gráfico de colunas
-                data: {
-                    labels: dadosAPI.map(i => mostrarBancoNoRotulo && i.banco ? `${i.categoria || 'Outros'} (${i.banco})` : (i.categoria || 'Outros')),
-                    datasets: [{
-                        label: 'Valor Movimentado',
-                        data: dadosAPI.map(i => Math.abs(parseFloat(String(i.total_movimentado || i.valor).replace(',', '.')))),
-                        
-                        // Cores Inteligentes baseadas na Palavra 'Despesa'
-                        backgroundColor: dadosAPI.map(i => i.tipo === 'Despesa' ? 'rgba(255, 77, 77, 0.8)' : 'rgba(46, 139, 87, 0.8)'),
-                        borderColor: dadosAPI.map(i => i.tipo === 'Despesa' ? '#ff4d4d' : '#2E8B57'),
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                        hoverBackgroundColor: dadosAPI.map(i => i.tipo === 'Despesa' ? '#cc0000' : '#246e45')
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { 
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            ticks: { color: '#ffffff' } // Números em Branco
-                        },
-                        y: { 
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
-                            ticks: { color: '#ffffff' }, // Números em Branco
-                            beginAtZero: true 
-                        }
+                    type: tipoGrafico,
+                    data: {
+                        labels: dadosAPI.map(i => mostrarBancoNoRotulo && i.banco ? `${i.categoria || 'Outros'} (${i.banco})` : (i.categoria || 'Outros')),
+                        datasets: [dataset]
                     },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                afterLabel: function(context) {
-                                    const item = dadosAPI[context.dataIndex];
-                                    return item && item.banco ? `Banco: ${item.banco}` : '';
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: circular ? undefined : {
+                            x: { grid: { display: false }, ticks: { color: '#b0bec5' } },
+                            y: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#b0bec5' }, beginAtZero: true }
+                        },
+                        plugins: {
+                            legend: { display: circular, position: 'bottom', labels: { color: '#eef6ff', boxWidth: 12, padding: 16 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const item = dadosAPI[context.dataIndex];
+                                        const tipo = item?.tipo || 'Movimentação';
+                                        return `${tipo}: R$ ${Number(context.raw || 0).toFixed(2)}`;
+                                    },
+                                    afterLabel: function(context) {
+                                        const item = dadosAPI[context.dataIndex];
+                                        return item && item.banco ? `Banco: ${item.banco}` : '';
+                                    }
                                 }
                             }
                         }
                     }
-                }
                 });
+            } else if (meuChart) {
+                meuChart.destroy();
+                meuChart = null;
             }
         }
 
@@ -1675,7 +1806,7 @@
 
         function gbmAlerta(mensagem, tipo = 'info') {
     const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
-                : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
+                : tipo === 'aviso' ? 'rgba(85,167,255,0.3)'
                 :                    'rgba(95,255,168,0.3)';
 
     document.getElementById('lista-notificacoes-modal').innerHTML = `
@@ -1694,7 +1825,7 @@ function gbmConfirmar(mensagem) {
         _resolveConfirm = resolve;
 
         document.getElementById('lista-notificacoes-modal').innerHTML = `
-            <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+            <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
                 ${escaparMensagemModal(mensagem)}
             </div>`;
 
@@ -2330,7 +2461,7 @@ window.promessaVerificacaoAcesso.then(() => {
             }
         };
         Particle.prototype.draw = function() {
-            ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`;
+            ctx.fillStyle = `rgba(85, 167, 255, ${this.opacity * .55})`;
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fill();

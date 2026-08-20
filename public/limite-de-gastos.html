@@ -405,6 +405,85 @@
             .linha-adicionar-percentual { grid-template-columns: 1fr auto; }
             .card { padding: 20px 16px; }
         }
+
+        /* Redesign aprovado: superfícies refinadas com acentos verdes e azuis. */
+        .gbm-header {
+            height: 74px;
+            padding: 0 34px;
+            background: rgba(7,17,31,.3);
+            border-bottom-color: rgba(255,255,255,.12);
+            backdrop-filter: blur(9px);
+        }
+        .btn-voltar,
+        .btn-voltar:hover {
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+        .btn-voltar:hover { color: #5fffa8; transform: translateX(-2px); }
+        .btn-voltar::after,
+        .btn-acao::after,
+        .btn-gerar::after,
+        .btn-pdf::after { content: none; }
+        .page-wrapper { max-width: 1120px; padding: 24px 27px 72px; }
+        .titulo-pagina {
+            margin: 0 0 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            text-align: left;
+            letter-spacing: .2px;
+        }
+        .card {
+            position: relative;
+            overflow: hidden;
+            padding: 24px;
+            border: 1px solid rgba(85,167,255,.2);
+            border-radius: 17px;
+            background: rgba(15,26,43,.96);
+            box-shadow: 0 14px 34px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.025);
+        }
+        .card::before {
+            position: absolute;
+            inset: 0 0 auto;
+            height: 1px;
+            background: linear-gradient(90deg,transparent,rgba(85,167,255,.4),transparent);
+            content: "";
+        }
+        .card:hover {
+            border-color: rgba(85,167,255,.38);
+            box-shadow: 0 17px 38px rgba(0,0,0,.46), inset 0 1px rgba(255,255,255,.035);
+        }
+        .card h2 { margin-bottom: 22px; text-align: left; letter-spacing: .2px; }
+        .form-limite { grid-template-columns: 1.15fr .85fr; }
+        .campo-form :is(select,input),
+        #editor-container :is(input[type="number"],input[type="text"]) {
+            border-color: rgba(255,255,255,.11);
+            border-radius: 10px;
+            background: rgba(12,27,45,.86);
+        }
+        .campo-form :is(select,input):focus,
+        #editor-container :is(input[type="number"],input[type="text"]):focus {
+            border-color: rgba(85,167,255,.65);
+            box-shadow: 0 0 0 3px rgba(85,167,255,.11);
+        }
+        .campo-percentuais { border-color: rgba(85,167,255,.13); background: rgba(20,34,57,.72); }
+        #editor-container { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+        .meta-item {
+            margin: 0;
+            padding: 19px;
+            border-color: rgba(85,167,255,.15);
+            border-radius: 13px;
+            background: rgba(20,34,57,.86);
+        }
+        .btn-editar-limite:hover { border-color: rgba(85,167,255,.48); color: #9dcbff; }
+
+        @media (max-width: 760px) {
+            .gbm-header { height: 62px; padding: 0 15px; }
+            .page-wrapper { padding: 20px 15px 56px; }
+            #editor-container { grid-template-columns: minmax(0,1fr); }
+        }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
@@ -420,8 +499,9 @@
 </header>
 
 <div class="page-wrapper">
+    <h2 class="titulo-pagina">Limite de gastos</h2>
     <div class="card">
-        <h2>Definir ou Ajustar Limite</h2>
+        <h2>Definir ou ajustar limite</h2>
         
         <div class="form-limite" id="form-limite">
             <div class="campo-form">
@@ -574,10 +654,10 @@
                     let percentual = limite > 0 ? (gasto / limite) * 100 : 0;
                     const larguraBarra = Math.min(percentual, 100);
 
-                    // Lógica de cores para Limite: Verde (Tranquilo) -> Laranja (Alerta) -> Vermelho (Estourou)
+                    // Verde para consumo saudável, azul para atenção e vermelho para estouro.
                     let cor = '';
                     if (percentual < 75) cor = 'var(--cor-receita)';
-                    else if (percentual < 100) cor = '#f59e0b';
+                    else if (percentual < 100) cor = '#55a7ff';
                     else cor = 'var(--cor-despesa)';
 
                     container.innerHTML += `
@@ -672,7 +752,7 @@
 
         function gbmAlerta(mensagem, tipo = 'info') {
             const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
-                        : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
+                        : tipo === 'aviso' ? 'rgba(85,167,255,0.3)'
                         :                    'rgba(95,255,168,0.3)';
 
             document.getElementById('lista-notificacoes-modal').innerHTML = `
@@ -691,7 +771,7 @@
                 _resolveConfirm = resolve;
 
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
-                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                    <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
                         ${escaparMensagemModal(mensagem)}
                     </div>`;
 
@@ -728,7 +808,7 @@
         </div>
     </div>
 <script>
-    // --- PARTÍCULAS DOURADAS GBM ---
+    // --- PARTÍCULAS AZUIS GBM ---
     (function() {
         const canvas = document.getElementById('particles-canvas');
         if (!canvas) return;
@@ -758,7 +838,7 @@
             }
         };
         Particle.prototype.draw = function() {
-            ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`;
+            ctx.fillStyle = `rgba(85, 167, 255, ${this.opacity * .55})`;
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fill();

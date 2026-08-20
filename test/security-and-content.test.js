@@ -117,6 +117,32 @@ test('interface não contém emojis e o menu usa capitalização comum sem brilh
     assert.match(dashboard, />Comparativo mensal<\/span>/);
 });
 
+test('análises oferecem tipos de gráfico e o dashboard permite exibir somente o gráfico', () => {
+    const dashboard = ler('public/dashboard.html');
+    const relatorio = ler('public/relatorio-avancado.html');
+    const comparativo = ler('public/comparativo.html');
+
+    assert.match(dashboard, /id="select-tipo"[\s\S]*?<option value="chart">Apenas gráfico<\/option>/);
+    assert.match(dashboard, /id="select-grafico-dashboard"[\s\S]*?<option value="bar">Barras<\/option>[\s\S]*?<option value="doughnut">Rosca<\/option>[\s\S]*?<option value="line">Linha<\/option>/);
+    assert.match(dashboard, /const showTable = tipoExibicao !== 'chart'/);
+    assert.match(dashboard, /type: tipoGrafico/);
+
+    assert.match(relatorio, /id="tipo-grafico-relatorio"[\s\S]*?<option value="bar">Barras<\/option>[\s\S]*?<option value="doughnut">Rosca<\/option>[\s\S]*?<option value="polarArea">Área polar<\/option>/);
+    assert.match(relatorio, /function renderizarGraficoCategorias\(\)/);
+
+    assert.match(comparativo, /id="tipo-grafico-comparativo"[\s\S]*?<option value="bar">Barras agrupadas<\/option>[\s\S]*?<option value="line">Linhas<\/option>[\s\S]*?<option value="radar">Radar<\/option>/);
+    assert.match(comparativo, /function trocarTipoGraficoComparativo\(\)/);
+});
+
+test('redesign preserva o mármore e deixa perfil e menu sem card', () => {
+    const dashboard = ler('public/dashboard.html');
+    const estilosInternos = ler('public/gbm-pages.css');
+
+    assert.match(dashboard, /url\('fundo-marmore\.jpg'\)/);
+    assert.match(estilosInternos, /url\("fundo-marmore\.jpg"\)/);
+    assert.match(dashboard, /\.atalho-perfil,\s*\.gbm-menu-btn\s*\{[\s\S]*?border:\s*0\s*!important;[\s\S]*?background:\s*transparent\s*!important;[\s\S]*?box-shadow:\s*none\s*!important;/);
+});
+
 test('scripts embutidos e links locais das páginas são válidos', () => {
     const paginas = fs.readdirSync(path.join(raiz, 'public'), { recursive: true })
         .filter((arquivo) => String(arquivo).endsWith('.html'));
