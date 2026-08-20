@@ -674,13 +674,9 @@
             const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
                         : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
                         :                    'rgba(95,255,168,0.3)';
-            const icone = tipo === 'erro'  ? '❌'
-                        : tipo === 'aviso' ? '⚠️'
-                        :                    '✅';
 
             document.getElementById('lista-notificacoes-modal').innerHTML = `
                 <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                    <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
                     ${escaparMensagemModal(mensagem)}
                 </div>`;
 
@@ -696,7 +692,6 @@
 
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
                     <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                        <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
                         ${escaparMensagemModal(mensagem)}
                     </div>`;
 

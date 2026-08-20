@@ -10,62 +10,62 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '👋 Bem-vindo ao seu dashboard',
+                    titulo: 'Bem-vindo ao seu dashboard',
                     texto: 'Aqui você acompanha sua vida financeira, registra movimentações e acessa todas as ferramentas do GBM.'
                 },
                 {
                     alvo: '#filtro-conta-dashboard',
-                    titulo: '🏦 Filtrar por conta',
+                    titulo: 'Filtrar por conta',
                     texto: 'Escolha uma conta bancária específica ou mantenha “Todas” para visualizar o resultado consolidado.'
                 },
                 {
                     alvo: '.grid-cards',
-                    titulo: '📊 Resumo financeiro',
+                    titulo: 'Resumo financeiro',
                     texto: 'Os cartões mostram entradas, saídas, resultado do período e comparação com o mês anterior.'
                 },
                 {
                     alvo: '.insights-panel',
-                    titulo: '💡 Pontos de atenção',
+                    titulo: 'Pontos de atenção',
                     texto: 'O GBM analisa os dados atuais e destaca informações que merecem sua atenção.'
                 },
                 {
                     alvo: '.lancamento-rapido',
-                    titulo: '✍️ Lançamento rápido',
+                    titulo: 'Lançamento rápido',
                     texto: 'Registre manualmente uma receita ou despesa, escolhendo conta, descrição, categoria, valor e data.'
                 },
                 {
                     alvo: '#painel-limite',
-                    titulo: '🚧 Limites de gastos',
+                    titulo: 'Limites de gastos',
                     texto: 'Defina quanto pretende gastar em cada categoria. Na página completa, você também escolhe vários percentuais de aviso.'
                 },
                 {
                     alvo: '#painel-categoria',
-                    titulo: '🏷️ Categorias personalizadas',
+                    titulo: 'Categorias personalizadas',
                     texto: 'Crie categorias próprias para organizar as movimentações de acordo com sua realidade.'
                 },
                 {
                     alvo: '#painel-meta',
-                    titulo: '🎯 Objetivos de poupança',
+                    titulo: 'Objetivos de poupança',
                     texto: 'Crie um objetivo de poupança. Ele só avança com contribuições manuais ou transações que você destinar explicitamente.'
                 },
                 {
                     alvo: '#painel-exibicao',
-                    titulo: '📈 Exibição dos dados',
+                    titulo: 'Exibição dos dados',
                     texto: 'Alterne entre tabela e gráfico para analisar as transações da forma que preferir.'
                 },
                 {
                     alvo: '#card-ofx',
-                    titulo: '📥 Importar extratos',
+                    titulo: 'Importar extratos',
                     texto: 'Use a Central de Importações para revisar arquivos OFX ou PDF antes de confirmar os lançamentos.'
                 },
                 {
                     alvo: '#menu-btn',
-                    titulo: '☰ Menu principal',
+                    titulo: 'Menu principal',
                     texto: 'Abra o menu para acessar contas, importações, calendário, limites, relatórios, objetivos de poupança, notificações e configurações.'
                 },
                 {
                     alvo: null,
-                    titulo: '🎉 Dashboard apresentado',
+                    titulo: 'Dashboard apresentado',
                     texto: 'Para rever este passo a passo, abra o menu e escolha “Como usar o site”.'
                 }
             ]
@@ -75,27 +75,27 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '🏦 Organize suas contas',
+                    titulo: 'Organize suas contas',
                     texto: 'Cadastre cada banco ou carteira separadamente para impedir que movimentações de contas diferentes sejam misturadas.'
                 },
                 {
                     alvo: '#form-conta',
-                    titulo: '➕ Adicionar ou editar',
+                    titulo: 'Adicionar ou editar',
                     texto: 'Informe um nome fácil de reconhecer, o banco e o tipo da conta. O mesmo formulário também é usado para editar.'
                 },
                 {
                     alvo: '#conta-nome',
-                    titulo: '✏️ Nome personalizado',
+                    titulo: 'Nome personalizado',
                     texto: 'Use nomes como “Conta principal”, “Nubank pessoal” ou “Carteira” para identificar rapidamente.'
                 },
                 {
                     alvo: '#lista-contas',
-                    titulo: '📋 Contas cadastradas',
+                    titulo: 'Contas cadastradas',
                     texto: 'Aqui você encontra saldo, situação e ações de edição. Uma conta com movimentações exige atenção antes da exclusão.'
                 },
                 {
                     alvo: null,
-                    titulo: '✅ Contas organizadas',
+                    titulo: 'Contas organizadas',
                     texto: 'Depois de cadastrar, selecione a conta correta nos lançamentos e nas importações.'
                 }
             ]
@@ -105,37 +105,37 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '📥 Importe com segurança',
+                    titulo: 'Importe com segurança',
                     texto: 'Arquivos OFX e PDF passam por uma prévia antes de entrarem no dashboard.'
                 },
                 {
                     alvo: '#conta-importacao',
-                    titulo: '🏦 Escolha a conta correta',
+                    titulo: 'Escolha a conta correta',
                     texto: 'Este passo é obrigatório: todas as transações confirmadas serão vinculadas à conta selecionada.'
                 },
                 {
                     alvo: '#arquivo-extrato',
-                    titulo: '📄 Selecione o extrato',
+                    titulo: 'Selecione o extrato',
                     texto: 'Escolha o arquivo fornecido pelo banco. O sistema aceita os formatos indicados na página.'
                 },
                 {
                     alvo: '#btn-analisar',
-                    titulo: '🔎 Analisar primeiro',
+                    titulo: 'Analisar primeiro',
                     texto: 'A análise identifica banco, quantidade, valores e possíveis duplicidades sem salvar as transações.'
                 },
                 {
                     alvo: ['#secao-previa:not([hidden])', '#btn-analisar'],
-                    titulo: '✅ Revise a prévia',
+                    titulo: 'Revise a prévia',
                     texto: 'Depois de analisar o arquivo, confira descrições, datas, categorias e valores. Só use “Confirmar” quando as informações estiverem corretas.'
                 },
                 {
                     alvo: '#historico-importacoes',
-                    titulo: '🕘 Histórico e desfazer',
+                    titulo: 'Histórico e desfazer',
                     texto: 'Consulte os lotes já processados e desfaça uma importação quando a opção estiver disponível.'
                 },
                 {
                     alvo: null,
-                    titulo: '🎉 Importação apresentada',
+                    titulo: 'Importação apresentada',
                     texto: 'Sempre confira a conta e a prévia; isso evita lançamentos no lugar errado.'
                 }
             ]
@@ -145,32 +145,32 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '📅 Antecipe seu mês',
+                    titulo: 'Antecipe seu mês',
                     texto: 'Cadastre receitas e despesas recorrentes para visualizar compromissos futuros.'
                 },
                 {
                     alvo: '#form-recorrencia',
-                    titulo: '🔁 Nova recorrência',
+                    titulo: 'Nova recorrência',
                     texto: 'Informe descrição, valor, tipo, categoria, dia do mês, conta e período de validade.'
                 },
                 {
                     alvo: '#rec-conta',
-                    titulo: '🏦 Conta da recorrência',
+                    titulo: 'Conta da recorrência',
                     texto: 'Selecione a conta que receberá a movimentação quando ela for processada.'
                 },
                 {
                     alvo: '#lista-recorrencias',
-                    titulo: '📋 Recorrências cadastradas',
+                    titulo: 'Recorrências cadastradas',
                     texto: 'Acompanhe os registros ativos e remova os que não devem mais aparecer no planejamento.'
                 },
                 {
                     alvo: '.resumo-calendario',
-                    titulo: '💰 Saldo previsto',
+                    titulo: 'Saldo previsto',
                     texto: 'Compare o saldo atual com a projeção depois das movimentações previstas para o mês.'
                 },
                 {
                     alvo: '#eventos-calendario',
-                    titulo: '🗓️ Movimentações do mês',
+                    titulo: 'Movimentações do mês',
                     texto: 'Veja os eventos ordenados por data e identifique o que já ocorreu ou ainda está previsto.'
                 }
             ]
@@ -180,32 +180,32 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '🚧 Controle por categoria',
+                    titulo: 'Controle por categoria',
                     texto: 'Defina um teto mensal e receba avisos antes de ultrapassá-lo.'
                 },
                 {
                     alvo: '#nova-meta-cat',
-                    titulo: '🏷️ Escolha a categoria',
+                    titulo: 'Escolha a categoria',
                     texto: 'Cada categoria pode ter seu próprio limite e seus próprios percentuais de aviso.'
                 },
                 {
                     alvo: '#nova-meta-valor',
-                    titulo: '💵 Informe o limite',
+                    titulo: 'Informe o limite',
                     texto: 'Digite o valor máximo que pretende gastar nessa categoria durante o mês.'
                 },
                 {
                     alvo: '.campo-percentuais',
-                    titulo: '🔔 Vários percentuais',
+                    titulo: 'Vários percentuais',
                     texto: 'Adicione quantos avisos precisar, como 50%, 70% e 90%. Não é necessário usar intervalos de dez em dez.'
                 },
                 {
                     alvo: '#form-limite',
-                    titulo: '💾 Salvar configuração',
+                    titulo: 'Salvar configuração',
                     texto: 'Grave o limite depois de revisar categoria, valor e percentuais.'
                 },
                 {
                     alvo: '#editor-container',
-                    titulo: '📊 Limites existentes',
+                    titulo: 'Limites existentes',
                     texto: 'Acompanhe o consumo de cada categoria e altere configurações quando necessário.'
                 }
             ]
@@ -215,27 +215,27 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '🎯 Transforme planos em objetivos',
+                    titulo: 'Transforme planos em objetivos',
                     texto: 'Use esta página para objetivos de poupança, como viagem, reserva ou compra importante. Categorias apenas classificam movimentações.'
                 },
                 {
                     alvo: '#form-objetivo',
-                    titulo: '➕ Criar um objetivo',
+                    titulo: 'Criar um objetivo',
                     texto: 'Defina nome, valor desejado, valor inicial, prazo e cor de identificação.'
                 },
                 {
                     alvo: '#objetivo-inicial',
-                    titulo: '💰 Valor já guardado',
+                    titulo: 'Valor já guardado',
                     texto: 'Se você já começou a economizar, informe o valor inicial para o progresso começar corretamente.'
                 },
                 {
                     alvo: ['.objetivo-card:first-child', '#lista-objetivos'],
-                    titulo: '📈 Acompanhar progresso',
+                    titulo: 'Acompanhar progresso',
                     texto: 'Os cartões mostram quanto já foi acumulado, quanto falta e o prazo de cada objetivo.'
                 },
                 {
                     alvo: ['.objetivo-card:first-child', '#lista-objetivos'],
-                    titulo: '➕ Registrar contribuições',
+                    titulo: 'Registrar contribuições',
                     texto: 'Dentro de cada cartão, registre contribuições manuais. Você também pode destinar uma transação explicitamente pelo dashboard.'
                 }
             ]
@@ -245,32 +245,32 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '🔔 Central de notificações',
+                    titulo: 'Central de notificações',
                     texto: 'Aqui ficam avisos de limites, segurança e outras informações importantes da sua conta.'
                 },
                 {
                     alvo: '#filtro-status',
-                    titulo: '🔎 Filtrar por situação',
+                    titulo: 'Filtrar por situação',
                     texto: 'Mostre todas as notificações ou concentre-se apenas nas que ainda não foram lidas.'
                 },
                 {
                     alvo: '#filtro-tipo',
-                    titulo: '🏷️ Filtrar por tipo',
+                    titulo: 'Filtrar por tipo',
                     texto: 'Use o tipo para encontrar rapidamente avisos de limite ou mensagens específicas.'
                 },
                 {
                     alvo: ['.notificacao:first-child', '#lista-notificacoes'],
-                    titulo: '📨 Seus avisos',
+                    titulo: 'Seus avisos',
                     texto: 'Abra e acompanhe as notificações. Você também pode marcar todas como lidas.'
                 },
                 {
                     alvo: '.switch-row',
-                    titulo: '⚙️ Preferências',
+                    titulo: 'Preferências',
                     texto: 'Escolha receber avisos no site, por e-mail ou pelos dois canais.'
                 },
                 {
                     alvo: '#pref-inicio',
-                    titulo: '🌙 Horário silencioso',
+                    titulo: 'Horário silencioso',
                     texto: 'Defina um período em que os e-mails de alerta devem aguardar.'
                 }
             ]
@@ -280,27 +280,27 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '📊 Entenda o seu mês',
+                    titulo: 'Entenda o seu mês',
                     texto: 'O relatório reúne receitas, despesas e categorias de um período mensal.'
                 },
                 {
                     alvo: '.filtros',
-                    titulo: '🗓️ Escolha o período',
+                    titulo: 'Escolha o período',
                     texto: 'Selecione mês, ano e, se desejar, uma conta bancária específica.'
                 },
                 {
                     alvo: '.btn-gerar',
-                    titulo: '⚙️ Gerar relatório',
+                    titulo: 'Gerar relatório',
                     texto: 'O relatório é calculado com os filtros atuais. Altere os filtros e gere novamente sempre que precisar.'
                 },
                 {
                     alvo: ['#card-resultado:not([hidden])', '.filtros'],
-                    titulo: '📋 Resultado detalhado',
+                    titulo: 'Resultado detalhado',
                     texto: 'Confira totais, movimentações e categorias encontradas no mês.'
                 },
                 {
                     alvo: ['.btn-pdf:not([hidden])', '.btn-gerar'],
-                    titulo: '⬇ Exportar em PDF',
+                    titulo: 'Exportar em PDF',
                     texto: 'Quando o resultado estiver correto, gere o documento para guardar ou compartilhar.'
                 }
             ]
@@ -310,32 +310,32 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '✨ Análise Premium',
+                    titulo: 'Análise Premium',
                     texto: 'Combine datas, contas, categorias e tipos para criar uma visão personalizada.'
                 },
                 {
                     alvo: '#form-filtros',
-                    titulo: '🔎 Filtros combinados',
+                    titulo: 'Filtros combinados',
                     texto: 'Defina o intervalo e refine por conta, categoria ou tipo de movimentação.'
                 },
                 {
                     alvo: '.resumo-grid',
-                    titulo: '💰 Totais do período',
+                    titulo: 'Totais do período',
                     texto: 'Veja receitas, despesas e resultado calculados para os filtros escolhidos.'
                 },
                 {
                     alvo: ['#grafico-categorias:not(:empty)', '.resumo-grid', '#form-filtros'],
-                    titulo: '📊 Despesas por categoria',
+                    titulo: 'Despesas por categoria',
                     texto: 'Compare visualmente quais categorias mais pesaram no período.'
                 },
                 {
                     alvo: ['#baixar-excel:not([hidden])', '#form-filtros'],
-                    titulo: '⬇ Exportar dados',
+                    titulo: 'Exportar dados',
                     texto: 'Baixe o Excel para manter o relatório formatado. O CSV continua disponível para dados simples.'
                 },
                 {
                     alvo: ['#tabela-transacoes tr:first-child', '.table-wrap', '#form-filtros'],
-                    titulo: '📋 Transações encontradas',
+                    titulo: 'Transações encontradas',
                     texto: 'Consulte a lista completa que compõe os totais e gráficos.'
                 }
             ]
@@ -345,22 +345,22 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '📆 Compare os meses',
+                    titulo: 'Compare os meses',
                     texto: 'Identifique meses de maior gasto, melhores resultados e mudanças no comportamento financeiro.'
                 },
                 {
                     alvo: '.filtros',
-                    titulo: '🗓️ Escolha o ano',
+                    titulo: 'Escolha o ano',
                     texto: 'Selecione o ano que deseja analisar e gere o comparativo.'
                 },
                 {
                     alvo: ['#card-resultado:not([hidden])', '.filtros'],
-                    titulo: '📋 Resumo anual',
+                    titulo: 'Resumo anual',
                     texto: 'O resultado destaca diferenças entre meses e os principais pontos do período.'
                 },
                 {
                     alvo: ['#graficoComparativo', '#card-resultado:not([hidden])', '.filtros'],
-                    titulo: '📊 Evolução visual',
+                    titulo: 'Evolução visual',
                     texto: 'Use o gráfico para comparar entradas, saídas e resultado ao longo do ano.'
                 }
             ]
@@ -370,27 +370,27 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '🛡️ Gerencie seu plano',
+                    titulo: 'Gerencie seu plano',
                     texto: 'Consulte o plano atual, período de teste, situação do pagamento e recursos disponíveis.'
                 },
                 {
                     alvo: '#card-assinatura',
-                    titulo: '📌 Situação da assinatura',
+                    titulo: 'Situação da assinatura',
                     texto: 'Este cartão informa se o plano está ativo, em teste, cancelado ou aguardando alguma ação.'
                 },
                 {
                     alvo: ['.planos-grid', '#card-assinatura'],
-                    titulo: '⚖️ Compare os planos',
+                    titulo: 'Compare os planos',
                     texto: 'Veja o que está incluído no Gratuito e no Premium antes de tomar uma decisão.'
                 },
                 {
                     alvo: ['.btn-upgrade', '#card-assinatura'],
-                    titulo: '🚀 Ativar Premium',
+                    titulo: 'Ativar Premium',
                     texto: 'Use este botão para iniciar o pagamento quando desejar liberar os recursos Premium.'
                 },
                 {
                     alvo: ['.btn-cancelar-assinatura', '#card-assinatura'],
-                    titulo: '🛑 Cancelamento',
+                    titulo: 'Cancelamento',
                     texto: 'Quando houver assinatura recorrente, o cancelamento precisa ser confirmado pelo Mercado Pago para impedir novas cobranças.'
                 }
             ]
@@ -400,27 +400,27 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '👤 Personalize seu perfil',
+                    titulo: 'Personalize seu perfil',
                     texto: 'Altere como sua conta aparece sem remover a marca GBM do cabeçalho.'
                 },
                 {
                     alvo: '#capa-perfil',
-                    titulo: '🖼️ Imagem de capa',
+                    titulo: 'Imagem de capa',
                     texto: 'Escolha uma capa JPG, PNG ou WebP para personalizar o topo do perfil.'
                 },
                 {
                     alvo: '#foto-perfil',
-                    titulo: '📷 Foto do usuário',
+                    titulo: 'Foto do usuário',
                     texto: 'A foto escolhida aparecerá separada do botão de menu e servirá como atalho para o perfil.'
                 },
                 {
                     alvo: '#nome-exibicao',
-                    titulo: '✏️ Nome de exibição',
+                    titulo: 'Nome de exibição',
                     texto: 'Defina o nome que será mostrado no cabeçalho e em outras áreas da sua conta.'
                 },
                 {
                     alvo: '#btn-salvar',
-                    titulo: '💾 Salvar alterações',
+                    titulo: 'Salvar alterações',
                     texto: 'Depois de revisar a prévia, grave as alterações para aplicá-las no site.'
                 }
             ]
@@ -430,27 +430,27 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '🔐 Controle seus dados',
+                    titulo: 'Controle seus dados',
                     texto: 'Acompanhe a proteção das informações, exporte uma cópia e gerencie seu consentimento.'
                 },
                 {
                     alvo: '#exportar',
-                    titulo: '⬇ Exportar meus dados',
+                    titulo: 'Exportar meus dados',
                     texto: 'Baixe um JSON com os dados vinculados à sua conta para consulta ou portabilidade.'
                 },
                 {
                     alvo: '#status-criptografia',
-                    titulo: '🛡️ Proteção de informações',
+                    titulo: 'Proteção de informações',
                     texto: 'Este indicador confirma se a chave de proteção está ativa no servidor.'
                 },
                 {
                     alvo: '#consentimento',
-                    titulo: '✅ Consentimento',
+                    titulo: 'Consentimento',
                     texto: 'Registre sua escolha sobre o tratamento necessário para o funcionamento do serviço.'
                 },
                 {
                     alvo: 'a[href="configuracoes.html"]',
-                    titulo: '⚠️ Exclusão definitiva',
+                    titulo: 'Exclusão definitiva',
                     texto: 'A exclusão é realizada na Zona de exclusão das Configurações e não pode ser desfeita.'
                 }
             ]
@@ -460,22 +460,22 @@
             passos: [
                 {
                     alvo: null,
-                    titulo: '💬 Entre em contato',
+                    titulo: 'Entre em contato',
                     texto: 'Envie dúvidas, sugestões ou relate um problema relacionado à sua conta GBM.'
                 },
                 {
                     alvo: '#assunto',
-                    titulo: '🏷️ Escolha o assunto',
+                    titulo: 'Escolha o assunto',
                     texto: 'Selecione o tema mais próximo da sua solicitação para facilitar o atendimento.'
                 },
                 {
                     alvo: '#mensagem',
-                    titulo: '✍️ Descreva com detalhes',
+                    titulo: 'Descreva com detalhes',
                     texto: 'Informe o que aconteceu, em qual página e qual resultado esperava. Não envie senha nem chaves secretas.'
                 },
                 {
                     alvo: '#btnSubmit',
-                    titulo: '📨 Enviar solicitação',
+                    titulo: 'Enviar solicitação',
                     texto: 'Revise a mensagem antes do envio. A confirmação aparecerá na própria página.'
                 }
             ]

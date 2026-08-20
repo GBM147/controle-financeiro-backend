@@ -183,7 +183,7 @@
 </header>
 
 <div class="page-wrapper">
-    <h2 class="titulo-pagina">🛡️ Minha Assinatura</h2>
+    <h2 class="titulo-pagina">Minha Assinatura</h2>
 
     <div class="card" id="card-assinatura">
         <p style="text-align: center; color: var(--texto-mutado);">Carregando informações...</p>
@@ -233,7 +233,7 @@
                 const expira = new Date(data.trial_expira).toLocaleDateString('pt-BR');
                 infoPremiumHtml = `1º Cobrança em: ${expira}`;
                 botaoPremiumHtml = `
-                    <button onclick="window.location.href='pagamento.html'" class="btn-upgrade">🚀 Assinar Definitivo</button>
+                    <button onclick="window.location.href='pagamento.html'" class="btn-upgrade">Assinar Definitivo</button>
                     <button class="btn-cancelar-assinatura" style="margin-top: 15px; width: 100%;" onclick="pedirCancelamento()">Cancelar Teste</button>
                 `;
                 
@@ -241,13 +241,13 @@
                 statusPremiumHtml = '<span class="badge-status status-cancelado">Cancelado (No Prazo)</span>';
                 infoPremiumHtml = `Acesso premium até ${new Date(data.trial_expira).toLocaleDateString('pt-BR')}`;
                 botaoPremiumHtml = `
-                    <button onclick="window.location.href='pagamento.html'" class="btn-upgrade">🚀 Reativar Premium Agora</button>
+                    <button onclick="window.location.href='pagamento.html'" class="btn-upgrade">Reativar Premium Agora</button>
                 `;
             } else {
                 statusPremiumHtml = '<span class="badge-status" style="background: rgba(255,255,255,0.05); color: #8a9ba8; border: 1px solid rgba(255,255,255,0.1);">Inativo</span>';
                 infoPremiumHtml = `Faça o upgrade para liberar todos os recursos.`;
                 botaoPremiumHtml = `
-                    <button onclick="window.location.href='pagamento.html'" class="btn-upgrade">🚀 Fazer Upgrade Agora</button>
+                    <button onclick="window.location.href='pagamento.html'" class="btn-upgrade">Fazer Upgrade Agora</button>
                 `;
             }
 
@@ -263,15 +263,15 @@
                         <h2 style="margin:0 0 25px 0; color: #8a9ba8; font-size: 1.8rem;">R$ 0,00 <span style="font-size: 0.9rem; font-weight: 400;">/ mês</span></h2>
                         
                         <ul class="plano-features">
-                            <li>✔️ Importação de OFX e PDF</li>
-                            <li>✔️ Lançamentos Manuais e Edição</li>
-                            <li>✔️ Dashboard de Resumo Financeiro</li>
-                            <li>✔️ Objetivos de poupança, Limites e Calendário</li>
-                            <li>✔️ Contas e Notificações</li>
-                            <li>✔️ Instalação como App (PWA)</li>
-                            <li class="feature-inativa">❌ Relatórios Mensais Detalhados</li>
-                            <li class="feature-inativa">❌ Comparativos de Gastos</li>
-                            <li style="color: #ff9800;">⚠️ Plataforma com Anúncios</li>
+                            <li>Importação de OFX e PDF</li>
+                            <li>Lançamentos Manuais e Edição</li>
+                            <li>Dashboard de Resumo Financeiro</li>
+                            <li>Objetivos de poupança, Limites e Calendário</li>
+                            <li>Contas e Notificações</li>
+                            <li>Instalação como App (PWA)</li>
+                            <li class="feature-inativa">Relatórios Mensais Detalhados</li>
+                            <li class="feature-inativa">Comparativos de Gastos</li>
+                            <li style="color: #ff9800;">Plataforma com Anúncios</li>
                         </ul>
                         
                         ${isFreeActive 
@@ -287,15 +287,15 @@
                         <h2 style="margin:0 0 25px 0; color: #fff; font-size: 1.8rem;">R$ 9,90 <span style="font-size: 0.9rem; font-weight: 400; color: #8a9ba8;">/ mês</span></h2>
                         
                         <ul class="plano-features">
-                            <li>✔️ Importação de OFX e PDF</li>
-                            <li>✔️ Lançamentos Manuais e Edição</li>
-                            <li>✔️ Dashboard de Resumo Financeiro</li>
-                            <li>✔️ Objetivos de poupança, Limites e Calendário</li>
-                            <li>✔️ Contas e Notificações</li>
-                            <li>✔️ Instalação como App (PWA)</li>
-                            <li style="color: #3cb371; font-weight: 500;">✨ Relatórios Mensais Detalhados</li>
-                            <li style="color: #3cb371; font-weight: 500;">✨ Comparativos de Gastos</li>
-                            <li style="color: #3cb371; font-weight: 500;">🚫 Experiência Zero Anúncios</li>
+                            <li>Importação de OFX e PDF</li>
+                            <li>Lançamentos Manuais e Edição</li>
+                            <li>Dashboard de Resumo Financeiro</li>
+                            <li>Objetivos de poupança, Limites e Calendário</li>
+                            <li>Contas e Notificações</li>
+                            <li>Instalação como App (PWA)</li>
+                            <li style="color: #3cb371; font-weight: 500;">Relatórios Mensais Detalhados</li>
+                            <li style="color: #3cb371; font-weight: 500;">Comparativos de Gastos</li>
+                            <li style="color: #3cb371; font-weight: 500;">Experiência Zero Anúncios</li>
                         </ul>
                         
                         <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -349,11 +349,9 @@
 
     function gbmAlerta(mensagem, tipo = 'info') {
         const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)' : tipo === 'aviso' ? 'rgba(245,158,11,0.3)' : 'rgba(95,255,168,0.3)';
-        const icone = tipo === 'erro'  ? '❌' : tipo === 'aviso' ? '⚠️' : '✅';
 
         document.getElementById('lista-notificacoes-modal').innerHTML = `
             <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
                 ${escaparMensagemModal(mensagem)}
             </div>`;
         document.getElementById('btn-confirmar-modal').style.display = 'none';
@@ -367,7 +365,6 @@
             _resolveConfirm = resolve;
             document.getElementById('lista-notificacoes-modal').innerHTML = `
                 <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                    <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
                     ${escaparMensagemModal(mensagem)}
                 </div>`;
             document.getElementById('btn-confirmar-modal').style.display = 'block';

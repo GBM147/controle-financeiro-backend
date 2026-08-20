@@ -86,7 +86,7 @@
                 <textarea id="mensagem" rows="5" placeholder="Descreva sua solicitação com detalhes..." required></textarea>
             </div>
 
-            <button type="submit" class="btn-enviar" id="btnSubmit">Enviar Mensagem 🚀</button>
+            <button type="submit" class="btn-enviar" id="btnSubmit">Enviar Mensagem</button>
         </form>
 
         <div id="mensagem-status"></div>
@@ -107,7 +107,7 @@
             }
             const userId = pegarUserId();
 
-            btnSubmit.innerText = 'Enviando... ⏳';
+            btnSubmit.innerText = 'Enviando...';
             btnSubmit.disabled = true;
 
             try {
@@ -133,7 +133,7 @@
                 statusDiv.innerText = 'Erro ao enviar mensagem: ' + (error.message || 'tente novamente mais tarde.');
                 statusDiv.style.display = 'block';
             } finally {
-                btnSubmit.innerText = 'Enviar Mensagem 🚀';
+                btnSubmit.innerText = 'Enviar Mensagem';
                 btnSubmit.disabled = false;
             }
         });

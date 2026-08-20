@@ -66,6 +66,57 @@ test('login informa ao usuário quando as credenciais são recusadas', () => {
     assert.match(login, /gbmAlerta\(data\.message \|\| 'E-mail ou senha incorretos\.'/);
 });
 
+test('login temporário usa a sessão do servidor sem depender do storage', () => {
+    const servidor = ler('index.js');
+    const login = ler('public/login.html');
+    const dashboard = ler('public/dashboard.html');
+    const autenticacao = ler('public/auth.js');
+
+    assert.match(login, /JSON\.stringify\([\s\S]*manterConectado/);
+    assert.match(servidor, /configurarPersistenciaSessao\(req\.session, manterConectado\)/);
+    assert.match(servidor, /app\.post\('\/logout'/);
+    assert.match(dashboard, /fetchApi\('\/login-status'\)/);
+    assert.doesNotMatch(dashboard, /if \(!pegarUserId\(\)\)\s*\{\s*window\.location\.href/);
+    assert.match(autenticacao, /fetch\('\/logout', \{ method: 'POST', credentials: 'include' \}\)/);
+});
+
+test('modal permite exclusão individual e salva categorias em lote', () => {
+    const servidor = ler('index.js');
+    const dashboard = ler('public/dashboard.html');
+
+    assert.match(servidor, /app\.post\('\/corrigir-categorias', exigirLogin/);
+    assert.match(servidor, /app\.delete\('\/transacoes\/:id', exigirLogin/);
+    assert.match(servidor, /DELETE t[\s\S]*JOIN contas_bancarias cb[\s\S]*cb\.usuario_id = \?/);
+    assert.match(dashboard, /function salvarCorrecoesCategoria\(\)/);
+    assert.match(dashboard, /function excluirTransacao\(transacaoId\)/);
+    assert.equal((dashboard.match(/id="btn-salvar-categorias"/g) || []).length, 1);
+    assert.doesNotMatch(dashboard, /onclick="salvarCorrecao\(/);
+});
+
+test('interface não contém emojis e o menu usa capitalização comum sem brilho verde', () => {
+    const extensoesTexto = new Set(['.css', '.html', '.js', '.json', '.txt', '.xml']);
+    const arquivosPublicos = fs.readdirSync(path.join(raiz, 'public'), { recursive: true })
+        .filter((arquivo) => extensoesTexto.has(path.extname(String(arquivo)).toLowerCase()))
+        .map((arquivo) => path.join('public', String(arquivo)));
+    const emoji = /[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Emoji_Modifier}\uFE0F\u200D\u20E3]/u;
+
+    for (const arquivo of ['index.js', ...arquivosPublicos]) {
+        const conteudo = ler(arquivo);
+        assert.doesNotMatch(conteudo, emoji, `${arquivo} ainda contém emoji`);
+        assert.doesNotMatch(conteudo, /☰/, `${arquivo} ainda contém símbolo decorativo de menu`);
+    }
+
+    const dashboard = ler('public/dashboard.html');
+    const regraMenu = dashboard.match(/\.sidebar-content \.menu-item \{([\s\S]*?)\}/)?.[1] || '';
+    assert.match(regraMenu, /text-transform:\s*none/);
+    assert.match(regraMenu, /text-shadow:\s*none/);
+    assert.doesNotMatch(regraMenu, /#5fffa8|rgba\(95,\s*255,\s*168/i);
+    assert.match(dashboard, />Minhas contas<\/a>/);
+    assert.match(dashboard, />Limite de gastos<\/a>/);
+    assert.match(dashboard, />Relatório mensal<\/span>/);
+    assert.match(dashboard, />Comparativo mensal<\/span>/);
+});
+
 test('scripts embutidos e links locais das páginas são válidos', () => {
     const paginas = fs.readdirSync(path.join(raiz, 'public'), { recursive: true })
         .filter((arquivo) => String(arquivo).endsWith('.html'));

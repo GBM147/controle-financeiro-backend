@@ -130,7 +130,7 @@
         function renderizarPrevia() {
             const selecionadas = previa.transacoes.filter((item) => item.selecionada);
             const total = selecionadas.reduce((soma, item) => soma + Number(item.valor || 0), 0);
-            document.getElementById('previa-banco').textContent = `🏦 ${previa.banco_detectado || 'Outro banco'}`;
+            document.getElementById('previa-banco').textContent = previa.banco_detectado || 'Outro banco';
             document.getElementById('previa-quantidade').textContent = `${selecionadas.length} selecionadas`;
             document.getElementById('previa-total').textContent = gbmMoeda(total);
             document.getElementById('corpo-previa').innerHTML = previa.transacoes.map((item, indice) => `

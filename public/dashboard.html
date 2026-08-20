@@ -131,61 +131,42 @@
         }
 
         .gbm-menu-container { position: relative; z-index: 1000; }
-        /* Botão GBM com gradiente animado igual ao título */
+        /* Botão do menu com acabamento neutro e sem brilho */
 .gbm-menu-btn {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 18px;
   border-radius: 10px;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
   cursor: pointer;
 
-  /* Fundo sólido escuro (sem efeito espelhado) */
-  background-color: #0f1a2b;
+  background: #0f1a2b;
   border: 1px solid rgba(93, 138, 255, 0.35);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-
-  /* Texto com o mesmo gradiente animado do título */
-  background-image: linear-gradient(
-    90deg,
-    #2E8B57 0%,
-    #5fffa8 25%,
-    #3d28ff 50%,
-    #655aff 75%,
-    #2E8B57 100%
-  );
-  background-size: 200% auto;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  animation: gbm-shine 4s linear infinite;
-
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .gbm-menu-btn:hover {
   transform: scale(1.04);
-  border-color: #5fffa8;
-  box-shadow: 0 0 18px rgba(95, 255, 168, 0.35);
-  animation-duration: 2s;
+  border-color: rgba(148, 163, 184, 0.7);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
-/* Mantém o ícone do menu (≡) sólido, sem virar transparente */
-.gbm-menu-btn .menu-icon {
-  -webkit-text-fill-color: #e6e6e6;
-  color: #e6e6e6;
-  background: none;
-}
-
-        .gbm-menu-btn:hover { background: rgba(46, 139, 87, 0.4) !important; }
+        .gbm-menu-btn:hover { background: #162338 !important; }
         .gbm-menu-logo { height: 40px !important; width: auto !important; border-radius: 4px; }
-        .hamburger-icon { font-size: 20px; }
+        .hamburger-icon {
+            display: inline-flex;
+            width: 22px;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .hamburger-icon span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            border-radius: 2px;
+            background: #d1d5db;
+        }
 
         /* --- MENU LATERAL (SIDEBAR TIPO GEMINI) --- */
         .menu-overlay {
@@ -210,7 +191,7 @@
             border-left: 1px solid var(--borda);
             box-shadow: -10px 0 40px rgba(0,0,0,0.6);
 
-            border-left: 1px solid var(--cor-destaque);
+            border-left: 1px solid rgba(148, 163, 184, 0.28);
             box-shadow: -10px 0 30px rgba(0,0,0,0.8);
             z-index: 9999;
             transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Deslize ultra suave */
@@ -257,30 +238,23 @@
             width: 6px;
         }
         .sidebar-content::-webkit-scrollbar-thumb {
-            background: rgba(95, 255, 168, 0.3);
+            background: rgba(148, 163, 184, 0.35);
             border-radius: 10px;
         }
 
         .sidebar-content .menu-item {
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            padding: 13px 28px;
-
-            background: linear-gradient(90deg, rgba(46,139,87,0.25), transparent);
-border-left: 4px solid var(--cor-destaque);
-color: #5fffa8;
-text-shadow: 0 0 8px rgba(95,255,168,0.5);
-
-            /* Correções Visuais Blindadas */
-            color: var(--texto-principal) !important; /* Força a letra a ficar branca */
-            text-decoration: none !important; /* Remove o sublinhado azul feio */
-            background: transparent !important; /* Remove qualquer fundo branco padrão */
             font-family: 'Inter', 'Montserrat', sans-serif;
             font-weight: 600;
-            display: block; /* Garante que o link ocupa a largura toda da gaveta */
+            font-size: 1rem;
+            text-transform: none;
+            letter-spacing: normal;
+            padding: 13px 28px;
+            border-left: 4px solid transparent;
+            color: #e5e7eb !important;
+            text-shadow: none;
+            text-decoration: none !important;
+            background: transparent !important;
+            display: block;
             transition: all 0.2s ease;
         }
 
@@ -300,11 +274,11 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             padding: 9px 28px 5px;
             color: #7f91a8;
             font-family: 'Inter', 'Montserrat', sans-serif;
-            font-size: .66rem;
-            font-weight: 800;
-            letter-spacing: .13em;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .04em;
             line-height: 1.25;
-            text-transform: uppercase;
+            text-transform: none;
         }
 
         .menu-grupo-premium {
@@ -328,9 +302,9 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         }
         
         .sidebar-content .menu-item:hover {
-            background: rgba(46, 139, 87, 0.15);
-            border-left: 4px solid var(--cor-destaque);
-            color: var(--cor-destaque);
+            background: rgba(255, 255, 255, 0.06) !important;
+            border-left-color: #64748b;
+            color: #fff !important;
         }
 
         .menu-item-com-indicador {
@@ -357,13 +331,14 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             display: none;
             align-items: center;
             justify-content: center;
-            width: 26px;
-            height: 26px;
+            min-height: 26px;
+            padding: 3px 8px;
             border: 1px solid rgba(245, 158, 11, 0.5);
-            border-radius: 50%;
+            border-radius: 999px;
             background: rgba(245, 158, 11, 0.12);
             color: #fbbf24;
-            font-size: 0.82rem;
+            font-size: 0.66rem;
+            font-weight: 700;
             text-shadow: none;
         }
 
@@ -510,7 +485,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     100% { left: 130%; }
 }
         /* =========================================
-           📲 MODO CELULAR (RESPONSIVIDADE)
+            MODO CELULAR (RESPONSIVIDADE)
            ========================================= */
         @media (max-width: 768px) {
             html,
@@ -788,7 +763,45 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         }
         .modal-gbm-fechar { background: transparent; font-size: 1.35rem; }
         .transacoes-scroll { width: 100%; overflow-x: auto; }
-        .transacoes-scroll table { min-width: 980px; }
+        .transacoes-scroll table { min-width: 1060px; }
+        .acoes-categorias-transacoes {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 12px;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 10px;
+            background: rgba(30,30,30,.96);
+            box-shadow: 0 8px 20px rgba(0,0,0,.25);
+        }
+        .resumo-alteracoes-categoria { color: #9ca3af; font-size: .82rem; }
+        .btn-salvar-categorias {
+            min-height: 44px;
+            padding: 9px 16px;
+            border: 0;
+            border-radius: 8px;
+            background: #2e8b57;
+            color: #fff;
+            font: 700 .82rem 'Inter', sans-serif;
+            cursor: pointer;
+        }
+        .btn-salvar-categorias:disabled { cursor: not-allowed; opacity: .5; }
+        .btn-excluir-transacao {
+            min-height: 44px;
+            padding: 8px 12px;
+            border: 1px solid rgba(248,113,113,.45);
+            border-radius: 8px;
+            background: rgba(127,29,29,.55);
+            color: #fecaca;
+            font: 700 .78rem 'Inter', sans-serif;
+            cursor: pointer;
+        }
+        .btn-excluir-transacao:disabled { cursor: wait; opacity: .6; }
         .vinculo-objetivo-atual {
             display: inline-flex;
             align-items: center;
@@ -829,6 +842,8 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             .modal-gbm { padding: 0; }
             .modal-gbm-dialogo { min-height: 100%; margin: 0; padding: 18px 14px; border-radius: 0; }
             .modal-gbm-dialogo-pequeno { min-height: auto; margin: auto 12px; border-radius: 14px; }
+            .acoes-categorias-transacoes { align-items: stretch; flex-direction: column; }
+            .btn-salvar-categorias { width: 100%; }
             .acoes-vinculo { flex-direction: column-reverse; }
             .acoes-vinculo button { width: 100%; }
         }
@@ -851,7 +866,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 
         <div class="gbm-menu-container">
             <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" style="position:relative;" aria-label="Abrir menu">
-                <span class="hamburger-icon">&#9776;</span>
+                <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
                 <span id="dot-alertas" style="display:none; position:absolute; top:2px; right:2px; width:9px; height:9px; background:#ef4444; border-radius:50%; box-shadow:0 0 4px #ef4444;"></span>
             </button>
         </div>
@@ -866,45 +881,45 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     <div class="sidebar-content">
         <div class="menu-grupo menu-grupo-ajuda" aria-labelledby="menu-titulo-ajuda">
             <p id="menu-titulo-ajuda" class="menu-grupo-titulo">Ajuda</p>
-            <a href="#" class="menu-item" onclick="iniciarTutorial(); fecharMenuLateral(); return false;">❓ Como usar o site</a>
+            <a href="#" class="menu-item" onclick="iniciarTutorial(); fecharMenuLateral(); return false;">Como usar o site</a>
         </div>
 
         <div class="menu-grupo" aria-labelledby="menu-titulo-movimentacoes">
             <p id="menu-titulo-movimentacoes" class="menu-grupo-titulo">Movimentações</p>
-            <a href="contas.html" class="menu-item">🏦 Minhas Contas</a>
-            <a href="importacoes.html" class="menu-item">📥 Importações</a>
+            <a href="contas.html" class="menu-item">Minhas contas</a>
+            <a href="importacoes.html" class="menu-item">Importações</a>
         </div>
 
         <div class="menu-grupo" aria-labelledby="menu-titulo-planejamento">
             <p id="menu-titulo-planejamento" class="menu-grupo-titulo">Planejamento</p>
-            <a href="calendario.html" class="menu-item">🗓️ Calendário</a>
-            <a href="limite-de-gastos.html" class="menu-item">🚧 Limite de Gastos</a>
-            <a href="metas.html" class="menu-item">🎯 Objetivos de poupança</a>
+            <a href="calendario.html" class="menu-item">Calendário</a>
+            <a href="limite-de-gastos.html" class="menu-item">Limite de gastos</a>
+            <a href="metas.html" class="menu-item">Objetivos de poupança</a>
         </div>
 
         <div class="menu-grupo menu-grupo-premium" aria-labelledby="menu-titulo-premium">
-            <p id="menu-titulo-premium" class="menu-grupo-titulo">Recursos Premium</p>
-            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório Mensal'); return false;">
-                <span class="menu-item-conteudo">📊 Relatório Mensal</span>
-                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
+            <p id="menu-titulo-premium" class="menu-grupo-titulo">Recursos premium</p>
+            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
+                <span class="menu-item-conteudo">Relatório mensal</span>
+                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
             </a>
-            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo Mensal'); return false;">
-                <span class="menu-item-conteudo">📆 Comparativo Mensal</span>
-                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso Premium" title="Recurso Premium">🔒</span>
+            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
+                <span class="menu-item-conteudo">Comparativo mensal</span>
+                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
             </a>
             <div id="aviso-recursos-premium" class="aviso-recursos-premium" role="status"></div>
         </div>
 
         <div class="menu-grupo menu-grupo-conta" aria-labelledby="menu-titulo-conta">
             <p id="menu-titulo-conta" class="menu-grupo-titulo">Conta e suporte</p>
-            <a href="configuracoes.html" class="menu-item">⚙️ Configurações</a>
+            <a href="configuracoes.html" class="menu-item">Configurações</a>
             <a href="notificacoes.html" id="item-notificacoes" class="menu-item menu-item-com-indicador">
-                <span class="menu-item-conteudo">🔔 Notificações</span>
+                <span class="menu-item-conteudo">Notificações</span>
                 <span class="menu-item-indicadores">
                     <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.7rem; padding:2px 8px; margin-left:8px;">0</span>
                 </span>
             </a>
-            <a href="#" class="menu-item texto-vermelho" onclick="fazerLogout(); return false;">🚪 Sair</a>
+            <a href="#" class="menu-item texto-vermelho" onclick="fazerLogout(); return false;">Sair</a>
         </div>
     </div>
 </div>
@@ -931,7 +946,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     </div>
 </div>
 <section class="insights-panel">
-    <h2>💡 O que merece atenção</h2>
+    <h2>O que merece atenção</h2>
     <div id="insights-lista" class="insights-lista">
         <div class="insight-item"><span>Analisando seu mês...</span></div>
     </div>
@@ -939,11 +954,11 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 <div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
     <div class="modal-gbm-dialogo">
         <div class="modal-gbm-topo">
-            <h2 id="titulo-modal-transacoes" style="margin:0;">📋 Categorias e objetivos das transações</h2>
+            <h2 id="titulo-modal-transacoes" style="margin:0;">Categorias e objetivos das transações</h2>
             <button type="button" class="modal-gbm-fechar" onclick="fecharModalTransacoes()" aria-label="Fechar transações">✕</button>
         </div>
         <p style="color:#a0a0a0; margin-bottom:20px; font-size:0.9rem;">
-            Corrija categorias ou destine uma transação a um objetivo de poupança. O vínculo nunca altera os dados da movimentação.
+            Corrija categorias, exclua uma movimentação ou destine-a a um objetivo de poupança. Salve todas as mudanças de categoria de uma só vez.
         </p>
         <div id="lista-transacoes-modal">Carregando...</div>
     </div>
@@ -951,7 +966,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
 <div id="modal-vinculo-objetivo" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-vinculo-objetivo" aria-hidden="true">
     <div class="modal-gbm-dialogo modal-gbm-dialogo-pequeno">
         <div class="modal-gbm-topo">
-            <h2 id="titulo-vinculo-objetivo" style="margin:0;">🎯 Destinar ao objetivo</h2>
+            <h2 id="titulo-vinculo-objetivo" style="margin:0;">Destinar ao objetivo</h2>
             <button type="button" class="modal-gbm-fechar" onclick="fecharVinculoObjetivo()" aria-label="Cancelar vínculo">✕</button>
         </div>
         <p id="resumo-transacao-vinculo" style="color:#d1d5db;line-height:1.5"></p>
@@ -970,7 +985,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     </div>
 </div>
 <div class="lancamento-rapido" style="margin: 0 20px 20px 20px; padding: 20px 25px;">
-    <h3 style="margin: 0 0 15px 0; font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: var(--texto-mutado);">✍️ Lançamento Rápido</h3>
+    <h3 style="margin: 0 0 15px 0; font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: var(--texto-mutado);">Lançamento Rápido</h3>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
         <select id="manual-conta" aria-label="Conta do lançamento" style="flex:1; min-width:150px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
             <option value="">Carregando contas...</option>
@@ -1002,7 +1017,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         </select>
         <input type="date" id="manual-data" style="flex:1; min-width:130px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
         <button class="btn-acao" onclick="salvarLancamentoManual()" style="background: var(--cor-destaque);">Lançar</button>
-        <button class="btn-acao" onclick="desfazerUltimo()" style="background: rgba(255,77,77,0.2); border: 1px solid #ff4d4d; color: #ff4d4d;" title="Desfazer último lançamento">↩ Desfazer</button>
+        <button class="btn-acao" onclick="desfazerUltimo()" style="background: rgba(255,77,77,0.2); border: 1px solid #ff4d4d; color: #ff4d4d;" title="Desfazer último lançamento">Desfazer</button>
     </div>
 </div>
 <div class="linha-paineis">
@@ -1095,7 +1110,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     <form id="form-upload-ofx" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
         <button type="button" class="btn-acao" style="background: #2E8B57;" onclick="window.location.href='importacoes.html'">Abrir Central de Importações</button>
         <button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" style="background: #6366f1;">
-    📋 Gerenciar Categorias
+     Gerenciar Categorias
 </button>
     </form>
 </div>
@@ -1146,20 +1161,16 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             if (testeOuPrazoAtivo) {
                 aviso.textContent = 'Relatório Mensal e Comparativo estão disponíveis durante o teste gratuito. Ao final do teste, esses recursos ficarão indisponíveis no plano grátis.';
             } else {
-                aviso.textContent = '🔒 Relatório Mensal e Comparativo são recursos Premium e não estão disponíveis no plano grátis.';
+                aviso.textContent = 'Relatório mensal e comparativo são recursos Premium e não estão disponíveis no plano grátis.';
             }
         }
 
         // --- GUARDA DE AUTENTICAÇÃO (FREEMIUM) ---
         window.promessaVerificacaoAcesso = (async function verificarAcesso() {
-            const userId = pegarUserId();
-            if (!userId) {
-                window.location.href = 'index.html';
-                return;
-            }
             try {
-                const res = await fetchApi('/login-status?userId=' + userId);
+                const res = await fetchApi('/login-status');
                 const data = await res.json();
+                sincronizarIdentidadeLocal(data);
 
                 let isPremium = false;
                 
@@ -1216,9 +1227,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         }
 
         function fazerLogout() {
-            localStorage.removeItem('userIdAtual');
-            sessionStorage.removeItem('userIdAtual');
-            window.location.href = 'index.html';
+            encerrarSessao();
         }
 
         async function carregarAtalhoPerfil() {
@@ -1244,13 +1253,6 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
             } catch (erro) {
                 console.warn('Não foi possível carregar o atalho de perfil.', erro);
             }
-        }
-
-        carregarAtalhoPerfil();
-
-        // Se não há sessão nenhuma, manda de volta pro login
-        if (!pegarUserId()) {
-            window.location.href = 'index.html';
         }
 
         let dadosAPI = [];
@@ -1339,7 +1341,7 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
         function etiquetaBanco(nomeBanco) {
             if (!nomeBanco) return '';
             const cor = BANCOS_CORES[nomeBanco] || '#607d8b';
-            return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;">🏦 ${escaparHtmlDashboard(nomeBanco)}</span>`;
+            return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;"> ${escaparHtmlDashboard(nomeBanco)}</span>`;
         }
         // Preenche a data de hoje no lançamento rápido para facilitar
         const inputData = document.getElementById('manual-data');
@@ -1675,13 +1677,9 @@ text-shadow: 0 0 8px rgba(95,255,168,0.5);
     const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
                 : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
                 :                    'rgba(95,255,168,0.3)';
-    const icone = tipo === 'erro'  ? '❌'
-                : tipo === 'aviso' ? '⚠️'
-                :                    '✅';
 
     document.getElementById('lista-notificacoes-modal').innerHTML = `
         <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-            <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
             ${escaparMensagemModal(mensagem)}
         </div>`;
 
@@ -1697,7 +1695,6 @@ function gbmConfirmar(mensagem) {
 
         document.getElementById('lista-notificacoes-modal').innerHTML = `
             <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
                 ${escaparMensagemModal(mensagem)}
             </div>`;
 
@@ -1719,12 +1716,12 @@ function fecharModalNotificacoes(confirmado = false) {
             if(event) event.stopPropagation();
             document.getElementById('sidebar-menu').classList.add('aberto');
             document.getElementById('menu-overlay').style.display = 'block';
-            document.body.style.overflow = 'hidden'; // 🔒 Trava o scroll do fundo
+            document.body.style.overflow = 'hidden'; //  Trava o scroll do fundo
         }
 
         function fecharMenuLateral() {
             document.getElementById('sidebar-menu').classList.remove('aberto');
-            document.body.style.overflow = ''; // 🔓 Libera o scroll do fundo
+            document.body.style.overflow = ''; //  Libera o scroll do fundo
             // Animação de sumiço rápido para a película
             setTimeout(() => {
                 document.getElementById('menu-overlay').style.display = 'none';
@@ -1880,7 +1877,7 @@ async function carregarObjetivosVinculo(forcar = false) {
 function renderizarAcaoObjetivoTransacao(transacao) {
     if (transacao.objetivo_id) {
         return `
-            <span class="vinculo-objetivo-atual">🎯 ${escaparHtmlDashboard(transacao.objetivo_nome)}</span><br>
+            <span class="vinculo-objetivo-atual"> ${escaparHtmlDashboard(transacao.objetivo_nome)}</span><br>
             <button type="button" class="btn-objetivo-transacao secundario"
                 onclick="desvincularTransacaoObjetivo(${Number(transacao.id)})"
                 aria-label="Desvincular a transação do objetivo ${escaparHtmlDashboard(transacao.objetivo_nome)}">
@@ -1914,7 +1911,17 @@ async function abrirModalTransacoes() {
             return;
         }
 
-        let html = `<div class="transacoes-scroll"><table style="width:100%; border-collapse:collapse;">
+        let html = `
+            <div class="acoes-categorias-transacoes">
+                <span id="resumo-alteracoes-categoria" class="resumo-alteracoes-categoria" aria-live="polite">
+                    Nenhuma categoria alterada.
+                </span>
+                <button type="button" id="btn-salvar-categorias" class="btn-salvar-categorias"
+                    onclick="salvarCorrecoesCategoria()" disabled>
+                    Salvar alterações
+                </button>
+            </div>
+            <div class="transacoes-scroll"><table style="width:100%; border-collapse:collapse;">
             <thead>
                 <tr style="color:#a0a0a0; font-size:0.85rem;">
                     <th style="text-align:left; padding:10px;">Data</th>
@@ -1922,8 +1929,8 @@ async function abrirModalTransacoes() {
                     <th style="text-align:left; padding:10px;">Valor</th>
                     <th style="text-align:left; padding:10px;">Banco</th>
                     <th style="text-align:left; padding:10px;">Categoria</th>
-                    <th style="padding:10px;">Salvar</th>
                     <th style="text-align:left; padding:10px;">Objetivo de poupança</th>
+                    <th style="padding:10px;">Excluir</th>
                 </tr>
             </thead><tbody>`;
 
@@ -1933,70 +1940,140 @@ async function abrirModalTransacoes() {
             const [ano, mes, dia] = String(t.data_transacao).slice(0, 10).split('-');
             const data = ano && mes && dia ? `${dia}/${mes}/${ano}` : '—';
             html += `
-                <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <tr id="transacao-${Number(t.id)}" style="border-bottom:1px solid rgba(255,255,255,0.05);">
                     <td style="padding:10px; font-size:0.8rem; color:#a0a0a0; white-space:nowrap;">${data}</td>
                     <td style="padding:10px; font-size:0.82rem; max-width:250px;">${escaparHtmlDashboard(t.descricao)}</td>
                     <td style="padding:10px; font-weight:bold; color:${cor}; white-space:nowrap;">${sinal} R$ ${Number(t.valor).toFixed(2)}</td>
                     <td style="padding:10px;">${etiquetaBanco(t.banco)}</td>
                     <td style="padding:10px;">
                         <label class="sr-only" for="cat-${Number(t.id)}">Categoria de ${escaparHtmlDashboard(t.descricao)}</label>
-                        <select id="cat-${Number(t.id)}" style="min-height:44px;background:#2a2a2a; border:1px solid rgba(255,255,255,0.15); color:white; padding:6px 8px; border-radius:6px; font-size:0.82rem; width:100%;">
+                        <select id="cat-${Number(t.id)}" onchange="atualizarEstadoSalvarCategorias()"
+                            style="min-height:44px;background:#2a2a2a; border:1px solid rgba(255,255,255,0.15); color:white; padding:6px 8px; border-radius:6px; font-size:0.82rem; width:100%;">
                             ${categoriasOpcoes(t.categoria)}
                         </select>
                     </td>
-                    <td style="padding:10px; text-align:center;">
-                        <button type="button" id="btn-${Number(t.id)}" onclick="salvarCorrecao(${Number(t.id)})"
-                            aria-label="Salvar categoria da transação"
-                            style="min-width:44px;min-height:44px;background:#2E8B57; border:none; color:white; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; transition:0.2s;">
-                            ✔
+                    <td style="padding:10px;min-width:190px;">${renderizarAcaoObjetivoTransacao(t)}</td>
+                    <td style="padding:10px;text-align:center;">
+                        <button type="button" id="excluir-transacao-${Number(t.id)}" class="btn-excluir-transacao"
+                            onclick="excluirTransacao(${Number(t.id)})"
+                            aria-label="Excluir somente a transação ${escaparHtmlDashboard(t.descricao)}">
+                            Excluir
                         </button>
                     </td>
-                    <td style="padding:10px;min-width:190px;">${renderizarAcaoObjetivoTransacao(t)}</td>
                 </tr>`;
         });
 
         html += '</tbody></table></div>';
         container.innerHTML = html;
+        atualizarEstadoSalvarCategorias();
     } catch (erro) {
         container.innerHTML = `<p style="color:#fca5a5;text-align:center;">${escaparHtmlDashboard(erro.message)}</p>`;
         gbmAlerta(erro.message, 'erro');
     }
 }
 
-async function salvarCorrecao(transacaoId) {
-    const transacao = transacoesModal.find((item) => Number(item.id) === Number(transacaoId));
-    if (!transacao) return;
-    const descricao = transacao.descricao;
-    const novaCategoria = document.getElementById(`cat-${transacaoId}`).value;
-    const btn = document.getElementById(`btn-${transacaoId}`);
+function obterAlteracoesCategorias() {
+    return transacoesModal.flatMap((transacao) => {
+        const select = document.getElementById(`cat-${Number(transacao.id)}`);
+        if (!select || select.value === String(transacao.categoria || '')) return [];
+        return [{
+            transacaoId: Number(transacao.id),
+            novaCategoria: select.value
+        }];
+    });
+}
 
-    btn.innerText = '...';
-    btn.disabled = true;
+function atualizarEstadoSalvarCategorias() {
+    const alteracoes = obterAlteracoesCategorias();
+    const botao = document.getElementById('btn-salvar-categorias');
+    const resumo = document.getElementById('resumo-alteracoes-categoria');
+    if (!botao || !resumo) return;
+    botao.disabled = alteracoes.length === 0;
+    resumo.textContent = alteracoes.length === 0
+        ? 'Nenhuma categoria alterada.'
+        : `${alteracoes.length} ${alteracoes.length === 1 ? 'categoria alterada' : 'categorias alteradas'}.`;
+}
+
+async function salvarCorrecoesCategoria() {
+    const alteracoes = obterAlteracoesCategorias();
+    if (!alteracoes.length) return;
+    const botao = document.getElementById('btn-salvar-categorias');
+    const textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Salvando...';
 
     try {
-        const userId = pegarUserId();
-        const res = await fetchApi('/corrigir-categoria', {
+        const resposta = await fetchApi('/corrigir-categorias', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ transacaoId, descricao, novaCategoria, userId })
+            body: JSON.stringify({ alteracoes })
         });
-        const data = await res.json();
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.error || 'Não foi possível salvar as categorias.');
 
-        if (data.success) {
-            btn.innerText = '✅';
-            btn.style.background = '#10b981';
-            // Atualiza o dashboard em segundo plano
-            carregarDados();
-            setTimeout(() => {
-                btn.innerText = '✔';
-                btn.style.background = '#2E8B57';
-                btn.disabled = false;
-            }, 2000);
+        const categoriasPorId = new Map(
+            alteracoes.map((alteracao) => [Number(alteracao.transacaoId), alteracao.novaCategoria])
+        );
+        transacoesModal.forEach((transacao) => {
+            if (categoriasPorId.has(Number(transacao.id))) {
+                transacao.categoria = categoriasPorId.get(Number(transacao.id));
+            }
+        });
+        atualizarEstadoSalvarCategorias();
+        carregarDados();
+        carregarInsights();
+        gbmAlerta(
+            `${dados.atualizadas} ${dados.atualizadas === 1 ? 'categoria foi atualizada' : 'categorias foram atualizadas'} com sucesso.`
+        );
+    } catch (erro) {
+        gbmAlerta(erro.message, 'erro');
+    } finally {
+        botao.textContent = textoOriginal;
+        atualizarEstadoSalvarCategorias();
+    }
+}
+
+async function excluirTransacao(transacaoId) {
+    const transacao = transacoesModal.find((item) => Number(item.id) === Number(transacaoId));
+    if (!transacao) return;
+    const valor = Math.abs(Number(transacao.valor || 0)).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+    const ok = await gbmConfirmar(
+        `Excluir somente a movimentação “${transacao.descricao}”, no valor de ${valor}? Esta ação não pode ser desfeita e não exclui outras parcelas, recorrências ou itens da mesma importação.`
+    );
+    if (!ok) return;
+
+    const botao = document.getElementById(`excluir-transacao-${Number(transacaoId)}`);
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = 'Excluindo...';
+    }
+
+    try {
+        const resposta = await fetchApi(`/transacoes/${Number(transacaoId)}`, { method: 'DELETE' });
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.error || 'Não foi possível excluir a movimentação.');
+
+        transacoesModal = transacoesModal.filter((item) => Number(item.id) !== Number(transacaoId));
+        document.getElementById(`transacao-${Number(transacaoId)}`)?.remove();
+        if (!transacoesModal.length) {
+            document.getElementById('lista-transacoes-modal').innerHTML =
+                '<p style="color:#a0a0a0;text-align:center;">Nenhuma transação neste período.</p>';
+        } else {
+            atualizarEstadoSalvarCategorias();
         }
-    } catch {
-        btn.innerText = '✖';
-        btn.style.background = '#ef4444';
-        btn.disabled = false;
+        if (transacao.objetivo_id) carregarObjetivosVinculo(true).catch(() => {});
+        carregarDados();
+        carregarInsights();
+        gbmAlerta('Movimentação excluída com sucesso.');
+    } catch (erro) {
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = 'Excluir';
+        }
+        gbmAlerta(erro.message, 'erro');
     }
 }
 
@@ -2176,7 +2253,7 @@ async function carregarAlertas() {
 function abrirPainelAlertas() {
     const alertas = window._alertasCache || [];
     if (alertas.length === 0) {
-        gbmAlerta('Nenhuma notificação por enquanto 🎉');
+        gbmAlerta('Nenhuma notificação por enquanto ');
         return;
     }
     const texto = alertas.map(a => `• ${a.mensagem}`).join('<br>');
@@ -2192,17 +2269,18 @@ function abrirPainelAlertas() {
 }
 
 window.promessaVerificacaoAcesso.then(() => {
+    carregarAtalhoPerfil();
     carregarAlertas();
     window.intervaloAlertas = setInterval(carregarAlertas, 60000);
+    // --- 5. LIGAR O MOTOR ---
+    carregarBancosInfo();
+    carregarCategorias();
+    carregarContasLancamento();
+    carregarDados();
+    carregarInsights();
 }).catch(() => {
     // verificarAcesso já redireciona sessões inválidas para a tela de login.
 });
-        // --- 5. LIGAR O MOTOR ---
-        carregarBancosInfo();
-        carregarCategorias();
-        carregarContasLancamento();
-        carregarDados();
-        carregarInsights();
     </script>
 
     <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">

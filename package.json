@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "check": "node --check index.js && node --check pdf-extrato-parser.js && node --check pdf-render.js && node --check ofx-parser.js && node --check file-signatures.js && node --check public/auth.js && node --check public/gbm-pages.js && node --check public/gbm-tutorial.js && node --check public/sw.js",
+    "check": "node --check index.js && node --check pdf-extrato-parser.js && node --check pdf-render.js && node --check ofx-parser.js && node --check file-signatures.js && node --check session-policy.js && node --check public/auth.js && node --check public/gbm-pages.js && node --check public/gbm-tutorial.js && node --check public/sw.js",
     "lint": "npm run check",
     "test": "node --test",
     "audit": "npm audit --omit=dev --audit-level=high"
