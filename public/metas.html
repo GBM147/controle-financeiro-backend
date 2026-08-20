@@ -49,7 +49,7 @@
             <h1>Objetivos de poupança</h1>
             <p>Planeje valores que deseja guardar e acompanhe quanto falta para chegar lá.</p>
         </div>
-        <section class="card" style="border-color:rgba(139,92,246,.35);margin-bottom:18px">
+        <section class="card" style="border-color:rgba(85,167,255,.35);margin-bottom:18px">
             <p style="margin:0;color:var(--muted);line-height:1.65">
                 <strong style="color:var(--text)">Categorias</strong> classificam suas movimentações.
                 <strong style="color:var(--text)">Objetivos de poupança</strong> só avançam quando você registra
@@ -79,7 +79,7 @@
                 </div>
                 <div class="field">
                     <label for="objetivo-cor">Cor</label>
-                    <input id="objetivo-cor" type="color" value="#8b5cf6">
+                    <input id="objetivo-cor" type="color" value="#55a7ff">
                 </div>
                 <div class="field" style="justify-content:end">
                     <div class="actions end">
@@ -208,7 +208,7 @@
             document.getElementById('objetivo-inicial').value = 0;
             document.getElementById('objetivo-inicial').disabled = true;
             document.getElementById('objetivo-prazo').value = objetivo.prazo ? String(objetivo.prazo).slice(0, 10) : '';
-            document.getElementById('objetivo-cor').value = objetivo.cor || '#8b5cf6';
+            document.getElementById('objetivo-cor').value = objetivo.cor || '#55a7ff';
             document.getElementById('titulo-form').textContent = 'Editar objetivo';
             document.getElementById('cancelar-edicao').hidden = false;
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -217,7 +217,7 @@
         function limparFormulario() {
             document.getElementById('form-objetivo').reset();
             document.getElementById('objetivo-id').value = '';
-            document.getElementById('objetivo-cor').value = '#8b5cf6';
+            document.getElementById('objetivo-cor').value = '#55a7ff';
             document.getElementById('objetivo-inicial').disabled = false;
             document.getElementById('titulo-form').textContent = 'Criar novo objetivo';
             document.getElementById('cancelar-edicao').hidden = true;

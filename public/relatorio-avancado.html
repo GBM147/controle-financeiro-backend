@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Relatório Avançado | GBM</title><link rel="stylesheet" href="gbm-pages.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
         .resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-        .categoria-barra{display:grid;grid-template-columns:minmax(100px,180px) 1fr auto;gap:10px;align-items:center;margin:10px 0}
-        .mini-barra{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}.mini-barra span{display:block;height:100%;background:var(--purple)}
         #tabela-transacoes table{min-width:900px}
         #tabela-transacoes th:last-child,#tabela-transacoes td:last-child{text-align:right;white-space:nowrap;font-weight:700}
-        @media(max-width:700px){.resumo-grid{grid-template-columns:1fr}.categoria-barra{grid-template-columns:90px 1fr}.categoria-barra>strong{grid-column:2}}
+        @media(max-width:700px){.resumo-grid{grid-template-columns:1fr}}
         @page{size:A4 landscape;margin:10mm}
         @media print{
             .topbar,.page-title,.filtros-card,.exportar-card,.actions,#gbm-tour-overlay,#gbm-tour-ajuda{display:none!important}
@@ -48,7 +47,23 @@
                 <div class="card stat">Resultado<br><strong id="total-resultado">R$ 0,00</strong></div>
             </div>
             <div class="grid grid-2" style="margin-top:18px">
-                <section class="card"><h2>Despesas por categoria</h2><div id="grafico-categorias"></div></section>
+                <section class="card">
+                    <div class="grafico-cabecalho">
+                        <div><h2>Despesas por categoria</h2><p style="color:var(--muted);margin:5px 0 0">Escolha a visualização mais útil para a análise.</p></div>
+                        <div class="field">
+                            <label for="tipo-grafico-relatorio">Tipo de gráfico</label>
+                            <select id="tipo-grafico-relatorio" onchange="renderizarGraficoCategorias()">
+                                <option value="bar">Barras</option>
+                                <option value="doughnut">Rosca</option>
+                                <option value="polarArea">Área polar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="relatorio-grafico-wrapper">
+                        <canvas id="grafico-categorias"></canvas>
+                        <div id="grafico-categorias-vazio" class="empty" hidden>Sem despesas no período.</div>
+                    </div>
+                </section>
                 <section class="card exportar-card"><h2>Exportar</h2><p style="color:var(--muted)">O Excel preserva o relatório formatado; use o CSV quando precisar apenas dos dados simples.</p><div class="actions"><button id="baixar-excel" class="btn btn-primary" type="button">Baixar Excel</button><button id="baixar-csv" class="btn" type="button">Baixar CSV</button><button id="baixar-pdf" class="btn" type="button">Baixar PDF</button></div></section>
             </div>
             <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap"></div></section>
@@ -57,6 +72,8 @@
     <script src="auth.js"></script><script src="gbm-pages.js"></script>
     <script>
         let relatorioAtual=null;
+        let graficoRelatorio=null;
+        let categoriasGraficoRelatorio=[];
         const hoje=new Date();const inicio=new Date(hoje.getFullYear(),hoje.getMonth(),1);
         document.getElementById('data-inicio').value=inicio.toISOString().slice(0,10);
         document.getElementById('data-fim').value=hoje.toISOString().slice(0,10);
@@ -89,15 +106,60 @@
             }
         }
         function renderizar(){
+            document.getElementById('resultado').hidden=false;
             const r=relatorioAtual.resumo;
             document.getElementById('total-receitas').textContent=gbmMoeda(r.receitas);
             document.getElementById('total-despesas').textContent=gbmMoeda(r.despesas);
             document.getElementById('total-resultado').textContent=gbmMoeda(r.resultado);
             document.getElementById('total-resultado').style.color=Number(r.resultado)>=0?'var(--green)':'var(--red)';
-            const categorias=Object.entries(r.por_categoria).sort((a,b)=>b[1]-a[1]);const max=categorias[0]?.[1]||1;
-            document.getElementById('grafico-categorias').innerHTML=categorias.length?categorias.slice(0,10).map(([nome,valor])=>`<div class="categoria-barra"><span>${gbmEscapar(nome)}</span><div class="mini-barra"><span style="width:${(valor/max)*100}%"></span></div><strong>${gbmMoeda(valor)}</strong></div>`).join(''):'<div class="empty">Sem despesas no período.</div>';
+            const categorias=Object.entries(r.por_categoria).sort((a,b)=>b[1]-a[1]);
+            categoriasGraficoRelatorio=categorias.slice(0,10);
+            renderizarGraficoCategorias();
             document.getElementById('tabela-transacoes').innerHTML=relatorioAtual.transacoes.length?`<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Valor</th></tr></thead><tbody>${relatorioAtual.transacoes.map(t=>`<tr><td>${gbmData(t.data_transacao)}</td><td>${gbmEscapar(t.descricao)}</td><td>${gbmEscapar(t.categoria)}</td><td>${gbmEscapar(t.conta)}</td><td>${gbmMoeda(t.valor)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhuma transação encontrada.</div>';
-            document.getElementById('resultado').hidden=false;
+        }
+
+        function renderizarGraficoCategorias(){
+            const canvas=document.getElementById('grafico-categorias');
+            const vazio=document.getElementById('grafico-categorias-vazio');
+            if(!canvas||!vazio)return;
+            if(graficoRelatorio){graficoRelatorio.destroy();graficoRelatorio=null}
+
+            const temDados=categoriasGraficoRelatorio.length>0;
+            canvas.hidden=!temDados;
+            vazio.hidden=temDados;
+            if(!temDados)return;
+
+            const tipo=document.getElementById('tipo-grafico-relatorio')?.value||'bar';
+            const cores=['rgba(57,217,138,.76)','rgba(85,167,255,.76)','rgba(37,140,91,.76)','rgba(61,88,255,.72)'];
+            const bordas=['#39d98a','#55a7ff','#258c5b','#3d58ff'];
+            const circular=tipo==='doughnut'||tipo==='polarArea';
+            graficoRelatorio=new Chart(canvas.getContext('2d'),{
+                type:tipo,
+                data:{
+                    labels:categoriasGraficoRelatorio.map(([nome])=>nome),
+                    datasets:[{
+                        label:'Despesas',
+                        data:categoriasGraficoRelatorio.map(([,valor])=>Number(valor)||0),
+                        backgroundColor:categoriasGraficoRelatorio.map((_,indice)=>cores[indice%cores.length]),
+                        borderColor:categoriasGraficoRelatorio.map((_,indice)=>bordas[indice%bordas.length]),
+                        borderWidth:1.5,
+                        borderRadius:tipo==='bar'?7:0,
+                        borderSkipped:false
+                    }]
+                },
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    scales:circular?undefined:{
+                        x:{grid:{display:false},ticks:{color:'#b0bec5'}},
+                        y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#b0bec5'}}
+                    },
+                    plugins:{
+                        legend:{display:circular,position:'bottom',labels:{color:'#eef6ff',boxWidth:12,padding:16}},
+                        tooltip:{callbacks:{label:(context)=>`${context.label}: ${gbmMoeda(context.raw)}`}}
+                    }
+                }
+            });
         }
 
         const NOMES_MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];

@@ -248,6 +248,89 @@
             .card { padding: 18px; }
             .grafico-wrapper { height: 280px; }
         }
+
+        /* Redesign aprovado: mantém o mármore e usa somente verde/azul como acentos. */
+        .gbm-header {
+            height: 74px;
+            padding: 0 34px;
+            background: rgba(7,17,31,.3);
+            border-bottom-color: rgba(255,255,255,.12);
+            backdrop-filter: blur(9px);
+        }
+        .btn-voltar,
+        .btn-voltar:hover {
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+        .btn-voltar:hover { color: #5fffa8; transform: translateX(-2px); }
+        .btn-voltar::after { content: none; }
+        .page-wrapper { max-width: 1320px; padding: 24px 27px 72px; }
+        .titulo-pagina {
+            margin: 0 0 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            text-align: left;
+            text-transform: none;
+        }
+        .card {
+            position: relative;
+            overflow: hidden;
+            padding: 22px;
+            border: 1px solid rgba(85,167,255,.2);
+            border-radius: 17px;
+            background: rgba(15,26,43,.96);
+            box-shadow: 0 14px 34px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.025);
+        }
+        .card::before {
+            position: absolute;
+            inset: 0 0 auto;
+            height: 1px;
+            background: linear-gradient(90deg,transparent,rgba(85,167,255,.4),transparent);
+            content: "";
+            pointer-events: none;
+        }
+        .card:hover {
+            border-color: rgba(85,167,255,.38);
+            box-shadow: 0 17px 38px rgba(0,0,0,.46), inset 0 1px rgba(255,255,255,.035);
+        }
+        .filtros { align-items: flex-end; gap: 14px; }
+        .campo-filtro { display: grid; min-width: 190px; gap: 7px; }
+        .campo-filtro label { color: var(--texto-mutado); font: 700 .75rem 'Inter',sans-serif; letter-spacing: .35px; }
+        .filtros select { min-height: 42px; border-color: rgba(255,255,255,.11); border-radius: 10px; background: rgba(12,27,45,.86); }
+        .filtros select:focus { border-color: rgba(85,167,255,.65); box-shadow: 0 0 0 3px rgba(85,167,255,.11); }
+        .resumo-ano {
+            display: grid;
+            grid-template-columns: repeat(4,minmax(0,1fr));
+            gap: 1px;
+            overflow: hidden;
+            border: 1px solid rgba(85,167,255,.2);
+            border-radius: 15px;
+            background: rgba(85,167,255,.2);
+        }
+        .resumo-item {
+            min-width: 0;
+            padding: 19px 21px;
+            border: 0;
+            border-radius: 0;
+            background: rgba(15,26,43,.98);
+            font-family: 'Inter',sans-serif;
+        }
+        .resumo-item strong { font-family: 'Rajdhani',sans-serif; font-size: 1.55rem; }
+        .grafico-wrapper { height: 410px; margin-top: 24px; }
+        tbody tr:hover { background: rgba(85,167,255,.045); }
+
+        @media (max-width: 900px) {
+            .resumo-ano { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        }
+        @media (max-width: 768px) {
+            .gbm-header { height: 62px; padding: 0 15px; }
+            .page-wrapper { padding: 20px 15px 56px; }
+            .campo-filtro, .btn-acao { width: 100%; }
+            .resumo-ano { grid-template-columns: minmax(0,1fr); }
+        }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
@@ -263,11 +346,22 @@
 
 <div class="page-wrapper">
 
-    <h2 class="titulo-pagina">Comparativo Mensal</h2>
+    <h2 class="titulo-pagina">Comparativo mensal</h2>
 
     <div class="card">
         <div class="filtros">
-            <select id="ano-ref"></select>
+            <div class="campo-filtro">
+                <label for="ano-ref">Ano de referência</label>
+                <select id="ano-ref"></select>
+            </div>
+            <div class="campo-filtro">
+                <label for="tipo-grafico-comparativo">Tipo de gráfico</label>
+                <select id="tipo-grafico-comparativo" onchange="trocarTipoGraficoComparativo()">
+                    <option value="bar">Barras agrupadas</option>
+                    <option value="line">Linhas</option>
+                    <option value="radar">Radar</option>
+                </select>
+            </div>
             <button class="btn-acao btn-gerar" onclick="carregarComparativo()">Atualizar</button>
         </div>
     </div>
@@ -316,6 +410,7 @@
         })();
 
         let meuGraficoComparativo = null;
+        let dadosGraficoComparativo = [];
 
         const NOMES_MESES = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                               'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -350,6 +445,7 @@
 
                 if (!dados || dados.length === 0) {
                     container.innerHTML = `<p class="texto-vazio">Nenhum dado encontrado para ${ano}.</p>`;
+                    dadosGraficoComparativo = [];
                     if (meuGraficoComparativo) { meuGraficoComparativo.destroy(); meuGraficoComparativo = null; }
                     return;
                 }
@@ -370,6 +466,7 @@
 
                 if (mesesComDados.length === 0) {
                     container.innerHTML = `<p class="texto-vazio">Nenhum dado encontrado para ${ano}.</p>`;
+                    dadosGraficoComparativo = [];
                     if (meuGraficoComparativo) { meuGraficoComparativo.destroy(); meuGraficoComparativo = null; }
                     return;
                 }
@@ -389,13 +486,13 @@
 
                 let html = `
                     <div class="resumo-ano">
-                        <div class="resumo-item">Total de Entradas
+                        <div class="resumo-item">Total de entradas
                             <strong style="color: var(--cor-receita);">R$ ${totalEntradas.toFixed(2)}</strong>
                         </div>
-                        <div class="resumo-item">Total de Saídas
+                        <div class="resumo-item">Total de saídas
                             <strong style="color: var(--cor-despesa);">R$ ${totalSaidas.toFixed(2)}</strong>
                         </div>
-                        <div class="resumo-item">Média de Gasto Mensal
+                        <div class="resumo-item">Média de gasto mensal
                             <strong>R$ ${mediaGastoMensal.toFixed(2)}</strong>
                         </div>
                         <div class="resumo-item">Mês mais econômico
@@ -439,53 +536,76 @@
                 html += '</tbody></table>';
                 container.innerHTML = html;
 
+                dadosGraficoComparativo = mesesCompletos;
                 desenharGrafico(mesesCompletos);
 
             } catch (error) {
                 console.error(error);
+                dadosGraficoComparativo = [];
+                if (meuGraficoComparativo) { meuGraficoComparativo.destroy(); meuGraficoComparativo = null; }
                 container.innerHTML = '<p class="texto-vazio">Erro ao carregar o comparativo. Tente novamente.</p>';
             }
         }
 
         function desenharGrafico(mesesCompletos) {
             if (meuGraficoComparativo) meuGraficoComparativo.destroy();
-            const ctx = document.getElementById('graficoComparativo').getContext('2d');
+            const canvas = document.getElementById('graficoComparativo');
+            if (!canvas || !mesesCompletos.length) return;
+            const ctx = canvas.getContext('2d');
+            const tipo = document.getElementById('tipo-grafico-comparativo')?.value || 'bar';
+            const radar = tipo === 'radar';
+            const linha = tipo === 'line';
 
             meuGraficoComparativo = new Chart(ctx, {
-                type: 'bar',
+                type: tipo,
                 data: {
                     labels: mesesCompletos.map(m => NOMES_MESES_ABREV[m.mes]),
                     datasets: [
                         {
                             label: 'Entradas',
                             data: mesesCompletos.map(m => m.entradas),
-                            backgroundColor: 'rgba(46, 139, 87, 0.75)',
-                            borderColor: '#2E8B57',
-                            borderWidth: 1,
-                            borderRadius: 5
+                            backgroundColor: radar ? 'rgba(57,217,138,.18)' : (linha ? 'rgba(57,217,138,.08)' : 'rgba(57,217,138,.72)'),
+                            borderColor: '#39d98a',
+                            borderWidth: linha || radar ? 2.5 : 1.5,
+                            borderRadius: tipo === 'bar' ? 6 : 0,
+                            fill: radar,
+                            tension: linha ? .35 : 0,
+                            pointBackgroundColor: '#39d98a',
+                            pointRadius: linha || radar ? 3 : 0
                         },
                         {
                             label: 'Saídas',
                             data: mesesCompletos.map(m => m.saidas),
-                            backgroundColor: 'rgba(239, 68, 68, 0.75)',
-                            borderColor: '#ef4444',
-                            borderWidth: 1,
-                            borderRadius: 5
+                            backgroundColor: radar ? 'rgba(85,167,255,.18)' : (linha ? 'rgba(85,167,255,.08)' : 'rgba(85,167,255,.72)'),
+                            borderColor: '#55a7ff',
+                            borderWidth: linha || radar ? 2.5 : 1.5,
+                            borderRadius: tipo === 'bar' ? 6 : 0,
+                            fill: radar,
+                            tension: linha ? .35 : 0,
+                            pointBackgroundColor: '#55a7ff',
+                            pointRadius: linha || radar ? 3 : 0
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
+                    scales: radar ? {
+                        r: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.09)' }, angleLines: { color: 'rgba(255,255,255,.09)' }, pointLabels: { color: '#b0bec5' }, ticks: { display: false } }
+                    } : {
                         x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff' } },
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff' }, beginAtZero: true }
                     },
                     plugins: {
-                        legend: { labels: { color: '#ffffff' } }
+                        legend: { position: 'bottom', labels: { color: '#ffffff', boxWidth: 12, padding: 18 } },
+                        tooltip: { callbacks: { label: (context) => `${context.dataset.label}: R$ ${Number(context.raw || 0).toFixed(2)}` } }
                     }
                 }
             });
+        }
+
+        function trocarTipoGraficoComparativo() {
+            if (dadosGraficoComparativo.length) desenharGrafico(dadosGraficoComparativo);
         }
 
         // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
@@ -497,7 +617,7 @@
 
         function gbmAlerta(mensagem, tipo = 'info') {
             const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
-                        : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
+                        : tipo === 'aviso' ? 'rgba(85,167,255,0.3)'
                         :                    'rgba(95,255,168,0.3)';
 
             document.getElementById('lista-notificacoes-modal').innerHTML = `
@@ -516,7 +636,7 @@
                 _resolveConfirm = resolve;
 
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
-                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                    <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
                         ${escaparMensagemModal(mensagem)}
                     </div>`;
 
@@ -588,7 +708,7 @@
             }
         };
         Particle.prototype.draw = function() {
-            ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`;
+            ctx.fillStyle = `rgba(85, 167, 255, ${this.opacity * .55})`;
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fill();

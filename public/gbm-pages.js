@@ -95,7 +95,7 @@ function gbmInicializarParticulas() {
         particulas.forEach((particula) => {
             contexto.beginPath();
             contexto.arc(particula.x, particula.y, particula.tamanho, 0, Math.PI * 2);
-            contexto.fillStyle = `rgba(200, 159, 83, ${particula.opacidade})`;
+            contexto.fillStyle = `rgba(85, 167, 255, ${particula.opacidade * .55})`;
             contexto.fill();
         });
     }
