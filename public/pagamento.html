@@ -130,29 +130,29 @@
 </header>
 
 <div class="page-wrapper">
-    <h2 class="titulo-pagina">🛡️ Ative seu Premium</h2>
+    <h2 class="titulo-pagina">Ative seu Premium</h2>
 
     <div class="card">
         <p id="descricao-pagamento">Para desbloquear o seu painel financeiro, lançamentos de despesas e importador automático de extratos OFX, ative o seu plano Premium.</p>
 
         <div id="banner-trial" class="banner-trial">
-            🎁 Seu 1º mês é <strong>GRÁTIS</strong>! O valor de R$ 9,90 só começa a ser cobrado no 2º mês.
+            Seu 1º mês é <strong>GRÁTIS</strong>! O valor de R$ 9,90 só começa a ser cobrado no 2º mês.
         </div>
 
         <div class="preco">R$ 9,90</div>
         <p class="sub-preco">Assinatura Mensal / Cancele quando quiser</p>
 
         <ul class="plano-features">
-            <li>✔️ Importação de OFX ilimitada</li>
-            <li>✔️ Lançamentos Manuais e Edição</li>
-            <li>✔️ Dashboard de Resumo Financeiro</li>
-            <li>✔️ Instalação como App (PWA)</li>
-            <li style="color: #3cb371; font-weight: 500;">✨ Relatórios Mensais Detalhados</li>
-            <li style="color: #3cb371; font-weight: 500;">✨ Comparativos de Gastos</li>
-            <li style="color: #3cb371; font-weight: 500;">🚫 Experiência Zero Anúncios</li>
+            <li>Importação de OFX ilimitada</li>
+            <li>Lançamentos Manuais e Edição</li>
+            <li>Dashboard de Resumo Financeiro</li>
+            <li>Instalação como App (PWA)</li>
+            <li style="color: #3cb371; font-weight: 500;">Relatórios Mensais Detalhados</li>
+            <li style="color: #3cb371; font-weight: 500;">Comparativos de Gastos</li>
+            <li style="color: #3cb371; font-weight: 500;">Experiência Zero Anúncios</li>
         </ul>
 
-        <button onclick="irParaPagamento()" id="btn-action" class="btn-pagar">Ativar Premium (1º Mês Grátis) 🚀</button>
+        <button onclick="irParaPagamento()" id="btn-action" class="btn-pagar">Ativar Premium (1º Mês Grátis)</button>
         <button onclick="continuarGratis()" id="btn-gratis" class="btn-secundario">Continuar no Plano Gratuito (com anúncios)</button>
     </div>
 </div>
@@ -172,7 +172,7 @@
             const data = await res.json();
             if (data.statusPagamento === 'trial') {
                 document.getElementById('banner-trial').style.display = 'block';
-                document.querySelector('.titulo-pagina').innerText = '🛡️ Ative agora — 1º mês grátis!';
+                document.querySelector('.titulo-pagina').innerText = 'Ative agora — 1º mês grátis!';
             }
         } catch(e) {}
     }
@@ -180,7 +180,7 @@
 
     async function irParaPagamento() {
         const btn = document.getElementById('btn-action');
-        btn.innerText = 'Redirecionando... ⏳';
+        btn.innerText = 'Redirecionando...';
         btn.disabled = true;
 
         try {
@@ -195,19 +195,19 @@
                 window.location.href = data.url; // Leva o usuário para o checkout seguro do Mercado Pago
             } else {
                 alert('Erro ao chamar o checkout. Tente novamente.');
-                btn.innerText = 'Ativar Premium (1º Mês Grátis) 🚀';
+                btn.innerText = 'Ativar Premium (1º Mês Grátis)';
                 btn.disabled = false;
             }
         } catch (err) {
             alert('Erro na comunicação com o gateway.');
-            btn.innerText = 'Ativar Premium (1º Mês Grátis) 🚀';
+            btn.innerText = 'Ativar Premium (1º Mês Grátis)';
             btn.disabled = false;
         }
     }
     // Função para quem escolher o plano gratuito
     function continuarGratis() {
         const btn = document.getElementById('btn-gratis');
-        btn.innerText = 'Entrando... ⏳';
+        btn.innerText = 'Entrando...';
         btn.disabled = true;
         window.location.href = 'dashboard.html';
     }

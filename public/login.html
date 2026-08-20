@@ -287,7 +287,7 @@
         
         <!-- BOTÃO DE INSTALAR O APP -->
         <button id="btn-instalar-app" style="display:none; width:100%; margin-bottom: 20px; padding:12px; background:#c89f53; color:#09101a; border:none; border-radius:10px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 15px rgba(200, 159, 83, 0.4); transition: 0.3s;">
-    📲 Instalar Aplicativo GBM
+    Instalar Aplicativo GBM
 </button>
 
         <div id="form-login">
@@ -381,7 +381,7 @@
             <h2>Verificação</h2>
             <p class="subtitle" style="margin-bottom: 25px;">Enviaremos um código de 6 dígitos para o seu e-mail.</p>
             
-            <button class="btn-login" onclick="enviarCodigo('email')" style="margin-bottom: 15px;">📧 Receber Código por E-mail</button>
+            <button class="btn-login" onclick="enviarCodigo('email')" style="margin-bottom: 15px;">Receber Código por E-mail</button>
             <input type="hidden" id="temp-user-id">
         </div>
 
@@ -507,20 +507,41 @@
 
         // --- 2. SCRIPT ORIGINAL DO SEU BACKEND ---
 
-        // Recupera o userId salvo (permanente com "Manter conectado", ou só da aba atual)
-        function pegarUserId() {
-            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        function limparIdentidadeLocal() {
+            localStorage.removeItem('userIdAtual');
+            sessionStorage.removeItem('userIdAtual');
         }
 
-        // Se já existe uma sessão salva, pula a tela de login e vai direto pro sistema
-        (async function verificarSessaoExistente() {
-            const userId = pegarUserId();
-            if (!userId) return;
+        function sincronizarIdentidadeLocal(sessao) {
+            if (!sessao || sessao.userId == null) return;
+            const userId = String(sessao.userId);
 
+            if (sessao.manterConectado === true) {
+                localStorage.setItem('userIdAtual', userId);
+                sessionStorage.removeItem('userIdAtual');
+                return;
+            }
+
+            sessionStorage.setItem('userIdAtual', userId);
+            localStorage.removeItem('userIdAtual');
+        }
+
+        // O cookie seguro do servidor é a fonte de verdade. O storage serve apenas
+        // para manter compatibilidade com as páginas antigas que ainda leem o userId.
+        (async function verificarSessaoExistente() {
             try {
-                const res = await fetch(`/login-status?userId=${userId}`);
+                const res = await fetch('/login-status', {
+                    credentials: 'include',
+                    cache: 'no-store'
+                });
+                if (res.status === 401) {
+                    limparIdentidadeLocal();
+                    return;
+                }
+                if (!res.ok) return;
                 const data = await res.json();
-                if (data.statusPagamento) {
+                if (data.success) {
+                    sincronizarIdentidadeLocal(data);
                     // Todos os usuários (Premium e Gratuitos) entram direto no sistema
                     window.location.href = 'dashboard.html';
                 }
@@ -545,6 +566,7 @@
         function fazerLogin() {
             const emailCpf = document.getElementById('login-identificacao').value;
             const senha = document.getElementById('login-senha').value;
+            const manterConectado = document.getElementById('login-manter-conectado').checked;
 
             if (!emailCpf || !senha) {
                 gbmAlerta("Por favor, preencha o e-mail e a senha.", 'aviso');
@@ -553,8 +575,13 @@
 
             fetch('/login', {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ identificacao: emailCpf, senha: senha }) 
+                body: JSON.stringify({
+                    identificacao: emailCpf,
+                    senha,
+                    manterConectado
+                })
             })
             .then(response => response.json())
             .then(data => {
@@ -563,16 +590,8 @@
                     return;
                 }
 
-                const manterConectado = document.getElementById('login-manter-conectado').checked;
                 document.getElementById('temp-user-id').value = data.userId;
-
-                if (manterConectado) {
-                    localStorage.setItem('userIdAtual', data.userId);
-                    sessionStorage.removeItem('userIdAtual');
-                } else {
-                    sessionStorage.setItem('userIdAtual', data.userId);
-                    localStorage.removeItem('userIdAtual');
-                }
+                sincronizarIdentidadeLocal(data);
 
                 if (data.verificado) {
                     // Todos os usuários (Premium e Gratuitos) entram direto no sistema
@@ -760,8 +779,8 @@
                 const json = await resposta.json();
 
                 if (json.success) {
-                    localStorage.setItem('userIdAtual', userId);
-                    gbmAlerta("Conta validada com sucesso! Seu período gratuito de 30 dias começou! 🎉", 'info');
+                    sincronizarIdentidadeLocal(json);
+                    gbmAlerta("Conta validada com sucesso! Seu período gratuito de 30 dias começou! ", 'info');
                     window.location.href = 'pagamento.html';
                 } else {
                     gbmAlerta("Erro: " + json.message, 'erro');
@@ -867,13 +886,9 @@
             const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
                         : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
                         :                    'rgba(95,255,168,0.3)';
-            const icone = tipo === 'erro'  ? '❌'
-                        : tipo === 'aviso' ? '⚠️'
-                        :                    '✅';
 
             document.getElementById('lista-notificacoes-modal').innerHTML = `
                 <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
-                    <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
                     ${escaparMensagemModal(mensagem)}
                 </div>`;
 
@@ -889,7 +904,6 @@
 
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
                     <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
-                        <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
                         ${escaparMensagemModal(mensagem)}
                     </div>`;
 
@@ -953,7 +967,7 @@
     // 3. No Safari/iOS não existe beforeinstallprompt — mostramos instrução manual
     if (ehIOS && !jaInstalado) {
         const btn = document.getElementById('btn-instalar-app');
-        btn.innerText = '📲 Como instalar no iPhone';
+        btn.innerText = 'Como instalar no iPhone';
         btn.style.display = 'block';
         btn.onclick = function() {
             gbmAlerta('Toque no ícone de compartilhar (quadrado com seta ↑) na barra do Safari e escolha "Adicionar à Tela de Início".', 'aviso');

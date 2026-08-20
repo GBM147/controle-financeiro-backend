@@ -22,6 +22,11 @@ const {
     validarEstruturaOfx,
     validarAssinaturaImagem
 } = require('./file-signatures');
+const {
+    configurarPersistenciaSessao,
+    normalizarManterConectado,
+    sessaoDevePersistir
+} = require('./session-policy');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -481,10 +486,21 @@ app.use(session({
     cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 dias
+        sameSite: 'lax'
     }
 }));
+
+const opcoesLimpezaCookieSessao = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/'
+};
+
+function limparCookiesSessao(res) {
+    res.clearCookie('gbm_sid', opcoesLimpezaCookieSessao);
+    res.clearCookie('connect.sid', opcoesLimpezaCookieSessao);
+}
 
 function salvarSessao(req) {
     return new Promise((resolve, reject) => {
@@ -507,13 +523,7 @@ async function exigirLogin(req, res, next) {
 
         if (usuarios.length === 0) {
             return req.session.destroy(() => {
-                const opcoesCookie = {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'lax'
-                };
-                res.clearCookie('gbm_sid', opcoesCookie);
-                res.clearCookie('connect.sid', opcoesCookie); // limpa o cookie usado por versões anteriores
+                limparCookiesSessao(res);
                 return res.status(401).json({ success: false, error: 'Esta conta não existe mais. Faça login novamente.' });
             });
         }
@@ -671,7 +681,7 @@ app.post('/webhook-mercadopago', async (req, res) => {
                 console.warn(`Pagamento ${paymentId} sem referência de usuário válida.`);
                 return res.sendStatus(200);
             }
-            console.log(`💰 PAGAMENTO APROVADO! Liberando usuário ID: ${userId}`);
+            console.log(`PAGAMENTO APROVADO! Liberando usuário ID: ${userId}`);
                 
             // Um webhook atrasado de uma cobrança antiga não pode reativar
             // uma assinatura que já foi cancelada pelo usuário.
@@ -683,7 +693,7 @@ app.post('/webhook-mercadopago', async (req, res) => {
             );
 
             if (atualizacao.affectedRows === 0) {
-                console.log(`🛑 Pagamento ${paymentId} recebido, mas a conta ${userId} permanece cancelada.`);
+                console.log(`Pagamento ${paymentId} recebido, mas a conta ${userId} permanece cancelada.`);
             }
         }
         return res.sendStatus(200);
@@ -1122,7 +1132,7 @@ function escaparHtmlServidor(valor) {
 
 async function migrarDadosSensiveisExistentes() {
     if (!chaveDados) {
-        console.warn('🔐 DATA_ENCRYPTION_KEY não configurada; dados sensíveis antigos ainda não serão migrados.');
+        console.warn('DATA_ENCRYPTION_KEY não configurada; dados sensíveis antigos ainda não serão migrados.');
         return;
     }
     const [usuarios] = await db.promise().query(`
@@ -1188,7 +1198,7 @@ async function migrarDadosSensiveisExistentes() {
         );
     }
     if (usuarios.length) {
-        console.log(`🔐 ${usuarios.length} cadastro(s) tiveram os dados de identidade protegidos.`);
+        console.log(`${usuarios.length} cadastro(s) tiveram os dados de identidade protegidos.`);
     }
 }
 
@@ -1251,20 +1261,20 @@ async function registrarAuditoria(req, evento, detalhes = null, usuarioId = null
 if (require.main === module) {
     db.connect((err) => {
         if (err) {
-            console.error('❌ Erro a ligar ao MySQL:', err.message);
+            console.error('Erro a ligar ao MySQL:', err.message);
             return;
         }
-        console.log('📦 Ligado à base de dados MySQL com sucesso!');
+        console.log('Ligado à base de dados MySQL com sucesso!');
         Promise.all([
             garantirEstruturaAlertasMultiplos(),
             garantirEstruturaProduto()
         ])
             .then(async () => {
-                console.log('🧱 Estruturas automáticas do GBM prontas.');
+                console.log('Estruturas automáticas do GBM prontas.');
                 await migrarDadosSensiveisExistentes();
                 await migrarObjetivosLegados();
             })
-            .catch((erroEstrutura) => console.error('❌ Erro ao preparar múltiplos alertas:', erroEstrutura));
+            .catch((erroEstrutura) => console.error('Erro ao preparar múltiplos alertas:', erroEstrutura));
     });
 }
 async function obterOuCriarContaDoUsuario(userId) {
@@ -1429,7 +1439,7 @@ app.post(
             transacoes: transacoesComCategoria
         });
     } catch (error) {
-        console.error('❌ Erro ao converter PDF:', error);
+        console.error('Erro ao converter PDF:', error);
         res.status(500).json({ success: false, message: 'Falha ao ler o PDF. Verifique se o ficheiro não está corrompido ou protegido por senha.' });
     }
     }
@@ -1624,7 +1634,7 @@ app.get('/resumo-financeiro', exigirLogin, async (req, res) => {
 
         res.json({ status: 'success', data: rows });
     } catch (error) {
-        console.error("❌ Erro na lógica de resumo com balanço:", error);
+        console.error("Erro na lógica de resumo com balanço:", error);
         res.status(500).json({ status: 'error', message: 'Falha ao processar resumo financeiro' });
     }
 });
@@ -1684,7 +1694,7 @@ app.get('/economia-mensal', exigirLogin, async (req, res) => {
             temMesAnterior: !!anterior
         });
     } catch (error) {
-        console.error('❌ Erro ao calcular economia mensal:', error);
+        console.error('Erro ao calcular economia mensal:', error);
         res.status(500).json({ error: 'Falha ao calcular economia mensal.' });
     }
 });
@@ -1710,7 +1720,7 @@ app.get('/comparativo-mensal', exigirLogin, exigirPremium, async (req, res) => {
         const [rows] = await db.promise().query(sql, [userId, anoConsulta]);
         res.json(rows);
     } catch (error) {
-        console.error('❌ Erro ao gerar comparativo mensal:', error);
+        console.error('Erro ao gerar comparativo mensal:', error);
         res.status(500).json({ error: 'Falha ao gerar comparativo mensal.' });
     }
 });
@@ -1729,7 +1739,7 @@ app.get('/anos-disponiveis', exigirLogin, exigirPremium, async (req, res) => {
         );
         res.json(rows.map(r => r.ano));
     } catch (error) {
-        console.error('❌ Erro ao buscar anos disponíveis:', error);
+        console.error('Erro ao buscar anos disponíveis:', error);
         res.status(500).json({ error: 'Falha ao buscar anos.' });
     }
 });
@@ -1745,10 +1755,10 @@ app.post('/metas', exigirLogin, async (req, res) => {
             ON DUPLICATE KEY UPDATE valor_limite = VALUES(valor_limite), usuario_id = VALUES(usuario_id)
         `;
         await db.promise().query(sql, [categoria, valor_limite, userId]);
-        console.log(`🎯 Nova meta definida: ${categoria} -> R$ ${valor_limite}`);
+        console.log(`Nova meta definida: ${categoria} -> R$ ${valor_limite}`);
         res.json({ success: true, message: 'Orçamento atualizado!' });
     } catch (error) {
-        console.error("❌ Erro ao salvar meta:", error);
+        console.error("Erro ao salvar meta:", error);
         res.status(500).json({ error: 'Falha ao salvar meta' });
     }
 });
@@ -1758,10 +1768,10 @@ app.delete('/metas', exigirLogin, async (req, res) => {
         const { categoria } = req.body;
         const userId = req.session.userId;
         await db.promise().query('DELETE FROM metas WHERE categoria = ? AND usuario_id = ?', [categoria, userId]);
-        console.log(`🗑️ Limite removido. A categoria [${categoria}] agora é um gasto fixo.`);
+        console.log(`Limite removido. A categoria [${categoria}] agora é um gasto fixo.`);
         res.json({ success: true, message: 'Limite removido com sucesso!' });
     } catch (error) {
-        console.error("❌ Erro ao remover meta:", error);
+        console.error("Erro ao remover meta:", error);
         res.status(500).json({ error: 'Falha ao remover meta' });
     }
 });
@@ -1791,11 +1801,11 @@ app.post('/transacao-manual', exigirLogin, async (req, res) => {
         const sql = `INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao, banco)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         await db.promise().query(sql, [contaInternaId, transacaoIdGerado, descricao, valorFinal, tipo, categoria, data_transacao, 'Manual']);
-        console.log(`✍️ Lançamento Manual: ${descricao} | R$ ${valorFinal} | ${data_transacao}`);
+        console.log(`Lançamento Manual: ${descricao} | R$ ${valorFinal} | ${data_transacao}`);
         await auditarMetas();
         res.json({ success: true, message: 'Lançamento inserido no MySQL!' });
     } catch (error) {
-        console.error("❌ Erro ao salvar lançamento manual:", error);
+        console.error("Erro ao salvar lançamento manual:", error);
         res.status(500).json({ error: 'Falha ao processar lançamento.' });
     }
 });
@@ -1807,10 +1817,29 @@ app.get('/login-status', exigirLogin, async (req, res) => {
             'SELECT status_pagamento, trial_expira FROM usuarios WHERE id = ?', [userId]
         );
         if (rows.length === 0) return res.status(404).json({ success: false });
-        res.json({ statusPagamento: rows[0].status_pagamento, trialExpira: rows[0].trial_expira });
+        res.json({
+            success: true,
+            userId,
+            manterConectado: sessaoDevePersistir(req.session),
+            statusPagamento: rows[0].status_pagamento,
+            trialExpira: rows[0].trial_expira
+        });
     } catch (e) {
         res.status(500).json({ success: false });
     }
+});
+
+app.post('/logout', (req, res) => {
+    if (!req.session) {
+        limparCookiesSessao(res);
+        return res.json({ success: true });
+    }
+
+    return req.session.destroy((erro) => {
+        if (erro) console.error('Erro ao encerrar sessão:', erro);
+        limparCookiesSessao(res);
+        return res.json({ success: true });
+    });
 });
 // =======================================================
 // --- MÓDULO DE NOTIFICAÇÕES E AUDITORIA DE METAS ---
@@ -1919,7 +1948,7 @@ async function auditarMetas() {
                         throw erroAlerta;
                     }
 
-                    console.log(`🔔 NOVO ALERTA GERADO (usuario ${item.usuario_id}): ${msg}`);
+                    console.log(`NOVO ALERTA GERADO (usuario ${item.usuario_id}): ${msg}`);
 
                     // --- ENVIO DO E-MAIL DE NOTIFICAÇÃO PARA O DONO DA META ---
                     if (
@@ -1935,7 +1964,7 @@ async function auditarMetas() {
                             await resend.emails.send({
                                 from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
                                 to: usuario.email.toLowerCase().trim(),
-                                subject: `🚨 GBM - ${percentualAlerta}% do limite de ${item.categoria}`,
+                                subject: `GBM - ${percentualAlerta}% do limite de ${item.categoria}`,
                                 html: `
                                     <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #09101a; color: #e8ecef; border-radius: 8px;">
                                         <h2 style="color: #c89f53;">Guardian of Budget & Money</h2>
@@ -1948,14 +1977,14 @@ async function auditarMetas() {
                                 `
                             });
                         } catch (emailErr) {
-                            console.error("❌ Erro ao enviar e-mail de alerta:", emailErr);
+                            console.error("Erro ao enviar e-mail de alerta:", emailErr);
                         }
                     }
                 }
             }
         }
     } catch (error) {
-        console.error("❌ Erro na auditoria de metas:", error);
+        console.error("Erro na auditoria de metas:", error);
     }
 }
 app.get('/configuracoes-alerta', exigirLogin, async (req, res) => {
@@ -1963,7 +1992,7 @@ app.get('/configuracoes-alerta', exigirLogin, async (req, res) => {
         const [rows] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
         res.json(rows[0] || { percentual_alerta: 80 });
     } catch (error) {
-        console.error('❌ Erro ao buscar configurações de alerta:', error);
+        console.error('Erro ao buscar configurações de alerta:', error);
         res.status(500).json({ percentual_alerta: 80 });
     }
 });
@@ -1973,7 +2002,7 @@ app.post('/configuracoes-alerta', exigirLogin, async (req, res) => {
         await db.promise().query('UPDATE preferencias_notificacao SET percentual_alerta = ? WHERE id = 1', [percentual]);
         res.json({ success: true });
     } catch (error) {
-        console.error('❌ Erro ao salvar configurações de alerta:', error);
+        console.error('Erro ao salvar configurações de alerta:', error);
         res.status(500).json({ success: false });
     }
 });
@@ -1986,7 +2015,7 @@ app.get('/alertas', exigirLogin, async (req, res) => {
         );
         res.json(rows);
     } catch (error) {
-        console.error('❌ Erro ao buscar alertas:', error);
+        console.error('Erro ao buscar alertas:', error);
         res.status(500).json({ error: 'Falha ao buscar alertas.' });
     }
 });
@@ -1997,7 +2026,7 @@ app.post('/alertas/marcar-lida', exigirLogin, async (req, res) => {
         await db.promise().query('UPDATE alertas SET lida = TRUE WHERE id = ? AND usuario_id = ?', [id, userId]);
         res.json({ success: true });
     } catch (error) {
-        console.error('❌ Erro ao marcar alerta como lido:', error);
+        console.error('Erro ao marcar alerta como lido:', error);
         res.status(500).json({ success: false });
     }
 });
@@ -2016,7 +2045,7 @@ app.get('/relatorio-mensal', exigirLogin, exigirPremium, async (req, res) => {
         const [rows] = await db.promise().query(sql, [userId, mes, ano]);
         res.json(rows);
     } catch (error) {
-        console.error('❌ Erro ao gerar relatório mensal:', error);
+        console.error('Erro ao gerar relatório mensal:', error);
         res.status(500).json({ error: 'Falha ao gerar relatório mensal.' });
     }
 });
@@ -2045,7 +2074,7 @@ app.get('/relatorio-detalhado', exigirLogin, exigirPremium, async (req, res) => 
         const [rows] = await db.promise().query(sql, params);
         res.json(rows);
     } catch (error) {
-        console.error('❌ Erro ao gerar relatório detalhado:', error);
+        console.error('Erro ao gerar relatório detalhado:', error);
         res.status(500).json({ error: 'Falha ao gerar relatório detalhado.' });
     }
 });
@@ -2124,7 +2153,7 @@ app.get('/metas-resumo', exigirLogin, async (req, res) => {
 
         res.json(resposta);
     } catch (error) {
-        console.error('❌ Erro ao carregar resumo dos limites:', error);
+        console.error('Erro ao carregar resumo dos limites:', error);
         res.status(500).json({ success: false, error: 'Falha ao carregar os limites.' });
     }
 });
@@ -2189,16 +2218,17 @@ app.post('/atualizar-meta-alerta', exigirLogin, async (req, res) => {
             try {
                 await banco.rollback();
             } catch (erroRollback) {
-                console.error('❌ Erro ao desfazer atualização do limite:', erroRollback);
+                console.error('Erro ao desfazer atualização do limite:', erroRollback);
             }
         }
-        console.error('❌ Erro ao atualizar meta/alerta:', error);
+        console.error('Erro ao atualizar meta/alerta:', error);
         res.status(500).json({ success: false, error: 'Falha ao atualizar meta.' });
     }
 });
 // --- ROTA DE LOGIN CORRIGIDA (PULA VERIFICAÇÃO SE JÁ VERIFICADO) ---
 app.post('/login', limitarAutenticacao, async (req, res) => {
     const { identificacao, senha } = req.body;
+    const manterConectado = normalizarManterConectado(req.body.manterConectado);
     if (!identificacao || typeof senha !== 'string' || !senha) {
         return res.status(400).json({ success: false, message: 'Informe e-mail e senha.' });
     }
@@ -2240,6 +2270,7 @@ app.post('/login', limitarAutenticacao, async (req, res) => {
                 req.session.pendingVerificationUserId = usuario.id;
                 delete req.session.userId;
             }
+            configurarPersistenciaSessao(req.session, manterConectado);
 
             req.session.save(async (erroSalvar) => {
                 if (erroSalvar) {
@@ -2260,6 +2291,7 @@ app.post('/login', limitarAutenticacao, async (req, res) => {
                     statusPagamento: usuario.status_pagamento,
                     trialExpira: usuario.trial_expira,
                     userId: usuario.id,
+                    manterConectado,
                     message: verificado ? 'Login efetuado com sucesso!' : 'Conta não verificada. Insira o código.'
                 });
             });
@@ -2270,6 +2302,7 @@ app.post('/login', limitarAutenticacao, async (req, res) => {
 // ou no login. O navegador nunca escolhe qual userId será ativado.
 async function validarCodigoConta(req, res) {
     const userId = Number(req.session.pendingVerificationUserId);
+    const manterConectado = sessaoDevePersistir(req.session);
     const codigo = String(req.body.codigo || req.body.codigoDigitado || '').trim();
 
     if (!Number.isInteger(userId) || userId <= 0) {
@@ -2306,12 +2339,18 @@ async function validarCodigoConta(req, res) {
             }
 
             req.session.userId = userId;
+            configurarPersistenciaSessao(req.session, manterConectado);
             req.session.save((erroSalvar) => {
                 if (erroSalvar) {
                     console.error('Erro ao salvar sessão na validação:', erroSalvar);
                     return res.status(500).json({ success: false, message: 'Não foi possível salvar a sessão.' });
                 }
-                return res.json({ success: true, message: 'Conta validada com sucesso!' });
+                return res.json({
+                    success: true,
+                    userId,
+                    manterConectado,
+                    message: 'Conta validada com sucesso!'
+                });
             });
         });
     } catch (erro) {
@@ -2501,34 +2540,193 @@ app.get('/transacoes-individuais', exigirLogin, async (req, res) => {
     }
 });
 
-// Corrigir categoria e salvar como regra permanente
-app.post('/corrigir-categoria', exigirLogin, async (req, res) => {
+function normalizarAlteracoesCategorias(alteracoes) {
+    if (!Array.isArray(alteracoes) || alteracoes.length === 0 || alteracoes.length > 250) {
+        const erro = new Error('Envie de 1 a 250 alterações de categoria.');
+        erro.statusCode = 400;
+        throw erro;
+    }
+
+    const ids = new Set();
+    return alteracoes.map((alteracao) => {
+        const transacaoId = Number(alteracao?.transacaoId);
+        const novaCategoria = String(alteracao?.novaCategoria || '').trim();
+        if (!Number.isInteger(transacaoId) || transacaoId <= 0 || !novaCategoria || novaCategoria.length > 120) {
+            const erro = new Error('Há uma alteração de categoria inválida.');
+            erro.statusCode = 400;
+            throw erro;
+        }
+        if (ids.has(transacaoId)) {
+            const erro = new Error('A mesma transação foi enviada mais de uma vez.');
+            erro.statusCode = 400;
+            throw erro;
+        }
+        ids.add(transacaoId);
+        return { transacaoId, novaCategoria };
+    });
+}
+
+async function aplicarCorrecoesCategorias(usuarioId, alteracoes) {
+    const alteracoesNormalizadas = normalizarAlteracoesCategorias(alteracoes);
+    const banco = db.promise();
+    let transacaoAberta = false;
     try {
-        const { transacaoId, descricao, novaCategoria } = req.body;
-        const userId = req.session.userId;
+        await banco.beginTransaction();
+        transacaoAberta = true;
+        let atualizadas = 0;
 
-        // 1. Atualiza a transação (garantindo que ela pertence ao próprio usuário)
-        await db.promise().query(
-            `UPDATE transacoes t
-             JOIN contas_bancarias cb ON t.conta_id = cb.id
-             SET t.categoria = ?
-             WHERE t.id = ? AND cb.usuario_id = ?`,
-            [novaCategoria, transacaoId, userId]
-        );
+        for (const alteracao of alteracoesNormalizadas) {
+            const [transacoes] = await banco.query(
+                `SELECT t.id, t.descricao, t.categoria
+                 FROM transacoes t
+                 JOIN contas_bancarias cb ON cb.id = t.conta_id
+                 WHERE t.id = ? AND cb.usuario_id = ?
+                 FOR UPDATE`,
+                [alteracao.transacaoId, usuarioId]
+            );
+            if (!transacoes.length) {
+                const erro = new Error('Uma das transações não foi encontrada. Nenhuma categoria foi alterada.');
+                erro.statusCode = 404;
+                throw erro;
+            }
 
-        // 2. Extrai a palavra-chave e salva a regra vinculada a este usuário
-        const palavraChave = extrairPalavraChave(descricao);
-        if (palavraChave) {
-            await db.promise().query(`
-                INSERT INTO regras_categoria (usuario_id, descricao_contem, categoria)
-                VALUES (?, ?, ?)
-                ON DUPLICATE KEY UPDATE categoria = VALUES(categoria)
-            `, [userId, palavraChave, novaCategoria]);
+            const transacao = transacoes[0];
+            if (String(transacao.categoria || '') === alteracao.novaCategoria) continue;
+            await banco.query(
+                `UPDATE transacoes t
+                 JOIN contas_bancarias cb ON cb.id = t.conta_id
+                 SET t.categoria = ?
+                 WHERE t.id = ? AND cb.usuario_id = ?`,
+                [alteracao.novaCategoria, alteracao.transacaoId, usuarioId]
+            );
+
+            const palavraChave = extrairPalavraChave(String(transacao.descricao || ''));
+            if (palavraChave) {
+                await banco.query(
+                    `INSERT INTO regras_categoria (usuario_id, descricao_contem, categoria)
+                     VALUES (?, ?, ?)
+                     ON DUPLICATE KEY UPDATE categoria = VALUES(categoria)`,
+                    [usuarioId, palavraChave, alteracao.novaCategoria]
+                );
+            }
+            atualizadas += 1;
         }
 
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ success: false });
+        await banco.commit();
+        transacaoAberta = false;
+        return atualizadas;
+    } catch (erro) {
+        if (transacaoAberta) {
+            try { await banco.rollback(); } catch {}
+        }
+        throw erro;
+    }
+}
+
+function responderErroAlteracaoCategoria(res, erro) {
+    const status = Number(erro.statusCode) || 500;
+    if (status >= 500) console.error('Erro ao corrigir categorias:', erro);
+    return res.status(status).json({
+        success: false,
+        error: status >= 500 ? 'Não foi possível salvar as categorias.' : erro.message
+    });
+}
+
+// Compatibilidade com versões antigas do painel que ainda enviam uma alteração por vez.
+app.post('/corrigir-categoria', exigirLogin, async (req, res) => {
+    try {
+        const atualizadas = await aplicarCorrecoesCategorias(req.session.userId, [{
+            transacaoId: req.body?.transacaoId,
+            novaCategoria: req.body?.novaCategoria
+        }]);
+        await auditarMetas();
+        res.json({ success: true, atualizadas });
+    } catch (erro) {
+        responderErroAlteracaoCategoria(res, erro);
+    }
+});
+
+// Salva todas as categorias alteradas no modal em uma única confirmação.
+app.post('/corrigir-categorias', exigirLogin, async (req, res) => {
+    try {
+        const atualizadas = await aplicarCorrecoesCategorias(
+            req.session.userId,
+            req.body?.alteracoes
+        );
+        await auditarMetas();
+        res.json({ success: true, atualizadas });
+    } catch (erro) {
+        responderErroAlteracaoCategoria(res, erro);
+    }
+});
+
+// Exclui somente a movimentação escolhida, sem apagar sua recorrência ou importação de origem.
+app.delete('/transacoes/:id', exigirLogin, async (req, res) => {
+    const banco = db.promise();
+    let transacaoAberta = false;
+    try {
+        await garantirEstruturaProduto();
+        const usuarioId = req.session.userId;
+        const transacaoId = Number(req.params.id);
+        if (!Number.isInteger(transacaoId) || transacaoId <= 0) {
+            return res.status(400).json({ success: false, error: 'Transação inválida.' });
+        }
+
+        await banco.beginTransaction();
+        transacaoAberta = true;
+        const [transacoes] = await banco.query(
+            `SELECT t.id
+             FROM transacoes t
+             JOIN contas_bancarias cb ON cb.id = t.conta_id
+             WHERE t.id = ? AND cb.usuario_id = ?
+             FOR UPDATE`,
+            [transacaoId, usuarioId]
+        );
+        if (!transacoes.length) {
+            await banco.rollback();
+            transacaoAberta = false;
+            return res.status(404).json({ success: false, error: 'Transação não encontrada.' });
+        }
+
+        const [contribuicoes] = await banco.query(
+            `SELECT objetivo_id
+             FROM objetivo_contribuicoes
+             WHERE usuario_id = ? AND transacao_id = ?
+             FOR UPDATE`,
+            [usuarioId, transacaoId]
+        );
+        await banco.query(
+            'DELETE FROM objetivo_contribuicoes WHERE usuario_id = ? AND transacao_id = ?',
+            [usuarioId, transacaoId]
+        );
+        const [resultado] = await banco.query(
+            `DELETE t
+             FROM transacoes t
+             JOIN contas_bancarias cb ON cb.id = t.conta_id
+             WHERE t.id = ? AND cb.usuario_id = ?`,
+            [transacaoId, usuarioId]
+        );
+        if (resultado.affectedRows !== 1) {
+            throw new Error('A transação não pôde ser excluída.');
+        }
+
+        const objetivosAfetados = [...new Set(
+            contribuicoes.map((contribuicao) => Number(contribuicao.objetivo_id)).filter(Number.isInteger)
+        )];
+        for (const objetivoId of objetivosAfetados) {
+            await recalcularStatusObjetivo(banco, objetivoId, usuarioId);
+        }
+
+        await banco.commit();
+        transacaoAberta = false;
+        await auditarMetas();
+        res.json({ success: true, excluida: true, transacaoId });
+    } catch (erro) {
+        if (transacaoAberta) {
+            try { await banco.rollback(); } catch {}
+        }
+        console.error('Erro ao excluir transação:', erro);
+        res.status(500).json({ success: false, error: 'Não foi possível excluir a movimentação.' });
     }
 });
 // --- CATEGORIAS PERSONALIZADAS (por conta/usuário) ---
@@ -2566,7 +2764,7 @@ app.get('/bancos-usados', exigirLogin, async (req, res) => {
 
         res.json(rows.map(r => r.banco));
     } catch (error) {
-        console.error('❌ Erro ao buscar bancos usados:', error);
+        console.error('Erro ao buscar bancos usados:', error);
         res.status(500).json({ error: 'Falha ao buscar bancos usados.' });
     }
 });
@@ -2586,7 +2784,7 @@ app.get('/categorias', exigirLogin, async (req, res) => {
             todas: [...CATEGORIAS_PADRAO, ...rows.map(r => r.nome)]
         });
     } catch (error) {
-        console.error('❌ Erro ao buscar categorias:', error);
+        console.error('Erro ao buscar categorias:', error);
         res.status(500).json({ error: 'Falha ao buscar categorias.' });
     }
 });
@@ -2610,13 +2808,13 @@ app.post('/categorias', exigirLogin, async (req, res) => {
             'INSERT INTO categorias_personalizadas (usuario_id, nome) VALUES (?, ?)',
             [userId, nomeLimpo]
         );
-        console.log(`🏷️ Nova categoria personalizada: "${nomeLimpo}" (usuário ${userId})`);
+        console.log(`Nova categoria personalizada: "${nomeLimpo}" (usuário ${userId})`);
         res.json({ success: true, message: 'Categoria criada com sucesso!' });
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ success: false, error: 'Você já tem uma categoria com esse nome.' });
         }
-        console.error('❌ Erro ao criar categoria:', error);
+        console.error('Erro ao criar categoria:', error);
         res.status(500).json({ success: false, error: 'Falha ao criar categoria.' });
     }
 });
@@ -2635,7 +2833,7 @@ app.delete('/categorias/:id', exigirLogin, async (req, res) => {
         }
         res.json({ success: true, message: 'Categoria removida com sucesso!' });
     } catch (error) {
-        console.error('❌ Erro ao remover categoria:', error);
+        console.error('Erro ao remover categoria:', error);
         res.status(500).json({ success: false, error: 'Falha ao remover categoria.' });
     }
 });
@@ -2672,7 +2870,7 @@ app.get('/minha-assinatura', exigirLogin, async (req, res) => {
         
         res.json(revelarIdentidade(rows[0]));
     } catch (error) {
-        console.error('❌ Erro ao buscar assinatura:', error);
+        console.error('Erro ao buscar assinatura:', error);
         res.status(500).json({ error: 'Falha ao buscar dados da assinatura.' });
     }
 });
@@ -2752,7 +2950,7 @@ app.post('/cancelar-assinatura', exigirLogin, async (req, res) => {
         
         res.json({ success: true, message: 'Sua assinatura foi cancelada no Mercado Pago com sucesso.' });
     } catch (error) {
-        console.error('❌ Erro ao cancelar assinatura:', error);
+        console.error('Erro ao cancelar assinatura:', error);
         res.status(502).json({ success: false, message: 'O Mercado Pago não confirmou o cancelamento. Tente novamente mais tarde.' });
     }
 });
@@ -2789,7 +2987,7 @@ app.post('/api/enviar-feedback', limitarFeedback, async (req, res) => {
     from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
     to: emailSuporte,
     reply_to: userEmail || undefined,
-    subject: `📩 [Fale Conosco] ${assuntoTexto} — Usuário ${userId || 'desconhecido'}`,
+    subject: `[Fale Conosco] ${assuntoTexto} — Usuário ${userId || 'desconhecido'}`,
     html: `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>Nova mensagem via Fale Conosco</h2>
@@ -2803,17 +3001,17 @@ app.post('/api/enviar-feedback', limitarFeedback, async (req, res) => {
 });
 
 if (resendError) {
-    console.error('❌ Erro do Resend ao enviar feedback:', resendError);
+    console.error('Erro do Resend ao enviar feedback:', resendError);
     return res.status(502).json({
         success: false,
         error: 'O provedor de e-mail não conseguiu enviar sua mensagem.'
     });
 }
 
-console.log('✅ Feedback enviado pelo Resend. ID:', data?.id);
+console.log('Feedback enviado pelo Resend. ID:', data?.id);
 res.json({ success: true, message: 'Mensagem enviada com sucesso!' });
     } catch (error) {
-        console.error('❌ Erro ao enviar feedback:', error);
+        console.error('Erro ao enviar feedback:', error);
         res.status(500).json({ success: false, error: 'Falha ao enviar mensagem.' });
     }
 });
@@ -3196,7 +3394,7 @@ app.delete('/minha-conta', exigirLogin, async (req, res) => {
 
         for (const tabela of tabelasDoUsuario) {
             if (!nomesTabelasDisponiveis.has(tabela)) {
-                console.log(`ℹ️ Tabela opcional "${tabela}" ausente; exclusão continuará.`);
+                console.log(`Tabela opcional "${tabela}" ausente; exclusão continuará.`);
                 continue;
             }
 
@@ -4804,16 +5002,16 @@ if (require.main === module) {
     // 4. Liga o servidor
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, '0.0.0.0', () => {
-        console.log(`🚀 Servidor rodando perfeitamente na porta ${PORT}`);
+        console.log(`Servidor rodando perfeitamente na porta ${PORT}`);
     });
 
     // Roda a auditoria de metas todos os dias às 08:00 no horário de São Paulo.
     cron.schedule('0 8 * * *', () => {
-        console.log('⏰ Rodando auditoria diária de metas...');
+        console.log('Rodando auditoria diária de metas...');
         auditarMetas();
         gerarRecorrenciasVencidas()
             .then((quantidade) => {
-                if (quantidade) console.log(`📅 ${quantidade} transação(ões) recorrente(s) gerada(s).`);
+                if (quantidade) console.log(`${quantidade} transação(ões) recorrente(s) gerada(s).`);
             })
             .catch((erro) => console.error('Erro ao gerar recorrências:', erro));
     }, { timezone: 'America/Sao_Paulo' });

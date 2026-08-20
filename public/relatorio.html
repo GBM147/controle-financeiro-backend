@@ -332,7 +332,7 @@
                 <option value="todos">Todos os bancos</option>
             </select>
             <button class="btn-acao btn-gerar" onclick="gerarRelatorio()">Gerar Relatório</button>
-            <button class="btn-acao btn-pdf"   onclick="baixarPDF()">Baixar PDF 📄</button>
+            <button class="btn-acao btn-pdf"   onclick="baixarPDF()">Baixar PDF</button>
         </div>
     </div>
 
@@ -345,7 +345,7 @@
 <!-- MODAL EDITAR CATEGORIA -->
 <div class="modal-overlay" id="modal-categoria">
     <div class="modal-box">
-        <h3>✏️ Alterar Categoria</h3>
+        <h3>Alterar Categoria</h3>
         <p class="modal-desc" id="modal-desc-tx"></p>
         <select id="modal-select-cat">
             <option>Alimentação</option>
@@ -429,7 +429,7 @@ carregarBancosInfo();
 function etiquetaBanco(nomeBanco) {
     if (!nomeBanco) return '';
     const cor = BANCOS_CORES[nomeBanco] || '#607d8b';
-    return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;">🏦 ${escaparHtmlRelatorio(nomeBanco)}</span>`;
+    return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;"> ${escaparHtmlRelatorio(nomeBanco)}</span>`;
 }
 
 function escaparHtmlRelatorio(valor) {
@@ -539,7 +539,7 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
                         <tr>
                             <td style="font-weight: 500;">
                                 ${escaparHtmlRelatorio(item.categoria || 'Sem categoria')}
-                                <br><button class="btn-editar-cat" data-editar-id="${Number.isInteger(itemId) ? itemId : 0}">✏️ editar</button>
+                                <br><button class="btn-editar-cat" data-editar-id="${Number.isInteger(itemId) ? itemId : 0}">Editar</button>
                             </td>
                             <td>${etiquetaBanco(item.banco)}</td>
                             <td>${badge}</td>
@@ -714,13 +714,9 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
             const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
                         : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
                         :                    'rgba(95,255,168,0.3)';
-            const icone = tipo === 'erro'  ? '❌'
-                        : tipo === 'aviso' ? '⚠️'
-                        :                    '✅';
 
             document.getElementById('lista-notificacoes-modal').innerHTML = `
                 <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                    <div style="font-size:2.2rem; margin-bottom:12px;">${icone}</div>
                     ${escaparMensagemModal(mensagem)}
                 </div>`;
 
@@ -736,7 +732,6 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
 
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
                     <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                        <div style="font-size:2.2rem; margin-bottom:12px;">⚠️</div>
                         ${escaparMensagemModal(mensagem)}
                     </div>`;
 

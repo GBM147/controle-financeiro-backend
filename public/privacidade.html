@@ -22,7 +22,7 @@
             <section class="card">
                 <h2>Exportar meus dados</h2>
                 <p style="color:var(--muted);line-height:1.6">Baixe um arquivo JSON com perfil, contas, transações, objetivos de poupança, contribuições, recorrências, notificações e histórico de importações.</p>
-                <button id="exportar" class="btn btn-primary">⬇ Baixar meus dados</button>
+                <button id="exportar" class="btn btn-primary">Baixar meus dados</button>
             </section>
             <section class="card">
                 <h2>Proteção de informações</h2>
@@ -60,7 +60,7 @@
                     ? `Versão ${dados.termos_versao || 'não identificada'} aceita em ${new Date(dados.termos_aceitos_em).toLocaleString('pt-BR')}.`
                     : 'O aceite dos Termos ainda não foi registrado nesta conta.';
                 document.getElementById('status-criptografia').innerHTML=dados.criptografia_ativa
-                    ? '<span class="pill green">🔒 Criptografia ativa</span>'
+                    ? '<span class="pill green">Criptografia ativa</span>'
                     : '<span class="pill amber">Configuração pendente no Render</span>';
             }catch(erro){gbmToast(erro.message,'erro')}
         }

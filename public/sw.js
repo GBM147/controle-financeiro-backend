@@ -1,5 +1,5 @@
-const VERSAO_TUTORIAL = '1.1.46';
-const CACHE_GBM = 'gbm-estatico-v18';
+const VERSAO_TUTORIAL = '1.1.47';
+const CACHE_GBM = 'gbm-estatico-v20';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
