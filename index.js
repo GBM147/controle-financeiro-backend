@@ -6,15 +6,22 @@ const crypto = require('crypto');
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const helmet = require('helmet');
+const { rateLimit } = require('express-rate-limit');
 const cron = require('node-cron');
 const bcrypt = require('bcrypt');
 const { Resend } = require('resend');
 const multer = require('multer');
-const { parseOfx } = require('./ofx-parser');
+const { parseOfx, numeroOfx } = require('./ofx-parser');
 const path = require('path');
 const pdfParse = require('pdf-parse');
-const { renderComEspacamento } = require('./pdfrender');
-const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./Pdfextratoparser');
+const { renderComEspacamento } = require('./pdf-render');
+const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./pdf-extrato-parser');
+const {
+    validarAssinaturaPdf,
+    validarEstruturaOfx,
+    validarAssinaturaImagem
+} = require('./file-signatures');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -23,6 +30,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 const LIMITE_EXTRATO_BYTES = 10 * 1024 * 1024;
+const LIMITE_TEXTO_PDF_CARACTERES = 500000;
 
 function criarUploadExtrato({ extensoes, tiposMime, mensagem }) {
     return multer({
@@ -66,6 +74,33 @@ const uploadImagem = multer({
         cb(null, true);
     }
 });
+
+function validarUploadPdf(req, res, next) {
+    try {
+        if (req.file) validarAssinaturaPdf(req.file.buffer);
+        next();
+    } catch (erro) {
+        next(erro);
+    }
+}
+
+function validarUploadOfx(req, res, next) {
+    try {
+        if (req.file) validarEstruturaOfx(req.file.buffer);
+        next();
+    } catch (erro) {
+        next(erro);
+    }
+}
+
+function validarUploadImagem(req, res, next) {
+    try {
+        if (req.file) validarAssinaturaImagem(req.file.buffer, req.file.mimetype);
+        next();
+    } catch (erro) {
+        next(erro);
+    }
+}
 
 function enviarImagemParaCloudinary(buffer, opcoes) {
     return new Promise((resolve, reject) => {
@@ -170,7 +205,7 @@ function normalizarFitid(valor) {
 }
 
 function valorEmCentavos(valor) {
-    const numero = Math.abs(Number(valor));
+    const numero = Math.abs(numeroOfx(valor));
     if (!Number.isFinite(numero) || numero <= 0) return null;
     return Math.round((numero + Number.EPSILON) * 100);
 }
@@ -257,10 +292,43 @@ function assinaturaHashPreviaValida(usuarioId, tipoArquivo, hashArquivo, assinat
 // 1. Inicializamos o servidor Express
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 1); // Render encerra o TLS antes de encaminhar a requisição ao Node.
 // 2. Middlewares essenciais (precisam vir ANTES de qualquer rota, incluindo o webhook,
 // senão req.body chega vazio nas rotas registradas antes deles)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '256kb' }));
+app.use(express.urlencoded({ extended: true, limit: '256kb' }));
+
+const diretivasCsp = {
+    defaultSrc: ["'self'"],
+    baseUri: ["'self'"],
+    connectSrc: ["'self'"],
+    fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+    formAction: ["'self'"],
+    frameAncestors: ["'none'"],
+    imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
+    manifestSrc: ["'self'"],
+    mediaSrc: ["'self'"],
+    objectSrc: ["'none'"],
+    scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com'],
+    scriptSrcAttr: ["'unsafe-inline'"],
+    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    workerSrc: ["'self'", 'blob:']
+};
+if (process.env.NODE_ENV === 'production') diretivasCsp.upgradeInsecureRequests = [];
+
+app.use(helmet({
+    contentSecurityPolicy: {
+        useDefaults: false,
+        directives: diretivasCsp
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    frameguard: { action: 'deny' },
+    strictTransportSecurity: process.env.NODE_ENV === 'production'
+        ? { maxAge: 31536000, includeSubDomains: true }
+        : false,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
 
 const origensPermitidas = String(
     process.env.ALLOWED_ORIGINS || process.env.APP_URL || ''
@@ -303,44 +371,27 @@ app.get('/health', async (req, res) => {
 });
 
 function criarLimitador({ janelaMs, maximo, prefixo }) {
-    const tentativas = new Map();
-    let chamadasDesdeLimpeza = 0;
-
-    return (req, res, next) => {
-        const agora = Date.now();
-        const identificador = `${prefixo}:${req.ip || req.socket.remoteAddress || 'desconhecido'}`;
-        const registro = tentativas.get(identificador);
-
-        chamadasDesdeLimpeza += 1;
-        if (chamadasDesdeLimpeza >= 256) {
-            chamadasDesdeLimpeza = 0;
-            for (const [chave, tentativa] of tentativas) {
-                if (tentativa.expiraEm <= agora) tentativas.delete(chave);
-            }
-        }
-
-        if (!registro && tentativas.size >= 10000) {
-            const chaveMaisAntiga = tentativas.keys().next().value;
-            if (chaveMaisAntiga) tentativas.delete(chaveMaisAntiga);
-        }
-
-        if (!registro || registro.expiraEm <= agora) {
-            tentativas.set(identificador, { quantidade: 1, expiraEm: agora + janelaMs });
-            return next();
-        }
-
-        registro.quantidade += 1;
-        if (registro.quantidade > maximo) {
-            const segundos = Math.ceil((registro.expiraEm - agora) / 1000);
+    return rateLimit({
+        windowMs: janelaMs,
+        limit: maximo,
+        standardHeaders: 'draft-8',
+        legacyHeaders: false,
+        identifier: prefixo,
+        // O proxy confiável é o balanceador do Render. A validação automática da
+        // biblioteca não conhece essa topologia, por isso a regra é documentada aqui.
+        validate: { trustProxy: false },
+        handler(req, res) {
+            const expiraEm = req.rateLimit?.resetTime?.getTime?.();
+            const segundos = Number.isFinite(expiraEm)
+                ? Math.max(1, Math.ceil((expiraEm - Date.now()) / 1000))
+                : Math.ceil(janelaMs / 1000);
             res.setHeader('Retry-After', String(segundos));
             return res.status(429).json({
                 success: false,
                 message: `Muitas tentativas. Aguarde ${segundos} segundos e tente novamente.`
             });
         }
-
-        next();
-    };
+    });
 }
 
 const limitarAutenticacao = criarLimitador({
@@ -353,6 +404,11 @@ const limitarFeedback = criarLimitador({
     maximo: 10,
     prefixo: 'feedback'
 });
+const limitarImportacao = criarLimitador({
+    janelaMs: 15 * 60 * 1000,
+    maximo: 20,
+    prefixo: 'importacao'
+});
 const PAGINAS_PRIVADAS_OU_DE_ACAO = new Set([
     'assinatura.html', 'calendario.html', 'comparativo.html', 'configuracoes.html',
     'contas.html', 'dashboard.html', 'importacoes.html', 'importar-pdf.html',
@@ -360,6 +416,11 @@ const PAGINAS_PRIVADAS_OU_DE_ACAO = new Set([
     'pagamento.html', 'perfil.html', 'privacidade.html', 'relatorio.html',
     'relatorio-avancado.html'
 ]);
+
+// Preserva favoritos e links antigos após padronizar o nome para kebab-case.
+app.get('/Limite-de-Gastos.html', (req, res) => {
+    res.redirect(308, '/limite-de-gastos.html');
+});
 
 // Entrega os arquivos públicos. Tutorial e service worker nunca podem ficar
 // presos no cache do navegador ou do proxy após uma atualização.
@@ -393,15 +454,21 @@ app.use(express.static('public', {
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 
-const sessionStore = new MySQLStore({
+const configuracaoSslMysql = process.env.DB_SSL === 'false' ? undefined : {
+    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
+};
+const configuracaoConexaoMysql = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT
-});
+    port: process.env.DB_PORT,
+    ssl: configuracaoSslMysql
+};
 
-app.set('trust proxy', 1); // necessário no Render para o cookie 'secure' funcionar atrás do proxy
+const sessionStore = process.env.NODE_ENV === 'test'
+    ? new session.MemoryStore()
+    : new MySQLStore(configuracaoConexaoMysql);
 
 app.use(session({
     // "name" é a opção reconhecida pelo express-session para o nome do cookie.
@@ -532,7 +599,12 @@ app.post('/criar-sessao-pagamento', exigirLogin, express.json(), async (req, res
         if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado' });
         const usuarioPagamento = revelarIdentidade(rows[0]);
 
-        const meuDominio = `${req.protocol}://${req.get('host')}`;
+        let meuDominio;
+        try {
+            meuDominio = new URL(process.env.APP_URL).origin;
+        } catch {
+            meuDominio = `${req.protocol}://${req.get('host')}`;
+        }
         const preApproval = new PreApproval(mpClient);
 
         // Cria a ASSINATURA diretamente, com 1 mês grátis (trial)
@@ -577,54 +649,58 @@ app.post('/criar-sessao-pagamento', exigirLogin, express.json(), async (req, res
 
 // --- O CAIXA AUTOMÁTICO (WEBHOOK DO MERCADO PAGO) ---
 app.post('/webhook-mercadopago', async (req, res) => {
-    // O Mercado Pago exige que respondamos "Tudo OK" (200) imediatamente
-    res.sendStatus(200); 
-
     // Ele pode mandar o ID do pagamento de duas formas, tentamos ler ambas
-    const paymentId = req.query.id || (req.body.data && req.body.data.id);
+    const paymentId = String(req.query.id || req.body?.data?.id || '').trim();
 
     // Se houver um pagamento para investigar
-    if (paymentId && (req.body.type === 'payment' || req.body.action === 'payment.created')) {
-        try {
-            const paymentAPI = new Payment(mpClient);
-            const pagamentoInfo = await paymentAPI.get({ id: paymentId });
+    if (!/^\d{1,32}$/.test(paymentId)
+        || (req.body?.type !== 'payment' && req.body?.action !== 'payment.created')) {
+        return res.sendStatus(200);
+    }
 
-            // Se a pessoa pagou o PIX ou o cartão passou
-            if (pagamentoInfo.status === 'approved') {
-                const userId = pagamentoInfo.external_reference; // Lemos a nossa etiqueta!
-                console.log(`💰 PAGAMENTO APROVADO! Liberando usuário ID: ${userId}`);
-                
-                // Um webhook atrasado de uma cobrança antiga não pode reativar
-                // uma assinatura que já foi cancelada pelo usuário.
-                const [atualizacao] = await db.promise().query(
-                    `UPDATE usuarios
-                     SET status_pagamento = 'pago'
-                     WHERE id = ? AND assinatura_cancelada_no_mp = 0`,
-                    [userId]
-                );
+    try {
+        // A API do Mercado Pago é a fonte de verdade: nenhum status recebido no
+        // corpo do webhook é usado para liberar a assinatura.
+        const paymentAPI = new Payment(mpClient);
+        const pagamentoInfo = await paymentAPI.get({ id: paymentId });
 
-                if (atualizacao.affectedRows === 0) {
-                    console.log(`🛑 Pagamento ${paymentId} recebido, mas a conta ${userId} permanece cancelada.`);
-                }
+        // Se a pessoa pagou o PIX ou o cartão passou
+        if (pagamentoInfo.status === 'approved') {
+            const userId = Number(pagamentoInfo.external_reference);
+            if (!Number.isInteger(userId) || userId <= 0) {
+                console.warn(`Pagamento ${paymentId} sem referência de usuário válida.`);
+                return res.sendStatus(200);
             }
-        } catch (err) {
-            console.error("Erro ao checar status do pagamento no MP:", err);
+            console.log(`💰 PAGAMENTO APROVADO! Liberando usuário ID: ${userId}`);
+                
+            // Um webhook atrasado de uma cobrança antiga não pode reativar
+            // uma assinatura que já foi cancelada pelo usuário.
+            const [atualizacao] = await db.promise().query(
+                `UPDATE usuarios
+                 SET status_pagamento = 'pago'
+                 WHERE id = ? AND assinatura_cancelada_no_mp = 0`,
+                [userId]
+            );
+
+            if (atualizacao.affectedRows === 0) {
+                console.log(`🛑 Pagamento ${paymentId} recebido, mas a conta ${userId} permanece cancelada.`);
+            }
         }
+        return res.sendStatus(200);
+    } catch (err) {
+        // O 500 permite que o Mercado Pago tente entregar o evento novamente.
+        console.error('Erro ao checar status do pagamento no MP:', err);
+        return res.sendStatus(500);
     }
 });
 // --- LIGAÇÃO À BASE DE DADOS MYSQL ---
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-    ssl: process.env.DB_SSL === 'false' ? undefined : {
-        // A validação do certificado fica ativa por padrão. Só desative
-        // explicitamente em um ambiente legado que não ofereça CA válida.
-        rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
+const db = process.env.NODE_ENV === 'test'
+    ? {
+        promise() {
+            throw new Error('Banco indisponível em testes sem integração MySQL.');
+        }
     }
-});
+    : mysql.createConnection(configuracaoConexaoMysql);
 
 let promessaEstruturaAlertasMultiplos = null;
 
@@ -1172,23 +1248,25 @@ async function registrarAuditoria(req, evento, detalhes = null, usuarioId = null
     }
 }
 
-db.connect((err) => {
-    if (err) {
-        console.error('❌ Erro a ligar ao MySQL:', err.message);
-        return;
-    }
-    console.log('📦 Ligado à base de dados MySQL com sucesso!');
-    Promise.all([
-        garantirEstruturaAlertasMultiplos(),
-        garantirEstruturaProduto()
-    ])
-        .then(async () => {
-            console.log('🧱 Estruturas automáticas do GBM prontas.');
-            await migrarDadosSensiveisExistentes();
-            await migrarObjetivosLegados();
-        })
-        .catch((erroEstrutura) => console.error('❌ Erro ao preparar múltiplos alertas:', erroEstrutura));
-});
+if (require.main === module) {
+    db.connect((err) => {
+        if (err) {
+            console.error('❌ Erro a ligar ao MySQL:', err.message);
+            return;
+        }
+        console.log('📦 Ligado à base de dados MySQL com sucesso!');
+        Promise.all([
+            garantirEstruturaAlertasMultiplos(),
+            garantirEstruturaProduto()
+        ])
+            .then(async () => {
+                console.log('🧱 Estruturas automáticas do GBM prontas.');
+                await migrarDadosSensiveisExistentes();
+                await migrarObjetivosLegados();
+            })
+            .catch((erroEstrutura) => console.error('❌ Erro ao preparar múltiplos alertas:', erroEstrutura));
+    });
+}
 async function obterOuCriarContaDoUsuario(userId) {
     const [contas] = await db.promise().query(
         'SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1',
@@ -1268,7 +1346,7 @@ app.post('/importar-ofx', exigirLogin, (req, res) => {
 // --- EXTRAÇÃO DE TEXTO DO PDF VIA PYTHON (pdfplumber) ---
 // Chama extrator_pdf.py como subprocesso, manda os bytes do PDF pela entrada
 // padrão e recebe de volta o texto já com o espaçamento das colunas
-// reconstruído — mesmo contrato que o Pdfextratoparser.js já espera, então
+// reconstruído — mesmo contrato que o pdf-extrato-parser.js já espera, então
 // ele continua funcionando sem nenhuma alteração.
 // Extrai o texto do PDF preservando espaçamento entre colunas (sem depender de Python)
 async function extrairTextoPdf(bufferPdf) {
@@ -1276,7 +1354,13 @@ async function extrairTextoPdf(bufferPdf) {
     return dados.text || '';
 }
 
-app.post('/pdf-extrato/preview', exigirLogin, uploadPdf.single('arquivo'), async (req, res) => {
+app.post(
+    '/pdf-extrato/preview',
+    limitarImportacao,
+    exigirLogin,
+    uploadPdf.single('arquivo'),
+    validarUploadPdf,
+    async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'Nenhum ficheiro PDF foi selecionado.' });
@@ -1285,6 +1369,12 @@ app.post('/pdf-extrato/preview', exigirLogin, uploadPdf.single('arquivo'), async
 
         // 1. Extrai o texto puro do PDF (preservando o espaçamento entre colunas da tabela)
         const texto = await extrairTextoPdf(req.file.buffer);
+        if (texto.length > LIMITE_TEXTO_PDF_CARACTERES) {
+            return res.status(413).json({
+                success: false,
+                message: 'O texto deste PDF é grande demais para ser processado com segurança.'
+            });
+        }
 
         // 2. Roda o extrator de transações (regras genéricas + conferência de saldo)
         const bancoDetectado = detectarBancoPdf(texto);
@@ -1342,7 +1432,8 @@ app.post('/pdf-extrato/preview', exigirLogin, uploadPdf.single('arquivo'), async
         console.error('❌ Erro ao converter PDF:', error);
         res.status(500).json({ success: false, message: 'Falha ao ler o PDF. Verifique se o ficheiro não está corrompido ou protegido por senha.' });
     }
-});
+    }
+);
 
 // A confirmação sem hash/conta/importação rastreável foi desativada.
 app.post('/pdf-extrato/confirmar', exigirLogin, (req, res) => {
@@ -2821,7 +2912,7 @@ app.put('/perfil', exigirLogin, async (req, res) => {
     }
 });
 
-app.post('/perfil/foto', exigirLogin, uploadImagem.single('foto'), async (req, res) => {
+app.post('/perfil/foto', exigirLogin, uploadImagem.single('foto'), validarUploadImagem, async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -2858,7 +2949,7 @@ app.post('/perfil/foto', exigirLogin, uploadImagem.single('foto'), async (req, r
     }
 });
 
-app.post('/perfil/capa', exigirLogin, uploadImagem.single('capa'), async (req, res) => {
+app.post('/perfil/capa', exigirLogin, uploadImagem.single('capa'), validarUploadImagem, async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -3711,7 +3802,10 @@ app.delete('/contas/:id', exigirLogin, async (req, res) => {
     } catch (erro) {
         try { await banco.rollback(); } catch {}
         console.error('Erro ao excluir conta bancária:', erro);
-        res.status(500).json({ success: false, error: erro.message || 'Falha ao excluir conta.' });
+        if (erro.message === 'Conta de destino inválida.') {
+            return res.status(400).json({ success: false, error: erro.message });
+        }
+        res.status(500).json({ success: false, error: 'Falha ao excluir conta.' });
     }
 });
 
@@ -3734,7 +3828,7 @@ async function prepararOfxParaPrevia(buffer, usuarioId) {
 
     const linhas = transacoes.map((tx) => {
         const descricao = tx.MEMO || tx.NAME || 'Transação eletrônica';
-        const valorOriginal = Number(tx.TRNAMT || 0);
+        const valorOriginal = numeroOfx(tx.TRNAMT || 0);
         const data = normalizarDataBancaria(tx.DTPOSTED);
         return {
             id_externo: normalizarFitid(tx.FITID),
@@ -3749,13 +3843,19 @@ async function prepararOfxParaPrevia(buffer, usuarioId) {
     return {
         banco: nomeBanco,
         saldo: extrato?.LEDGERBAL?.BALAMT != null
-            ? Number(extrato.LEDGERBAL.BALAMT)
+            ? numeroOfx(extrato.LEDGERBAL.BALAMT)
             : null,
         transacoes: linhas
     };
 }
 
-app.post('/ofx-extrato/preview', exigirLogin, uploadOfx.single('arquivo'), async (req, res) => {
+app.post(
+    '/ofx-extrato/preview',
+    limitarImportacao,
+    exigirLogin,
+    uploadOfx.single('arquivo'),
+    validarUploadOfx,
+    async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, error: 'Selecione um arquivo OFX.' });
@@ -3780,7 +3880,8 @@ app.post('/ofx-extrato/preview', exigirLogin, uploadOfx.single('arquivo'), async
         console.error('Erro na prévia OFX:', erro);
         res.status(500).json({ success: false, error: 'Falha ao ler o arquivo OFX.' });
     }
-});
+    }
+);
 
 app.post('/importacoes/confirmar', exigirLogin, async (req, res) => {
     const bancoDados = db.promise();
@@ -4672,7 +4773,8 @@ app.use((erro, req, res, next) => {
         const mensagem = erro.code === 'LIMIT_FILE_SIZE'
             ? 'O arquivo excede o limite permitido.'
             : 'Não foi possível receber o arquivo.';
-        return res.status(400).json({ success: false, error: mensagem, message: mensagem });
+        const status = erro.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+        return res.status(status).json({ success: false, error: mensagem, message: mensagem });
     }
     if (erro && erro.codigoPublico === 'ARQUIVO_INVALIDO') {
         return res.status(400).json({ success: false, error: erro.message, message: erro.message });
@@ -4683,18 +4785,38 @@ app.use((erro, req, res, next) => {
     return next(erro);
 });
 
-// 4. Liga o servidor
-const PORT = process.env.PORT || 3000; 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Servidor rodando perfeitamente na porta ${PORT}`);
+app.use((erro, req, res, next) => {
+    if (res.headersSent) return next(erro);
+
+    const corpoExcessivo = erro?.type === 'entity.too.large';
+    const status = corpoExcessivo ? 413 : Number(erro?.statusHttp) || 500;
+    const mensagem = status === 413
+        ? 'O conteúdo enviado excede o limite permitido.'
+        : status >= 500
+            ? 'Ocorreu um erro interno no servidor.'
+            : erro.message || 'Não foi possível concluir a solicitação.';
+
+    if (status >= 500) console.error('[SERVER ERROR]', erro);
+    return res.status(status).json({ success: false, error: mensagem, message: mensagem });
 });
-// Roda a auditoria de metas todos os dias às 08:00 (mesmo sem novo lançamento)
-cron.schedule('0 8 * * *', () => {
-    console.log('⏰ Rodando auditoria diária de metas...');
-    auditarMetas();
-    gerarRecorrenciasVencidas()
-        .then((quantidade) => {
-            if (quantidade) console.log(`📅 ${quantidade} transação(ões) recorrente(s) gerada(s).`);
-        })
-        .catch((erro) => console.error('Erro ao gerar recorrências:', erro));
-});
+
+if (require.main === module) {
+    // 4. Liga o servidor
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Servidor rodando perfeitamente na porta ${PORT}`);
+    });
+
+    // Roda a auditoria de metas todos os dias às 08:00 no horário de São Paulo.
+    cron.schedule('0 8 * * *', () => {
+        console.log('⏰ Rodando auditoria diária de metas...');
+        auditarMetas();
+        gerarRecorrenciasVencidas()
+            .then((quantidade) => {
+                if (quantidade) console.log(`📅 ${quantidade} transação(ões) recorrente(s) gerada(s).`);
+            })
+            .catch((erro) => console.error('Erro ao gerar recorrências:', erro));
+    }, { timezone: 'America/Sao_Paulo' });
+}
+
+module.exports = { app };

@@ -32,6 +32,8 @@ Nunca publique `.env`, tokens ou credenciais. Credenciais que já apareceram no 
 - Conta não verificada não recebe acesso às APIs autenticadas.
 - Códigos de verificação e recuperação têm finalidade e expiração.
 - Uploads ficam limitados a um arquivo de até 10 MB e tipos permitidos.
+- A assinatura real de PDFs, OFX/QFX e imagens é conferida além da extensão e do MIME.
+- Helmet aplica CSP e cabeçalhos defensivos; autenticação, feedback e importações têm rate limit.
 - CORS usa lista explícita, cookies são `httpOnly` e páginas privadas recebem `noindex`.
 - Dados dinâmicos exibidos em relatórios são escapados antes de entrar no HTML.
 - O endpoint `/health` verifica também a conexão com o banco.
@@ -52,4 +54,27 @@ Uma nova aprovação depende da avaliação do Google e não pode ser garantida 
 
 ## CI
 
-O workflow em `.github/workflows/ci.yml` valida sintaxe, testes e vulnerabilidades de severidade alta em cada push e pull request.
+O workflow em `.github/workflows/ci.yml` valida Node.js 20 e 22, sintaxe, testes de integração e vulnerabilidades de severidade alta em cada push e pull request.
+
+## Deploy no Render
+
+O serviço publicado em `gbm-finance.com` é uma aplicação Web Node.js no Render. Use esta configuração no painel:
+
+- branch de produção: `main`;
+- build command: `npm ci --omit=dev`;
+- start command: `npm start`;
+- health check path: `/health`;
+- auto-deploy: **After CI Checks Pass**;
+- `NODE_ENV=production`, `APP_URL=https://gbm-finance.com` e `ALLOWED_ORIGINS=https://gbm-finance.com`;
+- demais segredos conforme `.env.example`, cadastrados somente em **Environment** no Render.
+
+Fluxo seguro de publicação:
+
+1. desenvolver em uma branch `agent/*`;
+2. abrir um pull request e aguardar os dois jobs do CI;
+3. revisar e mesclar na `main`;
+4. aguardar o Render concluir o deploy e o `/health` responder `200`;
+5. testar login, importação OFX/PDF, imagens de perfil e Mercado Pago;
+6. se a verificação falhar, usar **Rollback** no histórico de deploys do Render.
+
+Não execute mudanças de estrutura diretamente durante o deploy sem backup recente do MySQL. As migrações automáticas atuais são aditivas, mas dados financeiros exigem possibilidade de recuperação.

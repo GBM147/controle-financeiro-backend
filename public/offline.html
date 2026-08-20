@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="theme-color" content="#09101a">
+    <title>Sem conexão | GBM Finance</title>
+    <link rel="stylesheet" href="gbm-pages.css">
+    <style>
+        body { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+        .offline-card { width: min(520px, 100%); text-align: center; padding: 36px; }
+        .offline-card img { width: 112px; height: 112px; object-fit: contain; }
+        .offline-card h1 { margin: 18px 0 10px; }
+        .offline-card p { color: var(--muted); line-height: 1.6; }
+        .offline-card .btn { margin-top: 16px; }
+    </style>
+</head>
+<body class="gbm-interna">
+    <main class="card offline-card">
+        <img src="logo-transparente.png" alt="GBM Finance">
+        <h1>Você está sem conexão</h1>
+        <p>Assim que a internet voltar, tente novamente para acessar seus dados financeiros com segurança.</p>
+        <button class="btn" type="button" onclick="window.location.reload()">Tentar novamente</button>
+    </main>
+</body>
+</html>

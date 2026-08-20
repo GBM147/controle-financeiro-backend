@@ -9,6 +9,7 @@ Disallow: /configuracoes.html
 Disallow: /contas.html
 Disallow: /importacoes.html
 Disallow: /importar-pdf.html
+Disallow: /limite-de-gastos.html
 Disallow: /Limite-de-Gastos.html
 Disallow: /metas.html
 Disallow: /notificacoes.html

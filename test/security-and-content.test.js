@@ -46,6 +46,18 @@ test('configuração evita regressões de segurança conhecidas', () => {
     assert.equal(pacote.dependencies.nodemailer, undefined);
     assert.equal(pacote.dependencies['node-ofx-parser'], undefined);
     assert.match(pacote.dependencies.multer, /^\^2\.[12]\./);
+    assert.match(pacote.dependencies.helmet, /^\^8\./);
+    assert.match(pacote.dependencies['express-rate-limit'], /^\^8\./);
+    assert.match(servidor, /contentSecurityPolicy/);
+    assert.match(servidor, /validarAssinaturaPdf/);
+    assert.match(servidor, /\[SERVER ERROR\]/);
+});
+
+test('PWA possui fallback offline e nomes de rota consistentes', () => {
+    assert.match(ler('public/sw.js'), /offline\.html/);
+    assert.ok(fs.existsSync(path.join(raiz, 'public/limite-de-gastos.html')));
+    assert.ok(!fs.existsSync(path.join(raiz, 'public/Limite-de-Gastos.html')));
+    assert.doesNotMatch(ler('public/dashboard.html'), /Limite-de-Gastos\.html/);
 });
 
 test('login informa ao usuário quando as credenciais são recusadas', () => {
