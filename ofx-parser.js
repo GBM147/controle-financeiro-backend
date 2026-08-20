@@ -24,6 +24,31 @@ function valorTag(conteudo, nomeTag) {
     return correspondencia ? decodificarEntidades(correspondencia[1]) : undefined;
 }
 
+function numeroOfx(valor) {
+    if (typeof valor === 'number') return Number.isFinite(valor) ? valor : NaN;
+
+    let texto = String(valor ?? '')
+        .trim()
+        .replace(/\s+/g, '')
+        .replace(/[^\d,\.\-+]/g, '');
+    if (!texto) return NaN;
+
+    const ultimaVirgula = texto.lastIndexOf(',');
+    const ultimoPonto = texto.lastIndexOf('.');
+    if (ultimaVirgula >= 0 && ultimoPonto >= 0) {
+        if (ultimaVirgula > ultimoPonto) {
+            texto = texto.replace(/\./g, '').replace(',', '.');
+        } else {
+            texto = texto.replace(/,/g, '');
+        }
+    } else if (ultimaVirgula >= 0) {
+        texto = texto.replace(',', '.');
+    }
+
+    const numero = Number(texto);
+    return Number.isFinite(numero) ? numero : NaN;
+}
+
 function blocosTag(conteudo, nomeTag, proximaTag) {
     const tag = escaparRegex(nomeTag);
     const proxima = escaparRegex(proximaTag || nomeTag);
@@ -69,4 +94,4 @@ function parseOfx(textoOriginal) {
     };
 }
 
-module.exports = { parseOfx, valorTag };
+module.exports = { parseOfx, valorTag, numeroOfx };

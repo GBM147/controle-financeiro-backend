@@ -1,5 +1,5 @@
 const VERSAO_TUTORIAL = '1.1.46';
-const CACHE_GBM = 'gbm-estatico-v17';
+const CACHE_GBM = 'gbm-estatico-v18';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -8,6 +8,7 @@ const ARQUIVOS_ESTATICOS = [
     '/politica-de-privacidade.html',
     '/educacao-financeira.html',
     '/sobre.html',
+    '/offline.html',
     '/guias.css',
     '/auth.js',
     '/gbm-pages.css',
@@ -47,37 +48,50 @@ self.addEventListener('fetch', (evento) => {
     const url = new URL(requisicao.url);
     if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
-    const arquivoTutorial =
-        url.pathname.endsWith('/gbm-tutorial.js')
-        || url.pathname.endsWith('/gbm-tutorial.css');
-    const enderecoRede = arquivoTutorial
-        ? `${url.pathname}?v=${encodeURIComponent(VERSAO_TUTORIAL)}`
-        : requisicao;
-    const opcoesRede = arquivoTutorial
-        ? { cache: 'reload', credentials: 'same-origin' }
-        : undefined;
-
-    // Navegação autenticada usa rede primeiro para não exibir dados antigos.
-    evento.respondWith(
-        (async () => {
+    // Páginas usam rede primeiro. Assim, telas autenticadas nunca reaparecem com
+    // conteúdo antigo; sem rede, apenas páginas públicas pré-carregadas ou a tela
+    // offline são exibidas.
+    if (requisicao.mode === 'navigate') {
+        evento.respondWith((async () => {
             try {
-                const resposta = await fetch(enderecoRede, opcoesRede);
-                if (resposta.ok && ['script', 'style', 'image', 'manifest'].includes(requisicao.destination)) {
-                    const cache = await caches.open(CACHE_GBM);
-                    await cache.put(requisicao, resposta.clone());
-                }
-                return resposta;
-            } catch (erro) {
-                const cache = await caches.match(requisicao);
-                if (cache) return cache;
-                if (arquivoTutorial) {
-                    const tutorialEmCache = await caches.match(requisicao, { ignoreSearch: true });
-                    return tutorialEmCache || Response.error();
-                }
-                return requisicao.mode === 'navigate'
-                    ? (await caches.match('/index.html')) || Response.error()
-                    : Response.error();
+                return await fetch(requisicao);
+            } catch {
+                return (await caches.match(requisicao))
+                    || (await caches.match('/offline.html'))
+                    || Response.error();
             }
-        })()
-    );
+        })());
+        return;
+    }
+
+    const recursoEstatico = ['script', 'style', 'image', 'font', 'manifest'].includes(requisicao.destination);
+    if (!recursoEstatico) return;
+
+    // Assets usam cache primeiro e são revalidados em segundo plano.
+    evento.respondWith((async () => {
+        const arquivoTutorial =
+            url.pathname.endsWith('/gbm-tutorial.js')
+            || url.pathname.endsWith('/gbm-tutorial.css');
+        const chaveCache = arquivoTutorial
+            ? new Request(`${url.pathname}?v=${encodeURIComponent(VERSAO_TUTORIAL)}`)
+            : requisicao;
+        const cache = await caches.open(CACHE_GBM);
+        const armazenado = await cache.match(chaveCache);
+        const atualizar = fetch(chaveCache, { credentials: 'same-origin' })
+            .then(async (resposta) => {
+                if (resposta.ok) await cache.put(chaveCache, resposta.clone());
+                return resposta;
+            });
+
+        if (armazenado) {
+            evento.waitUntil(atualizar.catch(() => undefined));
+            return armazenado;
+        }
+
+        try {
+            return await atualizar;
+        } catch {
+            return Response.error();
+        }
+    })());
 });

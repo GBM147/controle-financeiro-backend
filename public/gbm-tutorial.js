@@ -175,7 +175,7 @@
                 }
             ]
         },
-        'Limite-de-Gastos.html': {
+        'limite-de-gastos.html': {
             titulo: 'Limite de gastos',
             passos: [
                 {

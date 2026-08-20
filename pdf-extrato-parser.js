@@ -21,7 +21,9 @@ function detectarBanco(texto) {
 async function extrairTransacoesDoPdf(texto) {
     try {
         // Usamos o modelo mais rápido e inteligente para essa tarefa
-        const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+        const model = genAI.getGenerativeModel({
+            model: process.env.GEMINI_MODEL || 'gemini-3.6-flash'
+        });
 
         const prompt = `
             Você é um assistente financeiro especialista em extração de dados.
