@@ -1699,6 +1699,62 @@ app.get('/economia-mensal', exigirLogin, async (req, res) => {
     }
 });
 
+// --- NOVA ROTA: SÉRIE DIÁRIA ACUMULADA DO CICLO (alimenta o mini-gráfico do dashboard) ---
+app.get('/resumo-diario', exigirLogin, async (req, res) => {
+    try {
+        const { mes, ano, conta_id } = req.query;
+        const userId = req.session.userId;
+        const diaFechamento = await obterDiaFechamento(userId);
+        const { inicio, fim } = calcularPeriodoFechamento(mes, ano, diaFechamento);
+
+        let sql = `
+            SELECT
+                t.data_transacao AS data,
+                SUM(CASE WHEN t.tipo = 'Receita' THEN t.valor ELSE 0 END) AS entradas,
+                SUM(CASE WHEN t.tipo = 'Despesa' THEN t.valor ELSE 0 END) AS saidas
+            FROM transacoes t
+            JOIN contas_bancarias cb ON t.conta_id = cb.id
+            WHERE cb.usuario_id = ?
+              AND t.data_transacao >= ?
+              AND t.data_transacao < ?
+        `;
+        const params = [userId, inicio, fim];
+        if (conta_id && Number(conta_id) > 0) {
+            sql += ' AND t.conta_id = ?';
+            params.push(Number(conta_id));
+        }
+        sql += ' GROUP BY t.data_transacao ORDER BY t.data_transacao ASC';
+        const [linhas] = await db.promise().query(sql, params);
+
+        // A série vai do início do ciclo até hoje (ou até o fim do ciclo, se o ciclo já acabou)
+        const hojeIso = new Date().toISOString().slice(0, 10);
+        const ultimoDiaCiclo = new Date(new Date(`${fim}T00:00:00Z`).getTime() - 86400000).toISOString().slice(0, 10);
+        const dataFinalSerie = hojeIso < ultimoDiaCiclo ? hojeIso : ultimoDiaCiclo;
+
+        const porData = new Map(linhas.map((linha) => [
+            new Date(linha.data).toISOString().slice(0, 10),
+            { entradas: Number(linha.entradas) || 0, saidas: Number(linha.saidas) || 0 }
+        ]));
+
+        const serie = [];
+        let acumulado = 0;
+        const cursor = new Date(`${inicio}T00:00:00Z`);
+        const limite = new Date(`${dataFinalSerie}T00:00:00Z`);
+        while (cursor <= limite) {
+            const chave = cursor.toISOString().slice(0, 10);
+            const dia = porData.get(chave) || { entradas: 0, saidas: 0 };
+            acumulado += dia.entradas - dia.saidas;
+            serie.push({ data: chave, resultado_acumulado: Number(acumulado.toFixed(2)) });
+            cursor.setUTCDate(cursor.getUTCDate() + 1);
+        }
+
+        res.json({ inicio, fim: dataFinalSerie, serie });
+    } catch (error) {
+        console.error('Erro ao gerar resumo diário:', error);
+        res.status(500).json({ error: 'Falha ao gerar o resumo diário.' });
+    }
+});
+
 // --- NOVA ROTA: COMPARATIVO DE TODOS OS MESES DE UM ANO ---
 app.get('/comparativo-mensal', exigirLogin, exigirPremium, async (req, res) => {
     try {

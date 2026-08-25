@@ -887,6 +887,26 @@
         .menu-item-premium.recurso-bloqueado:hover { border-left-color: #55a7ff !important; color: #9dcbff !important; background: rgba(85,167,255,.08) !important; }
 
         .grid-cards { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; }
+        .card-resultado { grid-column: span 2; }
+        .card-resultado-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .card-resultado-topo h3 { margin: 0; }
+        .card-resultado-grafico { position: relative; height: 64px; margin-top: 10px; }
+        .badge-taxa-poupada {
+            display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px;
+            border: 1px solid rgba(85,167,255,.4); background: rgba(85,167,255,.12); color: #9dcbff;
+            font-size: .7rem; font-weight: 700; white-space: nowrap;
+        }
+        .badge-economia-resultado {
+            display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 0; padding: 3px 10px; border-radius: 999px;
+            border: 1px solid rgba(57,217,138,.35); background: rgba(57,217,138,.1); color: #8bffc1;
+            font-size: .72rem; font-weight: 700; width: fit-content;
+        }
+        @media (max-width: 1020px) {
+            .card-resultado { grid-column: span 2; }
+        }
+        @media (max-width: 768px) {
+            .card-resultado { grid-column: span 1; }
+        }
         .card,
         .painel-ajustes,
         .chart-container,
@@ -1055,9 +1075,17 @@
 </section>
 
     <div class="grid-cards">
+    <div class="card card-resultado">
+        <div class="card-resultado-topo">
+            <h3>Resultado do Período</h3>
+            <span id="taxa-poupada-badge" class="badge-taxa-poupada" style="display:none;"></span>
+        </div>
+        <p id="saldo-liquido">R$ 0,00</p>
+        <div id="detalhe-economia-resultado" class="badge-economia-resultado" style="display:none;"></div>
+        <div class="card-resultado-grafico"><canvas id="grafico-resultado-periodo"></canvas></div>
+    </div>
     <div class="card"><h3>Total Recebido (Entradas)</h3><p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p></div>
     <div class="card"><h3>Total Gasto (Saídas)</h3><p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p></div>
-    <div class="card"><h3>Resultado do Período</h3><p id="saldo-liquido">R$ 0,00</p></div>
     <div class="card"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p>
         <div id="detalhe-economia" style="font-size:0.75rem; color:var(--texto-mutado); margin-top:6px;"></div>
     </div>
@@ -1502,9 +1530,54 @@
 
                 atualizarResumoFinanceiro(saldoBanco);
                 carregarEconomiaMensal();
+                carregarGraficoResultado();
                 renderizarVisualizacao();
             } catch (err) { 
                 console.error("Erro ao carregar dados:", err); 
+            }
+        }
+
+        let graficoResultado = null;
+        async function carregarGraficoResultado() {
+            try {
+                const { mes, ano } = cicloAtual();
+                const res = await fetchApi(`/resumo-diario?mes=${mes}&ano=${ano}${queryContaDashboard()}`);
+                const dados = await res.json();
+                const serie = dados.serie || [];
+                const labels = serie.map((p) => {
+                    const [, m, d] = p.data.split('-');
+                    return `${d}/${m}`;
+                });
+                const valores = serie.map((p) => p.resultado_acumulado);
+
+                const ctx = document.getElementById('grafico-resultado-periodo')?.getContext('2d');
+                if (!ctx) return;
+                if (graficoResultado) graficoResultado.destroy();
+
+                const ultimoValor = valores.length ? valores[valores.length - 1] : 0;
+                graficoResultado = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            data: valores,
+                            borderColor: ultimoValor >= 0 ? '#39d98a' : '#ff5d6c',
+                            backgroundColor: ultimoValor >= 0 ? 'rgba(57,217,138,.14)' : 'rgba(255,93,108,.14)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: .35,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { x: { display: false }, y: { display: false } },
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                    }
+                });
+            } catch (erro) {
+                console.error('Erro ao carregar o gráfico do período:', erro);
             }
         }
         function atualizarDropdownCategorias() {
@@ -1541,6 +1614,17 @@
     elPeriodo.innerText = `R$ ${periodo.toFixed(2)}`;
     elPeriodo.style.color = periodo < 0 ? '#ff4d4d' : '#2ecc71';
     elPeriodo.style.textShadow = periodo < 0 ? '0 0 5px rgba(255,77,77,0.3)' : '0 0 5px rgba(46,204,113,0.3)';
+
+    const badgeTaxa = document.getElementById('taxa-poupada-badge');
+    if (badgeTaxa) {
+        if (ent > 0) {
+            const taxa = (periodo / ent) * 100;
+            badgeTaxa.style.display = 'inline-flex';
+            badgeTaxa.innerHTML = `Taxa poupada <strong style="margin-left:4px;">${taxa.toFixed(1)}%</strong>`;
+        } else {
+            badgeTaxa.style.display = 'none';
+        }
+    }
 }
 
         // Card 4: quanto você economizou (ou gastou a mais) comparado ao mês anterior
@@ -1574,6 +1658,15 @@
                 elDetalhe.innerText = positivo
                     ? `Você gastou R$ ${Math.abs(economia).toFixed(2)} a menos que o mês passado${percentualTexto}.`
                     : `Você gastou R$ ${Math.abs(economia).toFixed(2)} a mais que o mês passado${percentualTexto}.`;
+
+                const badgeResultado = document.getElementById('detalhe-economia-resultado');
+                if (badgeResultado) {
+                    badgeResultado.style.display = 'inline-flex';
+                    badgeResultado.style.borderColor = positivo ? 'rgba(57,217,138,.35)' : 'rgba(255,93,108,.35)';
+                    badgeResultado.style.background = positivo ? 'rgba(57,217,138,.1)' : 'rgba(255,93,108,.1)';
+                    badgeResultado.style.color = positivo ? '#8bffc1' : '#ff9aa4';
+                    badgeResultado.innerText = `${positivo ? '↑' : '↓'} R$ ${Math.abs(economia).toFixed(2)} ${positivo ? 'melhor' : 'pior'} que antes`;
+                }
             } catch (e) {
                 console.error('Erro ao carregar economia mensal:', e);
             }
@@ -1694,6 +1787,7 @@
             if (contaId) document.getElementById('manual-conta').value = contaId;
             carregarDados();
             carregarInsights();
+            carregarGraficoResultado();
         }
 
         async function carregarContasLancamento() {
