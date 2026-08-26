@@ -1078,51 +1078,109 @@
     </div>
 </div>
 
-<section style="position:relative; z-index:1; margin:18px 20px 0; display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap;">
-    <label for="filtro-conta-dashboard" style="color:var(--texto-mutado); font-weight:700;">Exibir dados de:</label>
-    <select id="filtro-conta-dashboard" onchange="trocarContaDashboard()" style="min-width:220px; padding:10px 12px; border-radius:8px; border:1px solid var(--borda); background:#0f1b2d; color:#fff;">
-        <option value="">Todas as contas</option>
-    </select>
-
-    <label for="dia-fechamento" style="color:var(--texto-mutado); font-weight:700;">Fechamento do mês:</label>
-    <select id="dia-fechamento" onchange="salvarDiaFechamento()" title="Dia em que o seu mês financeiro vira" style="min-width:120px; padding:10px 12px; border-radius:8px; border:1px solid var(--borda); background:#0f1b2d; color:#fff;">
-    </select>
-
-    <span id="rotulo-periodo-ciclo" style="width:100%; text-align:right; color:var(--texto-mutado); font-size:0.85rem;"></span>
+<section class="dashboard-topo" aria-labelledby="titulo-visao-geral">
+    <div class="dashboard-heading">
+        <div class="dashboard-breadcrumb"><span>Tela 1 de 11</span><b>›</b><strong>Visão geral</strong></div>
+        <h2 id="titulo-visao-geral">Visão geral</h2>
+        <p>Acompanhe o desempenho do período e tome decisões com mais clareza.</p>
+    </div>
+    <div class="dashboard-filtros" aria-label="Filtros do período">
+        <select id="filtro-conta-dashboard" onchange="trocarContaDashboard()" aria-label="Conta">
+            <option value="">Todas as contas</option>
+        </select>
+        <select id="dia-fechamento" onchange="salvarDiaFechamento()" title="Dia em que o seu mês financeiro vira" aria-label="Fechamento do mês">
+        </select>
+        <span id="rotulo-periodo-ciclo" class="dashboard-periodo"></span>
+    </div>
 </section>
 
-    <div class="grid-cards">
+<div class="dashboard-principal-grid">
     <div class="card card-resultado">
         <div class="card-resultado-topo">
-            <h3>Resultado do Período</h3>
+            <h3>Resultado do período</h3>
             <span id="taxa-poupada-badge" class="badge-taxa-poupada" style="display:none;"></span>
         </div>
         <p id="saldo-liquido">R$ 0,00</p>
         <div id="detalhe-economia-resultado" class="badge-economia-resultado" style="display:none;"></div>
         <div class="card-resultado-grafico"><canvas id="grafico-resultado-periodo"></canvas></div>
     </div>
+
     <div class="coluna-fluxo">
         <div class="card card-fluxo">
-            <div class="card-fluxo-topo"><span class="icone-fluxo icone-entrada">↑</span><h3 style="margin:0;">Total Recebido (Entradas)</h3></div>
+            <div class="card-fluxo-topo"><span class="icone-fluxo icone-entrada">↑</span><h3>Entradas</h3></div>
             <p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p>
             <div id="comparativo-entradas" class="badge-comparativo-fluxo" style="display:none;"></div>
         </div>
         <div class="card card-fluxo">
-            <div class="card-fluxo-topo"><span class="icone-fluxo icone-saida">↓</span><h3 style="margin:0;">Total Gasto (Saídas)</h3></div>
+            <div class="card-fluxo-topo"><span class="icone-fluxo icone-saida">↓</span><h3>Saídas</h3></div>
             <p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p>
             <div id="comparativo-saidas" class="badge-comparativo-fluxo" style="display:none;"></div>
         </div>
     </div>
+
+    <section class="card card-pulso" aria-labelledby="titulo-pulso-financeiro">
+        <h3 id="titulo-pulso-financeiro">Pulso financeiro</h3>
+        <p class="card-subtitulo">Como sua renda foi distribuída neste período</p>
+        <div class="pulso-barra" aria-hidden="true">
+            <div id="pulso-barra-preenchimento" class="pulso-barra-preenchimento"></div>
+            <span id="pulso-marcador-meta" class="pulso-marcador-meta"></span>
+        </div>
+        <div class="pulso-legenda">
+            <div><span>Gasto</span><strong id="pulso-gasto">0,0%</strong></div>
+            <div><span>Preservado</span><strong id="pulso-preservado">0,0%</strong></div>
+            <div><span>Meta</span><strong id="pulso-meta">15%</strong></div>
+        </div>
+        <div class="pulso-status">
+            <span class="pulso-status-icone">✓</span>
+            <div><strong id="pulso-status-titulo">Seu mês permanece positivo</strong><span id="pulso-status-texto">Registre dados para calcular sua taxa poupada.</span></div>
+        </div>
+    </section>
 </div>
-<div id="card-economia-legado" class="card" style="display:none;"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p>
-    <div id="detalhe-economia" style="font-size:0.75rem; color:var(--texto-mutado); margin-top:6px;"></div>
+
+<div class="dashboard-secundario-grid">
+    <section class="insights-panel" aria-labelledby="titulo-insights">
+        <h2 id="titulo-insights">O que merece atenção</h2>
+        <p class="insights-subtitulo">Insights baseados no comportamento deste período</p>
+        <div id="insights-lista" class="insights-lista">
+            <div class="insight-item"><span>Analisando seu mês...</span></div>
+        </div>
+    </section>
+
+    <section class="card categorias-panel" aria-labelledby="titulo-categorias">
+        <h3 id="titulo-categorias">Principais categorias</h3>
+        <p class="card-subtitulo">Participação nas despesas do período</p>
+        <div id="principais-categorias-lista" class="principais-categorias-lista">
+            <div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div>
+        </div>
+        <a href="#" class="categorias-link" onclick="abrirModalTransacoes(); return false;">Ver relatório completo</a>
+    </section>
 </div>
-<section class="insights-panel">
-    <h2>O que merece atenção</h2>
-    <div id="insights-lista" class="insights-lista">
-        <div class="insight-item"><span>Analisando seu mês...</span></div>
+
+<div class="lancamento-rapido dashboard-lancamento-rapido" style="margin: 0 20px 20px; padding: 20px 25px;">
+    <div class="lancamento-rapido-copy">
+        <h3>Lançamento rápido</h3>
+        <p>Registre uma movimentação sem sair<br>da visão geral.</p>
     </div>
-</section>
+    <div class="lancamento-rapido-form">
+        <select id="manual-conta" aria-label="Conta do lançamento"><option value="">Carregando contas...</option></select>
+        <input type="text" id="manual-desc" placeholder="Descrição">
+        <input type="number" id="manual-valor" placeholder="R$ 0,00" step="0.01">
+        <select id="manual-tipo" aria-label="Tipo"><option value="Despesa">Despesa</option><option value="Receita">Receita</option></select>
+        <select id="manual-cat" aria-label="Categoria">
+            <option value="Alimentação">Alimentação</option><option value="Habitação">Habitação</option><option value="Transporte">Transporte</option>
+            <option value="Eletricidade / Luz">Luz</option><option value="Telecomunicações / Internet">Internet</option><option value="Pagamento de Fatura">Fatura</option>
+            <option value="Pagamento de Boleto">Boleto</option><option value="Streaming de Vídeo">Streaming de Vídeo</option><option value="Streaming de Música">Streaming de Música</option>
+            <option value="Academia e Fitness">Academia e Fitness</option><option value="Saúde">Saúde</option><option value="Educação">Educação</option>
+            <option value="Supermercado">Supermercado</option><option value="Restaurantes">Restaurantes</option><option value="Salário">Salário</option><option value="Lazer">Lazer</option><option value="Outros">Outros</option>
+        </select>
+        <input type="date" id="manual-data" aria-label="Data do lançamento">
+        <button class="btn-acao" onclick="salvarLancamentoManual()">Adicionar lançamento</button>
+        <button id="btn-desfazer-lancamento" class="btn-acao dashboard-undo" onclick="desfazerUltimo()" title="Desfazer último lançamento" aria-label="Desfazer último lançamento">Desfazer</button>
+    </div>
+</div>
+
+<div id="card-economia-legado" class="card" style="display:none;"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p><div id="detalhe-economia"></div></div>
+
 <div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
     <div class="modal-gbm-dialogo">
         <div class="modal-gbm-topo">
@@ -1154,42 +1212,6 @@
             <button type="button" class="btn-objetivo-transacao secundario" onclick="fecharVinculoObjetivo()">Cancelar</button>
             <button type="button" id="confirmar-vinculo-objetivo" class="btn-objetivo-transacao" onclick="confirmarVinculoObjetivo()">Confirmar vínculo</button>
         </div>
-    </div>
-</div>
-<div class="lancamento-rapido" style="margin: 0 20px 20px 20px; padding: 20px 25px;">
-    <h3 style="margin: 0 0 15px 0; font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: var(--texto-mutado);">Lançamento Rápido</h3>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-        <select id="manual-conta" aria-label="Conta do lançamento" style="flex:1; min-width:150px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
-            <option value="">Carregando contas...</option>
-        </select>
-        <input type="text"   id="manual-desc"  placeholder="Descrição"   style="flex:2; min-width:140px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
-        <input type="number" id="manual-valor" placeholder="R$ 0,00"     style="flex:1; min-width:90px;  padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;" step="0.01">
-        <select id="manual-tipo" style="flex:1; min-width:110px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
-            <option value="Despesa">Despesa</option>
-            <option value="Receita">Receita</option>
-        </select>
-        <select id="manual-cat" style="flex:1; min-width:140px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
-            <option value="Alimentação">Alimentação</option>
-            <option value="Habitação">Habitação</option>
-            <option value="Transporte">Transporte</option>
-            <option value="Eletricidade / Luz">Luz</option>
-            <option value="Telecomunicações / Internet">Internet</option>
-            <option value="Pagamento de Fatura">Fatura</option>
-            <option value="Pagamento de Boleto">Boleto</option>
-            <option value="Streaming de Vídeo">Streaming de Vídeo</option>
-            <option value="Streaming de Música">Streaming de Música</option>
-            <option value="Academia e Fitness">Academia e Fitness</option>
-            <option value="Saúde">Saúde</option>
-            <option value="Educação">Educação</option>
-            <option value="Supermercado">Supermercado</option>
-            <option value="Restaurantes">Restaurantes</option>
-            <option value="Salário">Salário</option>
-            <option value="Lazer">Lazer</option>
-            <option value="Outros">Outros</option>
-        </select>
-        <input type="date" id="manual-data" style="flex:1; min-width:130px; padding:10px; border-radius:8px; border:1px solid var(--borda); background:rgba(15,23,42,0.6); color:#fff; font-size:0.9rem;">
-        <button class="btn-acao" onclick="salvarLancamentoManual()" style="background: var(--cor-destaque);">Lançar</button>
-        <button class="btn-acao" onclick="desfazerUltimo()" style="background: rgba(255,77,77,0.2); border: 1px solid #ff4d4d; color: #ff4d4d;" title="Desfazer último lançamento">Desfazer</button>
     </div>
 </div>
 <div class="linha-paineis">
@@ -1465,7 +1487,12 @@
             const el = document.getElementById('rotulo-periodo-ciclo');
             if (!el) return;
             const { mes, ano } = cicloAtual();
-            el.innerText = `Período: ${NOMES_MESES[mes - 1]} ${ano} • ${intervaloCiclo(mes, ano)}`;
+            const mesesCurtos = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+            const desloc = DIA_FECHAMENTO - 1;
+            const inicio = new Date(ano, mes - 1, 1 + desloc);
+            const fim = new Date(ano, mes, desloc);
+            const fmt = (d) => `${String(d.getDate()).padStart(2, '0')} ${mesesCurtos[d.getMonth()]}`;
+            el.innerText = `${fmt(inicio)} — ${fmt(fim)}`;
         }
 
         function montarSeletorDiaFechamento() {
@@ -1626,6 +1653,11 @@
 
     if (selecionadaAntes) selectMeta.value = selecionadaAntes;
 }
+        function formatarMoedaDashboard(valor) {
+            const numero = Number(valor) || 0;
+            return numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
         function atualizarResumoFinanceiro(saldoBancoReal = 0) {
     let ent = 0, sai = 0;
     dadosAPI.forEach(item => {
@@ -1634,15 +1666,15 @@
             if (item.tipo === 'Receita') ent += v; else sai += v;
         }
     });
-    document.getElementById('total-entradas').innerText = `R$ ${ent.toFixed(2)}`;
-    document.getElementById('total-saidas').innerText = `R$ ${sai.toFixed(2)}`;
+    document.getElementById('total-entradas').innerText = formatarMoedaDashboard(ent);
+    document.getElementById('total-saidas').innerText = formatarMoedaDashboard(sai);
 
     // Card 3: resultado do período (as contas batem: Entradas - Saídas)
     const periodo = ent - sai;
     const elPeriodo = document.getElementById('saldo-liquido');
-    elPeriodo.innerText = `R$ ${periodo.toFixed(2)}`;
-    elPeriodo.style.color = periodo < 0 ? '#ff4d4d' : '#2ecc71';
-    elPeriodo.style.textShadow = periodo < 0 ? '0 0 5px rgba(255,77,77,0.3)' : '0 0 5px rgba(46,204,113,0.3)';
+    elPeriodo.innerText = formatarMoedaDashboard(periodo);
+    elPeriodo.style.color = periodo < 0 ? '#ff5d6c' : '#f4f8fc';
+    elPeriodo.style.textShadow = 'none';
 
     const badgeTaxa = document.getElementById('taxa-poupada-badge');
     if (badgeTaxa) {
@@ -1727,7 +1759,7 @@
                 return;
             }
 
-            const cores = ['#55a7ff', '#39d98a', '#f5a524', '#a78bfa', '#ff8b6b'];
+            const cores = ['#55a7ff', '#39d98a', '#55a7ff', '#39d98a', '#55a7ff'];
             const ordenadas = [...despesasPorCategoria.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
             lista.innerHTML = ordenadas.map(([categoria, valor], indice) => {
@@ -1770,14 +1802,14 @@
                 const economia = dados.economia || 0;
                 const positivo = economia >= 0;
 
-                elEconomia.innerText = `${positivo ? '+' : '-'} R$ ${Math.abs(economia).toFixed(2)}`;
+                elEconomia.innerText = `${positivo ? '+' : '-'} ${formatarMoedaDashboard(Math.abs(economia))}`;
                 elEconomia.style.color = positivo ? '#2ecc71' : '#ff4d4d';
                 elEconomia.style.textShadow = positivo ? '0 0 5px rgba(46,204,113,0.3)' : '0 0 5px rgba(255,77,77,0.3)';
 
                 const percentualTexto = dados.percentual !== null ? ` (${Math.abs(dados.percentual).toFixed(1)}%)` : '';
                 elDetalhe.innerText = positivo
-                    ? `Você gastou R$ ${Math.abs(economia).toFixed(2)} a menos que o mês passado${percentualTexto}.`
-                    : `Você gastou R$ ${Math.abs(economia).toFixed(2)} a mais que o mês passado${percentualTexto}.`;
+                    ? `Você gastou ${formatarMoedaDashboard(Math.abs(economia))} a menos que o mês passado${percentualTexto}.`
+                    : `Você gastou ${formatarMoedaDashboard(Math.abs(economia))} a mais que o mês passado${percentualTexto}.`;
 
                 const badgeResultado = document.getElementById('detalhe-economia-resultado');
                 if (badgeResultado) {
@@ -1785,7 +1817,7 @@
                     badgeResultado.style.borderColor = positivo ? 'rgba(57,217,138,.35)' : 'rgba(255,93,108,.35)';
                     badgeResultado.style.background = positivo ? 'rgba(57,217,138,.1)' : 'rgba(255,93,108,.1)';
                     badgeResultado.style.color = positivo ? '#8bffc1' : '#ff9aa4';
-                    badgeResultado.innerText = `${positivo ? '↑' : '↓'} R$ ${Math.abs(economia).toFixed(2)} ${positivo ? 'melhor' : 'pior'} que antes`;
+                    badgeResultado.innerText = `${positivo ? '↑' : '↓'} ${formatarMoedaDashboard(Math.abs(economia))} ${positivo ? 'melhor' : 'pior'} que antes`;
                 }
 
                 const badgeEntradas = document.getElementById('comparativo-entradas');
