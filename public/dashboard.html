@@ -1559,6 +1559,8 @@
                 carregarEconomiaMensal();
                 carregarGraficoResultado();
                 renderizarVisualizacao();
+                atualizarPulsoFinanceiro();
+                atualizarPrincipaisCategorias();
             } catch (err) { 
                 console.error("Erro ao carregar dados:", err); 
             }
@@ -1664,7 +1666,86 @@
             badgeSaidas.style.display = 'none';
         }
     }
+
+    window._resumoFluxoAtual = { ent, sai, periodo };
 }
+
+        // --- CARD: PULSO FINANCEIRO (barra de gasto/preservado/meta) ---
+        const META_TAXA_POUPADA = 15; // meta padrão de % preservado da renda
+        function atualizarPulsoFinanceiro() {
+            const resumo = window._resumoFluxoAtual || { ent: 0, sai: 0, periodo: 0 };
+            const barra = document.getElementById('pulso-barra-preenchimento');
+            const marcador = document.getElementById('pulso-marcador-meta');
+            const elGasto = document.getElementById('pulso-gasto');
+            const elPreservado = document.getElementById('pulso-preservado');
+            const elMeta = document.getElementById('pulso-meta');
+            const elStatus = document.getElementById('pulso-status-texto');
+            const elStatusTitulo = document.getElementById('pulso-status-titulo');
+            if (!barra || !elGasto || !elPreservado) return;
+
+            const ent = resumo.ent || 0;
+            const gastoPct = ent > 0 ? Math.min(100, (resumo.sai / ent) * 100) : 0;
+            const preservadoPct = ent > 0 ? Math.max(0, 100 - gastoPct) : 0;
+
+            barra.style.width = `${gastoPct.toFixed(1)}%`;
+            if (marcador) marcador.style.left = `${Math.min(100, META_TAXA_POUPADA)}%`;
+            elGasto.innerText = `${gastoPct.toFixed(1)}%`;
+            elPreservado.innerText = `${preservadoPct.toFixed(1)}%`;
+            if (elMeta) elMeta.innerText = `${META_TAXA_POUPADA}%`;
+
+            if (elStatusTitulo && elStatus) {
+                if (preservadoPct >= META_TAXA_POUPADA) {
+                    elStatusTitulo.innerText = 'Seu mês permanece positivo';
+                    elStatus.innerText = `Você já preservou ${preservadoPct.toFixed(1)}% da renda, acima da meta de ${META_TAXA_POUPADA}%.`;
+                } else {
+                    const faltam = Math.max(0, META_TAXA_POUPADA - preservadoPct);
+                    elStatusTitulo.innerText = ent > 0 ? 'Faltam pontos para a meta' : 'Sem entradas no período';
+                    elStatus.innerText = ent > 0
+                        ? `Faltam ${faltam.toFixed(1)} pontos para alcançar a meta.`
+                        : 'Registre entradas para calcular sua taxa poupada.';
+                }
+            }
+        }
+
+        // --- CARD: PRINCIPAIS CATEGORIAS (participação das despesas no período) ---
+        function atualizarPrincipaisCategorias() {
+            const lista = document.getElementById('principais-categorias-lista');
+            if (!lista) return;
+
+            const despesasPorCategoria = new Map();
+            let totalDespesas = 0;
+            dadosAPI.forEach((item) => {
+                if (item.tipo !== 'Despesa') return;
+                const valor = Math.abs(parseFloat(String(item.total_movimentado || item.valor || 0).replace(',', '.'))) || 0;
+                const categoria = item.categoria || 'Outros';
+                despesasPorCategoria.set(categoria, (despesasPorCategoria.get(categoria) || 0) + valor);
+                totalDespesas += valor;
+            });
+
+            if (!totalDespesas || despesasPorCategoria.size === 0) {
+                lista.innerHTML = '<div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div>';
+                return;
+            }
+
+            const cores = ['#55a7ff', '#39d98a', '#f5a524', '#a78bfa', '#ff8b6b'];
+            const ordenadas = [...despesasPorCategoria.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            lista.innerHTML = ordenadas.map(([categoria, valor], indice) => {
+                const pct = (valor / totalDespesas) * 100;
+                const cor = cores[indice % cores.length];
+                return `
+                    <div class="categoria-participacao-item">
+                        <div class="categoria-participacao-topo">
+                            <span class="categoria-participacao-nome">${escaparHtmlDashboard(categoria)}</span>
+                            <span class="categoria-participacao-pct">${pct.toFixed(0)}%</span>
+                        </div>
+                        <div class="categoria-participacao-barra-fundo">
+                            <div class="categoria-participacao-barra-preenchimento" style="width:${pct.toFixed(1)}%; background:${cor};"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
         // Card 4: quanto você economizou (ou gastou a mais) comparado ao mês anterior
         async function carregarEconomiaMensal() {
@@ -2489,13 +2570,30 @@ async function carregarInsights() {
         const res = await fetchApi(`/insights?${queryContaDashboard().replace(/^&/, '')}`);
         if (!res.ok) throw new Error('Falha ao carregar insights.');
         const insights = await res.json();
+        const corPorTipo = (tipo) => tipo === 'aumento'
+            ? { borda: '#55a7ff', badge: null }
+            : tipo === 'positivo'
+                ? { borda: '#39d98a', badge: 'Desempenho positivo' }
+                : { borda: '#ff9aa4', badge: null };
+        const rotuloPorTipo = (tipo) => tipo === 'aumento'
+            ? 'ATENÇÃO'
+            : tipo === 'positivo'
+                ? 'DESEMPENHO'
+                : 'ALERTA';
         container.innerHTML = insights.length
-            ? insights.map((item) => `
-                <div class="insight-item">
+            ? insights.map((item) => {
+                const estilo = corPorTipo(item.tipo);
+                return `
+                <div class="insight-item" style="border-left:3px solid ${estilo.borda};">
+                    <span class="insight-rotulo">${rotuloPorTipo(item.tipo)}</span>
                     <strong>${escaparHtmlDashboard(item.titulo || '')}</strong>
                     <span>${escaparHtmlDashboard(item.texto || '')}</span>
+                    ${estilo.badge
+                        ? `<span class="insight-badge">${estilo.badge}</span>`
+                        : `<a href="#" class="insight-link" onclick="abrirModalTransacoes(); return false;">Ver movimentações</a>`}
                 </div>
-            `).join('')
+            `;
+            }).join('')
             : '<div class="insight-item"><span>Continue lançando seus dados para receber análises personalizadas.</span></div>';
     } catch (erro) {
         container.innerHTML = '<div class="insight-item"><span>Os insights estarão disponíveis quando houver dados suficientes.</span></div>';
