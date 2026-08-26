@@ -974,12 +974,12 @@
             border-color: rgba(85,167,255,.65) !important;
             box-shadow: 0 0 0 3px rgba(85,167,255,.11) !important;
         }
-        .btn-acao { background: #39b77a !important; color: #ffffff !important; border: 1px solid rgba(95,255,168,.32) !important; }
+        .btn-acao { background: #39b77a !important; color: #ffffff !important; border: 1px solid rgba(57,183,122,.42) !important; }
         .btn-acao:hover { background: #319f6b !important; box-shadow: 0 8px 22px rgba(0,0,0,.3); }
-        .btn-acao.dashboard-undo { background:#39b77a !important; color:#fff !important; border:1px solid rgba(95,255,168,.32) !important; }
+        .btn-acao.dashboard-undo { background:#39b77a !important; color:#fff !important; border:1px solid rgba(57,183,122,.42) !important; }
         #painel-meta .btn-acao,
         #btn-gerenciar-categorias,
-        .btn-objetivo-transacao { background: #39b77a !important; color: #ffffff !important; border-color: rgba(95,255,168,.32) !important; }
+        .btn-objetivo-transacao { background: #39b77a !important; color: #ffffff !important; border-color: rgba(57,183,122,.42) !important; }
         .vinculo-objetivo-atual { color: #9dcbff; }
         .aviso-vinculo { border-color: rgba(85,167,255,.4); background: rgba(85,167,255,.1); color: #b7d8f6; }
         #painel-exibicao { max-width: none !important; }
@@ -1983,10 +1983,13 @@
                     label: 'Valor movimentado',
                     data: valoresGrafico,
                     backgroundColor: tipoGrafico === 'line'
-                        ? (valoresGrafico[valoresGrafico.length - 1] < 0 ? 'rgba(255, 77, 77, .14)' : 'rgba(57, 217, 138, .10)')
+                        ? (detalhesGrafico.length && detalhesGrafico[detalhesGrafico.length - 1]?.tipo === 'Despesa'
+                            ? 'rgba(255, 77, 77, .14)'
+                            : 'rgba(57, 183, 122, .10)')
                         : fundosGrafico,
                     borderColor: tipoGrafico === 'line'
-                        ? (valoresGrafico[valoresGrafico.length - 1] < 0 ? '#ff4d4d' : '#39d98a')
+                        ? (detalhesGrafico.length && detalhesGrafico[detalhesGrafico.length - 1]?.tipo === 'Despesa'
+                            ? '#ff4d4d' : '#39b77a')
                         : bordasGrafico,
                     borderWidth: tipoGrafico === 'line' ? 2.5 : (circular ? 2 : 1.5),
                     borderRadius: tipoGrafico === 'bar' ? 7 : 0,
