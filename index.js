@@ -1686,11 +1686,20 @@ app.get('/economia-mensal', exigirLogin, async (req, res) => {
         const economia = despesaAnterior !== null ? (despesaAnterior - despesaAtual) : null;
         const percentual = (despesaAnterior && despesaAnterior > 0) ? (economia / despesaAnterior) * 100 : null;
 
+        const receitaAtual = parseFloat(atual.receitas) || 0;
+        const receitaAnterior = anterior ? (parseFloat(anterior.receitas) || 0) : null;
+        const percentualReceita = (receitaAnterior && receitaAnterior > 0)
+            ? ((receitaAtual - receitaAnterior) / receitaAnterior) * 100
+            : null;
+
         res.json({
             despesaAtual,
             despesaAnterior,
             economia,
             percentual,
+            receitaAtual,
+            receitaAnterior,
+            percentualReceita,
             temMesAnterior: !!anterior
         });
     } catch (error) {

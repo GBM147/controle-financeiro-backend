@@ -978,6 +978,18 @@
         @media (max-width: 1020px) {
             .grid-cards { grid-template-columns: repeat(2,minmax(0,1fr)); }
         }
+        .card-fluxo-topo { display: flex; align-items: center; gap: 10px; }
+        .icone-fluxo {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 50%; font-size: .95rem; font-weight: 700;
+        }
+        .icone-entrada { background: rgba(57,217,138,.14); color: #39d98a; }
+        .icone-saida { background: rgba(255,93,108,.14); color: #ff5d6c; }
+        .badge-comparativo-fluxo { margin-top: 8px; font-size: .78rem; font-weight: 700; }
+        .badge-comparativo-fluxo.positivo { color: #8bffc1; }
+        .badge-comparativo-fluxo.negativo { color: #ff9aa4; }
+        .badge-comparativo-fluxo.neutro { color: var(--texto-mutado); }
+
         @media (max-width: 768px) {
             .gbm-header { min-height: 62px; height: 62px; padding: 0 15px; }
             .nome-perfil-cabecalho { display: none; }
@@ -1084,8 +1096,16 @@
         <div id="detalhe-economia-resultado" class="badge-economia-resultado" style="display:none;"></div>
         <div class="card-resultado-grafico"><canvas id="grafico-resultado-periodo"></canvas></div>
     </div>
-    <div class="card"><h3>Total Recebido (Entradas)</h3><p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p></div>
-    <div class="card"><h3>Total Gasto (Saídas)</h3><p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p></div>
+    <div class="card">
+        <div class="card-fluxo-topo"><span class="icone-fluxo icone-entrada">↑</span><h3 style="margin:0;">Total Recebido (Entradas)</h3></div>
+        <p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p>
+        <div id="comparativo-entradas" class="badge-comparativo-fluxo" style="display:none;"></div>
+    </div>
+    <div class="card">
+        <div class="card-fluxo-topo"><span class="icone-fluxo icone-saida">↓</span><h3 style="margin:0;">Total Gasto (Saídas)</h3></div>
+        <p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p>
+        <div id="comparativo-saidas" class="badge-comparativo-fluxo" style="display:none;"></div>
+    </div>
     <div class="card"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p>
         <div id="detalhe-economia" style="font-size:0.75rem; color:var(--texto-mutado); margin-top:6px;"></div>
     </div>
@@ -1625,6 +1645,18 @@
             badgeTaxa.style.display = 'none';
         }
     }
+
+    const badgeSaidas = document.getElementById('comparativo-saidas');
+    if (badgeSaidas) {
+        if (ent > 0) {
+            const percentualUsado = (sai / ent) * 100;
+            badgeSaidas.style.display = 'block';
+            badgeSaidas.className = 'badge-comparativo-fluxo ' + (percentualUsado > 100 ? 'negativo' : 'neutro');
+            badgeSaidas.innerText = `${percentualUsado.toFixed(1)}% das entradas utilizadas`;
+        } else {
+            badgeSaidas.style.display = 'none';
+        }
+    }
 }
 
         // Card 4: quanto você economizou (ou gastou a mais) comparado ao mês anterior
@@ -1666,6 +1698,18 @@
                     badgeResultado.style.background = positivo ? 'rgba(57,217,138,.1)' : 'rgba(255,93,108,.1)';
                     badgeResultado.style.color = positivo ? '#8bffc1' : '#ff9aa4';
                     badgeResultado.innerText = `${positivo ? '↑' : '↓'} R$ ${Math.abs(economia).toFixed(2)} ${positivo ? 'melhor' : 'pior'} que antes`;
+                }
+
+                const badgeEntradas = document.getElementById('comparativo-entradas');
+                if (badgeEntradas) {
+                    if (dados.percentualReceita === null || dados.percentualReceita === undefined) {
+                        badgeEntradas.style.display = 'none';
+                    } else {
+                        const receitaSubiu = dados.percentualReceita >= 0;
+                        badgeEntradas.style.display = 'block';
+                        badgeEntradas.className = 'badge-comparativo-fluxo ' + (receitaSubiu ? 'positivo' : 'negativo');
+                        badgeEntradas.innerText = `${Math.abs(dados.percentualReceita).toFixed(1)}% ${receitaSubiu ? 'acima' : 'abaixo'} do mês anterior`;
+                    }
                 }
             } catch (e) {
                 console.error('Erro ao carregar economia mensal:', e);
