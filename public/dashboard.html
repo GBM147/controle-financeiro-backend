@@ -974,10 +974,12 @@
             border-color: rgba(85,167,255,.65) !important;
             box-shadow: 0 0 0 3px rgba(85,167,255,.11) !important;
         }
-        .btn-acao:hover { box-shadow: 0 8px 22px rgba(0,0,0,.3); }
+        .btn-acao { background: #39b77a !important; color: #ffffff !important; border: 1px solid rgba(95,255,168,.32) !important; }
+        .btn-acao:hover { background: #319f6b !important; box-shadow: 0 8px 22px rgba(0,0,0,.3); }
+        .btn-acao.dashboard-undo { background:#39b77a !important; color:#fff !important; border:1px solid rgba(95,255,168,.32) !important; }
         #painel-meta .btn-acao,
         #btn-gerenciar-categorias,
-        .btn-objetivo-transacao { background: #286da8 !important; }
+        .btn-objetivo-transacao { background: #39b77a !important; color: #ffffff !important; border-color: rgba(95,255,168,.32) !important; }
         .vinculo-objetivo-atual { color: #9dcbff; }
         .aviso-vinculo { border-color: rgba(85,167,255,.4); background: rgba(85,167,255,.1); color: #b7d8f6; }
         #painel-exibicao { max-width: none !important; }
@@ -1019,7 +1021,7 @@
         .pulso-legenda{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.pulso-legenda>div{display:flex;flex-direction:column;gap:2px}.pulso-legenda span{color:#71819a;font-size:.62rem}.pulso-legenda strong{color:#f2f7fd;font-size:.78rem}.pulso-legenda>div:nth-child(2) strong{color:#39d98a}.pulso-legenda>div:nth-child(3) strong{color:#9dcbff}.pulso-status{display:flex;gap:9px;align-items:flex-start;margin-top:auto;padding:10px 11px;border:1px solid rgba(85,167,255,.13);border-radius:10px;background:rgba(28,48,78,.62)}.pulso-status-icone{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border-radius:50%;background:rgba(57,217,138,.12);color:#39d98a;font-size:.72rem;font-weight:800}.pulso-status div{display:flex;flex-direction:column;gap:2px;min-width:0}.pulso-status strong{color:#eaf4ff;font-size:.67rem}.pulso-status span{color:#8b9bb0;font-size:.62rem;line-height:1.35}
         .dashboard-secundario-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,7fr) minmax(280px,5fr);gap:12px;margin:0 20px 12px}.dashboard-secundario-grid>*{min-width:0}.dashboard-secundario-grid .insights-panel,.dashboard-secundario-grid .categorias-panel{min-height:150px;margin:0!important;padding:17px 18px!important}.dashboard-secundario-grid .insights-panel h2{margin:0;font-size:1rem}.insights-subtitulo{margin:3px 0 11px;color:#71819a;font-size:.67rem}.dashboard-secundario-grid .insights-lista{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.dashboard-secundario-grid .insight-item{min-height:84px;padding:11px 12px}.dashboard-secundario-grid .insight-item strong{font-size:.75rem}.dashboard-secundario-grid .insight-item span{font-size:.66rem}.insight-rotulo{display:block;margin-bottom:3px;color:#7890ad!important;font-size:.62rem!important;font-weight:700;letter-spacing:.04em}.insight-badge{display:inline-flex;margin-top:6px;padding:3px 7px;border:1px solid rgba(57,217,138,.26);border-radius:999px;background:rgba(57,217,138,.08);color:#8bffc1!important;font-size:.58rem!important;font-weight:700}.insight-link{font-size:.62rem;color:#579cff}
         .principais-categorias-lista{display:flex;flex-direction:column;gap:8px;margin-top:10px}.categoria-participacao-topo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}.categoria-participacao-nome{color:#dfe9f4;font-size:.67rem}.categoria-participacao-pct{color:#7f94ad;font-size:.61rem;font-weight:700}.categoria-participacao-barra-fundo{width:100%;height:5px;overflow:hidden;border-radius:999px;background:rgba(69,91,122,.48)}.categoria-participacao-barra-preenchimento{height:100%;border-radius:inherit}.categoria-participacao-vazio{color:#8293a8;font-size:.7rem}.categorias-link{display:flex;justify-content:flex-end;margin-top:9px;color:#9dcbff;font-size:.62rem;font-weight:700;text-decoration:none}
-        .dashboard-lancamento-rapido{position:relative;z-index:1;margin:0 20px 20px!important;min-height:74px;padding:14px 18px!important;display:grid;grid-template-columns:180px minmax(0,1fr);gap:18px;align-items:center}.lancamento-rapido-copy h3{margin:0;color:#f0f6fc;font:700 .9rem 'Inter',sans-serif}.lancamento-rapido-copy p{margin:3px 0 0;color:#7f91a7;font-size:.62rem;line-height:1.35}.lancamento-rapido-form{display:grid;grid-template-columns:1.05fr 1.45fr .95fr .95fr 1.05fr 150px;gap:7px;min-width:0}.lancamento-rapido-form:is(input,select){min-width:0}.lancamento-rapido-form :is(input,select){width:100%;height:36px;box-sizing:border-box;padding:0 10px;border:1px solid rgba(255,255,255,.11);border-radius:9px;background:rgba(12,27,45,.86);color:#eef5ff;font-size:.66rem}.lancamento-rapido-form .btn-acao{height:36px;padding:0 12px;border-radius:9px;background:linear-gradient(180deg,#43bd83,#2e9e68)!important;font-size:.67rem;white-space:nowrap;box-shadow:none}
+        .dashboard-lancamento-rapido{position:relative;z-index:1;margin:0 20px 20px!important;min-height:74px;padding:14px 18px!important;display:grid;grid-template-columns:180px minmax(0,1fr);gap:18px;align-items:center}.lancamento-rapido-copy h3{margin:0;color:#f0f6fc;font:700 .9rem 'Inter',sans-serif}.lancamento-rapido-copy p{margin:3px 0 0;color:#7f91a7;font-size:.62rem;line-height:1.35}.lancamento-rapido-form{display:grid;grid-template-columns:1.05fr 1.45fr .95fr .95fr 1.05fr 150px;gap:7px;min-width:0}.lancamento-rapido-form:is(input,select){min-width:0}.lancamento-rapido-form :is(input,select){width:100%;height:36px;box-sizing:border-box;padding:0 10px;border:1px solid rgba(255,255,255,.11);border-radius:9px;background:rgba(12,27,45,.86);color:#eef5ff;font-size:.66rem}.lancamento-rapido-form .btn-acao{height:36px;padding:0 12px;border-radius:9px;background:#39b77a!important;color:#fff!important;border:1px solid rgba(95,255,168,.32)!important;font-size:.67rem;white-space:nowrap;box-shadow:none}
         @media (max-width:1020px) and (min-width:769px){.dashboard-principal-grid{grid-template-columns:minmax(0,1.35fr) minmax(160px,.75fr)}.dashboard-principal-grid .card-pulso{grid-column:1/-1;min-height:190px}.dashboard-secundario-grid{grid-template-columns:1fr}.dashboard-lancamento-rapido{grid-template-columns:150px minmax(0,1fr)}.lancamento-rapido-form{grid-template-columns:repeat(3,minmax(0,1fr))}}
         @media (max-width:768px){.dashboard-topo{margin:14px 15px 12px;align-items:stretch;flex-direction:column;gap:10px}.dashboard-filtros{justify-content:stretch}.dashboard-filtros select{flex:1 1 0;min-width:0}.dashboard-periodo{width:100%;text-align:right}.dashboard-principal-grid,.dashboard-secundario-grid{grid-template-columns:minmax(0,1fr);margin-left:15px;margin-right:15px;gap:12px}.dashboard-principal-grid .card-resultado,.dashboard-principal-grid .card-pulso{min-height:205px}.dashboard-principal-grid .coluna-fluxo{min-height:204px}.dashboard-secundario-grid .insights-lista{grid-template-columns:1fr}.dashboard-lancamento-rapido{margin-left:15px!important;margin-right:15px!important;grid-template-columns:1fr;gap:11px}.lancamento-rapido-form{grid-template-columns:minmax(0,1fr)}.lancamento-rapido-form :is(input,select),.lancamento-rapido-form .btn-acao{height:44px;font-size:.9rem}}
 
@@ -1102,7 +1104,8 @@
 
 <section class="dashboard-topo" aria-labelledby="titulo-visao-geral">
     <div class="dashboard-heading">
-        <div class="dashboard-breadcrumb"><b>›</b><strong>Visão geral</strong></div>
+        <div class="dashboard-breadcrumb"><span>Tela 1 de 11</span><b>›</b><strong>Visão geral</strong></div>
+        <h2 id="titulo-visao-geral">Visão geral</h2>
         <p>Acompanhe o desempenho do período e tome decisões com mais clareza.</p>
     </div>
     <div class="dashboard-filtros" aria-label="Filtros do período">
@@ -1269,7 +1272,7 @@
             </select>
             <input type="number" id="meta-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
             <button class="btn-acao" onclick="salvarMeta()">Gravar</button>
-            <button class="btn-acao" onclick="removerMeta()" style="background: var(--texto-mutated);" title="Remover limite desta categoria">Sem Limite</button>
+            <button class="btn-acao" onclick="removerMeta()"  title="Remover limite desta categoria">Sem Limite</button>
         </div>
     </div>
 </div>
@@ -1279,7 +1282,7 @@
         <label>Criar Nova Categoria</label>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..." style="width: 160px;">
-            <button class="btn-acao" onclick="criarNovaCategoria()" style="background: #1a56a0;">＋ Criar Categoria</button>
+            <button class="btn-acao" onclick="criarNovaCategoria()" >＋ Criar Categoria</button>
         </div>
         <p style="color: var(--texto-mutado); font-size: 0.78rem; margin: 6px 0 0 0;">
             Suas categorias personalizadas ficam disponíveis só na sua conta.
@@ -1294,7 +1297,7 @@
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança..." style="width: 160px;">
             <input type="number" id="objetivo-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
-            <button class="btn-acao" onclick="salvarObjetivo()" style="background: #286da8;">Adicionar objetivo</button>
+            <button class="btn-acao" onclick="salvarObjetivo()" >Adicionar objetivo</button>
         </div>
     </div>
 </div>
@@ -1338,8 +1341,8 @@
     </div>
     
     <form id="form-upload-ofx" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
-        <button type="button" class="btn-acao" style="background: #2E8B57;" onclick="window.location.href='importacoes.html'">Abrir Central de Importações</button>
-        <button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" style="background: #286da8;">
+        <button type="button" class="btn-acao"  onclick="window.location.href='importacoes.html'">Abrir Central de Importações</button>
+        <button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" >
      Gerenciar Categorias
 </button>
     </form>
@@ -1980,18 +1983,18 @@
                     label: 'Valor movimentado',
                     data: valoresGrafico,
                     backgroundColor: tipoGrafico === 'line'
-                        ? 'rgba(57, 217, 138, .10)'
+                        ? (valoresGrafico[valoresGrafico.length - 1] < 0 ? 'rgba(255, 77, 77, .14)' : 'rgba(57, 217, 138, .10)')
                         : fundosGrafico,
                     borderColor: tipoGrafico === 'line'
-                        ? '#39d98a'
+                        ? (valoresGrafico[valoresGrafico.length - 1] < 0 ? '#ff4d4d' : '#39d98a')
                         : bordasGrafico,
                     borderWidth: tipoGrafico === 'line' ? 2.5 : (circular ? 2 : 1.5),
                     borderRadius: tipoGrafico === 'bar' ? 7 : 0,
                     borderSkipped: false,
                     fill: tipoGrafico === 'line',
                     tension: tipoGrafico === 'line' ? .35 : 0,
-                    pointBackgroundColor: tipoGrafico === 'line' ? bordas : undefined,
-                    pointBorderColor: tipoGrafico === 'line' ? bordas : undefined,
+                    pointBackgroundColor: tipoGrafico === 'line' ? bordasGrafico : undefined,
+                    pointBorderColor: tipoGrafico === 'line' ? bordasGrafico : undefined,
                     pointRadius: tipoGrafico === 'line' ? 3 : undefined,
                     pointHoverRadius: tipoGrafico === 'line' ? 5 : undefined,
                     ...(tipoGrafico === 'line' ? {
