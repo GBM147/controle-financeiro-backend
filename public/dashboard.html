@@ -1640,15 +1640,21 @@
                 if (!ctx) return;
                 if (graficoResultado) graficoResultado.destroy();
 
-                const ultimoValor = valores.length ? valores[valores.length - 1] : 0;
+                const ultimoValor = valores.length ? Number(valores[valores.length - 1]) : 0;
+                const resultadoEhNegativo = ultimoValor < 0;
+                const corLinhaResultado = resultadoEhNegativo ? '#ff5d6c' : '#39d98a';
+                const corPreenchimentoResultado = resultadoEhNegativo
+                    ? 'rgba(255,93,108,.28)'
+                    : 'rgba(57,217,138,.14)';
+
                 graficoResultado = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels,
                         datasets: [{
                             data: valores,
-                            borderColor: ultimoValor >= 0 ? '#39d98a' : '#ff5d6c',
-                            backgroundColor: ultimoValor >= 0 ? 'rgba(57,217,138,.14)' : 'rgba(255,93,108,.14)',
+                            borderColor: corLinhaResultado,
+                            backgroundColor: corPreenchimentoResultado,
                             borderWidth: 2,
                             fill: true,
                             tension: .35,
