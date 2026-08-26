@@ -901,11 +901,16 @@
             border: 1px solid rgba(57,217,138,.35); background: rgba(57,217,138,.1); color: #8bffc1;
             font-size: .72rem; font-weight: 700; width: fit-content;
         }
+        .coluna-fluxo { grid-column: span 2; display: flex; flex-direction: column; gap: 16px; }
+        .card-fluxo { min-height: 0; display: block; padding: 18px 21px; }
+        .card-fluxo p { font-size: clamp(1.2rem,2vw,1.5rem); margin: 4px 0 0; }
         @media (max-width: 1020px) {
             .card-resultado { grid-column: span 2; }
+            .coluna-fluxo { grid-column: span 2; }
         }
         @media (max-width: 768px) {
             .card-resultado { grid-column: span 1; }
+            .coluna-fluxo { grid-column: span 1; }
         }
         .card,
         .painel-ajustes,
@@ -1096,19 +1101,21 @@
         <div id="detalhe-economia-resultado" class="badge-economia-resultado" style="display:none;"></div>
         <div class="card-resultado-grafico"><canvas id="grafico-resultado-periodo"></canvas></div>
     </div>
-    <div class="card">
-        <div class="card-fluxo-topo"><span class="icone-fluxo icone-entrada">↑</span><h3 style="margin:0;">Total Recebido (Entradas)</h3></div>
-        <p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p>
-        <div id="comparativo-entradas" class="badge-comparativo-fluxo" style="display:none;"></div>
+    <div class="coluna-fluxo">
+        <div class="card card-fluxo">
+            <div class="card-fluxo-topo"><span class="icone-fluxo icone-entrada">↑</span><h3 style="margin:0;">Total Recebido (Entradas)</h3></div>
+            <p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p>
+            <div id="comparativo-entradas" class="badge-comparativo-fluxo" style="display:none;"></div>
+        </div>
+        <div class="card card-fluxo">
+            <div class="card-fluxo-topo"><span class="icone-fluxo icone-saida">↓</span><h3 style="margin:0;">Total Gasto (Saídas)</h3></div>
+            <p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p>
+            <div id="comparativo-saidas" class="badge-comparativo-fluxo" style="display:none;"></div>
+        </div>
     </div>
-    <div class="card">
-        <div class="card-fluxo-topo"><span class="icone-fluxo icone-saida">↓</span><h3 style="margin:0;">Total Gasto (Saídas)</h3></div>
-        <p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p>
-        <div id="comparativo-saidas" class="badge-comparativo-fluxo" style="display:none;"></div>
-    </div>
-    <div class="card"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p>
-        <div id="detalhe-economia" style="font-size:0.75rem; color:var(--texto-mutado); margin-top:6px;"></div>
-    </div>
+</div>
+<div id="card-economia-legado" class="card" style="display:none;"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p>
+    <div id="detalhe-economia" style="font-size:0.75rem; color:var(--texto-mutado); margin-top:6px;"></div>
 </div>
 <section class="insights-panel">
     <h2>O que merece atenção</h2>
