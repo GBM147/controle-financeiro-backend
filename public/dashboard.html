@@ -1903,26 +1903,100 @@
                 const mostrarBancoNoRotulo = bancosDistintos.size > 1;
                 const circular = tipoGrafico === 'doughnut';
                 const valores = dadosAPI.map(i => Math.abs(parseFloat(String(i.total_movimentado || i.valor || 0).replace(',', '.'))) || 0);
-                const fundos = dadosAPI.map(i => i.tipo === 'Receita' ? 'rgba(57, 217, 138, .76)' : 'rgba(85, 167, 255, .76)');
-                const bordas = dadosAPI.map(i => i.tipo === 'Receita' ? '#39d98a' : '#55a7ff');
+
+                // Padrão visual financeiro dos gráficos comuns: entradas = verde, saídas = vermelho.
+                const fundos = dadosAPI.map(i => i.tipo === 'Receita' ? 'rgba(57, 217, 138, .76)' : 'rgba(255, 77, 77, .76)');
+                const bordas = dadosAPI.map(i => i.tipo === 'Receita' ? '#39d98a' : '#ff4d4d');
+
+                // Na rosca, cada categoria de gasto recebe uma cor própria para que
+                // a legenda (caixas abaixo do gráfico) identifique exatamente cada gasto.
+                const coresGastosRosca = [
+                    '#ff4d4d', '#ff7a59', '#ffb84d', '#a78bfa', '#f472b6',
+                    '#60a5fa', '#22d3ee', '#f59e0b', '#c084fc', '#fb7185'
+                ];
+                const mapaCoresRosca = new Map();
+                let indiceCorGasto = 0;
+                const corRoscaDaCategoria = (categoria) => {
+                    const chave = String(categoria || 'Outros');
+                    if (!mapaCoresRosca.has(chave)) {
+                        mapaCoresRosca.set(chave, coresGastosRosca[indiceCorGasto % coresGastosRosca.length]);
+                        indiceCorGasto += 1;
+                    }
+                    return mapaCoresRosca.get(chave);
+                };
+
+                let labelsGrafico;
+                let valoresGrafico;
+                let fundosGrafico;
+                let bordasGrafico;
+                let detalhesGrafico;
+
+                if (circular) {
+                    const porGrupo = new Map();
+                    dadosAPI.forEach((item) => {
+                        const valor = Math.abs(parseFloat(String(item.total_movimentado || item.valor || 0).replace(',', '.'))) || 0;
+                        if (!valor) return;
+                        const tipo = item.tipo === 'Receita' ? 'Entrada' : 'Saída';
+                        const categoria = String(item.categoria || 'Outros');
+                        const chave = `${tipo}::${categoria}`;
+                        const atual = porGrupo.get(chave) || { tipo, categoria, valor: 0, banco: item.banco || '' };
+                        atual.valor += valor;
+                        porGrupo.set(chave, atual);
+                    });
+
+                    const grupos = [...porGrupo.values()];
+                    labelsGrafico = grupos.map((grupo) => `${grupo.categoria} — ${grupo.tipo}`);
+                    valoresGrafico = grupos.map((grupo) => grupo.valor);
+                    fundosGrafico = grupos.map((grupo) =>
+                        grupo.tipo === 'Entrada' ? '#39d98a' : corRoscaDaCategoria(grupo.categoria)
+                    );
+                    bordasGrafico = fundosGrafico.map((cor) => cor);
+                    detalhesGrafico = grupos;
+                } else {
+                    labelsGrafico = dadosAPI.map(i => {
+                        const categoria = i.categoria || 'Outros';
+                        const tipo = i.tipo === 'Receita' ? 'Entrada' : 'Saída';
+                        const base = mostrarBancoNoRotulo && i.banco ? `${categoria} (${i.banco})` : categoria;
+                        return `${base} — ${tipo}`;
+                    });
+                    valoresGrafico = valores;
+                    fundosGrafico = fundos;
+                    bordasGrafico = bordas;
+                    detalhesGrafico = dadosAPI;
+                }
+
                 const dataset = {
                     label: 'Valor movimentado',
-                    data: valores,
-                    backgroundColor: tipoGrafico === 'line' ? 'rgba(85, 167, 255, .14)' : fundos,
-                    borderColor: tipoGrafico === 'line' ? '#55a7ff' : bordas,
-                    borderWidth: tipoGrafico === 'line' ? 2.5 : 1.5,
+                    data: valoresGrafico,
+                    backgroundColor: tipoGrafico === 'line'
+                        ? 'rgba(57, 217, 138, .10)'
+                        : fundosGrafico,
+                    borderColor: tipoGrafico === 'line'
+                        ? '#39d98a'
+                        : bordasGrafico,
+                    borderWidth: tipoGrafico === 'line' ? 2.5 : (circular ? 2 : 1.5),
                     borderRadius: tipoGrafico === 'bar' ? 7 : 0,
                     borderSkipped: false,
                     fill: tipoGrafico === 'line',
                     tension: tipoGrafico === 'line' ? .35 : 0,
                     pointBackgroundColor: tipoGrafico === 'line' ? bordas : undefined,
-                    pointRadius: tipoGrafico === 'line' ? 3 : undefined
+                    pointBorderColor: tipoGrafico === 'line' ? bordas : undefined,
+                    pointRadius: tipoGrafico === 'line' ? 3 : undefined,
+                    pointHoverRadius: tipoGrafico === 'line' ? 5 : undefined,
+                    ...(tipoGrafico === 'line' ? {
+                        segment: {
+                            borderColor: (context) => {
+                                const indice = context.p1DataIndex ?? context.p0DataIndex ?? 0;
+                                return dadosAPI[indice]?.tipo === 'Receita' ? '#39d98a' : '#ff4d4d';
+                            }
+                        }
+                    } : {})
                 };
 
                 meuChart = new Chart(ctx, {
                     type: tipoGrafico,
                     data: {
-                        labels: dadosAPI.map(i => mostrarBancoNoRotulo && i.banco ? `${i.categoria || 'Outros'} (${i.banco})` : (i.categoria || 'Outros')),
+                        labels: labelsGrafico,
                         datasets: [dataset]
                     },
                     options: {
@@ -1937,12 +2011,13 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        const item = dadosAPI[context.dataIndex];
+                                        const item = detalhesGrafico[context.dataIndex];
                                         const tipo = item?.tipo || 'Movimentação';
-                                        return `${tipo}: R$ ${Number(context.raw || 0).toFixed(2)}`;
+                                        const categoria = item?.categoria ? `${item.categoria}: ` : '';
+                                        return `${categoria}${tipo}: R$ ${Number(context.raw || 0).toFixed(2)}`;
                                     },
                                     afterLabel: function(context) {
-                                        const item = dadosAPI[context.dataIndex];
+                                        const item = detalhesGrafico[context.dataIndex];
                                         return item && item.banco ? `Banco: ${item.banco}` : '';
                                     }
                                 }
