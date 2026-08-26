@@ -892,9 +892,15 @@
         .card-resultado-topo h3 { margin: 0; }
         .card-resultado-grafico { position: relative; height: 64px; margin-top: 10px; }
         .badge-taxa-poupada {
-            display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px;
-            border: 1px solid rgba(85,167,255,.4); background: rgba(85,167,255,.12); color: #9dcbff;
-            font-size: .7rem; font-weight: 700; white-space: nowrap;
+            display: inline-flex; align-items: baseline; gap: 6px; margin-top: 7px; padding: 0;
+            border: 0; background: transparent; color: #7f8fa5;
+            font-size: .68rem; font-weight: 700; white-space: nowrap;
+        }
+        .badge-taxa-poupada strong {
+            color: #55a7ff;
+            font-size: 1.08rem;
+            font-weight: 800;
+            line-height: 1;
         }
         .badge-economia-resultado {
             display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 0; padding: 3px 10px; border-radius: 999px;
@@ -1007,7 +1013,7 @@
         .dashboard-filtros{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.dashboard-filtros select{min-width:110px;height:38px;padding:0 12px;border:1px solid rgba(85,167,255,.2);border-radius:9px;background:rgba(9,24,42,.82);color:#eef5ff;font:600 .72rem 'Inter',sans-serif;outline:none}.dashboard-periodo{color:#dce7f3;font-size:.75rem;white-space:nowrap}
         .dashboard-principal-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,5fr) minmax(170px,2.2fr) minmax(0,3.8fr);gap:12px;margin:0 20px 12px;align-items:stretch}.dashboard-principal-grid>.card,.dashboard-principal-grid>.coluna-fluxo{min-width:0}
         .dashboard-principal-grid .card-resultado{min-height:222px;padding:18px 20px!important;display:flex!important;flex-direction:column;justify-content:flex-start}.dashboard-principal-grid .card-resultado p{margin:8px 0 0;font-size:clamp(1.7rem,2.3vw,2.05rem)!important}.dashboard-principal-grid .card-resultado-grafico{flex:1;min-height:84px;height:auto;margin-top:8px}
-        .dashboard-principal-grid .coluna-fluxo{grid-column:auto;display:grid;grid-template-rows:1fr 1fr;gap:12px}.dashboard-principal-grid .card-fluxo{min-height:0;padding:16px 17px!important;display:flex;flex-direction:column;justify-content:center}.dashboard-principal-grid .card-fluxo p{margin:7px 0 0;font-size:clamp(1.05rem,1.7vw,1.35rem)!important}
+        .dashboard-principal-grid .coluna-fluxo{grid-column:auto;display:grid;grid-template-rows:1fr 1fr;gap:12px}.dashboard-principal-grid .card-fluxo{min-height:0;padding:16px 17px!important;display:flex;align-items:center;justify-content:space-between;gap:12px}.dashboard-principal-grid .card-fluxo-conteudo{min-width:0;flex:1}.dashboard-principal-grid .card-fluxo p{margin:7px 0 0;font-size:clamp(1.05rem,1.7vw,1.35rem)!important}.fluxo-sparkline{width:78px;height:34px;flex:0 0 78px;margin-top:10px;opacity:.95}.fluxo-sparkline-entrada{color:#39d98a}.fluxo-sparkline-saida{color:#ff5d6c}
         .dashboard-principal-grid .card-pulso{min-height:222px;padding:17px 18px!important;display:flex!important;flex-direction:column}.card-pulso h3,.categorias-panel h3{margin:0;color:#eef5ff!important;font:700 1rem 'Inter',sans-serif!important;text-transform:none!important;letter-spacing:0!important}.card-subtitulo{margin:4px 0 0;color:#8c9aae;font-size:.68rem;line-height:1.35}
         .pulso-barra{position:relative;height:12px;margin:20px 0 10px;overflow:visible;border-radius:999px;background:linear-gradient(90deg,rgba(39,62,98,.9),rgba(37,60,91,.75))}.pulso-barra-preenchimento{width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#3b8df0,#56a8ff);transition:width .35s ease}.pulso-marcador-meta{position:absolute;top:50%;width:4px;height:18px;border-radius:4px;background:#39d98a;box-shadow:0 0 0 2px rgba(57,217,138,.14),0 0 10px rgba(57,217,138,.25);transform:translate(-50%,-50%)}
         .pulso-legenda{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.pulso-legenda>div{display:flex;flex-direction:column;gap:2px}.pulso-legenda span{color:#71819a;font-size:.62rem}.pulso-legenda strong{color:#f2f7fd;font-size:.78rem}.pulso-legenda>div:nth-child(2) strong{color:#39d98a}.pulso-legenda>div:nth-child(3) strong{color:#9dcbff}.pulso-status{display:flex;gap:9px;align-items:flex-start;margin-top:auto;padding:10px 11px;border:1px solid rgba(85,167,255,.13);border-radius:10px;background:rgba(28,48,78,.62)}.pulso-status-icone{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border-radius:50%;background:rgba(57,217,138,.12);color:#39d98a;font-size:.72rem;font-weight:800}.pulso-status div{display:flex;flex-direction:column;gap:2px;min-width:0}.pulso-status strong{color:#eaf4ff;font-size:.67rem}.pulso-status span{color:#8b9bb0;font-size:.62rem;line-height:1.35}
@@ -1114,23 +1120,29 @@
     <div class="card card-resultado">
         <div class="card-resultado-topo">
             <h3>Resultado do período</h3>
-            <span id="taxa-poupada-badge" class="badge-taxa-poupada" style="display:none;"></span>
         </div>
         <p id="saldo-liquido">R$ 0,00</p>
+        <div id="taxa-poupada-badge" class="badge-taxa-poupada" style="display:none;"></div>
         <div id="detalhe-economia-resultado" class="badge-economia-resultado" style="display:none;"></div>
         <div class="card-resultado-grafico"><canvas id="grafico-resultado-periodo"></canvas></div>
     </div>
 
     <div class="coluna-fluxo">
-        <div class="card card-fluxo">
-            <div class="card-fluxo-topo"><span class="icone-fluxo icone-entrada">↑</span><h3>Entradas</h3></div>
-            <p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p>
-            <div id="comparativo-entradas" class="badge-comparativo-fluxo" style="display:none;"></div>
+        <div class="card card-fluxo card-fluxo-entrada">
+            <div class="card-fluxo-conteudo">
+                <div class="card-fluxo-topo"><span class="icone-fluxo icone-entrada">↑</span><h3>Entradas</h3></div>
+                <p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p>
+                <div id="comparativo-entradas" class="badge-comparativo-fluxo" style="display:none;"></div>
+            </div>
+            <svg class="fluxo-sparkline fluxo-sparkline-entrada" viewBox="0 0 88 34" preserveAspectRatio="none" aria-hidden="true"><path d="M2 28 C11 25 15 22 23 22 S33 23 40 18 S52 14 59 16 S70 15 76 10 S84 7 87 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
         </div>
-        <div class="card card-fluxo">
-            <div class="card-fluxo-topo"><span class="icone-fluxo icone-saida">↓</span><h3>Saídas</h3></div>
-            <p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p>
-            <div id="comparativo-saidas" class="badge-comparativo-fluxo" style="display:none;"></div>
+        <div class="card card-fluxo card-fluxo-saida">
+            <div class="card-fluxo-conteudo">
+                <div class="card-fluxo-topo"><span class="icone-fluxo icone-saida">↓</span><h3>Saídas</h3></div>
+                <p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p>
+                <div id="comparativo-saidas" class="badge-comparativo-fluxo" style="display:none;"></div>
+            </div>
+            <svg class="fluxo-sparkline fluxo-sparkline-saida" viewBox="0 0 88 34" preserveAspectRatio="none" aria-hidden="true"><path d="M2 7 C12 9 17 13 24 11 S37 14 44 17 S55 17 62 22 S75 22 87 29" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
         </div>
     </div>
 
@@ -1697,7 +1709,7 @@
         if (ent > 0) {
             const taxa = (periodo / ent) * 100;
             badgeTaxa.style.display = 'inline-flex';
-            badgeTaxa.innerHTML = `Taxa poupada <strong style="margin-left:4px;">${taxa.toFixed(1)}%</strong>`;
+            badgeTaxa.innerHTML = `Taxa poupada <strong>${taxa.toFixed(1)}%</strong>`;
         } else {
             badgeTaxa.style.display = 'none';
         }
