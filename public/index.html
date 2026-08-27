@@ -279,5 +279,48 @@
         initParticles();
         animate();
     </script>
+
+    <script>
+        // MIGRAÇÃO PWA: remove versões antigas do Service Worker que ficaram registradas
+        // em navegadores de versões anteriores. A versão atual não é mais registrada.
+        (async function migrarServiceWorkerAntigo() {
+            if (!('serviceWorker' in navigator)) return;
+
+            const chaveMigracao = 'gbm-sw-migrado-2026-08-27';
+            if (sessionStorage.getItem(chaveMigracao) === '1') return;
+
+            try {
+                const [registracoes, chavesCache] = await Promise.all([
+                    navigator.serviceWorker.getRegistrations(),
+                    window.caches ? caches.keys() : Promise.resolve([])
+                ]);
+
+                const antigas = registracoes.filter((registro) => {
+                    const script = String(registro.active?.scriptURL || registro.waiting?.scriptURL || registro.installing?.scriptURL || '');
+                    return script.includes('/sw.js');
+                });
+
+                if (antigas.length) {
+                    await Promise.all(antigas.map((registro) => registro.unregister()));
+                }
+
+                if (window.caches) {
+                    const antigasChaves = chavesCache.filter((chave) => chave.startsWith('gbm-estatico-'));
+                    await Promise.all(antigasChaves.map((chave) => caches.delete(chave)));
+                }
+
+                sessionStorage.setItem(chaveMigracao, '1');
+
+                // A primeira navegação pode ainda estar sob controle do SW antigo.
+                // Recarregamos uma única vez para garantir que a próxima navegação
+                // já ocorra sem o Service Worker defeituoso.
+                if (antigas.length && navigator.serviceWorker.controller) {
+                    window.location.reload();
+                }
+            } catch (erro) {
+                console.warn('Falha ao migrar o Service Worker antigo.', erro);
+            }
+        })();
+    </script>
 </body>
 </html>
