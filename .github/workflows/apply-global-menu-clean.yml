@@ -1,3 +1,4 @@
-# Workflow temporário usado para aplicar o menu global; mantido inativo.
+# disabled temporary workflow
 name: Apply global menu clean
-on: {}
+on:
+  workflow_dispatch:
