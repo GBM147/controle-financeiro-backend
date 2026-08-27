@@ -113,10 +113,10 @@ test('interface não contém emojis e o menu usa capitalização comum sem brilh
     assert.match(regraMenu, /text-transform:\s*none/);
     assert.match(regraMenu, /text-shadow:\s*none/);
     assert.doesNotMatch(regraMenu, /#5fffa8|rgba\(95,\s*255,\s*168/i);
-    assert.match(dashboard, />Minhas contas<\/a>/);
-    assert.match(dashboard, />Limite de gastos<\/a>/);
-    assert.match(dashboard, />Relatório mensal<\/span>/);
-    assert.match(dashboard, />Comparativo mensal<\/span>/);
+    assert.match(dashboard, /class="menu-item-conteudo"[^>]*>\s*Minhas contas\s*<\/span>/);
+    assert.match(dashboard, /class="menu-item-conteudo"[^>]*>\s*Limite de gastos\s*<\/span>/);
+    assert.match(dashboard, /class="menu-item-conteudo"[^>]*>\s*Relatório mensal\s*<\/span>/);
+    assert.match(dashboard, /class="menu-item-conteudo"[^>]*>\s*Comparativo mensal\s*<\/span>/);
 });
 
 test('análises oferecem tipos de gráfico e o dashboard permite exibir somente o gráfico', () => {
