@@ -423,8 +423,11 @@ const PAGINAS_PRIVADAS_OU_DE_ACAO = new Set([
 ]);
 
 // Preserva favoritos e links antigos após padronizar o nome para kebab-case.
-app.get('/Limite-de-Gastos.html', (req, res) => {
-    res.redirect(308, '/limite-de-gastos.html');
+app.get('/Limite-de-Gastos.html', (req, res, next) => {
+    if (req.path !== '/limite-de-gastos.html') {
+        return res.redirect(308, '/limite-de-gastos.html');
+    }
+    next();
 });
 
 // Entrega os arquivos públicos. Tutorial e service worker nunca podem ficar
