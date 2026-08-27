@@ -4,7 +4,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="gbm-pages.css">
     <meta charset="UTF-8">
     <title>Comparativo Mensal | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -335,115 +334,15 @@
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
-<body class="gbm-interna">
+<body>
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
 <header class="gbm-header">
     <div class="gbm-logo-container">
         <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
-        <h1 class="gbm-title">Guardian Of Budget &amp; Money</h1>
+        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
     </div>
-    <div class="gbm-header-actions">
-        <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
-            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
-            <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
-        </a>
-        <div class="gbm-menu-container">
-            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" aria-label="Abrir menu">
-                <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-            </button>
-        </div>
-    </div>
+    <a href="dashboard.html" class="btn-voltar">Voltar</a>
 </header>
-<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
-
-<div id="sidebar-menu" class="sidebar-menu">
-    <div class="sidebar-header">
-        <div class="sidebar-brand">
-            <img src="logo-transparente.jpg" alt="Logo GBM" class="sidebar-logo">
-            <div class="sidebar-brand-text">
-                <strong>GBM Finance</strong>
-                <span>Proteção financeira para você</span>
-            </div>
-        </div>
-        <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
-    </div>
-    <nav class="sidebar-content" aria-label="Menu principal">
-        <div class="menu-grupo">
-            <p class="menu-grupo-titulo">Resumo</p>
-            <a href="dashboard.html" class="menu-item menu-item-ativo">
-                <span class="menu-item-icone" aria-hidden="true">⌂</span>
-                <span class="menu-item-conteudo">Visão geral</span>
-                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
-            </a>
-        </div>
-        <div class="menu-grupo">
-            <p class="menu-grupo-titulo">Movimentações</p>
-            <a href="contas.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">▣</span>
-                <span class="menu-item-conteudo">Minhas contas</span>
-                
-            </a>
-            <a href="importacoes.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">↥</span>
-                <span class="menu-item-conteudo">Importações</span>
-                
-            </a>
-        </div>
-        <div class="menu-grupo">
-            <p class="menu-grupo-titulo">Planejamento</p>
-            <a href="calendario.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">□</span>
-                <span class="menu-item-conteudo">Calendário</span>
-                
-            </a>
-            <a href="limite-de-gastos.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">◒</span>
-                <span class="menu-item-conteudo">Limite de gastos</span>
-                
-            </a>
-            <a href="metas.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">◎</span>
-                <span class="menu-item-conteudo">Objetivos de poupança</span>
-                
-            </a>
-        </div>
-        <div class="menu-grupo menu-grupo-premium">
-            <p class="menu-grupo-titulo">Análises</p>
-            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
-                <span class="menu-item-icone" aria-hidden="true">▥</span>
-                <span class="menu-item-conteudo">Relatório mensal</span>
-                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
-            </a>
-            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
-                <span class="menu-item-icone" aria-hidden="true">⇄</span>
-                <span class="menu-item-conteudo">Comparativo mensal</span>
-                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
-            </a>
-        </div>
-        <div class="menu-grupo menu-grupo-conta">
-            <p class="menu-grupo-titulo">Conta</p>
-            <a href="notificacoes.html" class="menu-item  menu-item-com-indicador">
-                <span class="menu-item-icone" aria-hidden="true">♧</span>
-                <span class="menu-item-conteudo">Notificações</span>
-                
-            </a>
-            <a href="configuracoes.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">⚙</span>
-                <span class="menu-item-conteudo">Configurações</span>
-                
-            </a>
-            <a href="perfil.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">♙</span>
-                <span class="menu-item-conteudo">Perfil</span>
-                
-            </a>
-            <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
-                <span class="menu-item-icone" aria-hidden="true">↪</span>
-                <span class="menu-item-conteudo">Sair</span>
-            </a>
-        </div>
-    </nav>
-</div>
 
 <div class="page-wrapper">
 
@@ -475,7 +374,6 @@
 </div>
 
 <script src="auth.js"></script>
-    <script src="gbm-pages.js"></script>
     <script>
         // Recupera o userId salvo
         function pegarUserId() {
@@ -494,7 +392,7 @@
                 const data = await res.json();
 
                 let isPremium = false;
-                if (data.statusPagamento === 'pago') {
+                if (data.statusPagamento === 'pago' || data.statusPagamento === 'premium') {
                     isPremium = true;
                 } else if (data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') {
                     if (data.trialExpira && new Date() <= new Date(data.trialExpira)) {
@@ -828,5 +726,6 @@
     })();
 </script>
     <script src="gbm-tutorial.js"></script>
+    <script src="gbm-menu.js"></script>
 </body>
 </html>
