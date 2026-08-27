@@ -1025,6 +1025,70 @@
         @media (max-width:1020px) and (min-width:769px){.dashboard-principal-grid{grid-template-columns:minmax(0,1.35fr) minmax(160px,.75fr)}.dashboard-principal-grid .card-pulso{grid-column:1/-1;min-height:190px}.dashboard-secundario-grid{grid-template-columns:1fr}.dashboard-lancamento-rapido{grid-template-columns:150px minmax(0,1fr)}.lancamento-rapido-form{grid-template-columns:repeat(3,minmax(0,1fr))}}
         @media (max-width:768px){.dashboard-topo{margin:14px 15px 12px;align-items:stretch;flex-direction:column;gap:10px}.dashboard-filtros{justify-content:stretch}.dashboard-filtros select{flex:1 1 0;min-width:0}.dashboard-periodo{width:100%;text-align:right}.dashboard-principal-grid,.dashboard-secundario-grid{grid-template-columns:minmax(0,1fr);margin-left:15px;margin-right:15px;gap:12px}.dashboard-principal-grid .card-resultado,.dashboard-principal-grid .card-pulso{min-height:205px}.dashboard-principal-grid .coluna-fluxo{min-height:204px}.dashboard-secundario-grid .insights-lista{grid-template-columns:1fr}.dashboard-lancamento-rapido{margin-left:15px!important;margin-right:15px!important;grid-template-columns:1fr;gap:11px}.lancamento-rapido-form{grid-template-columns:minmax(0,1fr)}.lancamento-rapido-form :is(input,select),.lancamento-rapido-form .btn-acao{height:44px;font-size:.9rem}}
 
+        /* ===== MENU LATERAL — alinhado ao protótipo aprovado ===== */
+        .sidebar-menu{
+            width:258px;
+            right:-278px;
+            background:#091a2a !important;
+            border-left:1px solid rgba(85,167,255,.18) !important;
+            box-shadow:-14px 0 34px rgba(0,0,0,.5) !important;
+        }
+        .sidebar-menu.aberto{right:0;}
+        .sidebar-header{
+            min-height:78px;
+            box-sizing:border-box;
+            padding:15px 14px 14px 16px;
+            border-bottom:1px solid rgba(255,255,255,.08);
+        }
+        .sidebar-brand{display:flex;align-items:center;gap:9px;min-width:0;}
+        .sidebar-logo{width:28px;height:28px;object-fit:contain;border-radius:7px;flex:0 0 auto;}
+        .sidebar-brand-text{display:flex;flex-direction:column;min-width:0;line-height:1.05;}
+        .sidebar-brand-text strong{color:#edf5ff;font:700 .79rem 'Inter',sans-serif;letter-spacing:-.01em;}
+        .sidebar-brand-text span{margin-top:3px;color:#718198;font:500 .56rem 'Inter',sans-serif;}
+        .fechar-btn{width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:0 !important;color:#d9e7f5 !important;font-size:25px !important;background:transparent !important;}
+        .fechar-btn:hover{color:#5fffa8 !important;transform:none !important;}
+        .sidebar-content{padding:12px 10px 15px;gap:0;overflow-y:auto;}
+        .menu-grupo{padding:0 0 8px;margin:0 !important;}
+        .menu-grupo + .menu-grupo{margin-top:2px !important;}
+        .menu-grupo-conta{margin-top:auto !important;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);}
+        .menu-grupo-titulo{padding:9px 9px 5px;margin:0;color:#58708b !important;font-size:.5rem !important;font-weight:800 !important;letter-spacing:.08em !important;text-transform:uppercase !important;}
+        .menu-grupo-premium .menu-grupo-titulo{color:#6b89a8 !important;}
+        .menu-item{
+            position:relative;
+            display:flex !important;
+            align-items:center;
+            gap:9px;
+            min-height:34px;
+            box-sizing:border-box;
+            padding:7px 9px !important;
+            border-left:2px solid transparent !important;
+            border-radius:7px;
+            color:#dce6f0 !important;
+            background:transparent !important;
+            font:600 .68rem 'Inter',sans-serif !important;
+            letter-spacing:0 !important;
+            text-decoration:none !important;
+            transition:background .18s ease,color .18s ease,border-color .18s ease;
+        }
+        .menu-item-icone{width:15px;flex:0 0 15px;text-align:center;color:#7d9abd;font-size:.78rem;line-height:1;}
+        .menu-item-conteudo{min-width:0;flex:1;}
+        .menu-item:hover{background:rgba(85,167,255,.07) !important;border-left-color:rgba(85,167,255,.45) !important;color:#f5f9ff !important;}
+        .menu-item:hover .menu-item-icone{color:#9dcbff;}
+        .menu-item-ativo{background:rgba(34,91,113,.38) !important;color:#effcff !important;border-left-color:#39d98a !important;}
+        .menu-item-ativo .menu-item-icone{color:#39d98a;}
+        .menu-item-ativo-indicador{width:3px;height:17px;border-radius:3px;background:#39d98a;box-shadow:0 0 8px rgba(57,217,138,.28);margin-left:auto;}
+        .menu-item-com-indicador .menu-item-indicadores{margin-left:auto;display:inline-flex;align-items:center;}
+        .menu-item-premium.recurso-bloqueado{opacity:.72;}
+        .menu-item-premium.recurso-bloqueado:hover{border-left-color:#55a7ff !important;color:#9dcbff !important;background:rgba(85,167,255,.08) !important;}
+        .cadeado-premium{min-height:18px !important;padding:2px 6px !important;font-size:.48rem !important;border-radius:999px !important;}
+        .aviso-recursos-premium{margin:2px 8px 5px !important;padding:7px 8px !important;font-size:.57rem !important;}
+        .menu-item-sair{color:#ff7d8a !important;margin-top:2px;}
+        .menu-item-sair .menu-item-icone{color:#ff7d8a;}
+        .texto-vermelho:hover{border-left-color:#ff5d6c !important;background:rgba(255,93,108,.08) !important;color:#ff9aa4 !important;}
+        @media(max-width:768px){
+            .sidebar-menu{width:min(286px,88vw);right:calc(-1 * min(306px,92vw));}
+        }
+
 </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
@@ -1053,35 +1117,63 @@
 
 <div id="sidebar-menu" class="sidebar-menu">
     <div class="sidebar-header">
-        <img src="logo-transparente.jpg" alt="Logo GBM" class="sidebar-logo">
-        <button class="fechar-btn" onclick="fecharMenuLateral()">&times;</button>
+        <div class="sidebar-brand">
+            <img src="logo-transparente.jpg" alt="Logo GBM" class="sidebar-logo">
+            <div class="sidebar-brand-text">
+                <strong>GBM Finance</strong>
+                <span>Proteção para você</span>
+            </div>
+        </div>
+        <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
     </div>
-    <div class="sidebar-content">
-        <div class="menu-grupo menu-grupo-ajuda" aria-labelledby="menu-titulo-ajuda">
-            <p id="menu-titulo-ajuda" class="menu-grupo-titulo">Ajuda</p>
-            <a href="#" class="menu-item" onclick="iniciarTutorial(); fecharMenuLateral(); return false;">Como usar o site</a>
+
+    <nav class="sidebar-content" aria-label="Menu principal">
+        <div class="menu-grupo" aria-labelledby="menu-titulo-resumo">
+            <p id="menu-titulo-resumo" class="menu-grupo-titulo">Resumo</p>
+            <a href="dashboard.html" class="menu-item menu-item-ativo">
+                <span class="menu-item-icone" aria-hidden="true">⌂</span>
+                <span class="menu-item-conteudo">Visão geral</span>
+                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
+            </a>
         </div>
 
         <div class="menu-grupo" aria-labelledby="menu-titulo-movimentacoes">
             <p id="menu-titulo-movimentacoes" class="menu-grupo-titulo">Movimentações</p>
-            <a href="contas.html" class="menu-item">Minhas contas</a>
-            <a href="importacoes.html" class="menu-item">Importações</a>
+            <a href="contas.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">▣</span>
+                <span class="menu-item-conteudo">Minhas contas</span>
+            </a>
+            <a href="importacoes.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">↥</span>
+                <span class="menu-item-conteudo">Importações</span>
+            </a>
         </div>
 
         <div class="menu-grupo" aria-labelledby="menu-titulo-planejamento">
             <p id="menu-titulo-planejamento" class="menu-grupo-titulo">Planejamento</p>
-            <a href="calendario.html" class="menu-item">Calendário</a>
-            <a href="limite-de-gastos.html" class="menu-item">Limite de gastos</a>
-            <a href="metas.html" class="menu-item">Objetivos de poupança</a>
+            <a href="calendario.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">□</span>
+                <span class="menu-item-conteudo">Calendário</span>
+            </a>
+            <a href="limite-de-gastos.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">◒</span>
+                <span class="menu-item-conteudo">Limite de gastos</span>
+            </a>
+            <a href="metas.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">◎</span>
+                <span class="menu-item-conteudo">Objetivos de poupança</span>
+            </a>
         </div>
 
         <div class="menu-grupo menu-grupo-premium" aria-labelledby="menu-titulo-premium">
-            <p id="menu-titulo-premium" class="menu-grupo-titulo">Recursos premium</p>
+            <p id="menu-titulo-premium" class="menu-grupo-titulo">Análises</p>
             <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
+                <span class="menu-item-icone" aria-hidden="true">▥</span>
                 <span class="menu-item-conteudo">Relatório mensal</span>
                 <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
             </a>
             <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
+                <span class="menu-item-icone" aria-hidden="true">⇄</span>
                 <span class="menu-item-conteudo">Comparativo mensal</span>
                 <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
             </a>
@@ -1089,17 +1181,28 @@
         </div>
 
         <div class="menu-grupo menu-grupo-conta" aria-labelledby="menu-titulo-conta">
-            <p id="menu-titulo-conta" class="menu-grupo-titulo">Conta e suporte</p>
-            <a href="configuracoes.html" class="menu-item">Configurações</a>
+            <p id="menu-titulo-conta" class="menu-grupo-titulo">Conta</p>
             <a href="notificacoes.html" id="item-notificacoes" class="menu-item menu-item-com-indicador">
+                <span class="menu-item-icone" aria-hidden="true">♧</span>
                 <span class="menu-item-conteudo">Notificações</span>
                 <span class="menu-item-indicadores">
                     <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.7rem; padding:2px 8px; margin-left:8px;">0</span>
                 </span>
             </a>
-            <a href="#" class="menu-item texto-vermelho" onclick="fazerLogout(); return false;">Sair</a>
+            <a href="configuracoes.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">⚙</span>
+                <span class="menu-item-conteudo">Configurações</span>
+            </a>
+            <a href="perfil.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">♙</span>
+                <span class="menu-item-conteudo">Perfil</span>
+            </a>
+            <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
+                <span class="menu-item-icone" aria-hidden="true">↪</span>
+                <span class="menu-item-conteudo">Sair</span>
+            </a>
         </div>
-    </div>
+    </nav>
 </div>
 
 <section class="dashboard-topo" aria-labelledby="titulo-visao-geral">
