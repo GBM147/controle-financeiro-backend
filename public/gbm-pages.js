@@ -239,7 +239,7 @@ function gbmConfirmar(mensagem) {
         _resolveConfirm = resolve;
         document.getElementById('lista-notificacoes-modal').innerHTML = `
             <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                ${escaparMensagemModal(mensagem)}
+                ${mensagem}
             </div>`;
         document.getElementById('btn-confirmar-modal').style.display = 'block';
         document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
