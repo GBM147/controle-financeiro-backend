@@ -1026,6 +1026,57 @@
         @media (max-width:768px){.dashboard-topo{margin:14px 15px 12px;align-items:stretch;flex-direction:column;gap:10px}.dashboard-filtros{justify-content:stretch}.dashboard-filtros select{flex:1 1 0;min-width:0}.dashboard-periodo{width:100%;text-align:right}.dashboard-principal-grid,.dashboard-secundario-grid{grid-template-columns:minmax(0,1fr);margin-left:15px;margin-right:15px;gap:12px}.dashboard-principal-grid .card-resultado,.dashboard-principal-grid .card-pulso{min-height:205px}.dashboard-principal-grid .coluna-fluxo{min-height:204px}.dashboard-secundario-grid .insights-lista{grid-template-columns:1fr}.dashboard-lancamento-rapido{margin-left:15px!important;margin-right:15px!important;grid-template-columns:1fr;gap:11px}.lancamento-rapido-form{grid-template-columns:minmax(0,1fr)}.lancamento-rapido-form :is(input,select),.lancamento-rapido-form .btn-acao{height:44px;font-size:.9rem}}
 
         /* ===== MENU LATERAL — alinhado ao protótipo aprovado ===== */
+        /* O menu permanece preso à viewport e usa o mesmo gradiente animado da marca. */
+        .sidebar-menu{
+            position:fixed !important;
+            top:0 !important;
+            right:-278px;
+            bottom:0 !important;
+            width:258px;
+            height:100dvh !important;
+            max-height:100dvh !important;
+            z-index:9999 !important;
+            background:#091a2a !important;
+            border-left:1px solid rgba(85,167,255,.18) !important;
+            box-shadow:-14px 0 34px rgba(0,0,0,.5) !important;
+            transform:translateZ(0);
+            will-change:right;
+            overflow:hidden;
+        }
+        .sidebar-menu.aberto{right:0 !important;}
+        .menu-overlay{
+            position:fixed !important;
+            inset:0 !important;
+            z-index:9998 !important;
+        }
+        .sidebar-brand-text strong{
+            background:linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%);
+            background-size:200% auto;
+            -webkit-background-clip:text;
+            background-clip:text;
+            -webkit-text-fill-color:transparent;
+            color:transparent;
+            animation:gbm-shine 4s linear infinite;
+        }
+        .menu-item-ativo{
+            background:linear-gradient(90deg,rgba(46,139,87,.18),rgba(61,40,255,.10)) !important;
+            border-left-color:#39d98a !important;
+        }
+        .menu-item-ativo .menu-item-icone,
+        .menu-item-ativo-indicador{
+            background:linear-gradient(180deg,#5fffa8 0%,#3d28ff 100%);
+        }
+        .menu-item-ativo .menu-item-icone{
+            -webkit-background-clip:text;
+            background-clip:text;
+            -webkit-text-fill-color:transparent;
+            color:transparent;
+        }
+        .menu-item-ativo-indicador{
+            box-shadow:0 0 10px rgba(95,255,168,.28),0 0 8px rgba(61,40,255,.22);
+        }
+        .hamburger-icon span{background:linear-gradient(90deg,#5fffa8,#3d28ff) !important;}
+
         .sidebar-menu{
             width:258px;
             right:-278px;
@@ -1087,6 +1138,37 @@
         .texto-vermelho:hover{border-left-color:#ff5d6c !important;background:rgba(255,93,108,.08) !important;color:#ff9aa4 !important;}
         @media(max-width:768px){
             .sidebar-menu{width:min(286px,88vw);right:calc(-1 * min(306px,92vw));}
+        }
+
+        /* ===== AJUSTES FINAIS DO MENU ===== */
+        .sidebar-menu {
+            position: fixed !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            z-index: 9999 !important;
+        }
+        .sidebar-menu.aberto { right: 0 !important; }
+        .sidebar-brand-text strong {
+            background: linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%) !important;
+            background-size: 200% auto !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            color: transparent !important;
+            animation: gbm-shine 4s linear infinite !important;
+        }
+        .gbm-menu-btn .hamburger-icon span {
+            background: linear-gradient(90deg,#5fffa8,#3d28ff) !important;
+        }
+        .menu-item-ativo-indicador {
+            background: linear-gradient(180deg,#5fffa8 0%,#3d28ff 100%) !important;
+        }
+        .menu-overlay {
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 9998 !important;
         }
 
 </style>
@@ -2320,19 +2402,29 @@ function fecharModalNotificacoes(confirmado = false) {
         // Funções do Menu Lateral (Sidebar)
         function abrirMenuLateral(event) {
             if(event) event.stopPropagation();
-            document.getElementById('sidebar-menu').classList.add('aberto');
-            document.getElementById('menu-overlay').style.display = 'block';
-            document.body.style.overflow = 'hidden'; //  Trava o scroll do fundo
+            const sidebar = document.getElementById('sidebar-menu');
+            const overlay = document.getElementById('menu-overlay');
+            sidebar.classList.add('aberto');
+            overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
         }
 
         function fecharMenuLateral() {
             document.getElementById('sidebar-menu').classList.remove('aberto');
-            document.body.style.overflow = ''; //  Libera o scroll do fundo
-            // Animação de sumiço rápido para a película
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
             setTimeout(() => {
                 document.getElementById('menu-overlay').style.display = 'none';
             }, 200);
         }
+
+        // Evita que a rolagem sobre o menu faça a página de fundo se mover.
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar-menu');
+            if (!sidebar) return;
+            sidebar.addEventListener('wheel', (event) => event.stopPropagation(), { passive: true });
+        });
         // --- FUNÇÃO PARA DESFAZER ÚLTIMO LANÇAMENTO ---
         async function desfazerUltimo() {
             const ok = await gbmConfirmar('Deseja apagar o <strong>último lançamento</strong> adicionado? Esta ação não pode ser desfeita.');
