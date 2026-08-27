@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LIMITE DE GASTOS</title>
+<title>Limite de gastos | GBM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="gbm-pages.css">
 <style>
 :root{--verde:#26874E;--azul:#55a7ff;--vermelho:#ef4444;--texto:#fff;--mutado:#b0bec5;--borda:rgba(255,255,255,.12);--card:#0f1a2b}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--texto);font-family:Inter,sans-serif;background:linear-gradient(rgba(15,23,42,.86),rgba(15,23,42,.92)),url('fundo-marmore.jpg') center/cover fixed}
@@ -17,7 +18,7 @@
 @media(max-width:760px){.gbm-header{height:62px;padding:0 15px}.gbm-title{display:none}.page-wrapper{padding:20px 15px 56px}.form,.lista{grid-template-columns:1fr}.percentuais,.acoes{grid-column:1}.acoes{justify-content:stretch}.acoes .btn{width:100%}}
 </style>
 </head>
-<body>
+<body class="gbm-interna">
 <canvas id="particles" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
 <header class="gbm-header">
     <div class="gbm-logo-container">
@@ -132,6 +133,7 @@
 <div class="percentuais"><label class="campo" style="display:block"><span style="color:var(--mutado);font-size:.78rem;font-weight:600">Quando você quer ser avisado?</span><span class="percentual-row" style="margin-top:7px"><input type="number" id="novo-percentual" min="1" max="100" step="1" placeholder="Ex.: 50"><button type="button" class="btn-sec" onclick="adicionarPercentual()">Adicionar</button></span></label><div id="chips" class="chips"></div><p class="dica">Você pode criar vários avisos, como 50%, 70% e 90%. Cada percentual será avisado apenas uma vez por mês.</p></div>
 <div class="acoes"><button id="btn-salvar" class="btn" onclick="salvarNovoLimite()">Salvar limite</button></div></div><div id="editor-container" class="lista"></div></section></main><div id="toast"></div>
 <script src="auth.js"></script>
+<script src="gbm-pages.js"></script>
 <script>
 let percentuaisSelecionados=[50,70],metasCarregadas=[],usuarioAtual=null;
 function alerta(msg,tipo='info'){const el=document.getElementById('toast');el.textContent=msg;el.className=tipo;el.style.display='block';clearTimeout(alerta.timer);alerta.timer=setTimeout(()=>el.style.display='none',3500)}
