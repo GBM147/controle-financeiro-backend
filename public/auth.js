@@ -55,6 +55,21 @@ async function fetchApi(url, opcoes = {}) {
     return resposta;
 }
 
+// Garante que uma versão antiga do Service Worker não permaneça ativa.
+// A versão atual do sw.js não redireciona navegações; ela apenas usa a rede
+// e fornece fallback offline quando necessário.
+function atualizarServiceWorkerGbm() {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.register('/sw.js?v=1.1.48', {
+        updateViaCache: 'none'
+    }).then((registro) => {
+        registro.update().catch(() => undefined);
+        if (registro.waiting) registro.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }).catch(() => undefined);
+}
+
+atualizarServiceWorkerGbm();
+
 // Padroniza a navegação da marca nas páginas autenticadas.
 // Mantém o HTML legado funcionando sem exigir que cada página replique a lógica.
 document.addEventListener('DOMContentLoaded', () => {
