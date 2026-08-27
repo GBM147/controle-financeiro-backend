@@ -19,7 +19,113 @@
 </head>
 <body>
 <canvas id="particles" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
-<header class="gbm-header"><div class="gbm-logo-container"><img src="logo-transparente.jpg" class="gbm-logo-img" alt="Logo GBM"><h1 class="gbm-title">Guardian Of Budget &amp; Money</h1></div><a href="dashboard.html" class="btn-voltar">Voltar</a></header>
+<header class="gbm-header">
+    <div class="gbm-logo-container">
+        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
+        <h1 class="gbm-title">Guardian Of Budget &amp; Money</h1>
+    </div>
+    <div class="gbm-header-actions">
+        <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
+            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
+            <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
+        </a>
+        <div class="gbm-menu-container">
+            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" aria-label="Abrir menu">
+                <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+            </button>
+        </div>
+    </div>
+</header>
+<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
+
+<div id="sidebar-menu" class="sidebar-menu">
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            <img src="logo-transparente.jpg" alt="Logo GBM" class="sidebar-logo">
+            <div class="sidebar-brand-text">
+                <strong>GBM Finance</strong>
+                <span>Proteção financeira para você</span>
+            </div>
+        </div>
+        <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
+    </div>
+    <nav class="sidebar-content" aria-label="Menu principal">
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Resumo</p>
+            <a href="dashboard.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">⌂</span>
+                <span class="menu-item-conteudo">Visão geral</span>
+                
+            </a>
+        </div>
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Movimentações</p>
+            <a href="contas.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">▣</span>
+                <span class="menu-item-conteudo">Minhas contas</span>
+                
+            </a>
+            <a href="importacoes.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">↥</span>
+                <span class="menu-item-conteudo">Importações</span>
+                
+            </a>
+        </div>
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Planejamento</p>
+            <a href="calendario.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">□</span>
+                <span class="menu-item-conteudo">Calendário</span>
+                
+            </a>
+            <a href="limite-de-gastos.html" class="menu-item menu-item-ativo">
+                <span class="menu-item-icone" aria-hidden="true">◒</span>
+                <span class="menu-item-conteudo">Limite de gastos</span>
+                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
+            </a>
+            <a href="metas.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">◎</span>
+                <span class="menu-item-conteudo">Objetivos de poupança</span>
+                
+            </a>
+        </div>
+        <div class="menu-grupo menu-grupo-premium">
+            <p class="menu-grupo-titulo">Análises</p>
+            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
+                <span class="menu-item-icone" aria-hidden="true">▥</span>
+                <span class="menu-item-conteudo">Relatório mensal</span>
+                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
+            </a>
+            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
+                <span class="menu-item-icone" aria-hidden="true">⇄</span>
+                <span class="menu-item-conteudo">Comparativo mensal</span>
+                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
+            </a>
+        </div>
+        <div class="menu-grupo menu-grupo-conta">
+            <p class="menu-grupo-titulo">Conta</p>
+            <a href="notificacoes.html" class="menu-item  menu-item-com-indicador">
+                <span class="menu-item-icone" aria-hidden="true">♧</span>
+                <span class="menu-item-conteudo">Notificações</span>
+                
+            </a>
+            <a href="configuracoes.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">⚙</span>
+                <span class="menu-item-conteudo">Configurações</span>
+                
+            </a>
+            <a href="perfil.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">♙</span>
+                <span class="menu-item-conteudo">Perfil</span>
+                
+            </a>
+            <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
+                <span class="menu-item-icone" aria-hidden="true">↪</span>
+                <span class="menu-item-conteudo">Sair</span>
+            </a>
+        </div>
+    </nav>
+</div>
 <main class="page-wrapper"><h2 class="titulo">Limite de gastos</h2><section class="card"><h2>Definir ou ajustar limite</h2><div class="form" id="form-limite">
 <div class="campo"><label for="nova-meta-cat">Categoria</label><select id="nova-meta-cat"><option value="" selected disabled>Selecione...</option><option>Alimentação</option><option>Habitação</option><option>Transporte</option><option>Eletricidade / Luz</option><option>Telecomunicações / Internet</option><option>Pagamento de Fatura</option><option>Pagamento de Boleto</option><option>Streaming de Vídeo</option><option>Streaming de Música</option><option>Academia e Fitness</option><option>Saúde</option><option>Educação</option><option>Supermercado</option><option>Restaurantes</option><option>Lazer</option><option>Outros</option></select></div>
 <div class="campo"><label for="nova-meta-valor">Limite mensal</label><input type="number" id="nova-meta-valor" min="0.01" step="0.01" placeholder="R$ 0,00"></div>
@@ -41,6 +147,5 @@ async function salvarNovoLimite(){const categoria=document.getElementById('nova-
 document.getElementById('novo-percentual').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adicionarPercentual()}});renderChips();iniciarPagina();
 (function(){const c=document.getElementById('particles'),x=c.getContext('2d');function r(){c.width=innerWidth;c.height=innerHeight}addEventListener('resize',r);r();const p=Array.from({length:Math.min(65,Math.floor(innerWidth*innerHeight/15000))},()=>({x:Math.random()*c.width,y:Math.random()*c.height,s:Math.random()*2+.7,v:Math.random()*.9+.25,o:Math.random()*.35+.15}));(function a(){x.clearRect(0,0,c.width,c.height);p.forEach(q=>{q.y-=q.v;if(q.y<0)q.y=c.height;x.fillStyle=`rgba(85,167,255,${q.o})`;x.beginPath();x.arc(q.x,q.y,q.s,0,Math.PI*2);x.fill()});requestAnimationFrame(a)})()})();
 </script>
-    <script src="gbm-menu.js"></script>
 </body>
 </html>

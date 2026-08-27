@@ -1,650 +1,920 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Relatório Avançado | GBM</title><link rel="stylesheet" href="gbm-pages.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Relatório Mensal | GBM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
-        .resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-        #tabela-transacoes table{min-width:900px}
-        #tabela-transacoes th:last-child,#tabela-transacoes td:last-child{text-align:right;white-space:nowrap;font-weight:700}
-        @media(max-width:700px){.resumo-grid{grid-template-columns:1fr}}
-        @page{size:A4 landscape;margin:10mm}
-        @media print{
-            .topbar,.page-title,.filtros-card,.exportar-card,.actions,#gbm-tour-overlay,#gbm-tour-ajuda{display:none!important}
-            body{background:#fff;color:#111}
-            .card{box-shadow:none;border:1px solid #ccc;background:#fff;color:#111}
-            .container{width:100%;max-width:none;padding:0}
-            .grid-2{grid-template-columns:1fr!important}
-            .table-wrap{overflow:visible}
-            #tabela-transacoes table{min-width:0;width:100%;font-size:8.5pt}
-            th,td{color:#111;padding:5px 6px}
+        /* Partículas — garante que o conteúdo fique acima do canvas */
+        body > *:not(#particles-canvas) { position: relative; z-index: 1; }
+
+        /* Logo flutuante no cabeçalho */
+        .gbm-logo-img {
+            animation: float-logo 4s ease-in-out infinite;
         }
+        @keyframes float-logo {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-5px); }
+        }
+
+        /* Botão shine — aplica em todos os .btn-acao e .btn-voltar */
+        .btn-acao, .btn-voltar, .btn-gerar, .btn-pdf {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-acao::after, .btn-voltar::after, .btn-gerar::after, .btn-pdf::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -60%;
+            width: 30%; height: 200%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(30deg);
+            animation: btn-shine 4s infinite ease-in-out;
+        }
+        @keyframes btn-shine {
+            0%   { left: -60%; }
+            15%  { left: 130%; }
+            100% { left: 130%; }
+        }
+        :root {
+            --cor-destaque: #2E8B57;
+            --cor-destaque-hover: #246e45;
+            --texto-principal: #ffffff;
+            --texto-mutado: #b0bec5;
+            --borda: rgba(255, 255, 255, 0.15);
+            --cor-receita: #10b981;
+            --cor-despesa: #ef4444;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('fundo-marmore.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--texto-principal);
+            min-height: 100vh;
+        }
+
+        /* CABEÇALHO GBM */
+        .gbm-header {
+            background: transparent;
+            border-bottom: 1px solid var(--borda);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
+        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; }
+        .gbm-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            background: linear-gradient(90deg, #2E8B57 0%, #5fffa8 25%, #3d28ff 50%, #655aff 75%, #2E8B57 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            animation: gbm-shine 4s linear infinite;
+        }
+        @keyframes gbm-shine {
+            0%   { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .btn-voltar {
+            text-decoration: none;
+            color: var(--texto-principal);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: #0f1a2b;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(95, 255, 168, 0.25);
+            transition: 0.3s;
+        }
+        .btn-voltar:hover {
+            border-color: #5fffa8;
+            box-shadow: 0 0 14px rgba(95, 255, 168, 0.3);
+        }
+
+        .page-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .titulo-pagina {
+            font-family: 'Rajdhani', sans-serif;
+            text-align: center;
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin: 10px 0 25px 0;
+        }
+
+        /* CARD MODERNO */
+        .card {
+            background: #0f1a2b;
+            border: 1px solid rgba(95, 255, 168, 0.22);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(95, 255, 168, 0.05) inset;
+            padding: 25px 30px;
+            margin-bottom: 20px;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.25s ease;
+        }
+        .card:hover {
+            border-color: rgba(95, 255, 168, 0.45);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55), 0 0 14px rgba(95, 255, 168, 0.12);
+        }
+
+        /* Filtros */
+        .filtros { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filtros select,
+        .filtros input[type="number"] {
+            background: rgba(10, 18, 32, 0.6);
+            border: 1px solid var(--borda);
+            color: var(--texto-principal);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .filtros select:focus,
+        .filtros input[type="number"]:focus {
+            border-color: var(--cor-destaque);
+            box-shadow: 0 0 10px rgba(46,139,87,0.3);
+        }
+        .filtros input[type="number"] { width: 90px; }
+
+        /* Botões */
+        .btn-acao {
+            padding: 10px 22px;
+            border-radius: 8px;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .btn-gerar { background: var(--cor-destaque); color: white; }
+        .btn-gerar:hover { background: var(--cor-destaque-hover); transform: translateY(-1px); }
+        .btn-pdf { background: #1a56a0; color: white; }
+        .btn-pdf:hover { background: #144588; transform: translateY(-1px); }
+
+        /* Resultado */
+        .resultado-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--borda);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .resultado-header h3 {
+            margin: 0;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .resumo-rapido { display: flex; gap: 12px; flex-wrap: wrap; }
+        .resumo-item {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(95, 255, 168, 0.15);
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            color: var(--texto-mutado);
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .resumo-item strong { display: block; font-size: 1.1rem; margin-top: 3px; letter-spacing: 0.5px; }
+
+        /* Tabela */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        thead tr { border-bottom: 2px solid rgba(255,255,255,0.1); }
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--texto-mutado);
+        }
+        td {
+            padding: 13px 15px;
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-family: 'Rajdhani', sans-serif;
+        }
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .badge-tipo {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-receita { background: rgba(16,185,129,0.15); color: var(--cor-receita); }
+        .badge-despesa { background: rgba(239,68,68,0.15);  color: var(--cor-despesa); }
+
+        .texto-vazio {
+            text-align: center;
+            color: var(--texto-mutado);
+            padding: 30px 0;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .gbm-title { display: none; }
+            .gbm-logo-img { height: 40px; }
+            .card { padding: 18px; }
+        }
+                /* Modal de editar categoria */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.ativo { display: flex; }
+        .modal-box {
+            background: #0f1a2b; border: 1px solid rgba(95,255,168,0.3);
+            border-radius: 14px; padding: 30px; width: 90%; max-width: 400px;
+        }
+        .modal-box h3 { margin: 0 0 8px; color: #fff; font-size: 1.1rem; }
+        .modal-desc { color: #8a9ba8; font-size: 0.85rem; margin-bottom: 20px; word-break: break-word; }
+        .modal-box select {
+            width: 100%; padding: 10px 14px; border-radius: 8px;
+            background: #1a2a3a; border: 1px solid rgba(255,255,255,0.15);
+            color: #fff; font-size: 1rem; margin-bottom: 20px;
+        }
+        .modal-acoes { display: flex; gap: 10px; }
+        .btn-confirmar {
+            flex: 1; padding: 11px; border-radius: 8px; border: none;
+            background: #2E8B57; color: #fff; font-weight: 700;
+            font-size: 1rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-confirmar:hover { background: #3cb371; }
+        .btn-cancelar {
+            flex: 1; padding: 11px; border-radius: 8px; border: none;
+            background: rgba(255,255,255,0.08); color: #fff;
+            font-size: 1rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-cancelar:hover { background: rgba(255,255,255,0.15); }
+        .btn-editar-cat {
+            background: none; border: 1px solid rgba(95,255,168,0.3);
+            color: #5fffa8; border-radius: 6px; padding: 3px 10px;
+            font-size: 0.78rem; cursor: pointer; transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-editar-cat:hover { background: rgba(95,255,168,0.1); }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
-<body class="gbm-interna">
-    <header class="topbar"><a class="brand" href="dashboard.html"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a><a class="btn-voltar" href="dashboard.html" aria-label="Voltar ao Dashboard">Voltar</a></header>
-    <main class="container">
-        <div class="page-title"><h1>Relatório avançado</h1><p>Escolha qualquer período, conta, categoria ou tipo e exporte o resultado.</p></div>
-        <section class="card filtros-card">
-            <form id="form-filtros" class="form-grid">
-                <div class="field"><label>Data inicial</label><input id="data-inicio" type="date" required></div>
-                <div class="field"><label>Data final</label><input id="data-fim" type="date" required></div>
-                <div class="field"><label>Conta</label><select id="filtro-conta"><option value="todas">Todas as contas</option></select></div>
-                <div class="field"><label>Categoria</label><select id="filtro-categoria"><option value="todas">Todas as categorias</option></select></div>
-                <div class="field"><label>Tipo</label><select id="filtro-tipo"><option value="todos">Receitas e despesas</option><option>Receita</option><option>Despesa</option></select></div>
-                <div class="field" style="justify-content:end"><div class="actions end"><button class="btn btn-primary">Gerar relatório</button></div></div>
-            </form>
-        </section>
-        <section id="resultado" style="margin-top:18px" hidden>
-            <div class="resumo-grid">
-                <div class="card stat">Receitas<br><strong id="total-receitas" style="color:var(--green)">R$ 0,00</strong></div>
-                <div class="card stat">Despesas<br><strong id="total-despesas" style="color:var(--red)">R$ 0,00</strong></div>
-                <div class="card stat">Resultado<br><strong id="total-resultado">R$ 0,00</strong></div>
+<body>
+<canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
+<header class="gbm-header">
+    <div class="gbm-logo-container">
+        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
+        <h1 class="gbm-title">Guardian Of Budget &amp; Money</h1>
+    </div>
+    <div class="gbm-header-actions">
+        <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
+            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
+            <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
+        </a>
+        <div class="gbm-menu-container">
+            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" aria-label="Abrir menu">
+                <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+            </button>
+        </div>
+    </div>
+</header>
+<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
+
+<div id="sidebar-menu" class="sidebar-menu">
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            <img src="logo-transparente.jpg" alt="Logo GBM" class="sidebar-logo">
+            <div class="sidebar-brand-text">
+                <strong>GBM Finance</strong>
+                <span>Proteção financeira para você</span>
             </div>
-            <div class="grid grid-2" style="margin-top:18px">
-                <section class="card">
-                    <div class="grafico-cabecalho">
-                        <div><h2>Despesas por categoria</h2><p style="color:var(--muted);margin:5px 0 0">Escolha a visualização mais útil para a análise.</p></div>
-                        <div class="field">
-                            <label for="tipo-grafico-relatorio">Tipo de gráfico</label>
-                            <select id="tipo-grafico-relatorio" onchange="renderizarGraficoCategorias()">
-                                <option value="bar">Barras</option>
-                                <option value="doughnut">Rosca</option>
-                                <option value="polarArea">Área polar</option>
-                            </select>
+        </div>
+        <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
+    </div>
+    <nav class="sidebar-content" aria-label="Menu principal">
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Resumo</p>
+            <a href="dashboard.html" class="menu-item menu-item-ativo">
+                <span class="menu-item-icone" aria-hidden="true">⌂</span>
+                <span class="menu-item-conteudo">Visão geral</span>
+                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
+            </a>
+        </div>
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Movimentações</p>
+            <a href="contas.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">▣</span>
+                <span class="menu-item-conteudo">Minhas contas</span>
+                
+            </a>
+            <a href="importacoes.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">↥</span>
+                <span class="menu-item-conteudo">Importações</span>
+                
+            </a>
+        </div>
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Planejamento</p>
+            <a href="calendario.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">□</span>
+                <span class="menu-item-conteudo">Calendário</span>
+                
+            </a>
+            <a href="limite-de-gastos.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">◒</span>
+                <span class="menu-item-conteudo">Limite de gastos</span>
+                
+            </a>
+            <a href="metas.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">◎</span>
+                <span class="menu-item-conteudo">Objetivos de poupança</span>
+                
+            </a>
+        </div>
+        <div class="menu-grupo menu-grupo-premium">
+            <p class="menu-grupo-titulo">Análises</p>
+            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
+                <span class="menu-item-icone" aria-hidden="true">▥</span>
+                <span class="menu-item-conteudo">Relatório mensal</span>
+                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
+            </a>
+            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
+                <span class="menu-item-icone" aria-hidden="true">⇄</span>
+                <span class="menu-item-conteudo">Comparativo mensal</span>
+                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
+            </a>
+        </div>
+        <div class="menu-grupo menu-grupo-conta">
+            <p class="menu-grupo-titulo">Conta</p>
+            <a href="notificacoes.html" class="menu-item  menu-item-com-indicador">
+                <span class="menu-item-icone" aria-hidden="true">♧</span>
+                <span class="menu-item-conteudo">Notificações</span>
+                
+            </a>
+            <a href="configuracoes.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">⚙</span>
+                <span class="menu-item-conteudo">Configurações</span>
+                
+            </a>
+            <a href="perfil.html" class="menu-item ">
+                <span class="menu-item-icone" aria-hidden="true">♙</span>
+                <span class="menu-item-conteudo">Perfil</span>
+                
+            </a>
+            <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
+                <span class="menu-item-icone" aria-hidden="true">↪</span>
+                <span class="menu-item-conteudo">Sair</span>
+            </a>
+        </div>
+    </nav>
+</div>
+
+<div class="page-wrapper">
+
+    <div class="card">
+        <div class="filtros">
+            <select id="mes-ref">
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+            </select>
+            <input type="number" id="ano-ref" value="2026">
+            <select id="banco-ref">
+                <option value="todos">Todos os bancos</option>
+            </select>
+            <button class="btn-acao btn-gerar" onclick="gerarRelatorio()">Gerar Relatório</button>
+            <button class="btn-acao btn-pdf"   onclick="baixarPDF()">Baixar PDF</button>
+        </div>
+    </div>
+
+    <div class="card" id="card-resultado">
+        <div id="resultado-relatorio">
+            <p class="texto-vazio">Escolha o mês e o ano e clique em "Gerar Relatório".</p>
+        </div>
+    </div>
+</div>
+<!-- MODAL EDITAR CATEGORIA -->
+<div class="modal-overlay" id="modal-categoria">
+    <div class="modal-box">
+        <h3>Alterar Categoria</h3>
+        <p class="modal-desc" id="modal-desc-tx"></p>
+        <select id="modal-select-cat">
+            <option>Alimentação</option>
+            <option>Habitação</option>
+            <option>Transporte</option>
+            <option>Eletricidade / Luz</option>
+            <option>Telecomunicações / Internet</option>
+            <option>Pagamento de Fatura</option>
+            <option>Pagamento de Boleto</option>
+            <option>Streaming de Vídeo</option>
+            <option>Streaming de Música</option>
+            <option>Academia e Fitness</option>
+            <option>Saúde</option>
+            <option>Educação</option>
+            <option>Supermercado</option>
+            <option>Restaurantes</option>
+            <option>Salário</option>
+            <option>Lazer</option>
+            <option>Transferência</option>
+            <option>Taxas Bancárias</option>
+            <option>Entretenimento</option>
+            <option>Igreja / Doações</option>
+            <option>Outros</option>
+        </select>
+        <div class="modal-acoes">
+            <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+            <button class="btn-confirmar" onclick="salvarCategoria()">Salvar</button>
+        </div>
+    </div>
+</div>
+<script src="auth.js"></script>
+    <script>
+        // Recupera o userId salvo
+        function pegarUserId() {
+            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+        }
+
+        // --- GUARDA DE ACESSO PREMIUM ---
+        (async function verificarAcessoPremium() {
+            const userId = pegarUserId();
+            if (!userId) {
+                window.location.href = 'index.html';
+                return;
+            }
+            try {
+                const res = await fetchApi('/login-status?userId=' + userId);
+                const data = await res.json();
+
+                let isPremium = false;
+                if (data.statusPagamento === 'pago') {
+                    isPremium = true;
+                } else if (data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') {
+                    if (data.trialExpira && new Date() <= new Date(data.trialExpira)) {
+                        isPremium = true;
+                    }
+                }
+
+                if (!isPremium) {
+                    // Se não for Premium, expulsa para a tela de pagamento
+                    window.location.href = 'pagamento.html';
+                }
+            } catch (e) {
+                window.location.href = 'index.html';
+            }
+        })();
+
+        let dadosRelatorio = [];
+let CATEGORIAS_TODAS = [];
+let BANCOS_CORES = {};
+
+async function carregarBancosInfo() {
+    try {
+        const res = await fetch('/bancos-info');
+        BANCOS_CORES = await res.json();
+    } catch (e) {
+        console.error('Erro ao carregar cores de bancos:', e);
+    }
+}
+carregarBancosInfo();
+
+function etiquetaBanco(nomeBanco) {
+    if (!nomeBanco) return '';
+    const cor = BANCOS_CORES[nomeBanco] || '#607d8b';
+    return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;"> ${escaparHtmlRelatorio(nomeBanco)}</span>`;
+}
+
+function escaparHtmlRelatorio(valor) {
+    return String(valor ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+document.getElementById('mes-ref').value = new Date().getMonth() + 1;
+
+const NOMES_MESES = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                      'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+async function carregarCategorias() {
+    try {
+        const userId = pegarUserId();
+        const res = await fetchApi(`/categorias?userId=${userId}`);
+        const dados = await res.json();
+        CATEGORIAS_TODAS = dados.todas || [];
+    } catch (e) {
+        console.error('Erro ao carregar categorias:', e);
+    }
+}
+carregarCategorias();
+
+async function carregarBancosUsados() {
+    try {
+        const userId = pegarUserId();
+        const res = await fetchApi(`/bancos-usados?userId=${userId}`);
+        const bancos = await res.json();
+        const select = document.getElementById('banco-ref');
+        bancos.forEach(nome => {
+            select.appendChild(new Option(String(nome), String(nome)));
+        });
+    } catch (e) {
+        console.error('Erro ao carregar bancos usados:', e);
+    }
+}
+carregarBancosUsados();
+
+        async function gerarRelatorio() {
+            const mes = document.getElementById('mes-ref').value;
+            const ano = document.getElementById('ano-ref').value;
+            const banco = document.getElementById('banco-ref').value;
+            const container = document.getElementById('resultado-relatorio');
+            container.innerHTML = '<p class="texto-vazio">Carregando...</p>';
+
+            try {
+                const userId = pegarUserId();
+const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${userId}&banco=${encodeURIComponent(banco)}`);
+                dadosRelatorio = await res.json();
+
+                if (dadosRelatorio.length === 0) {
+                    const sufixoBanco = banco !== 'todos' ? ` (${escaparHtmlRelatorio(banco)})` : '';
+                    container.innerHTML = `<p class="texto-vazio">Nenhum dado encontrado para ${NOMES_MESES[mes]}/${ano}${sufixoBanco}.</p>`;
+                    return;
+                }
+
+                let totalReceita = 0, totalDespesa = 0;
+                dadosRelatorio.forEach(item => {
+                    const v = Math.abs(parseFloat(item.valor) || 0);
+                    if (item.tipo === 'Receita') totalReceita += v;
+                    else totalDespesa += v;
+                });
+                const saldo = totalReceita - totalDespesa;
+                const corSaldo = saldo >= 0 ? 'var(--cor-receita)' : 'var(--cor-despesa)';
+
+                let html = `
+                    <div class="resultado-header">
+                        <h3>${NOMES_MESES[mes]} / ${ano}${banco !== 'todos' ? ' — ' + escaparHtmlRelatorio(banco) : ''}</h3>
+                        <div class="resumo-rapido">
+                            <div class="resumo-item">Entradas
+                                <strong style="color: var(--cor-receita);">R$ ${totalReceita.toFixed(2)}</strong>
+                            </div>
+                            <div class="resumo-item">Saídas
+                                <strong style="color: var(--cor-despesa);">R$ ${totalDespesa.toFixed(2)}</strong>
+                            </div>
+                            <div class="resumo-item">Saldo
+                                <strong style="color: ${corSaldo};">R$ ${saldo.toFixed(2)}</strong>
+                            </div>
                         </div>
                     </div>
-                    <div class="relatorio-grafico-wrapper">
-                        <canvas id="grafico-categorias"></canvas>
-                        <div id="grafico-categorias-vazio" class="empty" hidden>Sem despesas no período.</div>
-                    </div>
-                </section>
-                <section class="card exportar-card"><h2>Exportar</h2><p style="color:var(--muted)">O Excel preserva o relatório formatado; use o CSV quando precisar apenas dos dados simples.</p><div class="actions"><button id="baixar-excel" class="btn btn-primary" type="button">Baixar Excel</button><button id="baixar-csv" class="btn" type="button">Baixar CSV</button><button id="baixar-pdf" class="btn" type="button">Baixar PDF</button></div></section>
-            </div>
-            <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap"></div></section>
-        </section>
-    </main>
-    <script src="auth.js"></script><script src="gbm-pages.js"></script>
-    <script>
-        let relatorioAtual=null;
-        let graficoRelatorio=null;
-        let categoriasGraficoRelatorio=[];
-        const hoje=new Date();const inicio=new Date(hoje.getFullYear(),hoje.getMonth(),1);
-        document.getElementById('data-inicio').value=inicio.toISOString().slice(0,10);
-        document.getElementById('data-fim').value=hoje.toISOString().slice(0,10);
-        async function carregarFiltros(){
-            const [contas,categorias]=await Promise.all([
-                gbmJson(await fetchApi('/contas')),
-                gbmJson(await fetchApi('/categorias'))
-            ]);
-            document.getElementById('filtro-conta').insertAdjacentHTML('beforeend',contas.map(c=>`<option value="${c.id}">${gbmEscapar(c.nome)}</option>`).join(''));
-            const lista=categorias.todas||categorias||[];
-            document.getElementById('filtro-categoria').insertAdjacentHTML('beforeend',lista.map(c=>`<option value="${gbmEscapar(c)}">${gbmEscapar(c)}</option>`).join(''));
-        }
-        document.getElementById('form-filtros').addEventListener('submit',async(e)=>{e.preventDefault();gerar()});
-        async function gerar(){
-            const p=new URLSearchParams({
-                data_inicio:document.getElementById('data-inicio').value,
-                data_fim:document.getElementById('data-fim').value,
-                conta_id:document.getElementById('filtro-conta').value,
-                categoria:document.getElementById('filtro-categoria').value,
-                tipo:document.getElementById('filtro-tipo').value
-            });
-            try{
-                const dados=await gbmJson(await fetchApi(`/relatorio-avancado?${p}`));
-                dados.filtros_exportacao=filtrosAtivos();
-                relatorioAtual=dados;
-                renderizar();
-            }catch(erro){
-                if(erro.status===403){if(confirm('Este relatório é Premium. Deseja conhecer o plano?'))location.href='pagamento.html';return}
-                gbmToast(erro.message,'erro');
-            }
-        }
-        function renderizar(){
-            document.getElementById('resultado').hidden=false;
-            const r=relatorioAtual.resumo;
-            document.getElementById('total-receitas').textContent=gbmMoeda(r.receitas);
-            document.getElementById('total-despesas').textContent=gbmMoeda(r.despesas);
-            document.getElementById('total-resultado').textContent=gbmMoeda(r.resultado);
-            document.getElementById('total-resultado').style.color=Number(r.resultado)>=0?'var(--green)':'var(--red)';
-            const categorias=Object.entries(r.por_categoria).sort((a,b)=>b[1]-a[1]);
-            categoriasGraficoRelatorio=categorias.slice(0,10);
-            renderizarGraficoCategorias();
-            document.getElementById('tabela-transacoes').innerHTML=relatorioAtual.transacoes.length?`<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Valor</th></tr></thead><tbody>${relatorioAtual.transacoes.map(t=>`<tr><td>${gbmData(t.data_transacao)}</td><td>${gbmEscapar(t.descricao)}</td><td>${gbmEscapar(t.categoria)}</td><td>${gbmEscapar(t.conta)}</td><td>${gbmMoeda(t.valor)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhuma transação encontrada.</div>';
-        }
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Banco</th>
+                                <th>Tipo</th>
+                                <th style="text-align: right;">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
 
-        function renderizarGraficoCategorias(){
-            const canvas=document.getElementById('grafico-categorias');
-            const vazio=document.getElementById('grafico-categorias-vazio');
-            if(!canvas||!vazio)return;
-            if(graficoRelatorio){graficoRelatorio.destroy();graficoRelatorio=null}
+                dadosRelatorio.forEach(item => {
+                    const isReceita = item.tipo === 'Receita';
+                    const cor    = isReceita ? 'var(--cor-receita)' : 'var(--cor-despesa)';
+                    const sinal  = isReceita ? '+ ' : '- ';
+                    const badge  = isReceita
+                        ? '<span class="badge-tipo badge-receita">Receita</span>'
+                        : '<span class="badge-tipo badge-despesa">Despesa</span>';
+                    const valor  = Math.abs(parseFloat(item.valor) || 0).toFixed(2);
+                    const itemId = Number(item.id);
 
-            const temDados=categoriasGraficoRelatorio.length>0;
-            canvas.hidden=!temDados;
-            vazio.hidden=temDados;
-            if(!temDados)return;
-
-            const tipo=document.getElementById('tipo-grafico-relatorio')?.value||'bar';
-            const cores=['rgba(57,217,138,.76)','rgba(85,167,255,.76)','rgba(37,140,91,.76)','rgba(61,88,255,.72)'];
-            const bordas=['#39d98a','#55a7ff','#258c5b','#3d58ff'];
-            const circular=tipo==='doughnut'||tipo==='polarArea';
-            graficoRelatorio=new Chart(canvas.getContext('2d'),{
-                type:tipo,
-                data:{
-                    labels:categoriasGraficoRelatorio.map(([nome])=>nome),
-                    datasets:[{
-                        label:'Despesas',
-                        data:categoriasGraficoRelatorio.map(([,valor])=>Number(valor)||0),
-                        backgroundColor:categoriasGraficoRelatorio.map((_,indice)=>cores[indice%cores.length]),
-                        borderColor:categoriasGraficoRelatorio.map((_,indice)=>bordas[indice%bordas.length]),
-                        borderWidth:1.5,
-                        borderRadius:tipo==='bar'?7:0,
-                        borderSkipped:false
-                    }]
-                },
-                options:{
-                    responsive:true,
-                    maintainAspectRatio:false,
-                    scales:circular?undefined:{
-                        x:{grid:{display:false},ticks:{color:'#b0bec5'}},
-                        y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#b0bec5'}}
-                    },
-                    plugins:{
-                        legend:{display:circular,position:'bottom',labels:{color:'#eef6ff',boxWidth:12,padding:16}},
-                        tooltip:{callbacks:{label:(context)=>`${context.label}: ${gbmMoeda(context.raw)}`}}
-                    }
-                }
-            });
-        }
-
-        const NOMES_MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
-        function dataLocal(valor){
-            const [ano,mes,dia]=String(valor||'').split('-').map(Number);
-            return new Date(ano,mes-1,dia,12,0,0);
-        }
-
-        function dataArquivo(data){
-            return data.toLocaleDateString('pt-BR').replaceAll('/','-');
-        }
-
-        function periodoDoRelatorio(){
-            const inicio=dataLocal(relatorioAtual?.data_inicio||document.getElementById('data-inicio').value);
-            const fim=dataLocal(relatorioAtual?.data_fim||document.getElementById('data-fim').value);
-            const mesmoMes=inicio.getFullYear()===fim.getFullYear()&&inicio.getMonth()===fim.getMonth();
-            const rotulo=mesmoMes
-                ?`${NOMES_MESES[inicio.getMonth()]} ${inicio.getFullYear()}`
-                :`${inicio.toLocaleDateString('pt-BR')} a ${fim.toLocaleDateString('pt-BR')}`;
-            const arquivo=mesmoMes
-                ?`${NOMES_MESES[inicio.getMonth()]} ${inicio.getFullYear()}`
-                :`${dataArquivo(inicio)} a ${dataArquivo(fim)}`;
-            return{rotulo,arquivo};
-        }
-
-        function moedaPdf(valor){
-            return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Math.abs(Number(valor)||0));
-        }
-
-        function textoSelect(id){
-            const select=document.getElementById(id);
-            return select.options[select.selectedIndex]?.text||'';
-        }
-
-        function filtrosAtivos(){
-            const filtros=[];
-            if(document.getElementById('filtro-conta').value!=='todas')filtros.push(`Conta: ${textoSelect('filtro-conta')}`);
-            if(document.getElementById('filtro-categoria').value!=='todas')filtros.push(`Categoria: ${textoSelect('filtro-categoria')}`);
-            if(document.getElementById('filtro-tipo').value!=='todos')filtros.push(`Tipo: ${textoSelect('filtro-tipo')}`);
-            return filtros;
-        }
-
-        function filtrosDoRelatorio(){
-            return Array.isArray(relatorioAtual?.filtros_exportacao)
-                ?relatorioAtual.filtros_exportacao
-                :filtrosAtivos();
-        }
-
-        function valorAssinado(transacao){
-            const valor=Math.abs(Number(transacao?.valor)||0);
-            return String(transacao?.tipo||'').trim().toLowerCase()==='receita'?valor:(valor===0?0:-valor);
-        }
-
-        function dataExcel(valor){
-            const partes=String(valor||'').slice(0,10).split('-').map(Number);
-            if(partes.length!==3||partes.some(parte=>!Number.isInteger(parte)))return null;
-            const [ano,mes,dia]=partes;
-            const data=new Date(ano,mes-1,dia,12,0,0);
-            if(data.getFullYear()!==ano||data.getMonth()!==mes-1||data.getDate()!==dia)return null;
-            return data;
-        }
-
-        async function baixarExcel(){
-            if(!relatorioAtual?.transacoes)return gbmToast('Gere o relatório antes de baixar.','erro');
-            if(!window.ExcelJS?.Workbook)return gbmToast('Não foi possível carregar o ExcelJS. Verifique sua conexão e tente novamente.','erro');
-
-            const botao=document.getElementById('baixar-excel');
-            const textoOriginal=botao.textContent;
-            let urlExcel='';
-            botao.disabled=true;
-            botao.textContent='Gerando Excel...';
-
-            try{
-                const workbook=new window.ExcelJS.Workbook();
-                workbook.creator='Guardian of Budget & Money';
-                workbook.subject='Relatório financeiro GBM';
-                workbook.created=new Date();
-
-                const worksheet=workbook.addWorksheet('Relatório',{
-                    properties:{defaultRowHeight:19},
-                    views:[{
-                        state:'frozen',
-                        ySplit:3,
-                        topLeftCell:'A4',
-                        activeCell:'A4',
-                        showGridLines:false
-                    }],
-                    pageSetup:{
-                        paperSize:9,
-                        orientation:'landscape',
-                        fitToPage:true,
-                        fitToWidth:1,
-                        fitToHeight:0,
-                        showGridLines:false,
-                        horizontalCentered:true,
-                        margins:{left:.25,right:.25,top:.4,bottom:.4,header:.2,footer:.2}
-                    }
+                    html += `
+                        <tr>
+                            <td style="font-weight: 500;">
+                                ${escaparHtmlRelatorio(item.categoria || 'Sem categoria')}
+                                <br><button class="btn-editar-cat" data-editar-id="${Number.isInteger(itemId) ? itemId : 0}">Editar</button>
+                            </td>
+                            <td>${etiquetaBanco(item.banco)}</td>
+                            <td>${badge}</td>
+                            <td style="text-align: right; font-weight: 700; color: ${cor};">${sinal}R$ ${valor}</td>
+                        </tr>`;
                 });
 
-                worksheet.columns=[
-                    {width:14},
-                    {width:38},
-                    {width:26},
-                    {width:26},
-                    {width:24},
-                    {width:28}
-                ];
-
-                const cores={
-                    navy:'FF0F1A2B',
-                    verde:'FF2E8B57',
-                    positivo:'FF108756',
-                    vermelho:'FFD23737',
-                    despesa:'FFEF4444',
-                    branco:'FFFFFFFF',
-                    mutado:'FFB0BEC5',
-                    texto:'FF0F1A2B',
-                    claro:'FFF4F7FA',
-                    alternado:'FFF5F7FA',
-                    borda:'FFD7DEE8'
-                };
-                const formatoMoedaNormal='"R$" #,##0.00;[Red]-"R$" #,##0.00;"R$" 0.00';
-                const formatoMoedaAssinada='"+" "R$" #,##0.00;"-" "R$" #,##0.00;"R$" 0.00';
-                const borda={
-                    top:{style:'thin',color:{argb:cores.borda}},
-                    left:{style:'thin',color:{argb:cores.borda}},
-                    bottom:{style:'thin',color:{argb:cores.borda}},
-                    right:{style:'thin',color:{argb:cores.borda}}
-                };
-
-                function estilizarFaixa(linha,inicioColuna,fimColuna,{fundo,fonte,alinhamento,comBorda=false}={}){
-                    for(let coluna=inicioColuna;coluna<=fimColuna;coluna++){
-                        const celula=worksheet.getRow(linha).getCell(coluna);
-                        if(fundo)celula.fill={type:'pattern',pattern:'solid',fgColor:{argb:fundo}};
-                        if(fonte)celula.font={...fonte};
-                        if(alinhamento)celula.alignment={...alinhamento};
-                        if(comBorda)celula.border=borda;
-                    }
-                }
-
-                const periodo=periodoDoRelatorio();
-                const filtros=filtrosDoRelatorio();
-
-                worksheet.mergeCells('A1:F1');
-                worksheet.mergeCells('A2:F2');
-                worksheet.mergeCells('A3:F3');
-                [1,2,3].forEach(linha=>estilizarFaixa(linha,1,6,{
-                    fundo:cores.navy,
-                    alinhamento:{vertical:'middle',wrapText:true}
-                }));
-                worksheet.getRow(1).height=27;
-                worksheet.getRow(2).height=22;
-                worksheet.getRow(3).height=19;
-                worksheet.getCell('A1').value='GUARDIAN OF BUDGET & MONEY';
-                worksheet.getCell('A1').font={name:'Arial',size:17,bold:true,color:{argb:cores.branco}};
-                worksheet.getCell('A2').value=`Relatório financeiro - ${periodo.rotulo}`;
-                worksheet.getCell('A2').font={name:'Arial',size:11,color:{argb:cores.mutado}};
-                worksheet.getCell('A3').value=filtros.length?filtros.join('  |  '):'';
-                worksheet.getCell('A3').font={name:'Arial',size:9,italic:true,color:{argb:cores.mutado}};
-
-                const resumo=relatorioAtual.resumo||{};
-                const cards=[
-                    {inicio:1,fim:2,titulo:'RECEITAS',valor:Math.abs(Number(resumo.receitas)||0),cor:cores.positivo},
-                    {inicio:3,fim:4,titulo:'DESPESAS',valor:Math.abs(Number(resumo.despesas)||0),cor:cores.despesa},
-                    {inicio:5,fim:6,titulo:'RESULTADO',valor:Number(resumo.resultado)||0,cor:Number(resumo.resultado)>=0?cores.positivo:cores.despesa}
-                ];
-                cards.forEach(card=>{
-                    if(card.inicio!==card.fim){
-                        worksheet.mergeCells(5,card.inicio,5,card.fim);
-                        worksheet.mergeCells(6,card.inicio,6,card.fim);
-                    }
-                    estilizarFaixa(5,card.inicio,card.fim,{
-                        fundo:cores.claro,
-                        fonte:{name:'Arial',size:9,bold:true,color:{argb:'FF505E70'}},
-                        alinhamento:{vertical:'middle',wrapText:true},
-                        comBorda:true
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                container.querySelectorAll('[data-editar-id]').forEach((botao) => {
+                    botao.addEventListener('click', () => {
+                        const id = Number(botao.dataset.editarId);
+                        const item = dadosRelatorio.find((registro) => Number(registro.id) === id);
+                        if (!item) return;
+                        abrirModal(id, item.descricao || item.categoria || '', item.categoria || 'Outros');
                     });
-                    estilizarFaixa(6,card.inicio,card.fim,{
-                        fundo:cores.claro,
-                        fonte:{name:'Arial',size:12,bold:true,color:{argb:card.cor}},
-                        alinhamento:{vertical:'middle',wrapText:true},
-                        comBorda:true
-                    });
-                    const titulo=worksheet.getRow(5).getCell(card.inicio);
-                    const valor=worksheet.getRow(6).getCell(card.inicio);
-                    titulo.value=card.titulo;
-                    valor.value=card.valor;
-                    valor.numFmt=formatoMoedaNormal;
-                });
-                worksheet.getRow(5).height=20;
-                worksheet.getRow(6).height=25;
-
-                const categorias=Object.entries(resumo.por_categoria||{})
-                    .filter(([,valor])=>Number.isFinite(Number(valor))&&Number(valor)>0)
-                    .sort((a,b)=>Number(b[1])-Number(a[1]))
-                    .slice(0,10);
-                let linhaAtual=8;
-
-                worksheet.mergeCells(`A${linhaAtual}:F${linhaAtual}`);
-                estilizarFaixa(linhaAtual,1,6,{
-                    fundo:cores.verde,
-                    fonte:{name:'Arial',size:11,bold:true,color:{argb:cores.branco}},
-                    alinhamento:{vertical:'middle'}
-                });
-                worksheet.getCell(`A${linhaAtual}`).value='Despesas por categoria';
-                worksheet.getRow(linhaAtual).height=22;
-                linhaAtual++;
-
-                worksheet.mergeCells(`A${linhaAtual}:E${linhaAtual}`);
-                estilizarFaixa(linhaAtual,1,6,{
-                    fundo:cores.verde,
-                    fonte:{name:'Arial',size:9,bold:true,color:{argb:cores.branco}},
-                    alinhamento:{vertical:'middle',wrapText:true},
-                    comBorda:true
-                });
-                worksheet.getCell(`A${linhaAtual}`).value='Categoria';
-                worksheet.getCell(`F${linhaAtual}`).value='Valor';
-                worksheet.getCell(`F${linhaAtual}`).alignment={horizontal:'right',vertical:'middle'};
-                linhaAtual++;
-
-                if(categorias.length){
-                    categorias.forEach(([categoria,valor],indice)=>{
-                        worksheet.mergeCells(`A${linhaAtual}:E${linhaAtual}`);
-                        estilizarFaixa(linhaAtual,1,6,{
-                            fundo:indice%2?cores.alternado:cores.branco,
-                            fonte:{name:'Arial',size:9,color:{argb:cores.texto}},
-                            alinhamento:{vertical:'middle',wrapText:true},
-                            comBorda:true
-                        });
-                        worksheet.getCell(`A${linhaAtual}`).value=String(categoria||'Sem categoria');
-                        worksheet.getCell(`F${linhaAtual}`).value=Math.abs(Number(valor)||0);
-                        worksheet.getCell(`F${linhaAtual}`).numFmt=formatoMoedaNormal;
-                        worksheet.getCell(`F${linhaAtual}`).font={name:'Arial',size:9,bold:true,color:{argb:cores.despesa}};
-                        worksheet.getCell(`F${linhaAtual}`).alignment={horizontal:'right',vertical:'middle'};
-                        linhaAtual++;
-                    });
-                }else{
-                    worksheet.mergeCells(`A${linhaAtual}:F${linhaAtual}`);
-                    estilizarFaixa(linhaAtual,1,6,{
-                        fundo:cores.branco,
-                        fonte:{name:'Arial',size:9,italic:true,color:{argb:'FF788494'}},
-                        alinhamento:{vertical:'middle'},
-                        comBorda:true
-                    });
-                    worksheet.getCell(`A${linhaAtual}`).value='Sem despesas no período.';
-                    linhaAtual++;
-                }
-
-                linhaAtual++;
-                worksheet.mergeCells(`A${linhaAtual}:F${linhaAtual}`);
-                estilizarFaixa(linhaAtual,1,6,{
-                    fundo:cores.navy,
-                    fonte:{name:'Arial',size:11,bold:true,color:{argb:cores.branco}},
-                    alinhamento:{vertical:'middle'}
-                });
-                worksheet.getCell(`A${linhaAtual}`).value='Transações';
-                worksheet.getRow(linhaAtual).height=22;
-                linhaAtual++;
-
-                const linhaCabecalhoTransacoes=linhaAtual;
-                ['Data','Descrição','Categoria','Conta','Valor'].forEach((titulo,indice)=>{
-                    worksheet.getRow(linhaAtual).getCell(indice+1).value=titulo;
-                });
-                estilizarFaixa(linhaAtual,1,5,{
-                    fundo:cores.navy,
-                    fonte:{name:'Arial',size:9,bold:true,color:{argb:cores.branco}},
-                    alinhamento:{vertical:'middle',wrapText:true},
-                    comBorda:true
-                });
-                worksheet.getRow(linhaAtual).getCell(5).alignment={horizontal:'right',vertical:'middle'};
-                linhaAtual++;
-
-                const transacoes=Array.isArray(relatorioAtual.transacoes)?relatorioAtual.transacoes:[];
-                transacoes.forEach((transacao,indice)=>{
-                    const linha=worksheet.getRow(linhaAtual);
-                    const data=dataExcel(transacao.data_transacao);
-                    const valor=valorAssinado(transacao);
-                    linha.getCell(1).value=data||gbmData(transacao.data_transacao);
-                    if(data)linha.getCell(1).numFmt='dd/mm/yyyy';
-                    linha.getCell(2).value=String(transacao.descricao||'');
-                    linha.getCell(3).value=String(transacao.categoria||'');
-                    linha.getCell(4).value=String(transacao.conta||'');
-                    linha.getCell(5).value=valor;
-                    linha.getCell(5).numFmt=formatoMoedaAssinada;
-                    estilizarFaixa(linhaAtual,1,5,{
-                        fundo:indice%2?cores.alternado:cores.branco,
-                        fonte:{name:'Arial',size:9,color:{argb:cores.texto}},
-                        alinhamento:{vertical:'middle',wrapText:true},
-                        comBorda:true
-                    });
-                    linha.getCell(1).alignment={horizontal:'center',vertical:'middle'};
-                    linha.getCell(5).alignment={horizontal:'right',vertical:'middle'};
-                    linha.getCell(5).font={
-                        name:'Arial',
-                        size:9,
-                        bold:true,
-                        color:{argb:valor>=0?cores.positivo:cores.vermelho}
-                    };
-                    linhaAtual++;
                 });
 
-                const ultimaLinhaTransacao=transacoes.length?linhaAtual-1:linhaCabecalhoTransacoes;
-                if(!transacoes.length){
-                    worksheet.mergeCells(`A${linhaAtual}:E${linhaAtual}`);
-                    estilizarFaixa(linhaAtual,1,5,{
-                        fundo:cores.branco,
-                        fonte:{name:'Arial',size:9,italic:true,color:{argb:'FF788494'}},
-                        alinhamento:{vertical:'middle'},
-                        comBorda:true
-                    });
-                    worksheet.getCell(`A${linhaAtual}`).value='Nenhuma transação encontrada.';
-                    linhaAtual++;
-                }
-
-                worksheet.autoFilter=`A${linhaCabecalhoTransacoes}:E${ultimaLinhaTransacao}`;
-                worksheet.pageSetup.printArea=`A1:F${linhaAtual-1}`;
-                worksheet.pageSetup.printTitlesRow='1:3';
-
-                const buffer=await workbook.xlsx.writeBuffer();
-                const blob=new Blob([buffer],{
-                    type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                });
-                urlExcel=URL.createObjectURL(blob);
-                const link=document.createElement('a');
-                link.href=urlExcel;
-                link.download=`Relatório ${periodo.arquivo} - GBM.xlsx`;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                gbmToast('Excel formatado gerado com sucesso.');
-            }catch(erro){
-                console.error('Falha ao gerar Excel:',erro);
-                gbmToast('Não foi possível gerar o arquivo Excel. Tente novamente.','erro');
-            }finally{
-                if(urlExcel)setTimeout(()=>URL.revokeObjectURL(urlExcel),1000);
-                botao.disabled=false;
-                botao.textContent=textoOriginal;
+            } catch (error) {
+                container.innerHTML = '<p class="texto-vazio">Erro ao carregar o relatório. Tente novamente.</p>';
             }
         }
 
-        function baixarPDF(){
-            if(!relatorioAtual?.transacoes)return gbmToast('Gere o relatório antes de baixar.','erro');
-            if(!window.jspdf?.jsPDF)return gbmToast('Não foi possível carregar o gerador de PDF. Tente novamente.','erro');
+        function baixarPDF() {
+            if (dadosRelatorio.length === 0) return gbmAlerta('Gere o relatório antes de baixar!', 'aviso');
 
-            const {jsPDF}=window.jspdf;
-            const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-            const periodo=periodoDoRelatorio();
-            const resumo=relatorioAtual.resumo;
-            const margem=12;
-            const larguraPagina=doc.internal.pageSize.getWidth();
+            const mes = document.getElementById('mes-ref').value;
+            const ano = document.getElementById('ano-ref').value;
+            const banco = document.getElementById('banco-ref').value;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
 
-            doc.setFillColor(15,26,43);
-            doc.rect(0,0,larguraPagina,29,'F');
-            doc.setTextColor(255,255,255);
-            doc.setFont('helvetica','bold');
-            doc.setFontSize(18);
-            doc.text('GUARDIAN OF BUDGET & MONEY',margem,12);
-            doc.setFont('helvetica','normal');
+            doc.setFillColor(15, 25, 42);
+            doc.rect(0, 0, 210, 38, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text('GUARDIAN OF BUDGET & MONEY', 14, 15);
+
             doc.setFontSize(11);
-            doc.setTextColor(176,190,197);
-            doc.text(`Relatório financeiro - ${periodo.rotulo}`,margem,21);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(176, 190, 197);
+            doc.text(`Relatório Financeiro — ${NOMES_MESES[mes]} / ${ano}${banco !== 'todos' ? ' — ' + banco : ''}`, 14, 25);
+            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
 
-            const filtros=filtrosDoRelatorio();
-            if(filtros.length){
-                doc.setFontSize(8);
-                doc.text(filtros.join('  |  '),larguraPagina-margem,21,{align:'right'});
-            }
-
-            const espacamentoCaixas=7;
-            const larguraCaixa=(larguraPagina-(margem*2)-(espacamentoCaixas*2))/3;
-            const caixas=[
-                {x:margem,titulo:'RECEITAS',valor:resumo.receitas,cor:[16,185,129]},
-                {x:margem+larguraCaixa+espacamentoCaixas,titulo:'DESPESAS',valor:resumo.despesas,cor:[239,68,68]},
-                {x:margem+(larguraCaixa+espacamentoCaixas)*2,titulo:'RESULTADO',valor:resumo.resultado,cor:Number(resumo.resultado)>=0?[16,185,129]:[239,68,68]}
-            ];
-            caixas.forEach(caixa=>{
-                doc.setFillColor(244,247,250);
-                doc.roundedRect(caixa.x,35,larguraCaixa,18,2,2,'F');
-                doc.setTextColor(80,94,112);
-                doc.setFont('helvetica','bold');
-                doc.setFontSize(8);
-                doc.text(caixa.titulo,caixa.x+3,41);
-                doc.setTextColor(...caixa.cor);
-                doc.setFontSize(11);
-                doc.text(moedaPdf(caixa.valor),caixa.x+3,49);
+            let totalReceita = 0, totalDespesa = 0;
+            dadosRelatorio.forEach(item => {
+                const v = Math.abs(parseFloat(item.valor) || 0);
+                if (item.tipo === 'Receita') totalReceita += v;
+                else totalDespesa += v;
             });
+            const saldo = totalReceita - totalDespesa;
 
-            const categorias=Object.entries(resumo.por_categoria||{})
-                .sort((a,b)=>Number(b[1])-Number(a[1]))
-                .slice(0,10);
+            doc.setFillColor(26, 35, 50);
+            doc.rect(14, 42, 55, 18, 'F');
+            doc.rect(73, 42, 55, 18, 'F');
+            doc.rect(132, 42, 64, 18, 'F');
 
-            let inicioTransacoes=62;
-            if(categorias.length){
-                doc.autoTable({
-                    head:[['Despesas por categoria','Valor']],
-                    body:categorias.map(([categoria,valor])=>[categoria,moedaPdf(valor)]),
-                    startY:60,
-                    margin:{left:margem,right:larguraPagina-margem-138},
-                    theme:'grid',
-                    styles:{fontSize:8,cellPadding:2.2},
-                    headStyles:{fillColor:[46,139,87],textColor:[255,255,255],fontStyle:'bold'},
-                    columnStyles:{1:{halign:'right',fontStyle:'bold'}}
-                });
-                inicioTransacoes=doc.lastAutoTable.finalY+8;
-            }
+            doc.setFontSize(8);
+            doc.setTextColor(176, 190, 197);
+            doc.text('ENTRADAS', 16, 48);
+            doc.text('SAÍDAS', 75, 48);
+            doc.text('SALDO DO PERÍODO', 134, 48);
 
-            doc.setTextColor(15,26,43);
-            doc.setFont('helvetica','bold');
-            doc.setFontSize(12);
-            doc.text('Transações',margem,inicioTransacoes-3);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(16, 185, 129);
+            doc.text(`R$ ${totalReceita.toFixed(2)}`, 16, 56);
+            doc.setTextColor(239, 68, 68);
+            doc.text(`R$ ${totalDespesa.toFixed(2)}`, 75, 56);
+            doc.setTextColor(saldo >= 0 ? 16 : 239, saldo >= 0 ? 185 : 68, saldo >= 0 ? 129 : 68);
+            doc.text(`R$ ${saldo.toFixed(2)}`, 134, 56);
 
             doc.autoTable({
-                head:[['Data','Descrição','Categoria','Conta','Valor']],
-                body:relatorioAtual.transacoes.map(t=>{
-                    const receita=String(t.tipo).toLowerCase()==='receita';
-                    return[
-                        gbmData(t.data_transacao),
-                        String(t.descricao||''),
-                        String(t.categoria||''),
-                        String(t.conta||''),
-                        `${receita?'+':'-'} ${moedaPdf(t.valor)}`
+                head: [['Categoria', 'Banco', 'Tipo', 'Valor']],
+                body: dadosRelatorio.map(i => {
+                    const isReceita = i.tipo === 'Receita';
+                    return [
+                        i.categoria,
+                        i.banco || '—',
+                        i.tipo,
+                        (isReceita ? '+ ' : '- ') + 'R$ ' + Math.abs(parseFloat(i.valor) || 0).toFixed(2)
                     ];
                 }),
-                startY:inicioTransacoes,
-                margin:{top:14,left:margem,right:margem,bottom:13},
-                theme:'striped',
-                showHead:'everyPage',
-                styles:{fontSize:8.8,cellPadding:2.6,overflow:'linebreak',valign:'middle'},
-                headStyles:{fillColor:[15,26,43],textColor:[255,255,255],fontStyle:'bold',fontSize:9},
-                alternateRowStyles:{fillColor:[245,247,250]},
-                columnStyles:{
-                    0:{cellWidth:23},
-                    1:{cellWidth:120},
-                    2:{cellWidth:55},
-                    3:{cellWidth:40},
-                    4:{cellWidth:34,halign:'right',fontStyle:'bold'}
-                },
-                didParseCell(dado){
-                    if(dado.section!=='body')return;
-                    if(dado.column.index===4){
-                        dado.cell.styles.textColor=String(dado.cell.raw).startsWith('+')?[16,135,86]:[210,55,55];
+                startY: 65,
+                theme: 'striped',
+                headStyles: { fillColor: [15, 25, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+                alternateRowStyles: { fillColor: [245, 247, 250] },
+                didParseCell: function(data) {
+                    if (data.cell.section === 'body') {
+                        if (data.column.index === 2) {
+                            data.cell.styles.textColor = data.cell.raw === 'Receita' ? [16, 185, 129] : [239, 68, 68];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                        if (data.column.index === 3) {
+                            data.cell.styles.textColor = String(data.cell.raw).startsWith('+') ? [16, 185, 129] : [239, 68, 68];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
                     }
-                }
+                },
+                columnStyles: { 3: { halign: 'right' } }
             });
 
-            const paginas=doc.internal.getNumberOfPages();
-            for(let pagina=1;pagina<=paginas;pagina++){
-                doc.setPage(pagina);
-                doc.setFont('helvetica','normal');
-                doc.setFontSize(7.5);
-                doc.setTextColor(120,132,148);
-                doc.text('GBM - Relatório financeiro confidencial',margem,doc.internal.pageSize.getHeight()-6);
-                doc.text(`Página ${pagina} de ${paginas}`,larguraPagina-margem,doc.internal.pageSize.getHeight()-6,{align:'right'});
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(176, 190, 197);
+                doc.text('Guardian of Budget & Money — Relatório Confidencial',
+                    14, doc.internal.pageSize.height - 8);
             }
 
-            doc.save(`Relatório ${periodo.arquivo} - GBM.pdf`);
+            doc.save(`GBM-relatorio-${NOMES_MESES[mes]}-${ano}${banco !== 'todos' ? '-' + banco.replace(/\s+/g, '') : ''}.pdf`);
         }
 
-        document.getElementById('baixar-excel').addEventListener('click',baixarExcel);
-        document.getElementById('baixar-pdf').addEventListener('click',baixarPDF);
+    let txIdAtual = null;
 
-        document.getElementById('baixar-csv').addEventListener('click',()=>{
-            if(!relatorioAtual)return;
-            const linhas=[
-                ['Data','Descrição','Categoria','Conta','Valor'],
-                ...relatorioAtual.transacoes.map(t=>[
-                    gbmData(t.data_transacao),
-                    t.descricao,
-                    t.categoria,
-                    t.conta,
-                    valorAssinado(t).toFixed(2).replace('.',',')
-                ])
-            ];
-            const escaparCsv=valor=>`"${String(valor??'').replaceAll('"','""')}"`;
-            const csv='\uFEFFsep=;\r\n'+linhas.map((linha,indiceLinha)=>
-                linha.map((valor,indiceColuna)=>
-                    indiceLinha>0&&indiceColuna===4?String(valor):escaparCsv(valor)
-                ).join(';')
-            ).join('\r\n');
-            const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`Relatório ${periodoDoRelatorio().arquivo} - GBM.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+        function abrirModal(id, descricao, categoriaAtual) {
+    txIdAtual = id;
+    document.getElementById('modal-desc-tx').innerText = descricao;
+
+    const select = document.getElementById('modal-select-cat');
+    if (CATEGORIAS_TODAS.length > 0) {
+        select.innerHTML = CATEGORIAS_TODAS
+            .map(c => `<option value="${escaparHtmlRelatorio(c)}">${escaparHtmlRelatorio(c)}</option>`)
+            .join('');
+    }
+    document.getElementById('modal-select-cat').value = categoriaAtual;
+    document.getElementById('modal-categoria').classList.add('ativo');
+}
+
+        function fecharModal() {
+            txIdAtual = null;
+            document.getElementById('modal-categoria').classList.remove('ativo');
+        }
+
+        async function salvarCategoria() {
+            if (!txIdAtual) return;
+            const novaCategoria = document.getElementById('modal-select-cat').value;
+            try {
+                const res = await fetchApi(`/atualizar-categoria/${txIdAtual}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categoria: novaCategoria })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    fecharModal();
+                    gerarRelatorio(); // recarrega o relatório com a nova categoria
+                } else {
+                    gbmAlerta('Erro ao salvar. Tente novamente.', 'erro');
+                }
+            } catch (e) {
+                gbmAlerta('Falha na comunicação com o servidor.', 'erro');
+            }
+        }
+
+        // Fechar modal clicando fora
+        document.getElementById('modal-categoria').addEventListener('click', function(e) {
+            if (e.target === this) fecharModal();
         });
-        carregarFiltros().then(gerar).catch(e=>gbmToast(e.message,'erro'));
+
+        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
+        let _resolveConfirm = null;
+
+        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[caractere]);
+
+        function gbmAlerta(mensagem, tipo = 'info') {
+            const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
+                        : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
+                        :                    'rgba(95,255,168,0.3)';
+
+            document.getElementById('lista-notificacoes-modal').innerHTML = `
+                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                    ${escaparMensagemModal(mensagem)}
+                </div>`;
+
+            document.getElementById('btn-confirmar-modal').style.display = 'none';
+            document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
+            document.getElementById('modal-notificacoes').style.display = 'flex';
+            _resolveConfirm = null;
+        }
+
+        function gbmConfirmar(mensagem) {
+            return new Promise(resolve => {
+                _resolveConfirm = resolve;
+
+                document.getElementById('lista-notificacoes-modal').innerHTML = `
+                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                        ${escaparMensagemModal(mensagem)}
+                    </div>`;
+
+                document.getElementById('btn-confirmar-modal').style.display = 'block';
+                document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
+                document.getElementById('modal-notificacoes').style.display = 'flex';
+            });
+        }
+
+        function fecharModalNotificacoes(confirmado = false) {
+            document.getElementById('modal-notificacoes').style.display = 'none';
+            if (_resolveConfirm) {
+                _resolveConfirm(confirmado);
+                _resolveConfirm = null;
+            }
+        }
     </script>
+
+    <!-- MODAL DE NOTIFICAÇÕES GBM -->
+    <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
+        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="logo-transparente.jpg" alt="GBM" style="height:28px;">
+                    <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
+                </div>
+                <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            <div id="lista-notificacoes-modal"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#246e45'" onmouseout="this.style.background='#2E8B57'">CONFIRMAR</button>
+                <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
+            </div>
+        </div>
+    </div>
+<script>
+    // --- PARTÍCULAS DOURADAS GBM ---
+    (function() {
+        const canvas = document.getElementById('particles-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function Particle() {
+            this.x = Math.random() * canvas.width;
+            this.y = canvas.height + Math.random() * 100;
+            this.size = Math.random() * 2.5 + 0.8;
+            this.speedY = Math.random() * 1.2 + 0.3;
+            this.opacity = Math.random() * 0.4 + 0.2;
+        }
+        Particle.prototype.update = function() {
+            this.y -= this.speedY;
+            if (this.y < -10) {
+                this.y = canvas.height + 10;
+                this.x = Math.random() * canvas.width;
+                this.opacity = Math.random() * 0.4 + 0.2;
+            }
+        };
+        Particle.prototype.draw = function() {
+            ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        };
+
+        const count = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 15000), 65);
+        for (let i = 0; i < count; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    })();
+</script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js"></script>
 </body>
 </html>
