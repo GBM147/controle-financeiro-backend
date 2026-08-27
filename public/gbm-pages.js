@@ -154,3 +154,103 @@ if (document.readyState === 'loading') {
 } else {
     gbmInicializarParticulas();
 }
+
+/* ===== MENU LATERAL, PERFIL NO CABEÇALHO E MODAL GBM (compartilhado) ===== */
+function abrirMenuLateral(event) {
+    if (event) event.stopPropagation();
+    const sidebar = document.getElementById('sidebar-menu');
+    const overlay = document.getElementById('menu-overlay');
+    if (!sidebar || !overlay) return;
+    sidebar.classList.add('aberto');
+    overlay.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+}
+
+function fecharMenuLateral() {
+    const sidebar = document.getElementById('sidebar-menu');
+    if (!sidebar) return;
+    sidebar.classList.remove('aberto');
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+    setTimeout(() => {
+        const overlay = document.getElementById('menu-overlay');
+        if (overlay) overlay.style.display = 'none';
+    }, 200);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar-menu');
+    if (sidebar) sidebar.addEventListener('wheel', (event) => event.stopPropagation(), { passive: true });
+});
+
+function acessarRotaPremium(url, nomeRecurso) {
+    if (window.usuarioPremium) {
+        window.location.href = url;
+    } else {
+        fecharMenuLateral();
+        gbmConfirmar(`A ferramenta <strong>${nomeRecurso}</strong> é uma funcionalidade exclusiva para assinantes do plano Premium.<br><br>Deseja assinar agora por apenas R$ 9,90 e liberar todos os recursos avançados sem anúncios?`).then((confirmado) => {
+            if (confirmado) window.location.href = 'pagamento.html';
+        });
+    }
+}
+
+function fazerLogout() {
+    encerrarSessao();
+}
+
+async function carregarAtalhoPerfilCabecalho() {
+    try {
+        const resposta = await fetchApi('/perfil');
+        const dados = await resposta.json();
+        if (!dados.success) return;
+        const perfil = dados.perfil;
+        const foto = document.getElementById('foto-perfil-cabecalho');
+        const nome = document.getElementById('nome-perfil-cabecalho');
+        if (perfil.foto_perfil_url && foto) foto.src = perfil.foto_perfil_url;
+        if (nome) nome.innerText = perfil.nome_exibicao || perfil.nome || 'Meu perfil';
+    } catch (erro) {
+        console.warn('Não foi possível carregar o atalho de perfil.', erro);
+    }
+}
+
+let _resolveConfirm = null;
+
+const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+})[caractere]);
+
+function gbmAlerta(mensagem, tipo = 'info') {
+    const cor = tipo === 'erro' ? 'rgba(239,68,68,0.3)'
+        : tipo === 'aviso' ? 'rgba(85,167,255,0.3)'
+        : 'rgba(95,255,168,0.3)';
+    document.getElementById('lista-notificacoes-modal').innerHTML = `
+        <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+            ${escaparMensagemModal(mensagem)}
+        </div>`;
+    document.getElementById('btn-confirmar-modal').style.display = 'none';
+    document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
+    document.getElementById('modal-notificacoes').style.display = 'flex';
+    _resolveConfirm = null;
+}
+
+function gbmConfirmar(mensagem) {
+    return new Promise(resolve => {
+        _resolveConfirm = resolve;
+        document.getElementById('lista-notificacoes-modal').innerHTML = `
+            <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                ${escaparMensagemModal(mensagem)}
+            </div>`;
+        document.getElementById('btn-confirmar-modal').style.display = 'block';
+        document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
+        document.getElementById('modal-notificacoes').style.display = 'flex';
+    });
+}
+
+function fecharModalNotificacoes(confirmado = false) {
+    document.getElementById('modal-notificacoes').style.display = 'none';
+    if (_resolveConfirm) {
+        _resolveConfirm(confirmado);
+        _resolveConfirm = null;
+    }
+}
