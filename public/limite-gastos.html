@@ -41,5 +41,6 @@ async function salvarNovoLimite(){const categoria=document.getElementById('nova-
 document.getElementById('novo-percentual').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adicionarPercentual()}});renderChips();iniciarPagina();
 (function(){const c=document.getElementById('particles'),x=c.getContext('2d');function r(){c.width=innerWidth;c.height=innerHeight}addEventListener('resize',r);r();const p=Array.from({length:Math.min(65,Math.floor(innerWidth*innerHeight/15000))},()=>({x:Math.random()*c.width,y:Math.random()*c.height,s:Math.random()*2+.7,v:Math.random()*.9+.25,o:Math.random()*.35+.15}));(function a(){x.clearRect(0,0,c.width,c.height);p.forEach(q=>{q.y-=q.v;if(q.y<0)q.y=c.height;x.fillStyle=`rgba(85,167,255,${q.o})`;x.beginPath();x.arc(q.x,q.y,q.s,0,Math.PI*2);x.fill()});requestAnimationFrame(a)})()})();
 </script>
+    <script src="gbm-menu.js"></script>
 </body>
 </html>

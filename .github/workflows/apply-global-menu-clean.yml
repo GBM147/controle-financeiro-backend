@@ -1,0 +1,4 @@
+# disabled temporary workflow
+name: Apply global menu clean
+on:
+  workflow_dispatch:
