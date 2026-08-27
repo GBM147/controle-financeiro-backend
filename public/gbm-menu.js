@@ -1,135 +1,47 @@
 (function () {
     'use strict';
 
-    const paginasPublicas = new Set([
-        'index.html','login.html','termos.html','privacidade.html',
-        'politica-de-privacidade.html','sobre.html','fale-conosco.html',
-        'offline.html','pagamento.html','assinatura.html'
-    ]);
-
-    const arquivoAtual = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    if (paginasPublicas.has(arquivoAtual) || document.documentElement.dataset.gbmMenuInicializado === 'true') return;
+    const paginasPublicas = new Set(['index.html','login.html','termos.html','privacidade.html','politica-de-privacidade.html','sobre.html','fale-conosco.html','offline.html','pagamento.html','assinatura.html']);
+    const atual = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    if (paginasPublicas.has(atual) || document.documentElement.dataset.gbmMenuInicializado === 'true') return;
     document.documentElement.dataset.gbmMenuInicializado = 'true';
 
-    const rotas = {
-        visao: 'dashboard.html',
-        contas: 'contas.html',
-        importacoes: 'importacoes.html',
-        calendario: 'calendario.html',
-        limites: 'limite-gastos.html',
-        metas: 'metas.html',
-        relatorio: 'relatorio.html',
-        comparativo: 'comparativo.html',
-        notificacoes: 'notificacoes.html',
-        configuracoes: 'configuracoes.html',
-        perfil: 'perfil.html'
-    };
-
+    /* O Dashboard é a fonte de verdade visual. As mesmas classes e medidas são usadas aqui. */
     const css = `
-        /* Mesmo acabamento do cabeçalho/menu do Dashboard. */
-        body.gbm-interna .topbar {
-            position: sticky;
-            top: 0;
-            z-index: 10020;
-            isolation: isolate;
-        }
-
-        /* Mantém a faixa animada solicitada, usando exatamente a linguagem cromática da marca. */
-        body.gbm-interna .topbar::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            z-index: -1;
-            pointer-events: none;
-            background: linear-gradient(90deg,
-                rgba(46,139,87,.30) 0%,
-                rgba(95,255,168,.16) 25%,
-                rgba(61,40,255,.24) 50%,
-                rgba(101,90,255,.16) 75%,
-                rgba(46,139,87,.30) 100%);
-            background-size: 200% 100%;
-            animation: gbmTopbarShine 4s linear infinite;
-            border-bottom: 1px solid rgba(255,255,255,.15);
-        }
-
-        @keyframes gbmTopbarShine {
-            from { background-position: 0% 50%; }
-            to { background-position: 200% 50%; }
-        }
-
-        /* Botão do menu com o mesmo desenho do .gbm-menu-btn do Dashboard. */
-        .gbm-global-menu-button {
-            position: relative;
-            top: auto;
-            right: auto;
-            z-index: 1001;
+        .gbm-menu-container { position: relative; z-index: 1000; }
+        .gbm-menu-btn {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
-            width: auto;
-            height: auto;
-            min-height: 40px;
-            flex: 0 0 auto;
             padding: 10px 18px;
-            border: 1px solid rgba(93, 138, 255, 0.35);
             border-radius: 10px;
-            background: #0f1a2b;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-            color: #fff;
             cursor: pointer;
+            background: #0f1a2b;
+            border: 1px solid rgba(93, 138, 255, 0.35);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         }
-
-        .gbm-global-menu-button:hover {
+        .gbm-menu-btn:hover {
             transform: scale(1.04);
             border-color: rgba(148, 163, 184, 0.7);
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
             background: #162338 !important;
         }
+        .gbm-menu-logo { height: 40px !important; width: auto !important; border-radius: 4px; }
+        .hamburger-icon { display: inline-flex; width: 22px; flex-direction: column; gap: 4px; }
+        .hamburger-icon span { display: block; width: 100%; height: 2px; border-radius: 2px; background: #d1d5db; }
 
-        .gbm-global-menu-button span,
-        .gbm-global-menu-button span::before,
-        .gbm-global-menu-button span::after {
-            display: block;
-            width: 22px;
-            height: 2px;
-            border-radius: 2px;
-            background: #d1d5db;
-            content: "";
-        }
-
-        .gbm-global-menu-button span::before { transform: translateY(-6px); }
-        .gbm-global-menu-button span::after { transform: translateY(4px); }
-
-        body.gbm-interna .top-actions {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 10px;
-            flex-wrap: nowrap;
-            position: relative;
-            z-index: 1001;
-        }
-
-        /* Sidebar visualmente igual ao .sidebar-menu do Dashboard. */
-        .gbm-global-menu-overlay {
+        .menu-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.35);
             backdrop-filter: blur(8px);
             z-index: 9998;
         }
+        .menu-overlay.aberto { display: block; }
 
-        .gbm-global-menu-overlay.aberto {
-            display: block;
-        }
-
-        .gbm-global-menu {
+        .sidebar-menu {
             position: fixed;
             top: 0;
             right: -320px;
@@ -145,71 +57,28 @@
             display: flex;
             flex-direction: column;
             border-bottom: 1px solid rgba(255,255,255,0.08);
-            overflow: hidden;
         }
+        .sidebar-menu.aberto { right: 0; }
 
-        .gbm-global-menu.aberto { right: 0; }
-
-        .gbm-global-menu-header {
+        .sidebar-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px 25px;
-            border-bottom: 1px solid rgba(255,255,255,0.15);
+            border-bottom: 1px solid var(--borda, rgba(255,255,255,.15));
         }
-
-        .gbm-global-menu-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0;
-            text-decoration: none;
-        }
-
-        .gbm-global-menu-brand img {
-            width: auto;
-            height: 45px;
-            border-radius: 8px;
-        }
-
-        .gbm-global-menu-brand strong {
-            overflow: hidden;
-            font-family: Rajdhani, Inter, sans-serif;
-            font-size: 1.15rem;
-            font-weight: 700;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            background: linear-gradient(90deg,#2E8B57,#5fffa8,#3d28ff,#655aff,#2E8B57);
-            background-size: 200% auto;
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gbmMenuShine 4s linear infinite;
-        }
-
-        @keyframes gbmMenuShine {
-            from { background-position: 0 center; }
-            to { background-position: 200% center; }
-        }
-
-        .gbm-global-menu-close {
+        .sidebar-logo { height: 45px; border-radius: 8px; }
+        .fechar-btn {
             background: transparent;
             border: none;
-            color: #b0bec5;
+            color: var(--texto-mutado, #b0bec5);
             font-size: 32px;
-            line-height: 1;
             cursor: pointer;
             transition: 0.2s;
         }
+        .fechar-btn:hover { color: #ff4d4d; transform: scale(1.1); }
 
-        .gbm-global-menu-close:hover {
-            color: #ff4d4d;
-            transform: scale(1.1);
-        }
-
-        .gbm-global-menu-body {
+        .sidebar-content {
             padding: 12px 0;
             display: flex;
             flex-direction: column;
@@ -217,190 +86,120 @@
             flex: 1;
             overflow-y: auto;
         }
+        .sidebar-content::-webkit-scrollbar { width: 6px; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: rgba(148,163,184,.35); border-radius: 10px; }
 
-        .gbm-global-menu-body::-webkit-scrollbar { width: 6px; }
-        .gbm-global-menu-body::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.35);
-            border-radius: 10px;
+        .sidebar-content .menu-item {
+            font-family: 'Inter', 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            text-transform: none;
+            letter-spacing: normal;
+            padding: 13px 28px;
+            border-left: 4px solid transparent;
+            color: #e5e7eb !important;
+            text-shadow: none;
+            text-decoration: none !important;
+            background: transparent !important;
+            display: block;
+            transition: all 0.2s ease;
         }
-
-        .gbm-global-menu-section {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            padding-bottom: 7px;
+        .sidebar-content .menu-item:hover {
+            background: rgba(255,255,255,.06) !important;
+            border-left-color: #64748b;
+            color: #fff !important;
         }
-
-        .gbm-global-menu-section + .gbm-global-menu-section {
-            margin-top: 4px;
-        }
-
-        .gbm-global-menu-title {
+        .menu-grupo { display: flex; flex-direction: column; gap: 2px; padding-bottom: 7px; }
+        .menu-grupo + .menu-grupo { margin-top: 4px; }
+        .menu-grupo-titulo {
             margin: 0;
             padding: 9px 28px 5px;
             color: #7f91a8;
-            font-family: Inter, Montserrat, sans-serif;
+            font-family: 'Inter', 'Montserrat', sans-serif;
             font-size: .72rem;
             font-weight: 700;
             letter-spacing: .04em;
             line-height: 1.25;
             text-transform: none;
         }
-
-        .gbm-global-menu-link {
-            display: block;
-            width: 100%;
-            padding: 13px 28px;
-            border: 0;
-            border-left: 4px solid transparent;
-            border-radius: 0;
-            color: #e5e7eb !important;
-            background: transparent !important;
-            font-family: Inter, Montserrat, sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            letter-spacing: normal;
-            line-height: 1.25;
-            text-align: left;
-            text-decoration: none !important;
-            text-shadow: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .gbm-global-menu-link:hover {
-            background: rgba(255, 255, 255, 0.06) !important;
-            border-left-color: #64748b;
-            color: #fff !important;
-        }
-
-        .gbm-global-menu-link.ativo {
-            background: rgba(255, 255, 255, 0.06) !important;
-            border-left-color: #64748b;
-            color: #fff !important;
-        }
-
-        /* O Dashboard usa texto puro nos itens; escondemos os símbolos da versão anterior. */
-        .gbm-global-menu-icon { display: none !important; }
-        .gbm-global-menu-link > span:last-child { display: inline; }
-
-        .gbm-global-menu-divider {
-            height: 1px;
-            background: rgba(255,255,255,.15);
-            margin: 15px 30px;
-        }
-
-        .gbm-global-menu-account {
-            margin-top: auto !important;
-            padding-top: 8px;
-            padding-bottom: 0;
-            border-top: 1px solid rgba(255,255,255,0.15);
-        }
-
-        .gbm-global-menu-account .gbm-global-menu-title {
-            color: #9fb2c8;
-        }
-
-        .gbm-global-menu-footer {
-            display: none;
-        }
-
-        .gbm-global-menu-sair {
-            color: #ff4d4d !important;
-        }
-
-        .gbm-global-menu-sair:hover {
-            border-left-color: #ff4d4d !important;
-            background: rgba(255, 77, 77, 0.1) !important;
-        }
-
-        body.gbm-menu-aberto { overflow: hidden; }
-
-        @media (max-width: 768px) {
-            .gbm-global-menu-button {
-                min-height: 36px;
-                padding: 8px 12px;
-            }
-
-            .gbm-global-menu {
-                width: min(300px, 92vw);
-            }
-
-            body.gbm-interna .top-actions {
-                gap: 6px;
-            }
+        .menu-grupo-premium { padding-top: 5px; border-top: 1px solid rgba(255,255,255,.08); }
+        .menu-grupo-premium .menu-grupo-titulo { color: #9dcbff; }
+        .menu-grupo-conta { margin-top: auto !important; padding-top: 8px; padding-bottom: 0; border-top: 1px solid var(--borda, rgba(255,255,255,.15)); }
+        .menu-grupo-conta .menu-grupo-titulo { color: #9fb2c8; }
+        .menu-item-com-indicador { display:flex !important; align-items:center; justify-content:space-between; gap:10px; }
+        .menu-item-com-indicador .menu-item-conteudo { display:inline-flex; align-items:center; min-width:0; }
+        .menu-item-com-indicador .menu-item-indicadores { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; }
+        .cadeado-premium { display:none; align-items:center; justify-content:center; min-height:26px; padding:3px 8px; border:1px solid rgba(85,167,255,.5); border-radius:999px; background:rgba(85,167,255,.12); color:#9dcbff; font-size:.66rem; font-weight:700; }
+        .aviso-recursos-premium { display:none; margin:-2px 22px 10px 28px; padding:9px 11px; border:1px solid rgba(85,167,255,.35); border-radius:8px; background:rgba(85,167,255,.08); color:#b7d8f6; font:.72rem 'Inter','Montserrat',sans-serif; line-height:1.4; }
+        .menu-item-premium.recurso-bloqueado { opacity:.72; }
+        .menu-item-premium.recurso-bloqueado:hover { border-left-color:#55a7ff !important; color:#9dcbff !important; background:rgba(85,167,255,.08) !important; }
+        .divisor { height:1px; background:var(--borda, rgba(255,255,255,.15)); margin:15px 30px; }
+        .texto-vermelho { color:#ff4d4d !important; }
+        .texto-vermelho:hover { border-left-color:#ff4d4d !important; background:rgba(255,77,77,.1) !important; }
+        body.gbm-menu-aberto { overflow:hidden; }
+        body.gbm-interna .top-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:nowrap; }
+        @media (max-width:768px) {
+            .gbm-menu-btn { min-height:36px; padding:8px 12px; }
+            .sidebar-menu { width:min(300px,92vw); }
+            body.gbm-interna .top-actions { gap:6px; }
         }
     `;
 
     const style = document.createElement('style');
-    style.id = 'gbm-global-menu-style';
+    style.id = 'gbm-dashboard-menu-style';
     style.textContent = css;
     document.head.appendChild(style);
 
     const topActions = document.querySelector('.top-actions');
-
     const botao = document.createElement('button');
     botao.type = 'button';
-    botao.className = 'gbm-global-menu-button';
+    botao.className = 'gbm-menu-btn';
     botao.setAttribute('aria-label', 'Abrir menu');
     botao.setAttribute('aria-expanded', 'false');
-    botao.innerHTML = '<span aria-hidden="true"></span>';
-
-    if (topActions) topActions.appendChild(botao);
-    else document.body.appendChild(botao);
+    botao.innerHTML = '<span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>';
+    (topActions || document.body).appendChild(botao);
 
     const overlay = document.createElement('div');
-    overlay.className = 'gbm-global-menu-overlay';
+    overlay.className = 'menu-overlay';
 
     const menu = document.createElement('aside');
-    menu.id = 'gbm-global-menu';
-    menu.className = 'gbm-global-menu';
-    menu.setAttribute('aria-label', 'Navegação principal');
+    menu.className = 'sidebar-menu';
+    menu.setAttribute('aria-label', 'Menu principal');
     menu.innerHTML = `
-        <div class="gbm-global-menu-header">
-            <a class="gbm-global-menu-brand" href="dashboard.html">
-                <img src="logo-transparente.jpg" alt="Logo GBM">
-                <strong>Guardian Of Budget &amp; Money</strong>
-            </a>
-            <button class="gbm-global-menu-close" type="button" aria-label="Fechar menu">×</button>
+        <div class="sidebar-header">
+            <a href="dashboard.html" aria-label="Ir para o Dashboard"><img class="sidebar-logo" src="logo-transparente.jpg" alt="Logo GBM"></a>
+            <button class="fechar-btn" type="button" aria-label="Fechar menu">×</button>
         </div>
-
-        <div class="gbm-global-menu-body">
-            <div class="gbm-global-menu-section">
-                <div class="gbm-global-menu-title">Resumo</div>
-                <a class="gbm-global-menu-link" href="dashboard.html" data-rota="visao"><span class="gbm-global-menu-icon">◉</span><span>Visão geral</span></a>
+        <div class="sidebar-content">
+            <div class="menu-grupo">
+                <p class="menu-grupo-titulo">Resumo</p>
+                <a class="menu-item" href="dashboard.html">Visão geral</a>
             </div>
-
-            <div class="gbm-global-menu-section">
-                <div class="gbm-global-menu-title">Movimentações</div>
-                <a class="gbm-global-menu-link" href="contas.html" data-rota="contas"><span class="gbm-global-menu-icon">▣</span><span>Minhas contas</span></a>
-                <a class="gbm-global-menu-link" href="importacoes.html" data-rota="importacoes"><span class="gbm-global-menu-icon">↥</span><span>Importações</span></a>
+            <div class="menu-grupo">
+                <p class="menu-grupo-titulo">Movimentações</p>
+                <a class="menu-item" href="contas.html">Minhas contas</a>
+                <a class="menu-item" href="importacoes.html">Importações</a>
             </div>
-
-            <div class="gbm-global-menu-section">
-                <div class="gbm-global-menu-title">Planejamento</div>
-                <a class="gbm-global-menu-link" href="calendario.html" data-rota="calendario"><span class="gbm-global-menu-icon">□</span><span>Calendário</span></a>
-                <a class="gbm-global-menu-link" href="limite-gastos.html" data-rota="limites"><span class="gbm-global-menu-icon">▤</span><span>Limite de gastos</span></a>
-                <a class="gbm-global-menu-link" href="metas.html" data-rota="metas"><span class="gbm-global-menu-icon">◇</span><span>Objetivos de poupança</span></a>
+            <div class="menu-grupo">
+                <p class="menu-grupo-titulo">Planejamento</p>
+                <a class="menu-item" href="calendario.html">Calendário</a>
+                <a class="menu-item" href="limite-gastos.html">Limite de gastos</a>
+                <a class="menu-item" href="metas.html">Objetivos de poupança</a>
             </div>
-
-            <div class="gbm-global-menu-section">
-                <div class="gbm-global-menu-title">Análises</div>
-                <a class="gbm-global-menu-link" href="relatorio.html" data-rota="relatorio"><span class="gbm-global-menu-icon">▥</span><span>Relatório mensal</span></a>
-                <a class="gbm-global-menu-link" href="comparativo.html" data-rota="comparativo"><span class="gbm-global-menu-icon">⇄</span><span>Comparativo mensal</span></a>
+            <div class="menu-grupo">
+                <p class="menu-grupo-titulo">Análises</p>
+                <a class="menu-item" href="relatorio.html">Relatório mensal</a>
+                <a class="menu-item" href="comparativo.html">Comparativo mensal</a>
             </div>
-
-            <div class="gbm-global-menu-divider"></div>
-
-            <div class="gbm-global-menu-section gbm-global-menu-account">
-                <div class="gbm-global-menu-title">Conta</div>
-                <a class="gbm-global-menu-link" href="notificacoes.html" data-rota="notificacoes"><span class="gbm-global-menu-icon">◔</span><span>Notificações</span></a>
-                <a class="gbm-global-menu-link" href="configuracoes.html" data-rota="configuracoes"><span class="gbm-global-menu-icon">⚙</span><span>Configurações</span></a>
-                <a class="gbm-global-menu-link" href="perfil.html" data-rota="perfil"><span class="gbm-global-menu-icon">○</span><span>Perfil</span></a>
-                <button class="gbm-global-menu-link gbm-global-menu-sair" id="gbm-global-menu-sair" type="button"><span class="gbm-global-menu-icon">←</span><span>Sair</span></button>
+            <div class="divisor"></div>
+            <div class="menu-grupo menu-grupo-conta">
+                <p class="menu-grupo-titulo">Conta</p>
+                <a class="menu-item" href="notificacoes.html">Notificações</a>
+                <a class="menu-item" href="configuracoes.html">Configurações</a>
+                <a class="menu-item" href="perfil.html">Perfil</a>
+                <button class="menu-item texto-vermelho" id="gbm-menu-sair" type="button">Sair</button>
             </div>
-        </div>
-    `;
+        </div>`;
 
     document.body.append(overlay, menu);
 
@@ -410,7 +209,6 @@
         document.body.classList.add('gbm-menu-aberto');
         botao.setAttribute('aria-expanded', 'true');
     };
-
     const fechar = () => {
         menu.classList.remove('aberto');
         overlay.classList.remove('aberto');
@@ -420,22 +218,15 @@
 
     botao.addEventListener('click', () => menu.classList.contains('aberto') ? fechar() : abrir());
     overlay.addEventListener('click', fechar);
-    menu.querySelector('.gbm-global-menu-close').addEventListener('click', fechar);
+    menu.querySelector('.fechar-btn').addEventListener('click', fechar);
     document.addEventListener('keydown', event => { if (event.key === 'Escape') fechar(); });
-
-    const rotaAtual = Object.entries(rotas).find(([, rota]) => rota === arquivoAtual)?.[0];
-    if (rotaAtual) menu.querySelector(`[data-rota="${rotaAtual}"]`)?.classList.add('ativo');
-
     menu.querySelectorAll('a').forEach(link => link.addEventListener('click', fechar));
 
-    menu.querySelector('#gbm-global-menu-sair').addEventListener('click', async () => {
-        if (typeof encerrarSessao === 'function') {
-            await encerrarSessao();
-        } else {
-            try {
-                await fetch('/logout', { method: 'POST', credentials: 'include' });
-            } catch (_) {}
-            window.location.replace('index.html');
-        }
+    const sair = menu.querySelector('#gbm-menu-sair');
+    sair.addEventListener('click', async () => {
+        fechar();
+        if (typeof encerrarSessao === 'function') return encerrarSessao();
+        try { await fetch('/logout', { method: 'POST', credentials: 'include' }); } catch (_) {}
+        window.location.replace('index.html');
     });
 })();
