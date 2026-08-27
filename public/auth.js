@@ -82,6 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Corrige o caminho legado do Limite de Gastos para evitar o loop de redirecionamento.
+    document.querySelectorAll('a[href="limite-de-gastos.html"], a[href="/limite-de-gastos.html"]').forEach((link) => {
+        link.href = 'limite-gastos.html';
+    });
+
     // Mantém as mensagens de validação consistentes em português.
     document.addEventListener('invalid', (evento) => {
         const campo = evento.target;
