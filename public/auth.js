@@ -82,10 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Corrige o caminho legado do Limite de Gastos para evitar o loop de redirecionamento.
-    document.querySelectorAll('a[href="limite-de-gastos.html"], a[href="/limite-de-gastos.html"]').forEach((link) => {
-        link.href = 'limite-gastos.html';
-    });
+    // O nome canônico desta página é /limite-de-gastos.html.
+    // Não converta essa URL para limite-gastos.html, pois isso cria
+    // um ciclo quando o servidor redireciona a rota legada para a canônica.
 
     // Mantém as mensagens de validação consistentes em português.
     document.addEventListener('invalid', (evento) => {
