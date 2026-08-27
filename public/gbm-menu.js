@@ -151,7 +151,7 @@
                 </div>
                 <div class="menu-grupo menu-grupo-premium">
                     <p class="menu-grupo-titulo">Análises</p>
-                    <a href="relatorio.html" data-menu-page="relatorio.html" class="menu-item menu-item-premium menu-item-com-indicador"><span class="menu-item-icone" aria-hidden="true">▥</span><span class="menu-item-conteudo">Relatório mensal</span><span class="cadeado-premium">Premium</span></a>
+                    <a href="relatorio-avancado.html" data-menu-page="relatorio-avancado.html" class="menu-item menu-item-premium menu-item-com-indicador"><span class="menu-item-icone" aria-hidden="true">▥</span><span class="menu-item-conteudo">Relatório mensal</span><span class="cadeado-premium">Premium</span></a>
                     <a href="comparativo.html" data-menu-page="comparativo.html" class="menu-item menu-item-premium menu-item-com-indicador"><span class="menu-item-icone" aria-hidden="true">⇄</span><span class="menu-item-conteudo">Comparativo mensal</span><span class="cadeado-premium">Premium</span></a>
                 </div>
                 <div class="menu-grupo menu-grupo-conta">

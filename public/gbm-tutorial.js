@@ -275,36 +275,6 @@
                 }
             ]
         },
-        'relatorio.html': {
-            titulo: 'Relatório mensal',
-            passos: [
-                {
-                    alvo: null,
-                    titulo: 'Entenda o seu mês',
-                    texto: 'O relatório reúne receitas, despesas e categorias de um período mensal.'
-                },
-                {
-                    alvo: '.filtros',
-                    titulo: 'Escolha o período',
-                    texto: 'Selecione mês, ano e, se desejar, uma conta bancária específica.'
-                },
-                {
-                    alvo: '.btn-gerar',
-                    titulo: 'Gerar relatório',
-                    texto: 'O relatório é calculado com os filtros atuais. Altere os filtros e gere novamente sempre que precisar.'
-                },
-                {
-                    alvo: ['#card-resultado:not([hidden])', '.filtros'],
-                    titulo: 'Resultado detalhado',
-                    texto: 'Confira totais, movimentações e categorias encontradas no mês.'
-                },
-                {
-                    alvo: ['.btn-pdf:not([hidden])', '.btn-gerar'],
-                    titulo: 'Exportar em PDF',
-                    texto: 'Quando o resultado estiver correto, gere o documento para guardar ou compartilhar.'
-                }
-            ]
-        },
         'relatorio-avancado.html': {
             titulo: 'Relatório avançado',
             passos: [

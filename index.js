@@ -418,8 +418,7 @@ const PAGINAS_PRIVADAS_OU_DE_ACAO = new Set([
     'assinatura.html', 'calendario.html', 'comparativo.html', 'configuracoes.html',
     'contas.html', 'dashboard.html', 'importacoes.html', 'importar-pdf.html',
     'limite-de-gastos.html', 'login.html', 'metas.html', 'notificacoes.html',
-    'pagamento.html', 'perfil.html', 'privacidade.html', 'relatorio.html',
-    'relatorio-avancado.html'
+    'pagamento.html', 'perfil.html', 'privacidade.html', 'relatorio-avancado.html'
 ]);
 
 // Preserva favoritos e links antigos após padronizar o nome para kebab-case.
