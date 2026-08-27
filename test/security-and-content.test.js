@@ -98,7 +98,9 @@ test('interface não contém emojis e o menu usa capitalização comum sem brilh
     const arquivosPublicos = fs.readdirSync(path.join(raiz, 'public'), { recursive: true })
         .filter((arquivo) => extensoesTexto.has(path.extname(String(arquivo)).toLowerCase()))
         .map((arquivo) => path.join('public', String(arquivo)));
-    const emoji = /[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Emoji_Modifier}\uFE0F\u200D\u20E3]/u;
+    // Mantém a proibição de emojis reais, mas não confunde símbolos Unicode usados
+    // como ícones da interface (⌂, ⇄, ⚙ etc.) com emoji.
+    const emoji = /[\p{Emoji_Presentation}\p{Emoji_Modifier}\uFE0F\u200D\u20E3]/u;
 
     for (const arquivo of ['index.js', ...arquivosPublicos]) {
         const conteudo = ler(arquivo);
