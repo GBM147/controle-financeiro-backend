@@ -1,5 +1,5 @@
-const VERSAO_TUTORIAL = '1.1.47';
-const CACHE_GBM = 'gbm-estatico-v20';
+const VERSAO_TUTORIAL = '1.1.48';
+const CACHE_GBM = 'gbm-estatico-v21';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -48,9 +48,8 @@ self.addEventListener('fetch', (evento) => {
     const url = new URL(requisicao.url);
     if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
-    // Páginas usam rede primeiro. Assim, telas autenticadas nunca reaparecem com
-    // conteúdo antigo; sem rede, apenas páginas públicas pré-carregadas ou a tela
-    // offline são exibidas.
+    // Navegação: sempre usa a rede primeiro. O Service Worker não cria redirects
+    // e não altera a URL da página; somente fornece offline.html em caso de falha.
     if (requisicao.mode === 'navigate') {
         evento.respondWith((async () => {
             try {
@@ -67,7 +66,6 @@ self.addEventListener('fetch', (evento) => {
     const recursoEstatico = ['script', 'style', 'image', 'font', 'manifest'].includes(requisicao.destination);
     if (!recursoEstatico) return;
 
-    // Assets usam cache primeiro e são revalidados em segundo plano.
     evento.respondWith((async () => {
         const arquivoTutorial =
             url.pathname.endsWith('/gbm-tutorial.js')
