@@ -805,51 +805,6 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
             if (e.target === this) fecharModal();
         });
 
-        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
-        let _resolveConfirm = null;
-
-        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[caractere]);
-
-        function gbmAlerta(mensagem, tipo = 'info') {
-            const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
-                        : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
-                        :                    'rgba(95,255,168,0.3)';
-
-            document.getElementById('lista-notificacoes-modal').innerHTML = `
-                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                    ${escaparMensagemModal(mensagem)}
-                </div>`;
-
-            document.getElementById('btn-confirmar-modal').style.display = 'none';
-            document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
-            document.getElementById('modal-notificacoes').style.display = 'flex';
-            _resolveConfirm = null;
-        }
-
-        function gbmConfirmar(mensagem) {
-            return new Promise(resolve => {
-                _resolveConfirm = resolve;
-
-                document.getElementById('lista-notificacoes-modal').innerHTML = `
-                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                        ${escaparMensagemModal(mensagem)}
-                    </div>`;
-
-                document.getElementById('btn-confirmar-modal').style.display = 'block';
-                document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
-                document.getElementById('modal-notificacoes').style.display = 'flex';
-            });
-        }
-
-        function fecharModalNotificacoes(confirmado = false) {
-            document.getElementById('modal-notificacoes').style.display = 'none';
-            if (_resolveConfirm) {
-                _resolveConfirm(confirmado);
-                _resolveConfirm = null;
-            }
-        }
     </script>
 
     <!-- MODAL DE NOTIFICAÇÕES GBM -->
