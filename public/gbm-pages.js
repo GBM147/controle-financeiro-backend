@@ -195,6 +195,73 @@ function acessarRotaPremium(url, nomeRecurso) {
     }
 }
 
+function atualizarEstadoRecursosPremium(statusPagamento, trialExpira) {
+    const itens = [
+        document.getElementById('item-relatorio-mensal'),
+        document.getElementById('item-comparativo-mensal')
+    ].filter(Boolean);
+    const cadeados = [
+        document.getElementById('cadeado-relatorio'),
+        document.getElementById('cadeado-comparativo')
+    ].filter(Boolean);
+    const aviso = document.getElementById('aviso-recursos-premium');
+    if (!itens.length && !cadeados.length && !aviso) return;
+
+    const status = String(statusPagamento || '').toLowerCase();
+    const dataExpiracao = trialExpira ? new Date(trialExpira) : null;
+    const prazoValido = dataExpiracao && !Number.isNaN(dataExpiracao.getTime())
+        ? new Date() <= dataExpiracao
+        : false;
+    const assinaturaPaga = status === 'pago';
+    const testeOuPrazoAtivo = (status === 'trial' || status === 'cancelado') && prazoValido;
+
+    window.usuarioEmTesteGratuito = !assinaturaPaga && testeOuPrazoAtivo;
+    const recursosBloqueados = !assinaturaPaga && !testeOuPrazoAtivo;
+    itens.forEach((item) => {
+        item.classList.toggle('recurso-bloqueado', recursosBloqueados);
+        if (recursosBloqueados) item.setAttribute('aria-disabled', 'true');
+        else item.removeAttribute('aria-disabled');
+    });
+
+    if (assinaturaPaga) {
+        cadeados.forEach((cadeado) => { cadeado.style.display = 'none'; });
+        if (aviso) { aviso.style.display = 'none'; aviso.textContent = ''; }
+        return;
+    }
+
+    cadeados.forEach((cadeado) => { cadeado.style.display = 'inline-flex'; });
+    if (aviso) {
+        aviso.style.display = 'block';
+        aviso.textContent = testeOuPrazoAtivo
+            ? 'Relatório Mensal e Comparativo estão disponíveis durante o teste gratuito. Ao final do teste, esses recursos ficarão indisponíveis no plano grátis.'
+            : 'Relatório mensal e comparativo são recursos Premium e não estão disponíveis no plano grátis.';
+    }
+}
+
+window.promessaVerificacaoAcesso = (async function verificarAcesso() {
+    try {
+        const res = await fetchApi('/login-status');
+        const data = await res.json();
+        sincronizarIdentidadeLocal(data);
+
+        let isPremium = false;
+        if (data.statusPagamento === 'pago') {
+            isPremium = true;
+        } else if (data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') {
+            if (data.trialExpira) {
+                const dataExpiracao = new Date(data.trialExpira);
+                if (new Date() <= dataExpiracao) isPremium = true;
+            }
+        }
+
+        window.usuarioPremium = isPremium;
+        atualizarEstadoRecursosPremium(data.statusPagamento, data.trialExpira);
+        return data;
+    } catch (e) {
+        console.warn('Não foi possível verificar o status premium.', e);
+    }
+})();
+
 function fazerLogout() {
     encerrarSessao();
 }
