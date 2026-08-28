@@ -329,7 +329,6 @@
         } catch (erro) { gbmToast(erro.message, 'erro'); }
     }
 
-    carregarAtalhoPerfilCabecalho();
     Promise.all([carregarContas(), carregarHistorico()]).catch((erro) => gbmToast(erro.message, 'erro'));
 </script>
 <script src="gbm-tutorial.js"></script>

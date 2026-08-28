@@ -266,6 +266,8 @@ function fazerLogout() {
     encerrarSessao();
 }
 
+carregarAtalhoPerfilCabecalho();
+
 async function carregarAtalhoPerfilCabecalho() {
     try {
         const resposta = await fetchApi('/perfil');

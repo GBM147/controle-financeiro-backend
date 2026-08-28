@@ -224,16 +224,6 @@
                 }));
                 gbmToast(id ? 'Conta atualizada.' : 'Conta criada.');
                 limparConta();
-                        (async () => {
-            try {
-                const d = await gbmJson(await fetchApi('/perfil'));
-                const p = d.perfil;
-                if (p) {
-                    if (p.foto_perfil_url) document.getElementById('foto-perfil-cabecalho').src = p.foto_perfil_url;
-                    document.getElementById('nome-perfil-cabecalho').textContent = p.nome_exibicao || p.nome || 'Meu perfil';
-                }
-            } catch(e) {}
-        })();
         carregarContas();
             } catch (erro) { gbmToast(erro.message, 'erro'); }
         });
@@ -273,16 +263,6 @@
                         ativa
                     })
                 }));
-                        (async () => {
-            try {
-                const d = await gbmJson(await fetchApi('/perfil'));
-                const p = d.perfil;
-                if (p) {
-                    if (p.foto_perfil_url) document.getElementById('foto-perfil-cabecalho').src = p.foto_perfil_url;
-                    document.getElementById('nome-perfil-cabecalho').textContent = p.nome_exibicao || p.nome || 'Meu perfil';
-                }
-            } catch(e) {}
-        })();
         carregarContas();
             } catch (erro) { gbmToast(erro.message, 'erro'); }
         }
@@ -328,16 +308,6 @@
                 }
                 await gbmJson(resposta);
                 gbmToast('Conta excluída.');
-                        (async () => {
-            try {
-                const d = await gbmJson(await fetchApi('/perfil'));
-                const p = d.perfil;
-                if (p) {
-                    if (p.foto_perfil_url) document.getElementById('foto-perfil-cabecalho').src = p.foto_perfil_url;
-                    document.getElementById('nome-perfil-cabecalho').textContent = p.nome_exibicao || p.nome || 'Meu perfil';
-                }
-            } catch(e) {}
-        })();
         carregarContas();
             } catch (erro) { gbmToast(erro.message, 'erro'); }
         }
