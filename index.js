@@ -942,7 +942,19 @@ function garantirEstruturaProduto() {
                 KEY idx_recorrencias_usuario (usuario_id, ativa)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         `);
-
+        await db.promise().query(`
+            CREATE TABLE IF NOT EXISTS recorrencias_confirmacoes (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                usuario_id INT NOT NULL,
+                recorrencia_id BIGINT UNSIGNED NOT NULL,
+                ano SMALLINT UNSIGNED NOT NULL,
+                mes TINYINT UNSIGNED NOT NULL,
+                confirmado_manual TINYINT(1) NOT NULL DEFAULT 0,
+                atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY uk_recorrencia_confirmacao (usuario_id, recorrencia_id, ano, mes)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
         await db.promise().query(`
             CREATE TABLE IF NOT EXISTS preferencias_notificacao_usuario (
                 usuario_id INT NOT NULL,
@@ -4622,43 +4634,100 @@ app.get('/recorrencias/comparativo', exigirLogin, async (req, res) => {
         const ano = Number(req.query.ano) || new Date().getFullYear();
         const mes = Number(req.query.mes) || (new Date().getMonth() + 1);
         const inicioMes = `${ano}-${String(mes).padStart(2, '0')}-01`;
+        const ultimoDia = new Date(ano, mes, 0).getDate();
 
         const [recorrencias] = await db.promise().query(
-            `SELECT r.*, COALESCE(NULLIF(cb.nome_personalizado, ''), NULLIF(cb.banco, ''), CONCAT('Conta ', cb.id)) AS conta
+            `SELECT r.*
              FROM transacoes_recorrentes r
              JOIN contas_bancarias cb ON cb.id = r.conta_id AND cb.usuario_id = r.usuario_id
              WHERE r.usuario_id = ?
+               AND r.ativa = 1
                AND r.data_inicio <= LAST_DAY(?)
                AND (r.data_fim IS NULL OR r.data_fim >= ?)
              ORDER BY r.dia_mes, r.descricao`,
             [usuarioId, inicioMes, inicioMes]
         );
 
+        const [confirmacoes] = await db.promise().query(
+            `SELECT recorrencia_id, confirmado_manual FROM recorrencias_confirmacoes
+             WHERE usuario_id = ? AND ano = ? AND mes = ?`,
+            [usuarioId, ano, mes]
+        );
+        const mapaConfirmacoes = new Map(confirmacoes.map((c) => [Number(c.recorrencia_id), Number(c.confirmado_manual)]));
+
         const linhas = [];
+        let totalGeral = 0;
         for (const item of recorrencias) {
+            const dia = Math.min(Number(item.dia_mes), ultimoDia);
+            const dataEsperada = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+
+            // Compara com as movimentações reais da conta (não depende de vínculo por recorrencia_id)
             const [transacoes] = await db.promise().query(
                 `SELECT valor, data_transacao FROM transacoes
-                 WHERE recorrencia_id = ? AND YEAR(data_transacao) = ? AND MONTH(data_transacao) = ?
-                 ORDER BY data_transacao DESC LIMIT 1`,
-                [item.id, ano, mes]
+                 WHERE conta_id = ?
+                   AND tipo = ?
+                   AND YEAR(data_transacao) = ? AND MONTH(data_transacao) = ?
+                   AND ABS(valor - ?) <= GREATEST(1, ? * 0.05)
+                 ORDER BY ABS(DATEDIFF(data_transacao, ?)) ASC
+                 LIMIT 1`,
+                [item.conta_id, item.tipo, ano, mes, item.valor, item.valor, dataEsperada]
             );
             const real = transacoes[0] || null;
-            let status = 'pendente';
-            if (real) {
-                const diferenca = Math.abs(Number(real.valor) - Number(item.valor));
-                const tolerancia = Math.max(1, Number(item.valor) * 0.03);
-                status = diferenca <= tolerancia ? 'ok' : 'divergente';
-            }
+            const manual = mapaConfirmacoes.has(Number(item.id)) ? mapaConfirmacoes.get(Number(item.id)) : null;
+            const pago = manual !== null ? Boolean(manual) : Boolean(real);
+
+            totalGeral += Number(item.valor);
             linhas.push({
-                id: item.id, descricao: item.descricao, categoria: item.categoria, conta: item.conta,
-                tipo: item.tipo, dia_mes: item.dia_mes, valor_esperado: Number(item.valor),
-                valor_real: real ? Number(real.valor) : null, data_real: real ? real.data_transacao : null,
-                status, ativa: Number(item.ativa)
+                id: item.id,
+                data: dataEsperada,
+                descricao: item.descricao,
+                valor: Number(item.valor),
+                tipo: item.tipo,
+                pago,
+                origem_status: manual !== null ? 'manual' : (real ? 'detectado' : 'pendente'),
+                valor_real: real ? Number(real.valor) : null
             });
         }
-        res.json({ ano, mes, linhas });
+
+        const [receitasLinhas] = await db.promise().query(
+            `SELECT COALESCE(SUM(t.valor), 0) AS total FROM transacoes t
+             JOIN contas_bancarias cb ON cb.id = t.conta_id
+             WHERE cb.usuario_id = ? AND t.tipo = 'Receita' AND YEAR(t.data_transacao) = ? AND MONTH(t.data_transacao) = ?`,
+            [usuarioId, ano, mes]
+        );
+        const renda = Number(receitasLinhas[0].total || 0);
+
+        res.json({ ano, mes, linhas, total: totalGeral, renda, sobra: renda - totalGeral });
     } catch (erro) {
-        res.status(500).json({ success: false, error: 'Falha ao montar comparativo de recorrências.' });
+        res.status(500).json({ success: false, error: 'Falha ao montar comparativo.' });
+    }
+});
+
+app.put('/recorrencias/:id/status-mensal', exigirLogin, async (req, res) => {
+    try {
+        await garantirEstruturaProduto();
+        const usuarioId = req.session.userId;
+        const recorrenciaId = Number(req.params.id);
+        const ano = Number(req.body.ano);
+        const mes = Number(req.body.mes);
+        const pago = req.body.pago ? 1 : 0;
+        if (!ano || !mes) return res.status(400).json({ success: false, error: 'Ano e mês são obrigatórios.' });
+
+        const [dono] = await db.promise().query(
+            'SELECT id FROM transacoes_recorrentes WHERE id = ? AND usuario_id = ?',
+            [recorrenciaId, usuarioId]
+        );
+        if (!dono.length) return res.status(404).json({ success: false, error: 'Recorrência não encontrada.' });
+
+        await db.promise().query(
+            `INSERT INTO recorrencias_confirmacoes (usuario_id, recorrencia_id, ano, mes, confirmado_manual)
+             VALUES (?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE confirmado_manual = VALUES(confirmado_manual)`,
+            [usuarioId, recorrenciaId, ano, mes, pago]
+        );
+        res.json({ success: true });
+    } catch (erro) {
+        res.status(500).json({ success: false, error: 'Falha ao atualizar status.' });
     }
 });
 app.delete('/recorrencias/:id', exigirLogin, async (req, res) => {

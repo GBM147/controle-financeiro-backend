@@ -24,9 +24,12 @@
         table.tabela-comparativo { width:100%; border-collapse:collapse; }
         table.tabela-comparativo th { text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); padding:0 10px 10px; font-weight:700; }
         table.tabela-comparativo td { padding:12px 10px; border-top:1px solid var(--border-soft); font-size:.9rem; }
-        .status-ok { color:var(--green); font-weight:700; }
-        .status-divergente { color:var(--red); font-weight:700; }
-        .status-pendente { color:var(--muted); font-weight:700; }
+        .status-select { min-height:32px; padding:5px 8px; border-radius:7px; font-weight:700; font-size:.82rem; }
+        .status-select.pago { color:var(--green); border-color:rgba(57,217,138,.4); background:rgba(57,217,138,.08); }
+        .status-select.pendente { color:var(--amber); border-color:rgba(85,167,255,.4); background:rgba(85,167,255,.08); }
+        .comparativo-resumo { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:16px; padding:14px 16px; border:1px solid var(--border-soft); border-radius:12px; background:rgba(255,255,255,.03); }
+        .comparativo-resumo div span { display:block; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:4px; }
+        .comparativo-resumo div strong { font-size:1.2rem; }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
@@ -297,10 +300,11 @@
         document.getElementById('modal-comparativo').style.display = 'none';
     }
 
-    const rotuloStatus = { ok: 'Bate certinho', divergente: 'Valor diferente', pendente: 'Ainda não lançado' };
+    let comparativoAtual = { ano: null, mes: null };
 
     async function carregarComparativo() {
         const [ano, mes] = document.getElementById('mes-calendario').value.split('-');
+        comparativoAtual = { ano: Number(ano), mes: Number(mes) };
         const container = document.getElementById('corpo-comparativo');
         container.innerHTML = '<div class="empty">Carregando comparativo...</div>';
         try {
@@ -310,22 +314,45 @@
                 return;
             }
             container.innerHTML = `
+                <div class="comparativo-resumo">
+                    <div><span>Total dos fixos</span><strong>${gbmMoeda(dados.total)}</strong></div>
+                    <div><span>Receitas do mês</span><strong>${gbmMoeda(dados.renda)}</strong></div>
+                    <div><span>Sobra</span><strong style="color:${dados.sobra >= 0 ? 'var(--green)' : 'var(--red)'}">${gbmMoeda(dados.sobra)}</strong></div>
+                </div>
                 <table class="tabela-comparativo">
-                    <thead><tr><th>Descrição</th><th>Conta</th><th>Esperado</th><th>Lançado</th><th>Status</th></tr></thead>
+                    <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Status de pagamento</th></tr></thead>
                     <tbody>
                         ${dados.linhas.map((linha) => `
                             <tr>
-                                <td>${gbmEscapar(linha.descricao)}<br><span class="pill">${gbmEscapar(linha.categoria)}</span></td>
-                                <td>${gbmEscapar(linha.conta)}</td>
-                                <td>${gbmMoeda(linha.valor_esperado)}</td>
-                                <td>${linha.valor_real === null ? '—' : gbmMoeda(linha.valor_real)}</td>
-                                <td class="status-${linha.status}">${rotuloStatus[linha.status]}</td>
+                                <td>${gbmData(linha.data)}</td>
+                                <td>${gbmEscapar(linha.descricao)}</td>
+                                <td>${gbmMoeda(linha.valor)}</td>
+                                <td>
+                                    <select class="status-select ${linha.pago ? 'pago' : 'pendente'}" onchange="alterarStatusComparativo(${linha.id}, this)">
+                                        <option value="pendente" ${linha.pago ? '' : 'selected'}>Pendente</option>
+                                        <option value="pago" ${linha.pago ? 'selected' : ''}>Pago</option>
+                                    </select>
+                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>`;
         } catch (erro) {
             container.innerHTML = `<div class="empty">${gbmEscapar(erro.message)}</div>`;
+        }
+    }
+
+    async function alterarStatusComparativo(recorrenciaId, select) {
+        const pago = select.value === 'pago';
+        select.className = `status-select ${pago ? 'pago' : 'pendente'}`;
+        try {
+            await gbmJson(await fetchApi(`/recorrencias/${recorrenciaId}/status-mensal`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ano: comparativoAtual.ano, mes: comparativoAtual.mes, pago })
+            }));
+        } catch (erro) {
+            gbmToast(erro.message, 'erro');
         }
     }
 
