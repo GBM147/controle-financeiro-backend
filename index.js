@@ -4815,7 +4815,32 @@ app.post('/controle-simples', exigirLogin, async (req, res) => {
         res.status(500).json({ success: false, error: 'Falha ao adicionar item.' });
     }
 });
+app.post('/controle-simples/importar-extrato', exigirLogin, async (req, res) => {
+    try {
+        await garantirEstruturaProduto();
+        const usuarioId = req.session.userId;
+        const itens = Array.isArray(req.body.itens) ? req.body.itens : [];
+        if (!itens.length) return res.status(400).json({ success: false, error: 'Nenhum item selecionado.' });
+        if (itens.length > 500) return res.status(400).json({ success: false, error: 'Envie no máximo 500 itens por vez.' });
 
+        let inseridos = 0;
+        for (const item of itens) {
+            const data = normalizarDataBancaria(item.data) || String(item.data || '').slice(0, 10);
+            const descricao = String(item.descricao || '').trim().slice(0, 180);
+            const valor = Number(item.valor);
+            if (!descricao || !/^\d{4}-\d{2}-\d{2}$/.test(data) || !Number.isFinite(valor) || valor <= 0) continue;
+            await db.promise().query(
+                `INSERT INTO controle_simples_itens (usuario_id, data, descricao, valor, status)
+                 VALUES (?, ?, ?, ?, 'pago')`,
+                [usuarioId, data, descricao, valor]
+            );
+            inseridos += 1;
+        }
+        res.status(201).json({ success: true, inseridos });
+    } catch (erro) {
+        res.status(500).json({ success: false, error: 'Falha ao lançar o extrato.' });
+    }
+});
 app.put('/controle-simples/:id', exigirLogin, async (req, res) => {
     try {
         const usuarioId = req.session.userId;

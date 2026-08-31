@@ -18,6 +18,11 @@
         .status-select.pago { color:var(--green); border-color:rgba(57,217,138,.4); background:rgba(57,217,138,.08); }
         .status-select.pendente { color:var(--amber); border-color:rgba(85,167,255,.4); background:rgba(85,167,255,.08); }
         .cs-excluir { color:var(--red); background:transparent; border:0; cursor:pointer; font-size:.82rem; font-weight:700; }
+        .btn-grande { font-size:1.05rem; padding:16px 22px; width:100%; border-radius:12px; }
+        .cs-item-extrato { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--border-soft); border-radius:12px; font-size:1rem; }
+        .cs-item-extrato input[type="checkbox"] { width:22px; height:22px; flex:0 0 22px; }
+        .cs-item-extrato span.desc { flex:1; }
+        .cs-item-extrato strong { white-space:nowrap; }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
@@ -145,6 +150,14 @@
         </div>
         <div class="stat-card"><span class="rotulo">Sobra</span><strong id="cs-sobra">R$ 0,00</strong></div>
     </div>
+
+    <section class="card" style="margin-bottom:18px">
+        <h2>Lançar extrato do banco</h2>
+        <p style="color:var(--muted); margin:-6px 0 16px; font-size:.95rem;">Tem o extrato do seu banco salvo no celular? Envie o arquivo (.ofx ou .pdf) e a gente preenche a lista de gastos pra você — sem precisar digitar nada.</p>
+        <input id="cs-arquivo-extrato" type="file" accept=".ofx,.pdf,application/pdf" style="display:none" onchange="analisarExtratoCs()">
+        <button type="button" class="btn btn-primary btn-grande" onclick="document.getElementById('cs-arquivo-extrato').click()">📄 Escolher arquivo do banco</button>
+        <div id="cs-previa-extrato" style="margin-top:16px"></div>
+    </section>
 
     <section class="card">
         <h2>Adicionar item</h2>
@@ -287,6 +300,67 @@
     });
 
     document.getElementById('mes-controle-simples').addEventListener('change', carregarControleSimples);
+
+    async function analisarExtratoCs() {
+        const arquivo = document.getElementById('cs-arquivo-extrato').files[0];
+        if (!arquivo) return;
+        const extensao = arquivo.name.split('.').pop().toLowerCase();
+        const container = document.getElementById('cs-previa-extrato');
+        if (!['ofx', 'pdf'].includes(extensao)) {
+            container.innerHTML = '<div class="empty">Envie um arquivo .ofx ou .pdf do seu banco.</div>';
+            return;
+        }
+        const formData = new FormData();
+        formData.append('arquivo', arquivo);
+        container.innerHTML = '<div class="empty">Lendo o arquivo, aguarde...</div>';
+        try {
+            const endpoint = extensao === 'ofx' ? '/ofx-extrato/preview' : '/pdf-extrato/preview';
+            const previa = await gbmJson(await fetchApi(endpoint, { method: 'POST', body: formData }));
+            const despesas = previa.transacoes.filter((item) => item.tipo === 'Despesa');
+            if (!despesas.length) {
+                container.innerHTML = '<div class="empty">Não encontramos gastos nesse arquivo.</div>';
+                return;
+            }
+            window._csExtratoItens = despesas.map((item) => ({ ...item, selecionado: true }));
+            renderizarPreviaExtratoCs();
+        } catch (erro) {
+            container.innerHTML = `<div class="empty">${gbmEscapar(erro.message)}</div>`;
+        }
+    }
+
+    function renderizarPreviaExtratoCs() {
+        const itens = window._csExtratoItens || [];
+        document.getElementById('cs-previa-extrato').innerHTML = `
+            <p style="font-size:1rem; margin-bottom:12px;">Encontramos <strong>${itens.length}</strong> gastos. Desmarque o que não quiser adicionar:</p>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+                ${itens.map((item, indice) => `
+                    <label class="cs-item-extrato">
+                        <input type="checkbox" ${item.selecionado ? 'checked' : ''} onchange="window._csExtratoItens[${indice}].selecionado = this.checked">
+                        <span class="desc">${gbmData(item.data)} — ${gbmEscapar(item.descricao)}</span>
+                        <strong>${gbmMoeda(item.valor)}</strong>
+                    </label>
+                `).join('')}
+            </div>
+            <button type="button" class="btn btn-primary btn-grande" onclick="confirmarImportacaoExtratoCs()">✅ Adicionar tudo à lista</button>
+        `;
+    }
+
+    async function confirmarImportacaoExtratoCs() {
+        const selecionados = (window._csExtratoItens || []).filter((item) => item.selecionado);
+        if (!selecionados.length) return gbmToast('Marque pelo menos um item.', 'erro');
+        try {
+            const dados = await gbmJson(await fetchApi('/controle-simples/importar-extrato', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itens: selecionados.map((item) => ({ data: item.data, descricao: item.descricao, valor: item.valor })) })
+            }));
+            gbmToast(`${dados.inseridos} item(ns) adicionado(s). Confira o mês certo lá em cima.`);
+            document.getElementById('cs-previa-extrato').innerHTML = '';
+            document.getElementById('cs-arquivo-extrato').value = '';
+            window._csExtratoItens = null;
+            carregarControleSimples();
+        } catch (erro) { gbmToast(erro.message, 'erro'); }
+    }
 
     carregarAtalhoPerfilCabecalho();
     carregarControleSimples();
