@@ -15,14 +15,27 @@
         .tipo-receita { color:#7fffb7; }
         .tipo-despesa { color:#ff909c; }
         @media(max-width:600px){.evento{grid-template-columns:55px 1fr}.evento-valor{grid-column:2}}
+
+        .modal-comparativo { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center; padding:20px; }
+        .modal-comparativo-caixa { background:#0f1a2b; border:1px solid rgba(85,167,255,.3); border-radius:16px; padding:26px; max-width:820px; width:100%; max-height:85vh; overflow-y:auto; box-shadow:0 0 30px rgba(85,167,255,.1); }
+        .modal-comparativo-topo { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; gap:12px; }
+        .modal-comparativo-topo h2 { margin:0; }
+        .comparativo-fechar { background:none; border:none; color:#b0bec5; font-size:1.6rem; cursor:pointer; line-height:1; }
+        table.tabela-comparativo { width:100%; border-collapse:collapse; }
+        table.tabela-comparativo th { text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); padding:0 10px 10px; font-weight:700; }
+        table.tabela-comparativo td { padding:12px 10px; border-top:1px solid var(--border-soft); font-size:.9rem; }
+        .status-ok { color:var(--green); font-weight:700; }
+        .status-divergente { color:var(--red); font-weight:700; }
+        .status-pendente { color:var(--muted); font-weight:700; }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
 <body class="gbm-interna">
-    <header class="gbm-header">
+
+<header class="gbm-header">
     <div class="gbm-logo-container">
         <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
-        <h1 class="gbm-title">Guardian Of Budget &amp; Money</h1>
+        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
     </div>
     <div class="gbm-header-actions">
         <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
@@ -30,7 +43,7 @@
             <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
         </a>
         <div class="gbm-menu-container">
-            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" aria-label="Abrir menu">
+            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" style="position:relative;" aria-label="Abrir menu">
                 <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
             </button>
         </div>
@@ -52,23 +65,20 @@
     <nav class="sidebar-content" aria-label="Menu principal">
         <div class="menu-grupo">
             <p class="menu-grupo-titulo">Resumo</p>
-            <a href="dashboard.html" class="menu-item ">
+            <a href="dashboard.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">⌂</span>
                 <span class="menu-item-conteudo">Visão geral</span>
-                
             </a>
         </div>
         <div class="menu-grupo">
             <p class="menu-grupo-titulo">Movimentações</p>
-            <a href="contas.html" class="menu-item ">
+            <a href="contas.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">▣</span>
                 <span class="menu-item-conteudo">Minhas contas</span>
-                
             </a>
-            <a href="importacoes.html" class="menu-item ">
+            <a href="importacoes.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">↥</span>
                 <span class="menu-item-conteudo">Importações</span>
-                
             </a>
         </div>
         <div class="menu-grupo">
@@ -78,15 +88,13 @@
                 <span class="menu-item-conteudo">Calendário</span>
                 <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
             </a>
-            <a href="limite-de-gastos.html" class="menu-item ">
+            <a href="limite-de-gastos.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">◒</span>
                 <span class="menu-item-conteudo">Limite de gastos</span>
-                
             </a>
-            <a href="metas.html" class="menu-item ">
+            <a href="metas.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">◎</span>
                 <span class="menu-item-conteudo">Objetivos de poupança</span>
-                
             </a>
         </div>
         <div class="menu-grupo menu-grupo-premium">
@@ -104,20 +112,17 @@
         </div>
         <div class="menu-grupo menu-grupo-conta">
             <p class="menu-grupo-titulo">Conta</p>
-            <a href="notificacoes.html" class="menu-item  menu-item-com-indicador">
+            <a href="notificacoes.html" class="menu-item menu-item-com-indicador">
                 <span class="menu-item-icone" aria-hidden="true">♧</span>
                 <span class="menu-item-conteudo">Notificações</span>
-                
             </a>
-            <a href="configuracoes.html" class="menu-item ">
+            <a href="configuracoes.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">⚙</span>
                 <span class="menu-item-conteudo">Configurações</span>
-                
             </a>
-            <a href="perfil.html" class="menu-item ">
+            <a href="perfil.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">♙</span>
                 <span class="menu-item-conteudo">Perfil</span>
-                
             </a>
             <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
                 <span class="menu-item-icone" aria-hidden="true">↪</span>
@@ -126,154 +131,225 @@
         </div>
     </nav>
 </div>
-    <main class="container">
-        <div class="page-title">
+
+<main class="container">
+    <div class="page-title" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+        <div>
+            <div class="dashboard-breadcrumb"><span>Tela 4 de 11</span><b>›</b><strong>Calendário</strong></div>
             <h1>Calendário financeiro</h1>
             <p>Cadastre salário, aluguel, assinaturas e outras movimentações mensais para prever seu saldo.</p>
         </div>
+        <button class="btn btn-primary" onclick="abrirComparativo()">Comparar gastos</button>
+    </div>
 
-        <div class="grid grid-2">
-            <section class="card">
-                <h2>Nova recorrência</h2>
-                <form id="form-recorrencia" class="form-grid">
-                    <div class="field full"><label for="rec-desc">Descrição</label><input id="rec-desc" maxlength="180" required placeholder="Ex.: Aluguel" autocomplete="off"></div>
-                    <div class="field"><label for="rec-valor">Valor</label><input id="rec-valor" type="number" min="0.01" step="0.01" required inputmode="decimal"></div>
-                    <div class="field"><label>Tipo</label><select id="rec-tipo"><option>Despesa</option><option>Receita</option></select></div>
-                    <div class="field"><label for="rec-categoria">Categoria</label><input id="rec-categoria" value="Outros" maxlength="120" required></div>
-                    <div class="field"><label for="rec-dia">Dia do mês</label><input id="rec-dia" type="number" min="1" max="31" value="10" required inputmode="numeric"></div>
-                    <div class="field"><label for="rec-conta">Conta</label><select id="rec-conta" required></select></div>
-                    <div class="field"><label for="rec-inicio">Começa em</label><input id="rec-inicio" type="date" required></div>
-                    <div class="field"><label for="rec-fim">Termina em (opcional)</label><input id="rec-fim" type="date"></div>
-                    <div class="field full"><div class="actions end"><button class="btn btn-primary" type="submit">Salvar recorrência</button></div></div>
-                </form>
-            </section>
-
-            <section class="card">
-                <h2>Recorrências cadastradas</h2>
-                <div id="lista-recorrencias"><div class="empty">Carregando...</div></div>
-            </section>
-        </div>
-
-        <section class="card" style="margin-top:18px">
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
-                <h2 style="margin:0">Movimentações do mês</h2>
-                <input id="mes-calendario" type="month" style="width:auto">
-            </div>
-            <div class="divider"></div>
-            <div class="resumo-calendario">
-                <div class="stat">Saldo atual<br><strong id="saldo-atual">R$ 0,00</strong></div>
-                <div class="stat">Após lançamentos previstos<br><strong id="saldo-previsto">R$ 0,00</strong></div>
-            </div>
-            <div id="eventos-calendario"><div class="empty">Carregando calendário...</div></div>
+    <div class="grid grid-2">
+        <section class="card">
+            <h2>Nova recorrência</h2>
+            <form id="form-recorrencia" class="form-grid">
+                <div class="field full"><label for="rec-desc">Descrição</label><input id="rec-desc" maxlength="180" required placeholder="Ex.: Aluguel" autocomplete="off"></div>
+                <div class="field"><label for="rec-valor">Valor</label><input id="rec-valor" type="number" min="0.01" step="0.01" required inputmode="decimal"></div>
+                <div class="field"><label>Tipo</label><select id="rec-tipo"><option>Despesa</option><option>Receita</option></select></div>
+                <div class="field"><label for="rec-categoria">Categoria</label><input id="rec-categoria" value="Outros" maxlength="120" required></div>
+                <div class="field"><label for="rec-dia">Dia do mês</label><input id="rec-dia" type="number" min="1" max="31" value="10" required inputmode="numeric"></div>
+                <div class="field"><label for="rec-conta">Conta</label><select id="rec-conta" required></select></div>
+                <div class="field"><label for="rec-inicio">Começa em</label><input id="rec-inicio" type="date" required></div>
+                <div class="field"><label for="rec-fim">Termina em (opcional)</label><input id="rec-fim" type="date"></div>
+                <div class="field full"><div class="actions end"><button class="btn btn-primary" type="submit">Salvar recorrência</button></div></div>
+            </form>
         </section>
-    </main>
-    <script src="auth.js"></script>
-    <script src="gbm-pages.js"></script>
-    <script>
-        const hoje = new Date();
-        document.getElementById('rec-inicio').value = hoje.toISOString().slice(0,10);
-        document.getElementById('mes-calendario').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
 
-        async function prepararContas() {
-            const contas = await gbmJson(await fetchApi('/contas'));
-            document.getElementById('rec-conta').innerHTML = contas
-                .filter((conta) => Number(conta.ativa) === 1)
-                .map((conta) => `<option value="${conta.id}">${gbmEscapar(conta.nome)}</option>`).join('');
-        }
+        <section class="card">
+            <h2>Recorrências cadastradas</h2>
+            <div id="lista-recorrencias"><div class="empty">Carregando...</div></div>
+        </section>
+    </div>
 
-        document.getElementById('form-recorrencia').addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-            const botao = evento.submitter || evento.currentTarget.querySelector('[type="submit"]');
-            const textoOriginal = botao?.textContent;
-            if (botao) {
-                botao.disabled = true;
-                botao.textContent = 'Salvando...';
+    <section class="card" style="margin-top:18px">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+            <h2 style="margin:0">Movimentações do mês</h2>
+            <input id="mes-calendario" type="month" style="width:auto">
+        </div>
+        <div class="divider"></div>
+        <div class="resumo-calendario">
+            <div class="stat">Saldo atual<br><strong id="saldo-atual">R$ 0,00</strong></div>
+            <div class="stat">Após lançamentos previstos<br><strong id="saldo-previsto">R$ 0,00</strong></div>
+        </div>
+        <div id="eventos-calendario"><div class="empty">Carregando calendário...</div></div>
+    </section>
+</main>
+
+<div id="modal-comparativo" class="modal-comparativo">
+    <div class="modal-comparativo-caixa">
+        <div class="modal-comparativo-topo">
+            <div>
+                <h2>Comparar gastos com recorrências</h2>
+                <p style="color:var(--muted); margin:4px 0 0; font-size:.85rem;">O que era esperado x o que realmente foi lançado neste mês.</p>
+            </div>
+            <button class="comparativo-fechar" onclick="fecharComparativo()" aria-label="Fechar">&times;</button>
+        </div>
+        <div id="corpo-comparativo"><div class="empty">Carregando comparativo...</div></div>
+    </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="gbm-pages.js"></script>
+<script>
+    const hoje = new Date();
+    document.getElementById('rec-inicio').value = hoje.toISOString().slice(0,10);
+    document.getElementById('mes-calendario').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+
+    async function prepararContas() {
+        const contas = await gbmJson(await fetchApi('/contas'));
+        document.getElementById('rec-conta').innerHTML = contas
+            .filter((conta) => Number(conta.ativa) === 1)
+            .map((conta) => `<option value="${conta.id}">${gbmEscapar(conta.nome)}</option>`).join('');
+    }
+
+    document.getElementById('form-recorrencia').addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+        const botao = evento.submitter || evento.currentTarget.querySelector('[type="submit"]');
+        const textoOriginal = botao?.textContent;
+        if (botao) { botao.disabled = true; botao.textContent = 'Salvando...'; }
+        try {
+            await gbmJson(await fetchApi('/recorrencias', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({
+                    descricao:document.getElementById('rec-desc').value,
+                    valor:Number(document.getElementById('rec-valor').value),
+                    tipo:document.getElementById('rec-tipo').value,
+                    categoria:document.getElementById('rec-categoria').value,
+                    dia_mes:Number(document.getElementById('rec-dia').value),
+                    conta_id:Number(document.getElementById('rec-conta').value),
+                    data_inicio:document.getElementById('rec-inicio').value,
+                    data_fim:document.getElementById('rec-fim').value || null
+                })
+            }));
+            gbmToast('Recorrência criada com sucesso.');
+            document.getElementById('form-recorrencia').reset();
+            document.getElementById('rec-inicio').value = hoje.toISOString().slice(0,10);
+            await Promise.all([carregarRecorrencias(), carregarCalendario()]);
+        } catch (erro) { gbmToast(erro.message,'erro'); }
+        finally { if (botao) { botao.disabled = false; botao.textContent = textoOriginal; } }
+    });
+
+    async function carregarRecorrencias() {
+        try {
+            const itens = await gbmJson(await fetchApi('/recorrencias'));
+            document.getElementById('lista-recorrencias').innerHTML = itens.length ? itens.map((item) => `
+                <div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+                    <div style="display:flex;justify-content:space-between;gap:10px">
+                        <strong>${gbmEscapar(item.descricao)}</strong>
+                        <span class="${item.tipo === 'Receita' ? 'tipo-receita' : 'tipo-despesa'}">${gbmMoeda(item.valor)}</span>
+                    </div>
+                    <p style="color:var(--muted);font-size:.78rem">Todo dia ${item.dia_mes} · ${gbmEscapar(item.conta)}</p>
+                    <div class="actions">
+                        <button class="btn btn-small" onclick="alternarRecorrencia(${item.id}, ${Number(item.ativa) ? 'false' : 'true'})">${Number(item.ativa) ? 'Pausar' : 'Ativar'}</button>
+                        <button class="btn btn-danger btn-small" onclick="excluirRecorrencia(${item.id})">Excluir</button>
+                    </div>
+                </div>`).join('') : '<div class="empty">Nenhuma recorrência cadastrada.</div>';
+        } catch (erro) { gbmToast(erro.message,'erro'); }
+    }
+
+    async function alternarRecorrencia(id, ativa) {
+        try {
+            await gbmJson(await fetchApi(`/recorrencias/${id}`, {
+                method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativa})
+            }));
+            gbmToast(`Recorrência ${ativa ? 'ativada' : 'pausada'} com sucesso.`);
+            await Promise.all([carregarRecorrencias(), carregarCalendario()]);
+        } catch (erro) { gbmToast(erro.message,'erro'); }
+    }
+
+    async function excluirRecorrencia(id) {
+        if (!confirm('Excluir esta recorrência? Os lançamentos já realizados serão mantidos.')) return;
+        try {
+            await gbmJson(await fetchApi(`/recorrencias/${id}`, {method:'DELETE'}));
+            gbmToast('Recorrência excluída com sucesso.');
+            await Promise.all([carregarRecorrencias(), carregarCalendario()]);
+        } catch (erro) { gbmToast(erro.message,'erro'); }
+    }
+
+    async function carregarCalendario() {
+        const [ano, mes] = document.getElementById('mes-calendario').value.split('-');
+        try {
+            const dados = await gbmJson(await fetchApi(`/calendario-financeiro?ano=${ano}&mes=${Number(mes)}`));
+            document.getElementById('saldo-atual').textContent = gbmMoeda(dados.saldo_atual);
+            document.getElementById('saldo-previsto').textContent = gbmMoeda(dados.saldo_previsto);
+            document.getElementById('saldo-previsto').style.color = Number(dados.saldo_previsto) >= 0 ? 'var(--green)' : 'var(--red)';
+            document.getElementById('eventos-calendario').innerHTML = dados.eventos.length ? dados.eventos.map((item) => {
+                const data = new Date(`${String(item.data).slice(0,10)}T12:00:00`);
+                return `<div class="evento">
+                    <div class="evento-data"><strong>${data.getDate()}</strong>${data.toLocaleDateString('pt-BR',{weekday:'short'})}</div>
+                    <div><strong>${gbmEscapar(item.descricao)}</strong><br><span class="pill ${item.status === 'prevista' ? 'amber':'green'}">${gbmEscapar(item.status)}</span> <span class="pill">${gbmEscapar(item.categoria)}</span></div>
+                    <strong class="evento-valor ${item.tipo === 'Receita' ? 'receita':'despesa'}">${item.tipo === 'Receita' ? '+' : '-'} ${gbmMoeda(item.valor)}</strong>
+                </div>`;
+            }).join('') : '<div class="empty">Nenhuma movimentação neste mês.</div>';
+        } catch (erro) { gbmToast(erro.message,'erro'); }
+    }
+    document.getElementById('mes-calendario').addEventListener('change', carregarCalendario);
+
+    function abrirComparativo() {
+        document.getElementById('modal-comparativo').style.display = 'flex';
+        carregarComparativo();
+    }
+    function fecharComparativo() {
+        document.getElementById('modal-comparativo').style.display = 'none';
+    }
+
+    const rotuloStatus = { ok: 'Bate certinho', divergente: 'Valor diferente', pendente: 'Ainda não lançado' };
+
+    async function carregarComparativo() {
+        const [ano, mes] = document.getElementById('mes-calendario').value.split('-');
+        const container = document.getElementById('corpo-comparativo');
+        container.innerHTML = '<div class="empty">Carregando comparativo...</div>';
+        try {
+            const dados = await gbmJson(await fetchApi(`/recorrencias/comparativo?ano=${ano}&mes=${Number(mes)}`));
+            if (!dados.linhas.length) {
+                container.innerHTML = '<div class="empty">Nenhuma recorrência ativa neste mês.</div>';
+                return;
             }
-            try {
-                await gbmJson(await fetchApi('/recorrencias', {
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({
-                        descricao:document.getElementById('rec-desc').value,
-                        valor:Number(document.getElementById('rec-valor').value),
-                        tipo:document.getElementById('rec-tipo').value,
-                        categoria:document.getElementById('rec-categoria').value,
-                        dia_mes:Number(document.getElementById('rec-dia').value),
-                        conta_id:Number(document.getElementById('rec-conta').value),
-                        data_inicio:document.getElementById('rec-inicio').value,
-                        data_fim:document.getElementById('rec-fim').value || null
-                    })
-                }));
-                gbmToast('Recorrência criada com sucesso.');
-                document.getElementById('form-recorrencia').reset();
-                document.getElementById('rec-inicio').value = hoje.toISOString().slice(0,10);
-                await Promise.all([carregarRecorrencias(), carregarCalendario()]);
-            } catch (erro) { gbmToast(erro.message,'erro'); }
-            finally {
-                if (botao) {
-                    botao.disabled = false;
-                    botao.textContent = textoOriginal;
-                }
-            }
-        });
-
-        async function carregarRecorrencias() {
-            try {
-                const itens = await gbmJson(await fetchApi('/recorrencias'));
-                document.getElementById('lista-recorrencias').innerHTML = itens.length ? itens.map((item) => `
-                    <div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)">
-                        <div style="display:flex;justify-content:space-between;gap:10px">
-                            <strong>${gbmEscapar(item.descricao)}</strong>
-                            <span class="${item.tipo === 'Receita' ? 'tipo-receita' : 'tipo-despesa'}">${gbmMoeda(item.valor)}</span>
-                        </div>
-                        <p style="color:var(--muted);font-size:.78rem">Todo dia ${item.dia_mes} · ${gbmEscapar(item.conta)}</p>
-                        <div class="actions">
-                            <button class="btn btn-small" onclick="alternarRecorrencia(${item.id}, ${Number(item.ativa) ? 'false' : 'true'})">${Number(item.ativa) ? 'Pausar' : 'Ativar'}</button>
-                            <button class="btn btn-danger btn-small" onclick="excluirRecorrencia(${item.id})">Excluir</button>
-                        </div>
-                    </div>`).join('') : '<div class="empty">Nenhuma recorrência cadastrada.</div>';
-            } catch (erro) { gbmToast(erro.message,'erro'); }
+            container.innerHTML = `
+                <table class="tabela-comparativo">
+                    <thead><tr><th>Descrição</th><th>Conta</th><th>Esperado</th><th>Lançado</th><th>Status</th></tr></thead>
+                    <tbody>
+                        ${dados.linhas.map((linha) => `
+                            <tr>
+                                <td>${gbmEscapar(linha.descricao)}<br><span class="pill">${gbmEscapar(linha.categoria)}</span></td>
+                                <td>${gbmEscapar(linha.conta)}</td>
+                                <td>${gbmMoeda(linha.valor_esperado)}</td>
+                                <td>${linha.valor_real === null ? '—' : gbmMoeda(linha.valor_real)}</td>
+                                <td class="status-${linha.status}">${rotuloStatus[linha.status]}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+        } catch (erro) {
+            container.innerHTML = `<div class="empty">${gbmEscapar(erro.message)}</div>`;
         }
+    }
 
-        async function alternarRecorrencia(id, ativa) {
-            try {
-                await gbmJson(await fetchApi(`/recorrencias/${id}`, {
-                    method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativa})
-                }));
-                gbmToast(`Recorrência ${ativa ? 'ativada' : 'pausada'} com sucesso.`);
-                await Promise.all([carregarRecorrencias(), carregarCalendario()]);
-            } catch (erro) { gbmToast(erro.message,'erro'); }
-        }
+    carregarAtalhoPerfilCabecalho();
+    Promise.all([prepararContas(),carregarRecorrencias(),carregarCalendario()]).catch((erro)=>gbmToast(erro.message,'erro'));
+</script>
+<script src="gbm-tutorial.js"></script>
+<script src="gbm-menu.js"></script>
 
-        async function excluirRecorrencia(id) {
-            if (!confirm('Excluir esta recorrência? Os lançamentos já realizados serão mantidos.')) return;
-            try {
-                await gbmJson(await fetchApi(`/recorrencias/${id}`, {method:'DELETE'}));
-                gbmToast('Recorrência excluída com sucesso.');
-                await Promise.all([carregarRecorrencias(), carregarCalendario()]);
-            } catch (erro) { gbmToast(erro.message,'erro'); }
-        }
-
-        async function carregarCalendario() {
-            const [ano, mes] = document.getElementById('mes-calendario').value.split('-');
-            try {
-                const dados = await gbmJson(await fetchApi(`/calendario-financeiro?ano=${ano}&mes=${Number(mes)}`));
-                document.getElementById('saldo-atual').textContent = gbmMoeda(dados.saldo_atual);
-                document.getElementById('saldo-previsto').textContent = gbmMoeda(dados.saldo_previsto);
-                document.getElementById('saldo-previsto').style.color = Number(dados.saldo_previsto) >= 0 ? 'var(--green)' : 'var(--red)';
-                document.getElementById('eventos-calendario').innerHTML = dados.eventos.length ? dados.eventos.map((item) => {
-                    const data = new Date(`${String(item.data).slice(0,10)}T12:00:00`);
-                    return `<div class="evento">
-                        <div class="evento-data"><strong>${data.getDate()}</strong>${data.toLocaleDateString('pt-BR',{weekday:'short'})}</div>
-                        <div><strong>${gbmEscapar(item.descricao)}</strong><br><span class="pill ${item.status === 'prevista' ? 'amber':'green'}">${gbmEscapar(item.status)}</span> <span class="pill">${gbmEscapar(item.categoria)}</span></div>
-                        <strong class="evento-valor ${item.tipo === 'Receita' ? 'receita':'despesa'}">${item.tipo === 'Receita' ? '+' : '-'} ${gbmMoeda(item.valor)}</strong>
-                    </div>`;
-                }).join('') : '<div class="empty">Nenhuma movimentação neste mês.</div>';
-            } catch (erro) { gbmToast(erro.message,'erro'); }
-        }
-        document.getElementById('mes-calendario').addEventListener('change', carregarCalendario);
-        Promise.all([prepararContas(),carregarRecorrencias(),carregarCalendario()]).catch((erro)=>gbmToast(erro.message,'erro'));
-    </script>
-    <script src="gbm-tutorial.js"></script>
+<div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
+    <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:480px; width:90%; box-shadow:0 0 30px rgba(95,255,168,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="logo-transparente.jpg" style="height:32px; border-radius:6px;">
+                <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
+            </div>
+            <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="lista-notificacoes-modal" style="display:flex; flex-direction:column; gap:12px; max-height:340px; overflow-y:auto;"></div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">CONFIRMAR</button>
+            <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">FECHAR</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

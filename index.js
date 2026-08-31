@@ -4281,7 +4281,30 @@ app.post('/importacoes/confirmar', exigirLogin, async (req, res) => {
                 duplicadas += 1;
                 continue;
             }
-
+            // Tenta conciliar com um lançamento gerado por recorrência ainda não confirmado
+            const [placeholders] = await bancoDados.query(
+                `SELECT id FROM transacoes
+                 WHERE conta_id = ?
+                   AND recorrencia_id IS NOT NULL
+                   AND transacao_id_pluggy LIKE 'recorrencia-%'
+                   AND tipo = ?
+                   AND ABS(valor - ?) <= GREATEST(1, valor * 0.03)
+                   AND ABS(DATEDIFF(data_transacao, ?)) <= 5
+                 ORDER BY ABS(DATEDIFF(data_transacao, ?)) ASC
+                 LIMIT 1`,
+                [contaId, linha.tipo, linha.valor, linha.data, linha.data]
+            );
+            if (placeholders.length) {
+                await bancoDados.query(
+                    `UPDATE transacoes
+                     SET transacao_id_pluggy = ?, descricao = ?, valor = ?, data_transacao = ?,
+                         banco = ?, importacao_id = ?, fitid_origem = ?, identidade_importacao = ?
+                     WHERE id = ?`,
+                    [transacaoIdExterno, linha.descricao, linha.valor, linha.data, nomeBanco, lote.insertId, linha.fitid, linha.identidade, placeholders[0].id]
+                );
+                inseridas += 1;
+                continue;
+            }
             const [resultado] = await bancoDados.query(
                 `INSERT INTO transacoes
                     (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria,
@@ -4486,6 +4509,22 @@ async function gerarRecorrenciasVencidas(usuarioId = null) {
         const data = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
         if (new Date(item.data_inicio) > vencimento) continue;
         if (item.data_fim && new Date(item.data_fim) < vencimento) continue;
+                // Tenta vincular a um lançamento real já importado antes de criar um placeholder
+        const [reais] = await db.promise().query(
+            `SELECT id FROM transacoes
+             WHERE conta_id = ?
+               AND recorrencia_id IS NULL
+               AND tipo = ?
+               AND ABS(valor - ?) <= GREATEST(1, ? * 0.03)
+               AND ABS(DATEDIFF(data_transacao, ?)) <= 5
+             ORDER BY ABS(DATEDIFF(data_transacao, ?)) ASC
+             LIMIT 1`,
+            [item.conta_id, item.tipo, item.valor, item.valor, data, data]
+        );
+        if (reais.length) {
+            await db.promise().query('UPDATE transacoes SET recorrencia_id = ? WHERE id = ?', [item.id, reais[0].id]);
+            continue;
+        }
         const idUnico = `recorrencia-${item.id}-${ano}-${String(mes + 1).padStart(2, '0')}`;
         const [resultado] = await db.promise().query(
             `INSERT INTO transacoes
@@ -4576,7 +4615,52 @@ app.put('/recorrencias/:id', exigirLogin, async (req, res) => {
         res.status(500).json({ success: false, error: 'Falha ao atualizar recorrência.' });
     }
 });
+app.get('/recorrencias/comparativo', exigirLogin, async (req, res) => {
+    try {
+        await garantirEstruturaProduto();
+        const usuarioId = req.session.userId;
+        const ano = Number(req.query.ano) || new Date().getFullYear();
+        const mes = Number(req.query.mes) || (new Date().getMonth() + 1);
+        const inicioMes = `${ano}-${String(mes).padStart(2, '0')}-01`;
 
+        const [recorrencias] = await db.promise().query(
+            `SELECT r.*, COALESCE(NULLIF(cb.nome_personalizado, ''), NULLIF(cb.banco, ''), CONCAT('Conta ', cb.id)) AS conta
+             FROM transacoes_recorrentes r
+             JOIN contas_bancarias cb ON cb.id = r.conta_id AND cb.usuario_id = r.usuario_id
+             WHERE r.usuario_id = ?
+               AND r.data_inicio <= LAST_DAY(?)
+               AND (r.data_fim IS NULL OR r.data_fim >= ?)
+             ORDER BY r.dia_mes, r.descricao`,
+            [usuarioId, inicioMes, inicioMes]
+        );
+
+        const linhas = [];
+        for (const item of recorrencias) {
+            const [transacoes] = await db.promise().query(
+                `SELECT valor, data_transacao FROM transacoes
+                 WHERE recorrencia_id = ? AND YEAR(data_transacao) = ? AND MONTH(data_transacao) = ?
+                 ORDER BY data_transacao DESC LIMIT 1`,
+                [item.id, ano, mes]
+            );
+            const real = transacoes[0] || null;
+            let status = 'pendente';
+            if (real) {
+                const diferenca = Math.abs(Number(real.valor) - Number(item.valor));
+                const tolerancia = Math.max(1, Number(item.valor) * 0.03);
+                status = diferenca <= tolerancia ? 'ok' : 'divergente';
+            }
+            linhas.push({
+                id: item.id, descricao: item.descricao, categoria: item.categoria, conta: item.conta,
+                tipo: item.tipo, dia_mes: item.dia_mes, valor_esperado: Number(item.valor),
+                valor_real: real ? Number(real.valor) : null, data_real: real ? real.data_transacao : null,
+                status, ativa: Number(item.ativa)
+            });
+        }
+        res.json({ ano, mes, linhas });
+    } catch (erro) {
+        res.status(500).json({ success: false, error: 'Falha ao montar comparativo de recorrências.' });
+    }
+});
 app.delete('/recorrencias/:id', exigirLogin, async (req, res) => {
     try {
         const [resultado] = await db.promise().query(
