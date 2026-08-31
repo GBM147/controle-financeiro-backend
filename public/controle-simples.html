@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Controle Simples | GBM</title>
+    <link rel="stylesheet" href="gbm-pages.css">
+    <style>
+        .cs-resumo { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+        .cs-resumo .stat-card { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; padding:16px 18px; }
+        .cs-resumo .stat-card span.rotulo { display:block; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+        .cs-resumo .stat-card strong { font-size:1.4rem; font-weight:800; }
+        .cs-resumo .stat-card input { width:100%; margin-top:6px; }
+        table.tabela-cs { width:100%; border-collapse:collapse; }
+        table.tabela-cs th { text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); padding:0 10px 10px; font-weight:700; }
+        table.tabela-cs td { padding:11px 10px; border-top:1px solid var(--border-soft); font-size:.9rem; }
+        .status-select { min-height:32px; padding:5px 8px; border-radius:7px; font-weight:700; font-size:.82rem; }
+        .status-select.pago { color:var(--green); border-color:rgba(57,217,138,.4); background:rgba(57,217,138,.08); }
+        .status-select.pendente { color:var(--amber); border-color:rgba(85,167,255,.4); background:rgba(85,167,255,.08); }
+        .cs-excluir { color:var(--red); background:transparent; border:0; cursor:pointer; font-size:.82rem; font-weight:700; }
+    </style>
+    <link rel="stylesheet" href="gbm-tutorial.css">
+</head>
+<body class="gbm-interna">
+
+<header class="gbm-header">
+    <div class="gbm-logo-container">
+        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
+        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
+    </div>
+    <div class="gbm-header-actions">
+        <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
+            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
+            <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
+        </a>
+        <div class="gbm-menu-container">
+            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" style="position:relative;" aria-label="Abrir menu">
+                <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+            </button>
+        </div>
+    </div>
+</header>
+<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
+
+<div id="sidebar-menu" class="sidebar-menu">
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            <img src="logo-transparente.jpg" alt="Logo GBM" class="sidebar-logo">
+            <div class="sidebar-brand-text">
+                <strong>GBM Finance</strong>
+                <span>Proteção financeira para você</span>
+            </div>
+        </div>
+        <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
+    </div>
+    <nav class="sidebar-content" aria-label="Menu principal">
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Resumo</p>
+            <a href="dashboard.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">⌂</span>
+                <span class="menu-item-conteudo">Visão geral</span>
+            </a>
+        </div>
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Movimentações</p>
+            <a href="contas.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">▣</span>
+                <span class="menu-item-conteudo">Minhas contas</span>
+            </a>
+            <a href="importacoes.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">↥</span>
+                <span class="menu-item-conteudo">Importações</span>
+            </a>
+        </div>
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Planejamento</p>
+            <a href="calendario.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">□</span>
+                <span class="menu-item-conteudo">Calendário</span>
+            </a>
+            <a href="limite-de-gastos.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">◒</span>
+                <span class="menu-item-conteudo">Limite de gastos</span>
+            </a>
+            <a href="metas.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">◎</span>
+                <span class="menu-item-conteudo">Objetivos de poupança</span>
+            </a>
+            <a href="controle-simples.html" class="menu-item menu-item-ativo">
+                <span class="menu-item-icone" aria-hidden="true">▤</span>
+                <span class="menu-item-conteudo">Controle Simples</span>
+                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
+            </a>
+        </div>
+        <div class="menu-grupo menu-grupo-premium">
+            <p class="menu-grupo-titulo">Análises</p>
+            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
+                <span class="menu-item-icone" aria-hidden="true">▥</span>
+                <span class="menu-item-conteudo">Relatório mensal</span>
+                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
+            </a>
+            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
+                <span class="menu-item-icone" aria-hidden="true">⇄</span>
+                <span class="menu-item-conteudo">Comparativo mensal</span>
+                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
+            </a>
+        </div>
+        <div class="menu-grupo menu-grupo-conta">
+            <p class="menu-grupo-titulo">Conta</p>
+            <a href="notificacoes.html" class="menu-item menu-item-com-indicador">
+                <span class="menu-item-icone" aria-hidden="true">♧</span>
+                <span class="menu-item-conteudo">Notificações</span>
+            </a>
+            <a href="configuracoes.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">⚙</span>
+                <span class="menu-item-conteudo">Configurações</span>
+            </a>
+            <a href="perfil.html" class="menu-item">
+                <span class="menu-item-icone" aria-hidden="true">♙</span>
+                <span class="menu-item-conteudo">Perfil</span>
+            </a>
+            <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
+                <span class="menu-item-icone" aria-hidden="true">↪</span>
+                <span class="menu-item-conteudo">Sair</span>
+            </a>
+        </div>
+    </nav>
+</div>
+
+<main class="container">
+    <div class="page-title" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+        <div>
+            <div class="dashboard-breadcrumb"><span>Extra</span><b>›</b><strong>Controle Simples</strong></div>
+            <h1>Controle Simples</h1>
+            <p>Sua lista de contas fixas do mês, do jeito da planilha — devendo, valor e status de pagamento.</p>
+        </div>
+        <input id="mes-controle-simples" type="month" style="width:auto">
+    </div>
+
+    <div class="cs-resumo">
+        <div class="stat-card"><span class="rotulo">Total dos itens</span><strong id="cs-total">R$ 0,00</strong></div>
+        <div class="stat-card">
+            <span class="rotulo">Renda do mês</span>
+            <input id="cs-renda" type="number" step="0.01" min="0" placeholder="0,00">
+        </div>
+        <div class="stat-card"><span class="rotulo">Sobra</span><strong id="cs-sobra">R$ 0,00</strong></div>
+    </div>
+
+    <section class="card">
+        <h2>Adicionar item</h2>
+        <form id="form-cs-item" class="form-grid">
+            <div class="field"><label for="cs-data">Data</label><input id="cs-data" type="date" required></div>
+            <div class="field full"><label for="cs-descricao">Devendo</label><input id="cs-descricao" maxlength="180" required placeholder="Ex.: Cartão, Investimento, Bilhete..."></div>
+            <div class="field"><label for="cs-valor">Valor</label><input id="cs-valor" type="number" min="0.01" step="0.01" required inputmode="decimal"></div>
+            <div class="field"><label for="cs-status">Status de pagamento</label>
+                <select id="cs-status"><option value="pendente">Pendente</option><option value="pago">Pago</option></select>
+            </div>
+            <div class="field full"><div class="actions end"><button class="btn btn-primary" type="submit">Adicionar</button></div></div>
+        </form>
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="card">
+        <h2>Itens do mês</h2>
+        <div id="tabela-cs"><div class="empty">Carregando...</div></div>
+    </section>
+</main>
+
+<script src="auth.js"></script>
+<script src="gbm-pages.js"></script>
+<script>
+    const hoje = new Date();
+    document.getElementById('cs-data').value = hoje.toISOString().slice(0,10);
+    document.getElementById('mes-controle-simples').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+
+    let itensCs = [];
+    let rendaDebounce = null;
+
+    function periodoAtual() {
+        const [ano, mes] = document.getElementById('mes-controle-simples').value.split('-');
+        return { ano: Number(ano), mes: Number(mes) };
+    }
+
+    function atualizarResumoCs(total, renda) {
+        document.getElementById('cs-total').textContent = gbmMoeda(total);
+        const sobra = renda - total;
+        const elSobra = document.getElementById('cs-sobra');
+        elSobra.textContent = gbmMoeda(sobra);
+        elSobra.style.color = sobra >= 0 ? 'var(--green)' : 'var(--red)';
+    }
+
+    async function carregarControleSimples() {
+        const { ano, mes } = periodoAtual();
+        const container = document.getElementById('tabela-cs');
+        try {
+            const dados = await gbmJson(await fetchApi(`/controle-simples?ano=${ano}&mes=${mes}`));
+            itensCs = dados.itens;
+            document.getElementById('cs-renda').value = dados.renda || '';
+            atualizarResumoCs(dados.total, dados.renda);
+
+            if (!itensCs.length) {
+                container.innerHTML = '<div class="empty">Nenhum item cadastrado neste mês.</div>';
+                return;
+            }
+            container.innerHTML = `
+                <table class="tabela-cs">
+                    <thead><tr><th>Data</th><th>Devendo</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                        ${itensCs.map((item) => `
+                            <tr>
+                                <td>${gbmData(item.data)}</td>
+                                <td>${gbmEscapar(item.descricao)}</td>
+                                <td>${gbmMoeda(item.valor)}</td>
+                                <td>
+                                    <select class="status-select ${item.status}" onchange="alterarStatusCs(${item.id}, this)">
+                                        <option value="pendente" ${item.status === 'pago' ? '' : 'selected'}>Pendente</option>
+                                        <option value="pago" ${item.status === 'pago' ? 'selected' : ''}>Pago</option>
+                                    </select>
+                                </td>
+                                <td><button class="cs-excluir" onclick="excluirItemCs(${item.id})">Excluir</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+        } catch (erro) {
+            container.innerHTML = `<div class="empty">${gbmEscapar(erro.message)}</div>`;
+        }
+    }
+
+    document.getElementById('form-cs-item').addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+        try {
+            await gbmJson(await fetchApi('/controle-simples', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    data: document.getElementById('cs-data').value,
+                    descricao: document.getElementById('cs-descricao').value,
+                    valor: Number(document.getElementById('cs-valor').value),
+                    status: document.getElementById('cs-status').value
+                })
+            }));
+            gbmToast('Item adicionado.');
+            document.getElementById('form-cs-item').reset();
+            document.getElementById('cs-data').value = hoje.toISOString().slice(0,10);
+            document.getElementById('cs-status').value = 'pendente';
+            carregarControleSimples();
+        } catch (erro) { gbmToast(erro.message, 'erro'); }
+    });
+
+    async function alterarStatusCs(id, select) {
+        select.className = `status-select ${select.value}`;
+        try {
+            await gbmJson(await fetchApi(`/controle-simples/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: select.value })
+            }));
+            carregarControleSimples();
+        } catch (erro) { gbmToast(erro.message, 'erro'); }
+    }
+
+    async function excluirItemCs(id) {
+        if (!confirm('Excluir este item?')) return;
+        try {
+            await gbmJson(await fetchApi(`/controle-simples/${id}`, { method: 'DELETE' }));
+            carregarControleSimples();
+        } catch (erro) { gbmToast(erro.message, 'erro'); }
+    }
+
+    document.getElementById('cs-renda').addEventListener('input', (evento) => {
+        clearTimeout(rendaDebounce);
+        rendaDebounce = setTimeout(async () => {
+            const { ano, mes } = periodoAtual();
+            const renda = Number(evento.target.value || 0);
+            try {
+                await gbmJson(await fetchApi('/controle-simples/renda/definir', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ano, mes, renda })
+                }));
+                const total = itensCs.reduce((soma, item) => soma + Number(item.valor), 0);
+                atualizarResumoCs(total, renda);
+            } catch (erro) { gbmToast(erro.message, 'erro'); }
+        }, 500);
+    });
+
+    document.getElementById('mes-controle-simples').addEventListener('change', carregarControleSimples);
+
+    carregarAtalhoPerfilCabecalho();
+    carregarControleSimples();
+</script>
+<script src="gbm-tutorial.js"></script>
+<script src="gbm-menu.js"></script>
+
+<div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
+    <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:480px; width:90%; box-shadow:0 0 30px rgba(95,255,168,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="logo-transparente.jpg" style="height:32px; border-radius:6px;">
+                <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
+            </div>
+            <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="lista-notificacoes-modal" style="display:flex; flex-direction:column; gap:12px; max-height:340px; overflow-y:auto;"></div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">CONFIRMAR</button>
+            <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">FECHAR</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
