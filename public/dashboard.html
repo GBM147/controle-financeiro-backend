@@ -1519,6 +1519,59 @@
 </button>
     </form>
 </div>
+
+<section class="card" id="secao-gastos-recorrentes" aria-labelledby="titulo-gastos-recorrentes" style="margin-top:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <h3 id="titulo-gastos-recorrentes" style="margin:0;">Gastos Recorrentes</h3>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <label for="recorrentes-renda" style="font-size:.82rem;color:var(--texto-mutado);">Renda fixa</label>
+            <input type="number" id="recorrentes-renda" placeholder="R$ 0,00" step="0.01" style="width:120px;" onchange="salvarRendaRecorrentes()">
+        </div>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+        <div style="flex:1;min-width:140px;background:#CC0000;border-radius:10px;padding:14px;text-align:center;">
+            <span style="display:block;font-size:.75rem;font-weight:700;color:#fff;letter-spacing:1px;">TOTAL</span>
+            <strong id="recorrentes-total" style="font-size:1.3rem;color:#fff;">R$ 0,00</strong>
+        </div>
+        <div style="flex:1;min-width:140px;background:#93C47D;border-radius:10px;padding:14px;text-align:center;">
+            <span style="display:block;font-size:.75rem;font-weight:700;color:#003300;letter-spacing:1px;">SOBRA</span>
+            <strong id="recorrentes-sobra" style="font-size:1.3rem;color:#003300;">R$ 0,00</strong>
+        </div>
+    </div>
+
+    <form id="form-recorrente" onsubmit="return adicionarRecorrente(event)" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+        <input type="date" id="recorrente-data" required style="flex:1;min-width:130px;">
+        <input type="text" id="recorrente-descricao" placeholder="Devendo (descrição)" required style="flex:2;min-width:160px;">
+        <input type="number" id="recorrente-valor" placeholder="Valor" step="0.01" required style="flex:1;min-width:110px;">
+        <select id="recorrente-status" style="flex:1;min-width:110px;">
+            <option value="pendente">A pagar</option>
+            <option value="pago">Pago</option>
+        </select>
+        <button type="submit" class="btn-acao">Adicionar</button>
+    </form>
+
+    <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="background:#6D9EEB;color:#073763;padding:8px;text-align:left;">DATA</th>
+                    <th style="background:#B7B7B7;color:#333;padding:8px;text-align:left;">DEVENDO</th>
+                    <th style="background:#93C47D;color:#003300;padding:8px;text-align:right;">VALOR</th>
+                    <th style="background:#B7B7B7;color:#333;padding:8px;text-align:center;">STATUS DE PAGAMENTO</th>
+                    <th style="padding:8px;"></th>
+                </tr>
+            </thead>
+            <tbody id="recorrentes-corpo">
+                <tr><td colspan="5" style="padding:12px;text-align:center;color:var(--texto-mutated);">Carregando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top:20px;max-width:100%;">
+        <canvas id="grafico-recorrentes" height="90"></canvas>
+    </div>
+</section>
 <script src="auth.js"></script>
 <script>
 // Variável global para sabermos o status do cliente em qualquer lugar da tela
@@ -2411,6 +2464,155 @@ function fecharModalNotificacoes(confirmado = false) {
             const sidebar = document.getElementById('sidebar-menu');
             if (!sidebar) return;
             sidebar.addEventListener('wheel', (event) => event.stopPropagation(), { passive: true });
+        });
+
+        // --- GASTOS RECORRENTES (espelha a aba "GASTOS FIXOS" da planilha) ---
+        let recorrentesItens = [];
+        let graficoRecorrentesInstancia = null;
+
+        function formatarMoedaRecorrentes(valor) {
+            return (Number(valor) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        async function carregarRecorrentes() {
+            const corpo = document.getElementById('recorrentes-corpo');
+            if (!corpo) return;
+            corpo.innerHTML = '<tr><td colspan="5" style="padding:12px;text-align:center;color:var(--texto-mutated);">Carregando...</td></tr>';
+            try {
+                const hoje = new Date();
+                const params = new URLSearchParams({ mes: hoje.getMonth() + 1, ano: hoje.getFullYear() });
+                const resposta = await fetchApi('/controle-simples?' + params.toString());
+                const dados = await resposta.json();
+                recorrentesItens = Array.isArray(dados.itens) ? dados.itens : [];
+                const campoRenda = document.getElementById('recorrentes-renda');
+                if (campoRenda && document.activeElement !== campoRenda) {
+                    campoRenda.value = dados.renda || '';
+                }
+                renderizarRecorrentes(dados.total, dados.sobra);
+            } catch (e) {
+                console.error('Erro ao carregar gastos recorrentes:', e);
+                corpo.innerHTML = '<tr><td colspan="5" style="padding:12px;text-align:center;color:var(--cor-despesa);">Não foi possível carregar os gastos recorrentes.</td></tr>';
+            }
+        }
+
+        function renderizarRecorrentes(total, sobra) {
+            const corpo = document.getElementById('recorrentes-corpo');
+            if (!corpo) return;
+            if (!recorrentesItens.length) {
+                corpo.innerHTML = '<tr><td colspan="5" style="padding:12px;text-align:center;color:var(--texto-mutated);">Nenhum gasto recorrente neste mês.</td></tr>';
+            } else {
+                corpo.innerHTML = recorrentesItens.map((item) => {
+                    const data = item.data ? new Date(item.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+                    const pago = item.status === 'pago';
+                    return `<tr>
+                        <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.08);">${data}</td>
+                        <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.08);">${escaparHtmlDashboard(item.descricao || '')}</td>
+                        <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:right;">${formatarMoedaRecorrentes(item.valor)}</td>
+                        <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center;">
+                            <select onchange="atualizarStatusRecorrente(${Number(item.id)}, this.value)" style="color:${pago ? '#38761D' : '#CC0000'};font-weight:700;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:6px;">
+                                <option value="pendente" ${!pago ? 'selected' : ''}>A pagar</option>
+                                <option value="pago" ${pago ? 'selected' : ''}>Pago</option>
+                            </select>
+                        </td>
+                        <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center;">
+                            <button type="button" class="btn-acao" style="padding:4px 10px;" onclick="excluirRecorrente(${Number(item.id)})">Excluir</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+
+            const totalEl = document.getElementById('recorrentes-total');
+            const sobraEl = document.getElementById('recorrentes-sobra');
+            if (totalEl) totalEl.textContent = formatarMoedaRecorrentes(total);
+            if (sobraEl) sobraEl.textContent = formatarMoedaRecorrentes(sobra);
+
+            renderizarGraficoRecorrentes();
+        }
+
+        function renderizarGraficoRecorrentes() {
+            const ctx = document.getElementById('grafico-recorrentes');
+            if (!ctx || typeof Chart === 'undefined') return;
+            const labels = recorrentesItens.map((i) => i.descricao || '');
+            const valores = recorrentesItens.map((i) => Number(i.valor) || 0);
+            if (graficoRecorrentesInstancia) graficoRecorrentesInstancia.destroy();
+            graficoRecorrentesInstancia = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Valor', data: valores, backgroundColor: '#1f1f1f' }] },
+                options: { responsive: true, plugins: { legend: { display: true } } }
+            });
+        }
+
+        async function adicionarRecorrente(evento) {
+            evento.preventDefault();
+            const corpo = {
+                data: document.getElementById('recorrente-data').value,
+                descricao: document.getElementById('recorrente-descricao').value,
+                valor: document.getElementById('recorrente-valor').value,
+                status: document.getElementById('recorrente-status').value
+            };
+            try {
+                const resposta = await fetchApi('/controle-simples', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(corpo)
+                });
+                if (!resposta.ok) throw new Error('Falha ao salvar');
+                document.getElementById('form-recorrente').reset();
+                carregarRecorrentes();
+            } catch (e) {
+                console.error('Erro ao adicionar gasto recorrente:', e);
+                gbmAlerta('Não foi possível salvar o gasto recorrente.', 'erro');
+            }
+            return false;
+        }
+
+        async function atualizarStatusRecorrente(id, status) {
+            try {
+                const resposta = await fetchApi('/controle-simples/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (!resposta.ok) throw new Error('Falha ao atualizar status');
+                carregarRecorrentes();
+            } catch (e) {
+                console.error('Erro ao atualizar status do gasto recorrente:', e);
+            }
+        }
+
+        async function excluirRecorrente(id) {
+            if (!confirm('Excluir este gasto recorrente?')) return;
+            try {
+                const resposta = await fetchApi('/controle-simples/' + id, { method: 'DELETE' });
+                if (!resposta.ok) throw new Error('Falha ao excluir');
+                carregarRecorrentes();
+            } catch (e) {
+                console.error('Erro ao excluir gasto recorrente:', e);
+            }
+        }
+
+        async function salvarRendaRecorrentes() {
+            const hoje = new Date();
+            const renda = Number(document.getElementById('recorrentes-renda').value);
+            if (!Number.isFinite(renda) || renda < 0) return;
+            try {
+                await fetchApi('/controle-simples/renda/definir', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ano: hoje.getFullYear(), mes: hoje.getMonth() + 1, renda })
+                });
+                carregarRecorrentes();
+            } catch (e) {
+                console.error('Erro ao salvar renda fixa:', e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dataRecorrente = document.getElementById('recorrente-data');
+            if (dataRecorrente && !dataRecorrente.value) {
+                dataRecorrente.value = new Date().toISOString().slice(0, 10);
+            }
+            carregarRecorrentes();
         });
         // --- FUNÇÃO PARA DESFAZER ÚLTIMO LANÇAMENTO ---
         async function desfazerUltimo() {
