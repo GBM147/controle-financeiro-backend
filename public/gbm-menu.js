@@ -139,14 +139,7 @@
                     <a href="dashboard.html" data-menu-page="dashboard.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">⌂</span><span class="menu-item-conteudo">Visão geral</span><span class="menu-item-ativo-indicador" aria-hidden="true"></span></a>
                 </div>
                 <div class="menu-grupo">
-                    <p class="menu-grupo-titulo">Movimentações</p>
-                    <a href="contas.html" data-menu-page="contas.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">▣</span><span class="menu-item-conteudo">Minhas contas</span></a>
-                    <a href="importacoes.html" data-menu-page="importacoes.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">↥</span><span class="menu-item-conteudo">Importações</span></a>
-                </div>
-                <div class="menu-grupo">
                     <p class="menu-grupo-titulo">Planejamento</p>
-                    <a href="calendario.html" data-menu-page="calendario.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">□</span><span class="menu-item-conteudo">Calendário</span></a>
-                    <a href="limite-de-gastos.html" data-menu-page="limite-de-gastos.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">◒</span><span class="menu-item-conteudo">Limite de gastos</span></a>
                     <a href="metas.html" data-menu-page="metas.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">◎</span><span class="menu-item-conteudo">Objetivos de poupança</span></a>
                 </div>
                 <div class="menu-grupo menu-grupo-premium">
@@ -159,6 +152,8 @@
                     <a href="notificacoes.html" data-menu-page="notificacoes.html" class="menu-item menu-item-com-indicador"><span class="menu-item-icone" aria-hidden="true">♧</span><span class="menu-item-conteudo">Notificações</span><span class="menu-item-indicadores"><span id="badge-alertas-menu" style="display:none;background:#ef4444;color:#fff;border-radius:10px;font-size:.56rem;padding:2px 7px;">0</span></span></a>
                     <a href="configuracoes.html" data-menu-page="configuracoes.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">⚙</span><span class="menu-item-conteudo">Configurações</span></a>
                     <a href="perfil.html" data-menu-page="perfil.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">♙</span><span class="menu-item-conteudo">Perfil</span></a>
+                    <a href="fale-conosco.html" data-menu-page="fale-conosco.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">✉</span><span class="menu-item-conteudo">Fale conosco</span></a>
+                    <a href="sobre.html" data-menu-page="sobre.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">ℹ</span><span class="menu-item-conteudo">Sobre</span></a>
                     <a href="#" id="menu-sair" class="menu-item menu-item-sair texto-vermelho"><span class="menu-item-icone" aria-hidden="true">↪</span><span class="menu-item-conteudo">Sair</span></a>
                 </div>
             </nav>

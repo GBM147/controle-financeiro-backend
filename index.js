@@ -415,19 +415,10 @@ const limitarImportacao = criarLimitador({
     prefixo: 'importacao'
 });
 const PAGINAS_PRIVADAS_OU_DE_ACAO = new Set([
-    'assinatura.html', 'calendario.html', 'comparativo.html', 'configuracoes.html',
-    'controle-simples.html', 'contas.html', 'dashboard.html', 'importacoes.html', 'importar-pdf.html',
-    'limite-de-gastos.html', 'login.html', 'metas.html', 'notificacoes.html',
-    'pagamento.html', 'perfil.html', 'privacidade.html', 'relatorio-avancado.html'
+    'assinatura.html', 'comparativo.html', 'configuracoes.html', 'dashboard.html',
+    'login.html', 'metas.html', 'notificacoes.html', 'pagamento.html', 'perfil.html',
+    'privacidade.html', 'relatorio-avancado.html'
 ]);
-
-// Preserva favoritos e links antigos após padronizar o nome para kebab-case.
-app.get('/Limite-de-Gastos.html', (req, res, next) => {
-    if (req.path !== '/limite-de-gastos.html') {
-        return res.redirect(308, '/limite-de-gastos.html');
-    }
-    next();
-});
 
 // Entrega os arquivos públicos. Tutorial e service worker nunca podem ficar
 // presos no cache do navegador ou do proxy após uma atualização.

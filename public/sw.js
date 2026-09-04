@@ -6,7 +6,6 @@ const ARQUIVOS_ESTATICOS = [
     '/login.html',
     '/termos.html',
     '/politica-de-privacidade.html',
-    '/educacao-financeira.html',
     '/sobre.html',
     '/offline.html',
     '/guias.css',
