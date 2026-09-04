@@ -1,39 +1,271 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Notificações | GBM</title>
-    <link rel="stylesheet" href="gbm-pages.css">
+    <title>GBM — Notificações</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <style>
-        .notificacao { padding:15px; border:1px solid rgba(255,255,255,.09); border-radius:11px; background:rgba(255,255,255,.025); }
-        .notificacao.nao-lida { border-color:rgba(57,217,138,.34); background:rgba(57,217,138,.05); }
-        .notificacao + .notificacao { margin-top:10px; }
-        .switch-row { display:flex;justify-content:space-between;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08); }
-        .switch-row input { width:20px;height:20px;min-height:auto; }
+        :root {
+            --cor-destaque: #2E8B57;
+            --texto-principal: #ffffff;
+            --texto-mutado: #b0bec5;
+            --borda: rgba(255,255,255,0.15);
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0; padding: 0;
+            background-image: linear-gradient(rgba(15,23,42,0.85), rgba(15,23,42,0.9)), url('fundo-marmore.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--texto-principal); min-height: 100vh;
+        }
+
+        /* ===== CABEÇALHO ===== */
+        .gbm-header {
+            min-height: 74px; height: 74px; padding: 0 34px;
+            background: rgba(7,17,31,.3); border-bottom: 1px solid rgba(255,255,255,.12);
+            backdrop-filter: blur(9px);
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
+        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; animation: float-logo 4s ease-in-out infinite; }
+        @keyframes float-logo { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        .gbm-title {
+            font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px; margin: 0; cursor: default;
+            background: linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+            animation: gbm-shine 4s linear infinite;
+        }
+        @keyframes gbm-shine { 0%{background-position:0% center} 100%{background-position:200% center} }
+        .gbm-header-actions { display: flex; align-items: center; gap: 10px; }
+        .atalho-perfil {
+            display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+            padding: 4px 10px 4px 4px; border: 0; border-radius: 999px;
+            background: transparent; color: var(--texto-principal); text-decoration: none; transition: color .2s;
+        }
+        .atalho-perfil:hover { color: #5fffa8; }
+        .avatar-perfil-cabecalho { width: 37px; height: 37px; border-radius: 50%; object-fit: cover; border: 1px solid var(--cor-destaque); background: #101b2c; }
+        .nome-perfil-cabecalho { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .86rem; font-weight: 700; }
+        .gbm-menu-container { position: relative; z-index: 1000; }
+        .gbm-menu-btn { display: flex; align-items: center; justify-content: center; width: 34px; min-height: 40px; padding: 0; border: 0; background: transparent; cursor: pointer; color: var(--texto-principal); }
+        .gbm-menu-btn:hover { color: #5fffa8; }
+        .hamburger-icon { display: inline-flex; width: 27px; flex-direction: column; gap: 5px; }
+        .hamburger-icon span { display: block; width: 100%; height: 2px; border-radius: 2px; background: linear-gradient(90deg,#5fffa8,#3d28ff); }
+
+        /* ===== MENU LATERAL ===== */
+        .menu-overlay { display: none; position: fixed; inset: 0; z-index: 9998; background: rgba(0,0,0,.35); backdrop-filter: blur(8px); }
+        .sidebar-menu {
+            position: fixed; top: 0; right: -278px; bottom: 0; width: 258px;
+            height: 100dvh; z-index: 9999; background: #091a2a;
+            border-left: 1px solid rgba(85,167,255,.18); box-shadow: -14px 0 34px rgba(0,0,0,.5);
+            transition: right .4s cubic-bezier(.25,.8,.25,1);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .sidebar-menu.aberto { right: 0; }
+        .sidebar-header { min-height: 78px; padding: 15px 14px 14px 16px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-brand { display: flex; align-items: center; gap: 9px; }
+        .sidebar-logo { width: 28px; height: 28px; border-radius: 7px; }
+        .sidebar-brand-text { display: flex; flex-direction: column; line-height: 1.05; }
+        .sidebar-brand-text strong {
+            background: linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%);
+            background-size: 200% auto; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; animation: gbm-shine 4s linear infinite;
+            font: 700 .79rem 'Inter', sans-serif;
+        }
+        .sidebar-brand-text span { margin-top: 3px; color: #718198; font: 500 .56rem 'Inter', sans-serif; }
+        .fechar-btn { width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 0; color: #d9e7f5; font-size: 25px; background: transparent; cursor: pointer; }
+        .fechar-btn:hover { color: #5fffa8; }
+        .sidebar-content { padding: 12px 10px 15px; flex: 1; overflow-y: auto; }
+        .menu-grupo { padding: 0 0 8px; }
+        .menu-grupo-titulo { padding: 9px 9px 5px; margin: 0; color: #58708b; font-size: .5rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .menu-item {
+            position: relative; display: flex; align-items: center; gap: 9px;
+            min-height: 34px; padding: 7px 9px; border-left: 2px solid transparent; border-radius: 7px;
+            color: #dce6f0; background: transparent; font: 600 .68rem 'Inter', sans-serif; text-decoration: none;
+            transition: background .18s, color .18s, border-color .18s;
+        }
+        .menu-item-icone { width: 15px; flex: 0 0 15px; text-align: center; color: #7d9abd; font-size: .78rem; }
+        .menu-item:hover { background: rgba(85,167,255,.07); border-left-color: rgba(85,167,255,.45); color: #f5f9ff; }
+        .menu-item-ativo { background: rgba(34,91,113,.38); color: #effcff; border-left-color: #39d98a; }
+        .menu-item-ativo .menu-item-icone { color: #39d98a; }
+        .menu-item-ativo-indicador { width: 3px; height: 17px; border-radius: 3px; background: linear-gradient(180deg,#5fffa8,#3d28ff); box-shadow: 0 0 8px rgba(57,217,138,.28); margin-left: auto; }
+        .menu-item-sair { color: #ff7d8a; }
+        .menu-item-sair .menu-item-icone { color: #ff7d8a; }
+        .menu-item-sair:hover { border-left-color: #ff5d6c; background: rgba(255,93,108,.08); color: #ff9aa4; }
+        .cadeado-premium { display: none; min-height: 18px; padding: 2px 6px; border: 1px solid rgba(85,167,255,.45); border-radius: 999px; background: rgba(85,167,255,.12); color: #9dcbff; font-size: .48rem; font-weight: 700; margin-left: auto; }
+        .aviso-recursos-premium { display: none; margin: 2px 8px 5px; padding: 7px 8px; border: 1px solid rgba(85,167,255,.35); border-radius: 8px; background: rgba(85,167,255,.08); color: #b7d8f6; font-size: .57rem; }
+        .menu-item-premium.recurso-bloqueado { opacity: .72; }
+
+        /* ===== CARD BASE ===== */
+        .card {
+            position: relative; overflow: hidden;
+            border: 1px solid rgba(85,167,255,.2); border-radius: 17px;
+            background: rgba(15,26,43,.96);
+            box-shadow: 0 14px 34px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.025);
+            transition: border-color .25s, box-shadow .25s;
+        }
+        .card::before {
+            content: ""; position: absolute; inset: 0 0 auto; height: 1px;
+            background: linear-gradient(90deg,transparent,rgba(85,167,255,.4),transparent); pointer-events: none;
+        }
+        .card:hover { border-color: rgba(85,167,255,.38); box-shadow: 0 17px 38px rgba(0,0,0,.46), inset 0 1px rgba(255,255,255,.035); }
+
+        /* ===== BOTÕES ===== */
+        .btn-acao {
+            position: relative; overflow: hidden;
+            padding: 10px 20px; border-radius: 8px; background: #26874E; color: #fff;
+            font-weight: 700; border: 1px solid rgba(38,135,78,.42); cursor: pointer;
+            transition: background .2s, box-shadow .2s; font-family: inherit; font-size: .85rem;
+        }
+        .btn-acao:hover { background: #319f6b; box-shadow: 0 8px 22px rgba(0,0,0,.3); }
+        .btn-acao::after {
+            content: ''; position: absolute; top: -50%; left: -60%; width: 30%; height: 200%;
+            background: linear-gradient(to right,rgba(255,255,255,0),rgba(255,255,255,.18),rgba(255,255,255,0));
+            transform: rotate(30deg); animation: btn-shine 4s infinite ease-in-out;
+        }
+        @keyframes btn-shine { 0%{left:-60%} 15%{left:130%} 100%{left:130%} }
+
+        .btn-secundario { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); padding: 8px 16px; border-radius: 8px; color: #fff; cursor: pointer; font-family: inherit; font-size: .82rem; font-weight: 600; transition: background .2s; }
+        .btn-secundario:hover { background: rgba(255,255,255,.15); }
+        .btn-danger { background: rgba(127,29,29,.55); border: 1px solid rgba(248,113,113,.45); padding: 6px 12px; border-radius: 7px; color: #fecaca; cursor: pointer; font-family: inherit; font-size: .78rem; font-weight: 700; transition: background .2s; }
+        .btn-danger:hover { background: rgba(185,28,28,.7); }
+
+        /* ===== INPUTS ===== */
+        input, select, textarea {
+            padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.11);
+            background: rgba(12,27,45,.86); color: #eef5ff; font-size: .88rem;
+            outline: none; font-family: inherit; transition: border-color .2s, box-shadow .2s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: rgba(85,167,255,.65); box-shadow: 0 0 0 3px rgba(85,167,255,.11); }
+        textarea { resize: vertical; }
+
+        /* ===== TOGGLE (switch) ===== */
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; inset: 0; background: rgba(255,255,255,.15); border-radius: 34px; cursor: pointer; transition: .3s; }
+        .slider::before { content: ""; position: absolute; width: 20px; height: 20px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s; }
+        input:checked + .slider { background: #26874E; }
+        input:checked + .slider::before { transform: translateX(20px); }
+
+        /* ===== LAYOUT ===== */
+        .page-content { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+        .page-topo { margin-bottom: 28px; }
+        .page-topo h2 { margin: 0 0 4px; color: #f7fbff; font: 700 clamp(1.4rem,2.2vw,2rem) 'Inter', sans-serif; letter-spacing: -.03em; }
+        .page-topo p { margin: 0; color: #9aa9bb; font-size: .82rem; }
+
+        .secao { margin-bottom: 22px; }
+        .secao-titulo { font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #58708b; margin: 0 0 10px; }
+
+        /* ===== CARD VERSÍCULO ===== */
+        .card-versiculo { padding: 20px 22px; margin-bottom: 22px; border-color: rgba(57,217,138,.28) !important; }
+        .versiculo-texto { font-style: italic; color: #c8e6c9; font-size: .95rem; line-height: 1.6; margin: 0 0 6px; }
+        .versiculo-ref { font-size: .75rem; color: #8bffc1; font-weight: 700; }
+
+        /* ===== CARD CONFIGURAR AVISOS ===== */
+        .card-config { padding: 22px 24px; }
+        .config-linha { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.06); flex-wrap: wrap; }
+        .config-linha:last-child { border-bottom: 0; padding-bottom: 0; }
+        .config-info { min-width: 0; flex: 1; }
+        .config-info strong { display: block; font-size: .88rem; margin-bottom: 3px; color: #eef5ff; }
+        .config-info span { font-size: .75rem; color: var(--texto-mutado); line-height: 1.4; }
+        .config-controle { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .config-controle select { height: 34px; padding: 0 10px; font-size: .78rem; min-width: 110px; }
+
+        /* ===== CARD MENSAGEM PERSONALIZADA ===== */
+        .card-mensagem { padding: 22px 24px; }
+        .msg-preview {
+            padding: 14px 16px; border-radius: 10px; border: 1px solid rgba(85,167,255,.2);
+            background: rgba(20,34,57,.88); font-size: .85rem; line-height: 1.6; color: #dce6f0;
+            margin-top: 12px;
+        }
+        .msg-preview .tag-versiculo { display: block; margin-top: 10px; color: #8bffc1; font-style: italic; font-size: .78rem; border-top: 1px solid rgba(57,217,138,.2); padding-top: 8px; }
+
+        /* ===== LISTA DE ALERTAS ===== */
+        .alertas-lista { display: flex; flex-direction: column; gap: 10px; }
+        .alerta-item {
+            display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px;
+            border-radius: 12px; border: 1px solid rgba(255,255,255,.07);
+            background: rgba(20,34,57,.88); transition: background .2s;
+        }
+        .alerta-item.nao-lido { border-color: rgba(85,167,255,.25); background: rgba(28,48,78,.88); }
+        .alerta-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+        .alerta-dot.nao-lido { background: #55a7ff; box-shadow: 0 0 6px rgba(85,167,255,.6); }
+        .alerta-dot.lido { background: rgba(255,255,255,.2); }
+        .alerta-corpo { min-width: 0; flex: 1; }
+        .alerta-corpo strong { display: block; font-size: .82rem; color: #eef5ff; margin-bottom: 3px; }
+        .alerta-corpo p { margin: 0 0 6px; font-size: .78rem; color: #b0bec5; line-height: 1.5; }
+        .alerta-versiculo { font-size: .72rem; color: #8bffc1; font-style: italic; }
+        .alerta-meta { font-size: .68rem; color: #58708b; margin-top: 4px; }
+        .alerta-acoes { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .badge-novo { display: inline-block; padding: 2px 7px; border-radius: 999px; background: rgba(85,167,255,.18); border: 1px solid rgba(85,167,255,.4); color: #9dcbff; font-size: .6rem; font-weight: 700; }
+
+        /* ===== ESTADO VAZIO ===== */
+        .estado-vazio { text-align: center; padding: 40px 20px; color: var(--texto-mutado); }
+        .estado-vazio .icone { font-size: 2rem; margin-bottom: 10px; }
+        .estado-vazio p { font-size: .85rem; margin: 0; }
+
+        /* ===== MODAL NOTIFICAÇÕES ===== */
+        .modal-notif { display: none; position: fixed; inset: 0; z-index: 99999; align-items: center; justify-content: center; background: rgba(0,0,0,.75); backdrop-filter: blur(6px); }
+        .modal-notif-dialogo { background: #0f1a2b; border: 1px solid rgba(95,255,168,.3); border-radius: 16px; padding: 30px; max-width: 480px; width: 90%; box-shadow: 0 0 30px rgba(95,255,168,.1); }
+        .modal-notif-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-notif-titulo { display: flex; align-items: center; gap: 10px; }
+        .modal-notif-titulo img { height: 32px; border-radius: 6px; }
+        .modal-notif-titulo span { font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; letter-spacing: 2px; color: #5fffa8; }
+        .modal-notif-fechar { background: none; border: none; color: #b0bec5; font-size: 1.5rem; cursor: pointer; }
+        .modal-notif-corpo { display: flex; flex-direction: column; gap: 12px; max-height: 340px; overflow-y: auto; }
+        .modal-notif-acoes { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-notif-acoes button { flex: 1; padding: 12px; border-radius: 8px; font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: background .2s; }
+        #btn-confirmar-modal { display: none; background: #2E8B57; color: #fff; border: none; }
+        #btn-confirmar-modal:hover { background: #246e45; }
+        #btn-fechar-modal { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.15); }
+        #btn-fechar-modal:hover { background: rgba(255,255,255,.15); }
+
+        /* ===== RESPONSIVO ===== */
+        @media (max-width: 768px) {
+            .gbm-header { padding: 0 15px; min-height: 62px; height: 62px; }
+            .gbm-title { display: none; }
+            .nome-perfil-cabecalho { display: none; }
+            .sidebar-menu { width: min(286px,88vw); right: calc(-1 * min(306px,92vw)); }
+            .config-linha { flex-direction: column; align-items: flex-start; }
+            .config-controle { width: 100%; }
+            .config-controle select { flex: 1; }
+        }
     </style>
-    <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
-<body class="gbm-interna">
-    <header class="gbm-header">
+<body>
+
+<canvas id="particles-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>
+
+<!-- CABEÇALHO -->
+<header class="gbm-header">
     <div class="gbm-logo-container">
         <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
         <h1 class="gbm-title">Guardian Of Budget &amp; Money</h1>
     </div>
     <div class="gbm-header-actions">
         <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
-            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
+            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Foto de perfil" class="avatar-perfil-cabecalho">
             <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
         </a>
         <div class="gbm-menu-container">
-            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" aria-label="Abrir menu">
+            <button class="gbm-menu-btn" onclick="abrirMenuLateral(event)" aria-label="Abrir menu">
                 <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
             </button>
         </div>
     </div>
 </header>
-<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
 
+<!-- OVERLAY + MENU LATERAL -->
+<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
 <div id="sidebar-menu" class="sidebar-menu">
     <div class="sidebar-header">
         <div class="sidebar-brand">
@@ -43,171 +275,595 @@
                 <span>Proteção financeira para você</span>
             </div>
         </div>
-        <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
+        <button class="fechar-btn" onclick="fecharMenuLateral()">&times;</button>
     </div>
-    <nav class="sidebar-content" aria-label="Menu principal">
+    <nav class="sidebar-content">
         <div class="menu-grupo">
             <p class="menu-grupo-titulo">Resumo</p>
-            <a href="dashboard.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">⌂</span>
-                <span class="menu-item-conteudo">Visão geral</span>
-                
-            </a>
-        </div>
-        <div class="menu-grupo">
-            <p class="menu-grupo-titulo">Movimentações</p>
-            <a href="contas.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">▣</span>
-                <span class="menu-item-conteudo">Minhas contas</span>
-                
-            </a>
-            <a href="importacoes.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">↥</span>
-                <span class="menu-item-conteudo">Importações</span>
-                
-            </a>
+            <a href="dashboard.html" class="menu-item"><span class="menu-item-icone">⌂</span><span>Gastos Fixos</span></a>
         </div>
         <div class="menu-grupo">
             <p class="menu-grupo-titulo">Planejamento</p>
-            <a href="calendario.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">□</span>
-                <span class="menu-item-conteudo">Calendário</span>
-                
-            </a>
-            <a href="limite-de-gastos.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">◒</span>
-                <span class="menu-item-conteudo">Limite de gastos</span>
-                
-            </a>
-            <a href="metas.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">◎</span>
-                <span class="menu-item-conteudo">Objetivos de poupança</span>
-                
-            </a>
+            <a href="metas.html" class="menu-item"><span class="menu-item-icone">◎</span><span>Objetivos de poupança</span></a>
         </div>
-        <div class="menu-grupo menu-grupo-premium">
+        <div class="menu-grupo" style="border-top:1px solid rgba(255,255,255,.08);padding-top:8px;">
             <p class="menu-grupo-titulo">Análises</p>
-            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
-                <span class="menu-item-icone" aria-hidden="true">▥</span>
-                <span class="menu-item-conteudo">Relatório mensal</span>
-                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
+            <a href="#" class="menu-item menu-item-premium" onclick="acessarRotaPremium('relatorio-avancado.html','Relatório mensal');return false;">
+                <span class="menu-item-icone">▥</span><span>Relatório mensal</span>
+                <span id="cadeado-relatorio" class="cadeado-premium">Premium</span>
             </a>
-            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
-                <span class="menu-item-icone" aria-hidden="true">⇄</span>
-                <span class="menu-item-conteudo">Comparativo mensal</span>
-                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
+            <a href="#" class="menu-item menu-item-premium" onclick="acessarRotaPremium('comparativo.html','Comparativo mensal');return false;">
+                <span class="menu-item-icone">⇄</span><span>Comparativo mensal</span>
+                <span id="cadeado-comparativo" class="cadeado-premium">Premium</span>
             </a>
+            <div id="aviso-recursos-premium" class="aviso-recursos-premium"></div>
         </div>
-        <div class="menu-grupo menu-grupo-conta">
+        <div class="menu-grupo" style="margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;">
             <p class="menu-grupo-titulo">Conta</p>
-            <a href="notificacoes.html" class="menu-item menu-item-ativo menu-item-com-indicador">
-                <span class="menu-item-icone" aria-hidden="true">♧</span>
-                <span class="menu-item-conteudo">Notificações</span>
-                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
+            <a href="notificacoes.html" class="menu-item menu-item-ativo">
+                <span class="menu-item-icone">♧</span><span>Notificações</span>
+                <span class="menu-item-ativo-indicador"></span>
             </a>
-            <a href="configuracoes.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">⚙</span>
-                <span class="menu-item-conteudo">Configurações</span>
-                
-            </a>
-            <a href="perfil.html" class="menu-item ">
-                <span class="menu-item-icone" aria-hidden="true">♙</span>
-                <span class="menu-item-conteudo">Perfil</span>
-                
-            </a>
-            <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
-                <span class="menu-item-icone" aria-hidden="true">↪</span>
-                <span class="menu-item-conteudo">Sair</span>
-            </a>
+            <a href="configuracoes.html" class="menu-item"><span class="menu-item-icone">⚙</span><span>Configurações</span></a>
+            <a href="perfil.html" class="menu-item"><span class="menu-item-icone">♙</span><span>Perfil</span></a>
+            <a href="fale-conosco.html" class="menu-item"><span class="menu-item-icone">✉</span><span>Fale conosco</span></a>
+            <a href="sobre.html" class="menu-item"><span class="menu-item-icone">ℹ</span><span>Sobre</span></a>
+            <a href="#" class="menu-item menu-item-sair" onclick="fazerLogout();return false;"><span class="menu-item-icone">↪</span><span>Sair</span></a>
         </div>
     </nav>
 </div>
-    <main class="container">
-        <div class="page-title">
-            <h1>Central de notificações</h1>
-            <p>Consulte alertas anteriores e escolha como deseja receber os próximos avisos.</p>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<main class="page-content">
+
+    <!-- Topo -->
+    <div class="page-topo">
+        <h2>Notificações</h2>
+        <p>Avisos periódicos com uma palavra de Deus sobre finanças. Configure a frequência e a mensagem que deseja receber.</p>
+    </div>
+
+    <!-- Versículo do dia -->
+    <div class="secao">
+        <p class="secao-titulo">Palavra do dia</p>
+        <div class="card card-versiculo">
+            <p class="versiculo-texto" id="versiculo-texto-hoje">Carregando…</p>
+            <span class="versiculo-ref" id="versiculo-ref-hoje"></span>
         </div>
-        <div class="grid grid-3">
-            <section class="card" style="grid-column:span 2">
-                <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
-                    <div class="actions">
-                        <select id="filtro-status" style="width:auto">
-                            <option value="todas">Todas</option>
-                            <option value="nao_lidas">Não lidas</option>
-                            <option value="lidas">Lidas</option>
-                        </select>
-                        <select id="filtro-tipo" style="width:auto">
-                            <option value="todos">Todos os tipos</option>
-                            <option value="limite">Limites</option>
-                            <option value="sistema">Sistema</option>
-                        </select>
-                    </div>
-                    <button id="marcar-todas" class="btn btn-small">Marcar todas como lidas</button>
+    </div>
+
+    <!-- Configuração de avisos periódicos -->
+    <div class="secao">
+        <p class="secao-titulo">Avisos periódicos</p>
+        <div class="card card-config">
+
+            <div class="config-linha">
+                <div class="config-info">
+                    <strong>Ativar avisos periódicos</strong>
+                    <span>Receba lembretes automáticos enquanto usa o GBM</span>
                 </div>
-                <div class="divider"></div>
-                <div id="lista-notificacoes"><div class="empty">Carregando...</div></div>
-            </section>
-            <aside class="card">
-                <h2>Preferências</h2>
-                <label class="switch-row"><span>Avisos no site</span><input id="pref-site" type="checkbox"></label>
-                <label class="switch-row"><span>Avisos por e-mail</span><input id="pref-email" type="checkbox"></label>
-                <div class="divider"></div>
-                <div class="field"><label>Silenciar a partir de</label><input id="pref-inicio" type="time"></div>
-                <div class="field" style="margin-top:10px"><label>Até</label><input id="pref-fim" type="time"></div>
-                <button id="salvar-preferencias" class="btn btn-primary" style="width:100%;margin-top:16px">Salvar preferências</button>
-            </aside>
+                <div class="config-controle">
+                    <label class="switch" aria-label="Ativar avisos periódicos">
+                        <input type="checkbox" id="toggle-avisos" onchange="salvarConfigs()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="config-linha" id="linha-frequencia">
+                <div class="config-info">
+                    <strong>Frequência</strong>
+                    <span>De quanto em quanto tempo o aviso aparece na tela</span>
+                </div>
+                <div class="config-controle">
+                    <select id="select-frequencia" onchange="salvarConfigs()">
+                        <option value="5">A cada 5 minutos</option>
+                        <option value="15" selected>A cada 15 minutos</option>
+                        <option value="30">A cada 30 minutos</option>
+                        <option value="60">A cada hora</option>
+                        <option value="120">A cada 2 horas</option>
+                        <option value="240">A cada 4 horas</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="config-linha" id="linha-horario">
+                <div class="config-info">
+                    <strong>Período ativo</strong>
+                    <span>Os avisos só aparecem nesse intervalo de horário</span>
+                </div>
+                <div class="config-controle" style="gap:6px;">
+                    <input type="time" id="hora-inicio" value="08:00" onchange="salvarConfigs()" style="width:100px;height:34px;font-size:.78rem;">
+                    <span style="color:var(--texto-mutado);font-size:.8rem;">até</span>
+                    <input type="time" id="hora-fim" value="22:00" onchange="salvarConfigs()" style="width:100px;height:34px;font-size:.78rem;">
+                </div>
+            </div>
+
         </div>
-    </main>
-    <script src="auth.js"></script><script src="gbm-pages.js"></script>
-    <script>
-        async function carregarNotificacoes() {
-            try {
-                const status = document.getElementById('filtro-status').value;
-                const tipo = document.getElementById('filtro-tipo').value;
-                const itens = await gbmJson(await fetchApi(`/notificacoes?status=${status}&tipo=${tipo}`));
-                document.getElementById('lista-notificacoes').innerHTML = itens.length ? itens.map((item) => `
-                    <article class="notificacao ${Number(item.lida) ? '' : 'nao-lida'}">
-                        <div style="display:flex;justify-content:space-between;gap:12px">
-                            <span class="pill ${Number(item.lida) ? '' : 'green'}">${Number(item.lida) ? 'Lida' : 'Nova'}</span>
-                            <small style="color:var(--muted)">${new Date(item.data_criacao).toLocaleString('pt-BR')}</small>
-                        </div>
-                        <p style="margin:11px 0 7px;line-height:1.5">${gbmEscapar(item.mensagem)}</p>
-                        <span class="pill">${gbmEscapar(item.categoria || item.tipo)}</span>
-                    </article>`).join('') : '<div class="empty">Nenhuma notificação encontrada.</div>';
-            } catch (erro) { gbmToast(erro.message,'erro'); }
+    </div>
+
+    <!-- Mensagem personalizada -->
+    <div class="secao">
+        <p class="secao-titulo">Mensagem do aviso</p>
+        <div class="card card-mensagem">
+            <div class="config-info" style="margin-bottom:14px;">
+                <strong style="font-size:.9rem;color:#eef5ff;">Personalize o texto do aviso</strong>
+                <span style="font-size:.76rem;color:var(--texto-mutado);">O versículo bíblico é fixo e sempre aparecerá ao final — você edita apenas o título e a mensagem principal.</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <div>
+                    <label style="font-size:.75rem;color:var(--texto-mutado);font-weight:600;display:block;margin-bottom:5px;">Título do aviso</label>
+                    <input type="text" id="aviso-titulo" maxlength="80" placeholder="Ex: Lembrete financeiro GBM" style="width:100%;" oninput="atualizarPreview()">
+                </div>
+                <div>
+                    <label style="font-size:.75rem;color:var(--texto-mutado);font-weight:600;display:block;margin-bottom:5px;">Mensagem principal</label>
+                    <textarea id="aviso-mensagem" rows="3" maxlength="300" placeholder="Ex: Você registrou seus gastos hoje? Acompanhe sua sobra mensal e mantenha o controle." style="width:100%;" oninput="atualizarPreview()"></textarea>
+                </div>
+                <button class="btn-acao" style="align-self:flex-start;" onclick="salvarMensagem()">Salvar mensagem</button>
+            </div>
+
+            <div style="margin-top:18px;">
+                <p style="font-size:.72rem;color:#58708b;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:0 0 8px;">Pré-visualização do aviso</p>
+                <div class="msg-preview">
+                    <strong id="preview-titulo" style="display:block;margin-bottom:4px;color:#eef5ff;font-size:.88rem;"></strong>
+                    <span id="preview-mensagem" style="font-size:.82rem;color:#b0bec5;line-height:1.5;"></span>
+                    <span class="tag-versiculo" id="preview-versiculo"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Histórico de notificações -->
+    <div class="secao">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <p class="secao-titulo" style="margin:0;">Histórico</p>
+            <div style="display:flex;gap:8px;">
+                <button class="btn-secundario" onclick="marcarTodasLidas()">Marcar todas como lidas</button>
+                <button class="btn-danger" onclick="limparHistorico()">Limpar histórico</button>
+            </div>
+        </div>
+        <div id="alertas-container">
+            <div class="card" style="padding:0;overflow:hidden;">
+                <div id="alertas-lista" class="alertas-lista" style="padding:12px;"></div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- MODAL NOTIFICAÇÕES (gbmAlerta / gbmConfirmar) -->
+<div id="modal-notificacoes" class="modal-notif">
+    <div class="modal-notif-dialogo">
+        <div class="modal-notif-topo">
+            <div class="modal-notif-titulo">
+                <img src="logo-transparente.jpg" alt="Logo">
+                <span>GBM — NOTIFICAÇÕES</span>
+            </div>
+            <button class="modal-notif-fechar" onclick="fecharModalNotificacoes(false)">&times;</button>
+        </div>
+        <div id="lista-notificacoes-modal" class="modal-notif-corpo"></div>
+        <div class="modal-notif-acoes">
+            <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)">CONFIRMAR</button>
+            <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)">FECHAR</button>
+        </div>
+    </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+/* ============================================================
+   GBM — NOTIFICAÇÕES
+   • Versículos bíblicos sobre finanças (banco local)
+   • Avisos periódicos configuráveis (localStorage + setInterval)
+   • Mensagem editável pelo usuário
+   • Histórico via /alertas (endpoint existente)
+   ============================================================ */
+
+// ── Banco de versículos sobre finanças ──────────────────────
+const VERSICULOS = [
+    { texto: "Honra ao Senhor com os teus bens e com as primícias de toda a tua renda.", ref: "Provérbios 3:9" },
+    { texto: "O que tem olho generoso será abençoado, porque deu do seu pão ao pobre.", ref: "Provérbios 22:9" },
+    { texto: "Não ajunteis para vós outros tesouros na terra, onde a traça e a ferrugem tudo consomem. Ajuntai para vós outros tesouros no céu.", ref: "Mateus 6:19-20" },
+    { texto: "Porque onde estiver o vosso tesouro, aí estará também o vosso coração.", ref: "Mateus 6:21" },
+    { texto: "O rico governa os pobres, e o que toma emprestado é servo do que empresta.", ref: "Provérbios 22:7" },
+    { texto: "Os planos dos diligentes certamente levam à abundância, mas todo aquele que age precipitadamente chega à pobreza.", ref: "Provérbios 21:5" },
+    { texto: "Ela abre a mão ao pobre e estende as mãos ao necessitado.", ref: "Provérbios 31:20" },
+    { texto: "Não te afadigueis para enriqueceres; sê sábio e desiste disso.", ref: "Provérbios 23:4" },
+    { texto: "Ganhos desonestos não trazem proveito, mas a justiça livra da morte.", ref: "Provérbios 10:2" },
+    { texto: "Dêem a César o que é de César e a Deus o que é de Deus.", ref: "Marcos 12:17" },
+    { texto: "Não sirvais a dois senhores; porque ou haveis de odiar um e amar o outro, ou vos dedicareis a um e desprezareis o outro. Não podeis servir a Deus e às riquezas.", ref: "Mateus 6:24" },
+    { texto: "Quem empresta ao pobre dá a Deus, e ele o recompensará.", ref: "Provérbios 19:17" },
+    { texto: "Porque a raiz de todos os males é o amor ao dinheiro, e nessa cobiça alguns se desviaram da fé.", ref: "1 Timóteo 6:10" },
+    { texto: "Sede contentes com o que tendes; porque ele disse: Não te deixarei, nem te abandonarei.", ref: "Hebreus 13:5" },
+    { texto: "O Senhor é o meu pastor e nada me faltará.", ref: "Salmos 23:1" },
+    { texto: "Confiai nele em todo o tempo, ó povo; derramai diante dele o vosso coração. Deus é o nosso refúgio.", ref: "Salmos 62:8" },
+    { texto: "Há quem espalhe e ainda lhe acrescentem mais; e há quem retenha mais do que é justo, mas apenas para a sua pobreza.", ref: "Provérbios 11:24" },
+    { texto: "Dar é melhor do que receber.", ref: "Atos 20:35" },
+    { texto: "Bem-aventurado o homem que acha sabedoria, o homem que obtém entendimento; porque a sua mercadoria é melhor do que a mercadoria da prata.", ref: "Provérbios 3:13-14" },
+    { texto: "O que trabalha com mão negligente empobrece, mas a mão dos diligentes enriquece.", ref: "Provérbios 10:4" },
+    { texto: "Estabelece teus planos com o conselho, e com boa orientação faze a guerra.", ref: "Provérbios 20:18" },
+    { texto: "Suplica de Agur: não me dês pobreza nem riqueza; dá-me o pão que me é necessário.", ref: "Provérbios 30:8" },
+    { texto: "O bem que fazes com teus bens é investir no eterno.", ref: "1 Timóteo 6:18-19" },
+    { texto: "Trazei todos os dízimos à casa do tesouro... e provai-me nisso, diz o Senhor dos Exércitos.", ref: "Malaquias 3:10" },
+    { texto: "Porque somos feitura sua, criados em Cristo Jesus para as boas obras.", ref: "Efésios 2:10" },
+];
+
+function versiculoDoDia() {
+    const idx = new Date().getDate() % VERSICULOS.length;
+    return VERSICULOS[idx];
+}
+
+function versiculoAleatorio() {
+    return VERSICULOS[Math.floor(Math.random() * VERSICULOS.length)];
+}
+
+// ── Autenticação / Freemium ──────────────────────────────────
+window.usuarioPremium = true;
+window.promessaVerificacaoAcesso = (async function verificarAcesso() {
+    try {
+        const res  = await fetchApi('/login-status');
+        const data = await res.json();
+        sincronizarIdentidadeLocal(data);
+        let isPremium = false;
+        if (data.statusPagamento === 'pago') isPremium = true;
+        else if ((data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') && data.trialExpira) {
+            if (new Date() <= new Date(data.trialExpira)) isPremium = true;
         }
-        async function carregarPreferencias() {
-            try {
-                const p = await gbmJson(await fetchApi('/notificacoes/preferencias'));
-                document.getElementById('pref-site').checked = Number(p.notificacao_site) === 1;
-                document.getElementById('pref-email').checked = Number(p.notificacao_email) === 1;
-                document.getElementById('pref-inicio').value = p.horario_silencio_inicio ? String(p.horario_silencio_inicio).slice(0,5) : '';
-                document.getElementById('pref-fim').value = p.horario_silencio_fim ? String(p.horario_silencio_fim).slice(0,5) : '';
-            } catch (erro) { gbmToast(erro.message,'erro'); }
-        }
-        document.getElementById('filtro-status').addEventListener('change',carregarNotificacoes);
-        document.getElementById('filtro-tipo').addEventListener('change',carregarNotificacoes);
-        document.getElementById('marcar-todas').addEventListener('click',async()=>{
-            try {
-                await gbmJson(await fetchApi('/notificacoes/marcar-todas-lidas',{method:'POST'}));
-                carregarNotificacoes();
-            } catch(erro){gbmToast(erro.message,'erro')}
-        });
-        document.getElementById('salvar-preferencias').addEventListener('click',async()=>{
-            try {
-                await gbmJson(await fetchApi('/notificacoes/preferencias',{
-                    method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-                        notificacao_site:document.getElementById('pref-site').checked,
-                        notificacao_email:document.getElementById('pref-email').checked,
-                        horario_silencio_inicio:document.getElementById('pref-inicio').value || null,
-                        horario_silencio_fim:document.getElementById('pref-fim').value || null
-                    })
-                }));
-                gbmToast('Preferências salvas.');
-            } catch(erro){gbmToast(erro.message,'erro')}
-        });
-        carregarNotificacoes();carregarPreferencias();
-    </script>
-    <script src="gbm-tutorial.js"></script>
+        window.usuarioPremium = isPremium;
+        atualizarEstadoRecursosPremium(data.statusPagamento, data.trialExpira);
+        return data;
+    } catch (e) { window.location.href = 'index.html'; throw e; }
+})();
+
+function atualizarEstadoRecursosPremium(sp, trialExpira) {
+    const status = String(sp || '').toLowerCase();
+    const expira = trialExpira ? new Date(trialExpira) : null;
+    const valido = expira && !isNaN(expira) ? new Date() <= expira : false;
+    const pago   = status === 'pago';
+    const trial  = (status === 'trial' || status === 'cancelado') && valido;
+    const bloq   = !pago && !trial;
+    ['cadeado-relatorio','cadeado-comparativo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = pago ? 'none' : 'inline-flex';
+    });
+    const aviso = document.getElementById('aviso-recursos-premium');
+    if (aviso) {
+        aviso.style.display = pago ? 'none' : 'block';
+        aviso.textContent = trial ? 'Recursos Premium disponíveis durante o teste.' : 'Relatório mensal e comparativo são Premium.';
+    }
+    document.querySelectorAll('.menu-item-premium').forEach(el => {
+        el.classList.toggle('recurso-bloqueado', bloq);
+        bloq ? el.setAttribute('aria-disabled','true') : el.removeAttribute('aria-disabled');
+    });
+}
+function acessarRotaPremium(url, nome) {
+    if (window.usuarioPremium) { window.location.href = url; return; }
+    fecharMenuLateral();
+    gbmConfirmar(`<strong>${nome}</strong> é exclusivo do plano Premium.<br><br>Assinar por R$ 9,90?`).then(ok => {
+        if (ok) window.location.href = 'pagamento.html';
+    });
+}
+
+// ── Perfil ───────────────────────────────────────────────────
+async function carregarAtalhoPerfil() {
+    try {
+        const res = await fetchApi('/perfil');
+        const data = await res.json();
+        if (!data.success) return;
+        if (data.perfil.foto_perfil_url) document.getElementById('foto-perfil-cabecalho').src = data.perfil.foto_perfil_url;
+        document.getElementById('nome-perfil-cabecalho').innerText = data.perfil.nome_exibicao || data.perfil.nome || 'Meu perfil';
+    } catch (_) {}
+}
+function fazerLogout() { encerrarSessao(); }
+
+// ── Menu lateral ─────────────────────────────────────────────
+function abrirMenuLateral(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('sidebar-menu').classList.add('aberto');
+    document.getElementById('menu-overlay').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+function fecharMenuLateral() {
+    document.getElementById('sidebar-menu').classList.remove('aberto');
+    document.body.style.overflow = '';
+    setTimeout(() => { document.getElementById('menu-overlay').style.display = 'none'; }, 200);
+}
+
+// ── Modal ────────────────────────────────────────────────────
+let _resolveConfirm = null;
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function gbmAlerta(msg, tipo = 'info') {
+    const cor = tipo === 'erro' ? 'rgba(239,68,68,.3)' : tipo === 'aviso' ? 'rgba(85,167,255,.3)' : 'rgba(95,255,168,.3)';
+    document.getElementById('lista-notificacoes-modal').innerHTML =
+        `<div style="background:rgba(15,23,42,.8);border:1px solid ${cor};border-radius:10px;padding:20px;font-size:.95rem;line-height:1.6;text-align:center;">${esc(msg)}</div>`;
+    document.getElementById('btn-confirmar-modal').style.display = 'none';
+    document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
+    document.getElementById('modal-notificacoes').style.display = 'flex';
+    _resolveConfirm = null;
+}
+function gbmConfirmar(msg) {
+    return new Promise(resolve => {
+        _resolveConfirm = resolve;
+        document.getElementById('lista-notificacoes-modal').innerHTML =
+            `<div style="background:rgba(85,167,255,.1);border:1px solid rgba(85,167,255,.4);border-radius:10px;padding:20px;font-size:.95rem;line-height:1.6;text-align:center;">${esc(msg)}</div>`;
+        document.getElementById('btn-confirmar-modal').style.display = 'block';
+        document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
+        document.getElementById('modal-notificacoes').style.display = 'flex';
+    });
+}
+function fecharModalNotificacoes(ok = false) {
+    document.getElementById('modal-notificacoes').style.display = 'none';
+    if (_resolveConfirm) { _resolveConfirm(ok); _resolveConfirm = null; }
+}
+
+// ── CHAVE localStorage ───────────────────────────────────────
+const CHAVE_CONFIG   = 'gbm_notif_config';
+const CHAVE_MSG      = 'gbm_notif_mensagem';
+const CHAVE_HIST     = 'gbm_notif_historico';
+
+// ── Configuração ─────────────────────────────────────────────
+function lerConfig() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_CONFIG)) || {}; } catch { return {}; }
+}
+function salvarConfigs() {
+    const cfg = {
+        ativo:      document.getElementById('toggle-avisos').checked,
+        frequencia: Number(document.getElementById('select-frequencia').value),
+        horaInicio: document.getElementById('hora-inicio').value,
+        horaFim:    document.getElementById('hora-fim').value,
+    };
+    localStorage.setItem(CHAVE_CONFIG, JSON.stringify(cfg));
+    reiniciarTimer(cfg);
+}
+function carregarConfigs() {
+    const cfg = lerConfig();
+    document.getElementById('toggle-avisos').checked      = cfg.ativo     ?? false;
+    document.getElementById('select-frequencia').value    = cfg.frequencia ?? 15;
+    document.getElementById('hora-inicio').value          = cfg.horaInicio ?? '08:00';
+    document.getElementById('hora-fim').value             = cfg.horaFim    ?? '22:00';
+}
+
+// ── Mensagem personalizada ───────────────────────────────────
+function lerMensagem() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_MSG)) || {}; } catch { return {}; }
+}
+function carregarMensagem() {
+    const msg = lerMensagem();
+    document.getElementById('aviso-titulo').value    = msg.titulo    || 'Lembrete GBM';
+    document.getElementById('aviso-mensagem').value  = msg.mensagem  || 'Você registrou seus gastos hoje? Acompanhe sua sobra mensal e mantenha o controle.';
+    atualizarPreview();
+}
+function salvarMensagem() {
+    const titulo   = document.getElementById('aviso-titulo').value.trim();
+    const mensagem = document.getElementById('aviso-mensagem').value.trim();
+    if (!titulo || !mensagem) return gbmAlerta('Preencha o título e a mensagem.', 'aviso');
+    localStorage.setItem(CHAVE_MSG, JSON.stringify({ titulo, mensagem }));
+    gbmAlerta('Mensagem salva! Será usada no próximo aviso.');
+}
+function atualizarPreview() {
+    const titulo   = document.getElementById('aviso-titulo').value   || 'Lembrete GBM';
+    const mensagem = document.getElementById('aviso-mensagem').value || '';
+    const v        = versiculoDoDia();
+    document.getElementById('preview-titulo').textContent   = titulo;
+    document.getElementById('preview-mensagem').textContent = mensagem;
+    document.getElementById('preview-versiculo').textContent = `"${v.texto}" — ${v.ref}`;
+}
+
+// ── Versículo do dia (card topo) ─────────────────────────────
+function exibirVersiculoDoDia() {
+    const v = versiculoDoDia();
+    document.getElementById('versiculo-texto-hoje').textContent = `"${v.texto}"`;
+    document.getElementById('versiculo-ref-hoje').textContent   = v.ref;
+}
+
+// ── Histórico local ──────────────────────────────────────────
+function lerHistorico() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_HIST)) || []; } catch { return []; }
+}
+function gravarNoHistorico(entrada) {
+    const hist = lerHistorico();
+    hist.unshift(entrada);
+    // Mantém apenas os 50 mais recentes
+    localStorage.setItem(CHAVE_HIST, JSON.stringify(hist.slice(0, 50)));
+}
+function renderizarHistorico() {
+    const lista = document.getElementById('alertas-lista');
+    // Tenta carregar do servidor primeiro; se falhar, usa localStorage
+    carregarAlertasServidor().catch(() => {
+        renderizarHistoricoLocal(lista);
+    });
+}
+async function carregarAlertasServidor() {
+    const lista = document.getElementById('alertas-lista');
+    const res   = await fetchApi('/alertas');
+    if (!res.ok) throw new Error();
+    const dados = await res.json();
+    // Combina servidor + local, remove duplicatas por id/ts
+    const local  = lerHistorico();
+    const items  = [...dados.map(a => ({
+        id:       a.id,
+        titulo:   a.titulo || 'Aviso GBM',
+        mensagem: a.mensagem,
+        versiculo: a.versiculo || '',
+        lido:     !!a.lida,
+        ts:       a.criado_em || new Date().toISOString(),
+        origem:   'servidor',
+    })), ...local];
+
+    if (!items.length) { renderizarEstadoVazio(lista); return; }
+    lista.innerHTML = items.map(item => renderizarItem(item)).join('');
+}
+function renderizarHistoricoLocal(lista) {
+    const hist = lerHistorico();
+    if (!hist.length) { renderizarEstadoVazio(lista); return; }
+    lista.innerHTML = hist.map(item => renderizarItem(item)).join('');
+}
+function renderizarEstadoVazio(lista) {
+    lista.innerHTML = `<div class="estado-vazio"><div class="icone">🔔</div><p>Nenhuma notificação ainda. Os avisos periódicos aparecerão aqui.</p></div>`;
+}
+function renderizarItem(item) {
+    const dataFmt = item.ts ? new Date(item.ts).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+    const lido    = item.lido;
+    return `
+    <div class="alerta-item ${lido ? 'lido' : 'nao-lido'}" id="alerta-${esc(String(item.id || item.ts))}">
+        <span class="alerta-dot ${lido ? 'lido' : 'nao-lido'}"></span>
+        <div class="alerta-corpo">
+            <strong>${esc(item.titulo || 'Aviso GBM')} ${!lido ? '<span class="badge-novo">Novo</span>' : ''}</strong>
+            <p>${esc(item.mensagem || '')}</p>
+            ${item.versiculo ? `<span class="alerta-versiculo">"${esc(item.versiculo.texto)}" — ${esc(item.versiculo.ref)}</span>` : ''}
+            <span class="alerta-meta">${dataFmt}</span>
+        </div>
+    </div>`;
+}
+
+async function marcarTodasLidas() {
+    // Servidor
+    try {
+        const res  = await fetchApi('/alertas');
+        const data = await res.json();
+        await Promise.all(data.filter(a => !a.lida).map(a =>
+            fetchApi('/alertas/marcar-lida', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: a.id }) })
+        ));
+    } catch (_) {}
+    // Local
+    const hist = lerHistorico().map(h => ({ ...h, lido: true }));
+    localStorage.setItem(CHAVE_HIST, JSON.stringify(hist));
+    renderizarHistorico();
+}
+async function limparHistorico() {
+    if (!await gbmConfirmar('Limpar todo o histórico de notificações?')) return;
+    localStorage.setItem(CHAVE_HIST, JSON.stringify([]));
+    // Não apaga do servidor — apenas limpa a visão local
+    renderizarHistorico();
+}
+
+// ── Aviso periódico em tela (banner flutuante) ───────────────
+let _timerAviso = null;
+
+function criarBannerAviso(titulo, mensagem, versiculo) {
+    // Remove banner anterior se existir
+    document.getElementById('gbm-banner-aviso')?.remove();
+
+    const div = document.createElement('div');
+    div.id = 'gbm-banner-aviso';
+    div.style.cssText = `
+        position:fixed; bottom:20px; right:20px; z-index:99990;
+        max-width:340px; width:90%; padding:16px 18px;
+        background:rgba(9,26,42,.97); border:1px solid rgba(85,167,255,.4);
+        border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,.5);
+        animation:gbm-banner-in .35s cubic-bezier(.22,.68,0,1.2);
+        font-family:'Inter',sans-serif;
+    `;
+    div.innerHTML = `
+        <style>
+            @keyframes gbm-banner-in { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+            @keyframes gbm-banner-out { to{opacity:0;transform:translateY(20px)} }
+        </style>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <img src="logo-transparente.jpg" style="height:20px;border-radius:4px;" alt="">
+                <strong style="font-size:.78rem;color:#5fffa8;font-family:'Rajdhani',sans-serif;letter-spacing:1px;">GBM</strong>
+            </div>
+            <button onclick="document.getElementById('gbm-banner-aviso').remove()"
+                style="background:none;border:none;color:#718198;font-size:1.1rem;cursor:pointer;line-height:1;padding:0;flex-shrink:0;">&times;</button>
+        </div>
+        <strong style="display:block;font-size:.85rem;color:#eef5ff;margin-bottom:5px;">${esc(titulo)}</strong>
+        <p style="margin:0 0 10px;font-size:.78rem;color:#b0bec5;line-height:1.5;">${esc(mensagem)}</p>
+        <p style="margin:0;font-size:.7rem;color:#8bffc1;font-style:italic;border-top:1px solid rgba(57,217,138,.18);padding-top:8px;line-height:1.5;">
+            "${esc(versiculo.texto)}" — ${esc(versiculo.ref)}
+        </p>
+    `;
+    document.body.appendChild(div);
+
+    // Remove automaticamente após 12 segundos
+    setTimeout(() => {
+        const el = document.getElementById('gbm-banner-aviso');
+        if (!el) return;
+        el.style.animation = 'gbm-banner-out .3s forwards';
+        setTimeout(() => el.remove(), 300);
+    }, 12000);
+}
+
+function dispararAviso() {
+    const cfg = lerConfig();
+    if (!cfg.ativo) return;
+
+    // Verifica período ativo
+    const agora = new Date();
+    const [hi, mi] = (cfg.horaInicio || '00:00').split(':').map(Number);
+    const [hf, mf] = (cfg.horaFim   || '23:59').split(':').map(Number);
+    const minAtual = agora.getHours() * 60 + agora.getMinutes();
+    const minInicio = hi * 60 + mi;
+    const minFim    = hf * 60 + mf;
+    if (minAtual < minInicio || minAtual > minFim) return;
+
+    const msg      = lerMensagem();
+    const titulo   = msg.titulo    || 'Lembrete GBM';
+    const mensagem = msg.mensagem  || 'Você registrou seus gastos hoje?';
+    const versiculo = versiculoAleatorio();
+
+    criarBannerAviso(titulo, mensagem, versiculo);
+
+    // Grava no histórico local
+    gravarNoHistorico({
+        id:       Date.now(),
+        titulo,
+        mensagem,
+        versiculo,
+        lido:     false,
+        ts:       agora.toISOString(),
+    });
+
+    // Tenta salvar no servidor (endpoint /alertas existente)
+    fetchApi('/alertas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            titulo,
+            mensagem: mensagem + `\n\n"${versiculo.texto}" — ${versiculo.ref}`,
+        })
+    }).catch(() => {});
+}
+
+function reiniciarTimer(cfg) {
+    clearInterval(_timerAviso);
+    if (!cfg.ativo) return;
+    const ms = (cfg.frequencia || 15) * 60 * 1000;
+    _timerAviso = setInterval(dispararAviso, ms);
+}
+
+// ── Init ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('sidebar-menu').addEventListener('wheel', e => e.stopPropagation(), { passive: true });
+});
+
+window.promessaVerificacaoAcesso.then(() => {
+    carregarAtalhoPerfil();
+    exibirVersiculoDoDia();
+    carregarConfigs();
+    carregarMensagem();
+    renderizarHistorico();
+    // Inicia timer se já estava ativo
+    const cfg = lerConfig();
+    reiniciarTimer(cfg);
+}).catch(() => {});
+</script>
+
+<!-- Partículas -->
+<script>
+(function(){
+    const c = document.getElementById('particles-canvas');
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    function r(){ c.width=innerWidth; c.height=innerHeight; }
+    addEventListener('resize', r); r();
+    function P(){ this.x=Math.random()*c.width; this.y=c.height+Math.random()*100; this.r=Math.random()*2.5+.8; this.vy=Math.random()*1.2+.3; this.o=Math.random()*.4+.2; }
+    P.prototype.u=function(){ this.y-=this.vy; if(this.y<-10){this.y=c.height+10;this.x=Math.random()*c.width;this.o=Math.random()*.4+.2;} };
+    P.prototype.d=function(){ ctx.fillStyle=`rgba(85,167,255,${this.o*.55})`; ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fill(); };
+    const pts=Array.from({length:Math.min(Math.floor(innerWidth*innerHeight/15000),65)},()=>new P());
+    (function l(){ ctx.clearRect(0,0,c.width,c.height); pts.forEach(p=>{p.u();p.d();}); requestAnimationFrame(l); })();
+})();
+</script>
 </body>
 </html>
