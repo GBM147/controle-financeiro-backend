@@ -1,22 +1,16 @@
-name: Validar public - versao correta
+name: Validar public
 
 on:
   pull_request:
-    branches:
-      - main
-    paths:
-      - 'public/**'
+    branches: [main]
+    paths: ['public/**']
 
 jobs:
   validar:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Validar arquivos globais
-        shell: bash
-        run: |
-          set -euo pipefail
+      - uses: actions/checkout@v4
+      - run: |
           test -f public/gbm-pages.css
           test -f public/gbm-pages.js
-          echo "OK"
+          echo "Validação OK"
