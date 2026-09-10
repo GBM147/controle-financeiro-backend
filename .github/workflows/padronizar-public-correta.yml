@@ -14,4 +14,4 @@ jobs:
           set -euo pipefail
           test -f public/gbm-pages.css
           test -f public/gbm-pages.js
-          echo "Validação OK"
+          echo "Validacao OK"
