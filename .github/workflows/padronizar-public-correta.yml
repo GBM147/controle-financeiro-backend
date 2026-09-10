@@ -1,0 +1,80 @@
+name: Padronizar public - versao correta
+
+on:
+  push:
+    branches:
+      - agent/padronizacao-visual-correta-2026-09
+
+permissions:
+  contents: write
+
+jobs:
+  padronizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Aplicar camada visual compartilhada
+        shell: python
+        run: |
+          from pathlib import Path
+          root = Path("public")
+          css = root / "gbm-pages.css"
+          js = root / "gbm-pages.js"
+          css_marker = "/* ===== GBM SHARED INTERACTIONS 2026 ===== */"
+          js_marker = "/* ===== GBM SHARED JS INTERACTIONS 2026 ===== */"
+          def append_once(path, marker, addition):
+              data = path.read_text(encoding="utf-8") if path.exists() else ""
+              if not path.exists() or marker not in data:
+                  separator = "\n\n" if data else ""
+                  path.write_text(data.rstrip() + separator + addition + "\n", encoding="utf-8")
+          append_once(css, css_marker, """/* ===== GBM SHARED INTERACTIONS 2026 ===== */
+:root { --gbm-focus:#55a7ff; --gbm-success:#39d98a; --gbm-danger:#ff5d6c; --gbm-ease:cubic-bezier(.22,.61,.36,1); }
+.card,.btn,.btn-acao,.btn-voltar,input,select,textarea,.menu-item,.atalho-perfil,.gbm-header,.gbm-logo-img { transition-property:transform,opacity,color,background-color,background,border-color,box-shadow,filter; transition-duration:.22s; transition-timing-function:var(--gbm-ease); }
+.card:hover { transform:translateY(-3px); }
+.btn:hover,.btn-acao:hover,.btn-voltar:hover { transform:translateY(-2px); filter:brightness(1.045); }
+.btn:active,.btn-acao:active,.btn-voltar:active { transform:translateY(0) scale(.985); }
+input:hover,select:hover,textarea:hover { border-color:rgba(85,167,255,.34); }
+input:focus,select:focus,textarea:focus { border-color:var(--gbm-focus); box-shadow:0 0 0 3px rgba(85,167,255,.11),0 5px 18px rgba(0,0,0,.12); }
+.menu-item:hover { transform:translateX(3px); }
+.gbm-logo-img:hover { transform:translateY(-3px) scale(1.015); }
+.valor-positivo { color:var(--gbm-success)!important; } .valor-negativo { color:var(--gbm-danger)!important; } .valor-neutro { color:var(--texto-mutado,#b0bec5)!important; }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important; } }
+""")
+          append_once(js, js_marker, """/* ===== GBM SHARED JS INTERACTIONS 2026 ===== */
+(() => { "use strict";
+function init() {
+  document.addEventListener("click", (event) => {
+    const target = event.target.closest("button,.btn,.btn-acao,.btn-voltar,.menu-item");
+    if (!target || !window.matchMedia || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (getComputedStyle(target).position === "static") target.style.position = "relative";
+    const rect=target.getBoundingClientRect(), size=Math.max(rect.width,rect.height)*1.15;
+    const ripple=document.createElement("span"); ripple.className="gbm-shared-ripple";
+    ripple.style.cssText=`position:absolute;border-radius:999px;pointer-events:none;transform:scale(0);background:rgba(95,255,168,.24);animation:gbm-shared-ripple .55s ease-out forwards;width:${size}px;height:${size}px;left:${event.clientX-rect.left-size/2}px;top:${event.clientY-rect.top-size/2}px`;
+    target.appendChild(ripple); setTimeout(()=>ripple.remove(),600);
+  });
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init,{once:true}); else init();
+})();
+""")
+          for page in sorted(root.glob("*.html")):
+              data = page.read_text(encoding="utf-8")
+              if 'href="gbm-pages.css"' not in data:
+                  data = data.replace("</head>", '    <link rel="stylesheet" href="gbm-pages.css">\n</head>', 1)
+              if 'src="gbm-pages.js"' not in data:
+                  data = data.replace("</body>", '    <script src="gbm-pages.js"></script>\n</body>', 1)
+              page.write_text(data, encoding="utf-8")
+      - name: Commitar alteracoes e remover workflow auxiliar
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/ .github/workflows/padronizar-public-correta.yml
+          git rm -f .github/workflows/padronizar-public-correta.yml
+          if git diff --cached --quiet; then exit 0; fi
+          git add public/
+          git commit -m "Padroniza interacao visual na versao correta de public"
+          git push origin HEAD:agent/padronizacao-visual-correta-2026-09
