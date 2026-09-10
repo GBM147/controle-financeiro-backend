@@ -1298,3 +1298,141 @@ body.gbm-interna .cartao > * {
     .btn .ripple { animation: none; }
     .progress > span, .barra div { transition: none; }
 }
+
+/* ===== GBM INTERACOES 2026 ===== */
+/* Camada compartilhada de interação visual do GBM. */
+:root {
+    --gbm-focus: #55a7ff;
+    --gbm-success: #39d98a;
+    --gbm-danger: #ff5d6c;
+    --gbm-ease: cubic-bezier(.22,.61,.36,1);
+}
+
+.card,
+.btn,
+.btn-acao,
+.btn-voltar,
+input,
+select,
+textarea,
+.menu-item,
+.atalho-perfil {
+    transition-property: transform, opacity, color, background-color, background, border-color, box-shadow, filter;
+    transition-duration: .22s;
+    transition-timing-function: var(--gbm-ease);
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+.btn:hover,
+.btn-acao:hover,
+.btn-voltar:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.045);
+}
+
+.btn:active,
+.btn-acao:active,
+.btn-voltar:active {
+    transform: translateY(0) scale(.985);
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+    border-color: rgba(85,167,255,.34);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--gbm-focus);
+    box-shadow: 0 0 0 3px rgba(85,167,255,.11), 0 5px 18px rgba(0,0,0,.12);
+}
+
+.menu-item:hover {
+    transform: translateX(3px);
+}
+
+.progress > span {
+    transform-origin: left center;
+    animation: gbm-progress-in .8s var(--gbm-ease) both;
+}
+
+@keyframes gbm-progress-in {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+tbody tr {
+    transition: background-color .18s var(--gbm-ease), transform .18s var(--gbm-ease);
+}
+
+tbody tr:hover {
+    background: rgba(85,167,255,.045);
+}
+
+.valor-positivo { color: var(--gbm-success) !important; }
+.valor-negativo { color: var(--gbm-danger) !important; }
+.valor-neutro { color: var(--texto-mutado, #b0bec5) !important; }
+
+.gbm-entrada {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: gbm-entrada .45s var(--gbm-ease) forwards;
+}
+
+.gbm-entrada:nth-child(1) { animation-delay: .04s; }
+.gbm-entrada:nth-child(2) { animation-delay: .08s; }
+.gbm-entrada:nth-child(3) { animation-delay: .12s; }
+.gbm-entrada:nth-child(4) { animation-delay: .16s; }
+.gbm-entrada:nth-child(5) { animation-delay: .20s; }
+.gbm-entrada:nth-child(6) { animation-delay: .24s; }
+
+@keyframes gbm-entrada {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.toast {
+    animation: gbm-toast-in .25s var(--gbm-ease) both;
+}
+
+@keyframes gbm-toast-in {
+    from { opacity: 0; transform: translateY(12px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.gbm-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.gbm-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent);
+    transform: translateX(-100%);
+    animation: gbm-skeleton 1.2s infinite;
+}
+
+@keyframes gbm-skeleton {
+    to { transform: translateX(100%); }
+}
+
+.gbm-premium-focus {
+    border-color: rgba(85,167,255,.42) !important;
+    box-shadow: 0 0 0 3px rgba(85,167,255,.08), 0 16px 36px rgba(0,0,0,.32);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

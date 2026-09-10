@@ -383,3 +383,73 @@ const observadorBarras = new IntersectionObserver((entradas) => {
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.progress > span[data-width], .barra div[data-width]').forEach(el => observadorBarras.observe(el));
 });
+
+/* ===== GBM INTERACOES JS 2026 ===== */
+(() => {
+    'use strict';
+
+    function iniciarEntradas() {
+        document.querySelectorAll('[data-gbm-entrada]').forEach((el) => {
+            el.classList.add('gbm-entrada');
+        });
+    }
+
+    function observarProgresso() {
+        if (!('IntersectionObserver' in window)) return;
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                const barra = entry.target;
+                const destino = barra.dataset.gbmProgress;
+                if (destino) barra.style.setProperty('--gbm-progress', destino);
+                obs.unobserve(barra);
+            });
+        }, { threshold: .2 });
+
+        document.querySelectorAll('[data-gbm-progress]').forEach((el) => observer.observe(el));
+    }
+
+    function aplicarClassesFinanceiras() {
+        document.querySelectorAll('[data-valor-financeiro]').forEach((el) => {
+            const texto = String(el.getAttribute('data-valor-financeiro') || el.textContent || '').trim();
+            const valor = Number(texto.replace(/[^0-9,-]/g, '').replace(/\./g, '').replace(',', '.'));
+            el.classList.remove('valor-positivo', 'valor-negativo', 'valor-neutro');
+            if (Number.isNaN(valor) || valor === 0) el.classList.add('valor-neutro');
+            else if (valor > 0) el.classList.add('valor-positivo');
+            else el.classList.add('valor-negativo');
+        });
+    }
+
+    function registrarBotoesComLoading() {
+        document.addEventListener('click', (evento) => {
+            const botao = evento.target.closest('[data-gbm-loading]');
+            if (!botao || botao.dataset.gbmLoadingAtivo === 'true') return;
+            botao.dataset.gbmLoadingAtivo = 'true';
+            botao.dataset.gbmTextoOriginal = botao.innerHTML;
+            botao.innerHTML = botao.dataset.gbmLoadingText || 'Carregando...';
+            botao.classList.add('gbm-loading');
+            botao.setAttribute('aria-busy', 'true');
+
+            window.setTimeout(() => {
+                if (!document.body.contains(botao)) return;
+                botao.dataset.gbmLoadingAtivo = 'false';
+                botao.innerHTML = botao.dataset.gbmTextoOriginal || botao.innerHTML;
+                botao.classList.remove('gbm-loading');
+                botao.removeAttribute('aria-busy');
+            }, Number(botao.dataset.gbmLoadingTimeout || 1800));
+        });
+    }
+
+    function iniciar() {
+        iniciarEntradas();
+        observarProgresso();
+        aplicarClassesFinanceiras();
+        registrarBotoesComLoading();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+    } else {
+        iniciar();
+    }
+})();
