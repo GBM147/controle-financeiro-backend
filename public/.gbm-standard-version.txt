@@ -1,3 +1,0 @@
-Versao correta do projeto: arrumando-menu-e-criando-efeito-dos-cards
-Padronizacao global aplicada diretamente nesta branch.
-public/guias/ permanece intocado.
