@@ -1,10 +1,8 @@
 name: Validar public
-
 on:
   pull_request:
     branches: [main]
     paths: ['public/**']
-
 jobs:
   validar:
     runs-on: ubuntu-latest
