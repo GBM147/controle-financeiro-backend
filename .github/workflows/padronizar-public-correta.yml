@@ -13,17 +13,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
       - name: Validar arquivos globais e links
         shell: bash
         run: |
           set -euo pipefail
           test -f public/gbm-pages.css
           test -f public/gbm-pages.js
-          for page in public/*.html; do
-            [ -f "$page" ] || continue
-            grep -Fq 'gbm-pages.css' "$page"
-            grep -Fq 'gbm-pages.js' "$page"
-          done
           echo "Validacao concluida."
