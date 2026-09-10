@@ -1,0 +1,14 @@
+/* GBM UI animations */
+body.gbm-interna main,body.gbm-interna .container,body.gbm-interna .page-wrapper{animation:gbm-page-enter .42s ease both}
+@keyframes gbm-page-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+body.gbm-interna .card{transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease}
+body.gbm-interna .card:hover{transform:translateY(-3px);border-color:rgba(85,167,255,.34);box-shadow:0 18px 42px rgba(0,0,0,.42),0 0 0 1px rgba(95,255,168,.035) inset}
+body.gbm-interna .btn,body.gbm-interna button{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease}
+body.gbm-interna .btn:hover,body.gbm-interna button:hover{transform:translateY(-2px)}
+body.gbm-interna .btn:active,body.gbm-interna button:active{transform:translateY(0) scale(.985)}
+body.gbm-interna input,body.gbm-interna select,body.gbm-interna textarea{transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease,transform .2s ease}
+body.gbm-interna input:focus,body.gbm-interna select:focus,body.gbm-interna textarea:focus{transform:translateY(-1px)}
+body.gbm-interna table tbody tr{transition:background-color .18s ease}body.gbm-interna table tbody tr:hover{background:rgba(85,167,255,.045)}
+body.gbm-interna .progress>span{transform-origin:left center;animation:gbm-progress-in .7s ease both}@keyframes gbm-progress-in{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(max-width:768px){body.gbm-interna .card:hover{transform:translateY(-1px)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
