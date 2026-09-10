@@ -1,23 +1,21 @@
-name: Padronizar public - versao correta
+name: Validar public - versao correta
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/padronizacao-visual-correta-2026-09
-
-permissions:
-  contents: write
+      - main
+    paths:
+      - 'public/**'
 
 jobs:
-  padronizar:
+  validar:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      - name: Validar padronizacao
+          fetch-depth: 1
+      - name: Validar arquivos globais e links
         shell: bash
         run: |
           set -euo pipefail
@@ -28,4 +26,4 @@ jobs:
             grep -Fq 'gbm-pages.css' "$page"
             grep -Fq 'gbm-pages.js' "$page"
           done
-          echo "Validacao concluida: paginas de public conectadas aos arquivos globais." 
+          echo "Validacao concluida."
