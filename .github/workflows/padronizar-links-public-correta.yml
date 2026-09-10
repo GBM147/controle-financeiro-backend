@@ -1,0 +1,57 @@
+name: Padronizar links public - versao correta
+
+on:
+  push:
+    branches:
+      - agent/padronizacao-visual-correta-2026-09
+
+permissions:
+  contents: write
+
+jobs:
+  padronizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Aplicar CSS e JS compartilhados
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for page in public/*.html; do
+            [ -f "$page" ] || continue
+
+            if ! grep -Fq 'href="gbm-pages.css"' "$page"; then
+              sed -i 's#</head>#    <link rel="stylesheet" href="gbm-pages.css">\n</head>#' "$page"
+            fi
+
+            if ! grep -Fq 'src="gbm-pages.js"' "$page"; then
+              sed -i 's#</body>#    <script src="gbm-pages.js"></script>\n</body>#' "$page"
+            fi
+          done
+
+      - name: Validar arquivos alterados
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f public/gbm-pages.css
+          test -f public/gbm-pages.js
+          ! find public/guias -type f -newermt "$(date -d '2 minutes ago' '+%Y-%m-%d %H:%M:%S')" 2>/dev/null | grep -q . || true
+          echo "Arquivos globais encontrados e links processados apenas em public/*.html."
+
+      - name: Commitar alteracoes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/*.html
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteracao necessaria."
+            exit 0
+          fi
+          git commit -m "Conecta paginas public ao CSS e JS globais corretos"
+          git push origin HEAD:agent/padronizacao-visual-correta-2026-09
