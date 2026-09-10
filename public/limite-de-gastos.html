@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Limite de Gastos | GBM</title>
+    <link rel="stylesheet" href="gbm-pages.css">
+    <style>
+        .form-limite{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.1)}
+        .percentuais{grid-column:1/-1;padding:14px;border:1px solid rgba(85,167,255,.13);border-radius:10px;background:rgba(20,34,57,.72)}
+        .percentual-row{display:flex;gap:9px;max-width:340px}
+        .percentual-row input{max-width:190px}
+        .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+        .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid rgba(95,255,168,.3);border-radius:999px;background:rgba(38,135,78,.12);color:#8dffc1;font-size:.78rem;font-weight:700}
+        .chip button{min-width:20px;height:20px;padding:0 7px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:.68rem;line-height:20px;white-space:nowrap}
+        .dica{margin:7px 0 0;color:var(--muted);font-size:.72rem;line-height:1.45}
+        .lista-metas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+        .meta-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:1rem}
+        .meta-head strong:last-child{white-space:nowrap;flex-shrink:0}
+        .alertas{margin-top:13px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+        @media(max-width:760px){.form-limite,.lista-metas{grid-template-columns:1fr}.percentuais{grid-column:1}}
+    </style>
+    <link rel="stylesheet" href="gbm-tutorial.css">
+</head>
+<body class="gbm-interna">
+    <header class="topbar">
+        <a class="brand" href="dashboard.html" aria-label="Ir para o dashboard"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a>
+        <a class="btn-voltar" href="dashboard.html" aria-label="Voltar ao Dashboard">Voltar</a>
+    </header>
+    <main class="container">
+        <div class="page-title">
+            <h1>Limite de gastos</h1>
+            <p>Defina limites mensais por categoria e escolha em quais percentuais quer ser avisado.</p>
+        </div>
+
+        <section class="card">
+            <h2>Definir ou ajustar limite</h2>
+            <div class="form-limite" id="form-limite">
+                <div class="field">
+                    <label for="nova-meta-cat">Categoria</label>
+                    <select id="nova-meta-cat">
+                        <option value="" selected disabled>Selecione...</option>
+                        <option>Alimentação</option><option>Habitação</option><option>Transporte</option>
+                        <option>Eletricidade / Luz</option><option>Telecomunicações / Internet</option>
+                        <option>Pagamento de Fatura</option><option>Pagamento de Boleto</option>
+                        <option>Streaming de Vídeo</option><option>Streaming de Música</option>
+                        <option>Academia e Fitness</option><option>Saúde</option><option>Educação</option>
+                        <option>Supermercado</option><option>Restaurantes</option><option>Lazer</option><option>Outros</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="nova-meta-valor">Limite mensal</label>
+                    <input type="number" id="nova-meta-valor" min="0.01" step="0.01" placeholder="R$ 0,00">
+                </div>
+                <div class="percentuais">
+                    <label class="field" style="display:block">
+                        <span style="color:var(--muted);font-size:.78rem;font-weight:600">Quando você quer ser avisado?</span>
+                        <span class="percentual-row" style="margin-top:7px">
+                            <input type="number" id="novo-percentual" min="1" max="100" step="1" placeholder="Ex.: 50">
+                            <button type="button" class="btn btn-purple" onclick="adicionarPercentual()">Adicionar</button>
+                        </span>
+                    </label>
+                    <div id="chips" class="chips"></div>
+                    <p class="dica">Você pode criar vários avisos, como 50%, 70% e 90%. Cada percentual será avisado apenas uma vez por mês.</p>
+                </div>
+                <div class="field full"><div class="actions end"><button id="btn-salvar" class="btn btn-primary" onclick="salvarNovoLimite()">Salvar limite</button></div></div>
+            </div>
+        </section>
+
+        <div id="editor-container" class="lista-metas"><div class="empty">Carregando...</div></div>
+    </main>
+    <script src="auth.js"></script>
+    <script src="gbm-pages.js"></script>
+    <script>
+        let percentuaisSelecionados = [50, 70];
+        let metasCarregadas = [];
+
+        function norm(v) {
+            return [...new Set((Array.isArray(v) ? v : []).map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= 100))].sort((a, b) => a - b);
+        }
+        function renderChips() {
+            document.getElementById('chips').innerHTML = percentuaisSelecionados.map(p => `<span class="chip">${p}%<button type="button" onclick="removerPercentual(${p})">Remover</button></span>`).join('');
+        }
+        function adicionarPercentual() {
+            const i = document.getElementById('novo-percentual'), p = Number(i.value);
+            if (!Number.isInteger(p) || p < 1 || p > 100) return gbmToast('Digite um percentual inteiro entre 1% e 100%.', 'erro');
+            percentuaisSelecionados = norm([...percentuaisSelecionados, p]);
+            i.value = '';
+            renderChips();
+            i.focus();
+        }
+        function removerPercentual(p) {
+            percentuaisSelecionados = percentuaisSelecionados.filter(v => v !== p);
+            renderChips();
+        }
+        function editarLimite(i) {
+            const m = metasCarregadas[i];
+            if (!m) return;
+            const s = document.getElementById('nova-meta-cat');
+            if (![...s.options].some(o => o.value === m.categoria)) s.add(new Option(m.categoria, m.categoria));
+            s.value = m.categoria;
+            document.getElementById('nova-meta-valor').value = Number(m.limite || 0).toFixed(2);
+            percentuaisSelecionados = norm(m.percentuais_alerta);
+            renderChips();
+            document.getElementById('form-limite').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        async function carregarEditor() {
+            try {
+                const dados = await gbmJson(await fetchApi('/metas-resumo'));
+                metasCarregadas = (dados.data || []).filter(m => m.categoria);
+                const c = document.getElementById('editor-container');
+                if (!metasCarregadas.length) {
+                    c.innerHTML = '<div class="empty">Você ainda não definiu limites. Use o formulário acima para criar o primeiro.</div>';
+                    return;
+                }
+                c.innerHTML = metasCarregadas.map((m, i) => {
+                    const limite = Number(m.limite) || 0, gasto = Number(m.gasto) || 0;
+                    const p = limite > 0 ? gasto / limite * 100 : 0, w = Math.min(p, 100);
+                    const cor = p < 75 ? 'var(--green)' : p < 100 ? 'var(--amber)' : 'var(--red)';
+                    const ps = norm(m.percentuais_alerta);
+                    return `<article class="card">
+                        <div class="meta-head"><strong>${gbmEscapar(m.categoria)}</strong><strong class="gbm-count-up" style="color:${cor}">${p.toFixed(1)}%</strong></div>
+                        <div class="progress"><span data-width="${w}%" style="background:${cor}"></span></div>
+                        <div style="display:flex;justify-content:space-between;gap:10px;margin-top:10px;color:var(--muted);font-size:.82rem">
+                            <span>${gbmMoeda(gasto)} de ${gbmMoeda(limite)}</span><span>Gasto</span>
+                        </div>
+                        <div class="alertas">
+                            <div><span style="font-size:.75rem;color:var(--muted)">Avisos configurados</span><div class="chips">${ps.map(x => `<span class="chip">${x}%</span>`).join('')}</div></div>
+                            <button class="btn btn-small" onclick="editarLimite(${i})">Editar</button>
+                        </div>
+                    </article>`;
+                }).join('');
+                document.querySelectorAll('.progress > span[data-width]').forEach(el => observadorBarras.observe(el));
+                document.querySelectorAll('.gbm-count-up').forEach(el => observadorContagem.observe(el));
+            } catch (erro) { gbmToast(erro.message, 'erro'); }
+        }
+        async function salvarNovoLimite() {
+            const categoria = document.getElementById('nova-meta-cat').value;
+            const valor_limite = Number(document.getElementById('nova-meta-valor').value);
+            const percentuais_alerta = norm(percentuaisSelecionados);
+            if (!categoria || !Number.isFinite(valor_limite) || valor_limite <= 0) return gbmToast('Selecione uma categoria e informe um limite maior que zero.', 'erro');
+            if (!percentuais_alerta.length) return gbmToast('Adicione pelo menos um percentual de aviso.', 'erro');
+            const b = document.getElementById('btn-salvar');
+            b.disabled = true;
+            b.textContent = 'Salvando...';
+            try {
+                await gbmJson(await fetchApi('/atualizar-meta-alerta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categoria, valor_limite, percentuais_alerta })
+                }));
+                document.getElementById('nova-meta-cat').value = '';
+                document.getElementById('nova-meta-valor').value = '';
+                percentuaisSelecionados = [50, 70];
+                renderChips();
+                await carregarEditor();
+                gbmToast('Limite e avisos salvos com sucesso!');
+            } catch (erro) { gbmToast(erro.message, 'erro'); }
+            finally { b.disabled = false; b.textContent = 'Salvar limite'; }
+        }
+        document.getElementById('novo-percentual').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); adicionarPercentual(); } });
+        renderChips();
+        carregarEditor();
+    </script>
+    <script src="gbm-tutorial.js"></script>
+    <script src="gbm-menu.js"></script>
+</body>
+</html>

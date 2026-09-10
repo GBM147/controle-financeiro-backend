@@ -195,78 +195,9 @@ function acessarRotaPremium(url, nomeRecurso) {
     }
 }
 
-function atualizarEstadoRecursosPremium(statusPagamento, trialExpira) {
-    const itens = [
-        document.getElementById('item-relatorio-mensal'),
-        document.getElementById('item-comparativo-mensal')
-    ].filter(Boolean);
-    const cadeados = [
-        document.getElementById('cadeado-relatorio'),
-        document.getElementById('cadeado-comparativo')
-    ].filter(Boolean);
-    const aviso = document.getElementById('aviso-recursos-premium');
-    if (!itens.length && !cadeados.length && !aviso) return;
-
-    const status = String(statusPagamento || '').toLowerCase();
-    const dataExpiracao = trialExpira ? new Date(trialExpira) : null;
-    const prazoValido = dataExpiracao && !Number.isNaN(dataExpiracao.getTime())
-        ? new Date() <= dataExpiracao
-        : false;
-    const assinaturaPaga = status === 'pago';
-    const testeOuPrazoAtivo = (status === 'trial' || status === 'cancelado') && prazoValido;
-
-    window.usuarioEmTesteGratuito = !assinaturaPaga && testeOuPrazoAtivo;
-    const recursosBloqueados = !assinaturaPaga && !testeOuPrazoAtivo;
-    itens.forEach((item) => {
-        item.classList.toggle('recurso-bloqueado', recursosBloqueados);
-        if (recursosBloqueados) item.setAttribute('aria-disabled', 'true');
-        else item.removeAttribute('aria-disabled');
-    });
-
-    if (assinaturaPaga) {
-        cadeados.forEach((cadeado) => { cadeado.style.display = 'none'; });
-        if (aviso) { aviso.style.display = 'none'; aviso.textContent = ''; }
-        return;
-    }
-
-    cadeados.forEach((cadeado) => { cadeado.style.display = 'inline-flex'; });
-    if (aviso) {
-        aviso.style.display = 'block';
-        aviso.textContent = testeOuPrazoAtivo
-            ? 'Relatório Mensal e Comparativo estão disponíveis durante o teste gratuito. Ao final do teste, esses recursos ficarão indisponíveis no plano grátis.'
-            : 'Relatório mensal e comparativo são recursos Premium e não estão disponíveis no plano grátis.';
-    }
-}
-
-window.promessaVerificacaoAcesso = (async function verificarAcesso() {
-    try {
-        const res = await fetchApi('/login-status');
-        const data = await res.json();
-        sincronizarIdentidadeLocal(data);
-
-        let isPremium = false;
-        if (data.statusPagamento === 'pago') {
-            isPremium = true;
-        } else if (data.statusPagamento === 'trial' || data.statusPagamento === 'cancelado') {
-            if (data.trialExpira) {
-                const dataExpiracao = new Date(data.trialExpira);
-                if (new Date() <= dataExpiracao) isPremium = true;
-            }
-        }
-
-        window.usuarioPremium = isPremium;
-        atualizarEstadoRecursosPremium(data.statusPagamento, data.trialExpira);
-        return data;
-    } catch (e) {
-        console.warn('Não foi possível verificar o status premium.', e);
-    }
-})();
-
 function fazerLogout() {
     encerrarSessao();
 }
-
-carregarAtalhoPerfilCabecalho();
 
 async function carregarAtalhoPerfilCabecalho() {
     try {
@@ -308,7 +239,7 @@ function gbmConfirmar(mensagem) {
         _resolveConfirm = resolve;
         document.getElementById('lista-notificacoes-modal').innerHTML = `
             <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                ${mensagem}
+                ${escaparMensagemModal(mensagem)}
             </div>`;
         document.getElementById('btn-confirmar-modal').style.display = 'block';
         document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
@@ -383,73 +314,3 @@ const observadorBarras = new IntersectionObserver((entradas) => {
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.progress > span[data-width], .barra div[data-width]').forEach(el => observadorBarras.observe(el));
 });
-
-/* ===== GBM INTERACOES JS 2026 ===== */
-(() => {
-    'use strict';
-
-    function iniciarEntradas() {
-        document.querySelectorAll('[data-gbm-entrada]').forEach((el) => {
-            el.classList.add('gbm-entrada');
-        });
-    }
-
-    function observarProgresso() {
-        if (!('IntersectionObserver' in window)) return;
-        const observer = new IntersectionObserver((entries, obs) => {
-            entries.forEach((entry) => {
-                if (!entry.isIntersecting) return;
-                const barra = entry.target;
-                const destino = barra.dataset.gbmProgress;
-                if (destino) barra.style.setProperty('--gbm-progress', destino);
-                obs.unobserve(barra);
-            });
-        }, { threshold: .2 });
-
-        document.querySelectorAll('[data-gbm-progress]').forEach((el) => observer.observe(el));
-    }
-
-    function aplicarClassesFinanceiras() {
-        document.querySelectorAll('[data-valor-financeiro]').forEach((el) => {
-            const texto = String(el.getAttribute('data-valor-financeiro') || el.textContent || '').trim();
-            const valor = Number(texto.replace(/[^0-9,-]/g, '').replace(/\./g, '').replace(',', '.'));
-            el.classList.remove('valor-positivo', 'valor-negativo', 'valor-neutro');
-            if (Number.isNaN(valor) || valor === 0) el.classList.add('valor-neutro');
-            else if (valor > 0) el.classList.add('valor-positivo');
-            else el.classList.add('valor-negativo');
-        });
-    }
-
-    function registrarBotoesComLoading() {
-        document.addEventListener('click', (evento) => {
-            const botao = evento.target.closest('[data-gbm-loading]');
-            if (!botao || botao.dataset.gbmLoadingAtivo === 'true') return;
-            botao.dataset.gbmLoadingAtivo = 'true';
-            botao.dataset.gbmTextoOriginal = botao.innerHTML;
-            botao.innerHTML = botao.dataset.gbmLoadingText || 'Carregando...';
-            botao.classList.add('gbm-loading');
-            botao.setAttribute('aria-busy', 'true');
-
-            window.setTimeout(() => {
-                if (!document.body.contains(botao)) return;
-                botao.dataset.gbmLoadingAtivo = 'false';
-                botao.innerHTML = botao.dataset.gbmTextoOriginal || botao.innerHTML;
-                botao.classList.remove('gbm-loading');
-                botao.removeAttribute('aria-busy');
-            }, Number(botao.dataset.gbmLoadingTimeout || 1800));
-        });
-    }
-
-    function iniciar() {
-        iniciarEntradas();
-        observarProgresso();
-        aplicarClassesFinanceiras();
-        registrarBotoesComLoading();
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', iniciar, { once: true });
-    } else {
-        iniciar();
-    }
-})();
