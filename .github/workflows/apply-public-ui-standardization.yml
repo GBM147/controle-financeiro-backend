@@ -29,8 +29,8 @@ jobs:
           def detect_eol(data: bytes) -> bytes:
               return b'\r\n' if b'\r\n' in data else b'\n'
 
-          css_marker = b'/* ===== GBM INTERAÇÕES 2026 ===== */'
-          css_add = b'''/* ===== GBM INTERAÇÕES 2026 ===== */
+          css_marker = '/* ===== GBM INTERACOES 2026 ===== */'.encode('ascii')
+          css_add = '''/* ===== GBM INTERACOES 2026 ===== */
           /* Camada compartilhada de interação visual do GBM. */
           :root {
               --gbm-focus: #55a7ff;
@@ -167,10 +167,10 @@ jobs:
                   scroll-behavior: auto !important;
               }
           }
-          '''
+          '''.encode('utf-8')
 
-          js_marker = b'/* ===== GBM INTERAÇÕES JS 2026 ===== */'
-          js_add = b'''/* ===== GBM INTERAÇÕES JS 2026 ===== */
+          js_marker = '/* ===== GBM INTERACOES JS 2026 ===== */'.encode('ascii')
+          js_add = '''/* ===== GBM INTERACOES JS 2026 ===== */
           (() => {
               'use strict';
 
@@ -239,7 +239,7 @@ jobs:
                   iniciar();
               }
           })();
-          '''
+          '''.encode('utf-8')
 
           def append_preserving_eol(path: Path, marker: bytes, addition: bytes):
               if not path.exists():
