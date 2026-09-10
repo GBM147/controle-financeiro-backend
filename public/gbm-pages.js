@@ -254,3 +254,63 @@ function fecharModalNotificacoes(confirmado = false) {
         _resolveConfirm = null;
     }
 }
+/* ===== RIPPLE NOS BOTÕES ===== */
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn');
+    if (!btn) return;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px`;
+    btn.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+});
+
+/* ===== CONTAGEM ANIMADA NOS NÚMEROS ===== */
+function gbmContarAte(el) {
+    const texto = el.textContent.trim();
+    const match = texto.match(/(R\$\s*)?([\d.,]+)/);
+    if (!match) return;
+    const prefixo = match[1] || '';
+    const alvo = parseFloat(match[2].replace(/\./g, '').replace(',', '.'));
+    if (isNaN(alvo)) return;
+    const duracao = 900;
+    const inicio = performance.now();
+    function step(agora) {
+        const progresso = Math.min((agora - inicio) / duracao, 1);
+        const ease = 1 - Math.pow(1 - progresso, 3);
+        const atual = (alvo * ease).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        el.textContent = prefixo + atual;
+        if (progresso < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+const observadorContagem = new IntersectionObserver((entradas) => {
+    entradas.forEach(e => {
+        if (!e.isIntersecting) return;
+        gbmContarAte(e.target);
+        observadorContagem.unobserve(e.target);
+    });
+}, { threshold: .3 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.gbm-count-up').forEach(el => observadorContagem.observe(el));
+});
+
+/* ===== BARRAS DE PROGRESSO ANIMADAS ===== */
+const observadorBarras = new IntersectionObserver((entradas) => {
+    entradas.forEach(e => {
+        if (!e.isIntersecting) return;
+        const barra = e.target;
+        const largura = barra.getAttribute('data-width') || barra.style.width;
+        barra.style.setProperty('--w', largura);
+        requestAnimationFrame(() => barra.classList.add('animado'));
+        observadorBarras.unobserve(barra);
+    });
+}, { threshold: .1 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.progress > span[data-width], .barra div[data-width]').forEach(el => observadorBarras.observe(el));
+});
