@@ -7,218 +7,68 @@
         'offline.html', 'pagamento.html', 'assinatura.html'
     ]);
 
-    function inicializar() {
-        const atual = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-        if (paginasPublicas.has(atual)) return;
-        if (document.documentElement.dataset.gbmMenuInicializado === 'true') return;
+    const itensMenu = [
+        { grupo:'Resumo', itens:[{href:'dashboard.html',pagina:'dashboard.html',texto:'Visão geral',icone:'dashboard'}] },
+        { grupo:'Movimentações', itens:[{href:'contas.html',pagina:'contas.html',texto:'Minhas contas',icone:'wallet'},{href:'importacoes.html',pagina:'importacoes.html',texto:'Importações',icone:'upload'}] },
+        { grupo:'Planejamento', itens:[{href:'calendario.html',pagina:'calendario.html',texto:'Calendário',icone:'calendar'},{href:'limite-de-gastos.html',pagina:'limite-de-gastos.html',texto:'Limite de gastos',icone:'limit'},{href:'metas.html',pagina:'metas.html',texto:'Objetivos de poupança',icone:'goal'}] },
+        { grupo:'Análises', itens:[{href:'relatorio.html',pagina:'relatorio.html',texto:'Relatórios',icone:'report'},{href:'relatorio-avancado.html',pagina:'relatorio-avancado.html',texto:'Relatório avançado',icone:'advanced',premium:true},{href:'comparativo.html',pagina:'comparativo.html',texto:'Comparativo mensal',icone:'compare',premium:true}] },
+        { grupo:'Conta', classe:'menu-grupo-conta', itens:[{href:'notificacoes.html',pagina:'notificacoes.html',texto:'Notificações',icone:'bell'},{href:'configuracoes.html',pagina:'configuracoes.html',texto:'Configurações',icone:'settings'},{href:'perfil.html',pagina:'perfil.html',texto:'Meu perfil',icone:'profile'},{href:'educacao-financeira.html',pagina:'educacao-financeira.html',texto:'Educação financeira',icone:'book'},{href:'#sair',pagina:'#sair',texto:'Sair',icone:'logout',sair:true}] }
+    ];
 
-        // Somente páginas internas do painel devem receber este cabeçalho/menu.
-        const paginaInterna = document.body.classList.contains('gbm-interna')
-            || !!document.querySelector('body > .topbar')
-            || !!document.querySelector('.gbm-header');
-        if (!paginaInterna) return;
+    const paths = {
+        dashboard:'<rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect>',
+        wallet:'<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H20v14H6.5A2.5 2.5 0 0 1 4 16.5z"></path><path d="M4 8h13.5A2.5 2.5 0 0 1 20 10.5V12h-4a2.5 2.5 0 0 0 0 5h4v2"></path><path d="M16 14.5h.01"></path>',
+        upload:'<path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M5 20h14"></path>',
+        calendar:'<rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M16 2v4M8 2v4M3 9h18"></path>',
+        limit:'<path d="M5 20V10M12 20V4M19 20v-7"></path>',
+        goal:'<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle><path d="m17.5 6.5 2-2"></path>',
+        report:'<path d="M5 3h10l4 4v14H5z"></path><path d="M15 3v5h5M8 13h8M8 17h6"></path>',
+        advanced:'<path d="m12 3 2.3 5.2L20 10l-5.7 1.8L12 17l-2.3-5.2L4 10l5.7-1.8z"></path><path d="M18.5 16 20 19l3-1.5"></path>',
+        compare:'<path d="M6 20V10M12 20V5M18 20v-8"></path><path d="M3 20h18"></path>',
+        bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path>',
+        settings:'<circle cx="12" cy="12" r="3.5"></circle><path d="m19.4 15-.1.1a1.8 1.8 0 0 0 .3 1.9l.1.1-1.4 1.4-.1-.1a1.8 1.8 0 0 0-1.9-.3l-.1.1A1.8 1.8 0 0 0 15.1 20h-2v-.2A1.8 1.8 0 0 0 12 18.2a1.8 1.8 0 0 0-1.9.3l-.1.1-1.4-1.4.1-.1a1.8 1.8 0 0 0 .3-1.9l-.1-.1A1.8 1.8 0 0 0 7.2 14H7v-2h.2A1.8 1.8 0 0 0 8.8 11l.1-.1a1.8 1.8 0 0 0-.3-1.9l-.1-.1 1.4-1.4.1.1a1.8 1.8 0 0 0 1.9.3l.1-.1A1.8 1.8 0 0 0 13.1 6v-.2h2V6a1.8 1.8 0 0 0 1.1 1.8 1.8 1.8 0 0 0 1.9-.3l.1-.1 1.4 1.4-.1.1a1.8 1.8 0 0 0-.3 1.9l.1.1A1.8 1.8 0 0 0 20.8 12h.2v2h-.2A1.8 1.8 0 0 0 19.4 15Z"></path>',
+        profile:'<circle cx="12" cy="8" r="3.5"></circle><path d="M5 20a7 7 0 0 1 14 0"></path>',
+        book:'<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5z"></path><path d="M8 7h8M8 11h8"></path>',
+        logout:'<path d="M10 5H5v14h5"></path><path d="M14 8l4 4-4 4M9 12h9"></path>'
+    };
 
-        document.documentElement.dataset.gbmMenuInicializado = 'true';
+    function paginaAtual(){const n=(window.location.pathname.split('/').pop()||'index.html').toLowerCase();return n==='limite-gastos.html'?'limite-de-gastos.html':n;}
+    function svg(nome){return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(paths[nome]||paths.dashboard)+'</svg>';}
 
-        // O Dashboard já possui a implementação oficial. Não duplique o componente nele.
-        if (document.querySelector('.gbm-header') && document.querySelector('.sidebar-menu')) return;
-
-        const css = `
-            .gbm-header{background:rgba(7,17,31,.3);border-bottom:1px solid rgba(255,255,255,.12);padding:0 34px;display:flex;align-items:center;justify-content:space-between;height:74px;box-sizing:border-box;position:sticky;top:0;z-index:10000;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);}
-            .gbm-logo-container{display:flex;align-items:center;gap:15px;min-width:0;}
-            .gbm-logo-img{height:70px !important;width:auto !important;border-radius:8px;}
-            .gbm-title{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0;cursor:default;background:linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:gbm-shine 4s linear infinite;transition:letter-spacing .3s ease,transform .3s ease;}
-            .gbm-title:hover{letter-spacing:4px;transform:scale(1.03);animation-duration:1.5s;}
-            @keyframes gbm-shine{0%{background-position:0% center}100%{background-position:200% center}}
-            .gbm-header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-            .atalho-perfil{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:4px 10px 4px 4px;border:1px solid rgba(95,255,168,.35);border-radius:999px;background:rgba(15,26,43,.78);color:#fff;text-decoration:none;box-sizing:border-box;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;}
-            .atalho-perfil:hover{transform:translateY(-1px);border-color:#2E8B57;box-shadow:0 0 14px rgba(95,255,168,.25);}
-            .avatar-perfil-cabecalho{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid #2E8B57;background:#101b2c;}
-            .nome-perfil-cabecalho{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.86rem;font-weight:700;}
-            .gbm-menu-container{position:relative;z-index:1000;}
-            .gbm-menu-btn{display:flex;align-items:center;justify-content:center;width:34px;min-height:40px;padding:0;border:0 !important;border-radius:0;background:transparent !important;box-shadow:none !important;cursor:pointer;color:#dce6f0;transition:color .2s ease;position:relative;}
-            .gbm-menu-btn:hover{background:transparent !important;box-shadow:none !important;color:#5fffa8;}
-            .hamburger-icon{display:inline-flex;width:27px;flex-direction:column;gap:5px;}
-            .hamburger-icon span{display:block;width:100%;height:2px;border-radius:2px;background:linear-gradient(90deg,#5fffa8,#3d28ff);}
-            .menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:9998;}
-            .menu-overlay.aberto{display:block;}
-            .sidebar-menu{position:fixed;top:0;right:-320px;width:300px;height:100dvh;max-height:100dvh;box-sizing:border-box;background:rgba(7,17,31,.94);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);border-left:1px solid rgba(85,167,255,.2);box-shadow:-10px 0 30px rgba(0,0,0,.8);z-index:9999;transition:right .4s cubic-bezier(.25,.8,.25,1);display:flex;flex-direction:column;overflow:hidden;}
-            .sidebar-menu.aberto{right:0 !important;}
-            .sidebar-header{display:flex;justify-content:space-between;align-items:center;min-height:78px;box-sizing:border-box;padding:15px 14px 14px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
-            .sidebar-brand{display:flex;align-items:center;gap:9px;min-width:0;text-decoration:none;}
-            .sidebar-logo{width:28px;height:28px;object-fit:contain;border-radius:7px;flex:0 0 auto;}
-            .sidebar-brand-text{display:flex;flex-direction:column;min-width:0;line-height:1.05;}
-            .sidebar-brand-text strong{background:linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:gbm-shine 4s linear infinite;font:700 .79rem 'Inter',sans-serif;letter-spacing:-.01em;}
-            .sidebar-brand-text span{margin-top:3px;color:#718198;font:500 .56rem 'Inter',sans-serif;}
-            .fechar-btn{width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:0 !important;color:#d9e7f5 !important;font-size:25px !important;background:transparent !important;cursor:pointer;}
-            .fechar-btn:hover{color:#5fffa8 !important;transform:none !important;}
-            .sidebar-content{padding:12px 10px 15px;display:flex;flex-direction:column;gap:0;flex:1;overflow-y:auto;}
-            .sidebar-content::-webkit-scrollbar{width:6px;}
-            .sidebar-content::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:10px;}
-            .menu-grupo{padding:0 0 8px;margin:0 !important;display:flex;flex-direction:column;gap:2px;}
-            .menu-grupo + .menu-grupo{margin-top:2px !important;}
-            .menu-grupo-titulo{padding:9px 9px 5px;margin:0;color:#58708b !important;font:800 .5rem 'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;line-height:1.25;}
-            .menu-grupo-premium{padding-top:5px;border-top:1px solid rgba(255,255,255,.08);}
-            .menu-grupo-premium .menu-grupo-titulo{color:#6b89a8 !important;}
-            .menu-grupo-conta{margin-top:auto !important;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);}
-            .menu-item{position:relative;display:flex !important;align-items:center;gap:9px;min-height:34px;box-sizing:border-box;padding:7px 9px !important;border-left:2px solid transparent !important;border-radius:7px;color:#dce6f0 !important;background:transparent !important;font:600 .68rem 'Inter',sans-serif;letter-spacing:0;text-decoration:none !important;cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease;}
-            .menu-item-icone{width:15px;flex:0 0 15px;text-align:center;color:#7d9abd;font-size:.78rem;line-height:1;}
-            .menu-item-conteudo{min-width:0;flex:1;}
-            .menu-item:hover{background:rgba(85,167,255,.07) !important;border-left-color:rgba(85,167,255,.45) !important;color:#f5f9ff !important;}
-            .menu-item:hover .menu-item-icone{color:#9dcbff;}
-            .menu-item-ativo{background:rgba(34,91,113,.38) !important;color:#effcff !important;border-left-color:#39d98a !important;}
-            .menu-item-ativo .menu-item-icone{color:#39d98a;}
-            .menu-item-ativo-indicador{width:3px;height:17px;border-radius:3px;background:linear-gradient(180deg,#5fffa8 0%,#3d28ff 100%);box-shadow:0 0 8px rgba(57,217,138,.28);margin-left:auto;}
-            .menu-item-com-indicador .menu-item-indicadores{margin-left:auto;display:inline-flex;align-items:center;gap:6px;}
-            .cadeado-premium{display:inline-flex;align-items:center;justify-content:center;min-height:18px;padding:2px 6px;border:1px solid rgba(85,167,255,.5);border-radius:999px;background:rgba(85,167,255,.12);color:#9dcbff;font-size:.48rem;font-weight:700;}
-            .menu-item-sair{color:#ff7d8a !important;margin-top:2px;}
-            .menu-item-sair .menu-item-icone{color:#ff7d8a;}
-            .texto-vermelho{color:#ff7d8a !important;}
-            .texto-vermelho:hover{border-left-color:#ff5d6c !important;background:rgba(255,93,108,.08) !important;color:#ff9aa4 !important;}
-            body.gbm-menu-aberto{overflow:hidden;}
-            @media(max-width:768px){
-                .gbm-header{height:62px;padding:0 15px;}
-                .gbm-logo-img{height:40px !important;}
-                .gbm-title{font-size:18px;letter-spacing:1px;}
-                .nome-perfil-cabecalho{display:none;}
-                .atalho-perfil{min-height:40px;padding:1px;border:0;background:transparent;}
-                .avatar-perfil-cabecalho{width:37px;height:37px;}
-                .sidebar-menu{width:min(286px,88vw);right:calc(-1 * min(306px,92vw));}
-            }
-        `;
-
-        const style = document.createElement('style');
-        style.id = 'gbm-dashboard-menu-style';
-        style.textContent = css;
-        document.head.appendChild(style);
-
-        const antigo = document.querySelector('body.gbm-interna > .topbar') || document.querySelector('body > .topbar');
-        const header = document.createElement('header');
-        header.className = 'gbm-header';
-        header.innerHTML = `
-            <div class="gbm-logo-container">
-                <a href="dashboard.html" aria-label="Ir para o Dashboard"><img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img"></a>
-                <h1 class="gbm-title">Guardian Of Budget & Money</h1>
-            </div>
-            <div class="gbm-header-actions">
-                <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
-                    <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
-                    <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
-                </a>
-                <div class="gbm-menu-container">
-                    <button id="menu-btn" class="gbm-menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false">
-                        <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-                        <span id="dot-alertas" style="display:none;position:absolute;top:2px;right:2px;width:9px;height:9px;background:#ef4444;border-radius:50%;box-shadow:0 0 4px #ef4444;"></span>
-                    </button>
-                </div>
-            </div>
-        `;
-
-        if (antigo) antigo.replaceWith(header);
-        else document.body.prepend(header);
-
-        const overlay = document.createElement('div');
-        overlay.id = 'menu-overlay';
-        overlay.className = 'menu-overlay';
-
-        const menu = document.createElement('aside');
-        menu.id = 'sidebar-menu';
-        menu.className = 'sidebar-menu';
-        menu.setAttribute('aria-label','Menu principal');
-        menu.innerHTML = `
-            <div class="sidebar-header">
-                <a class="sidebar-brand" href="dashboard.html" aria-label="Ir para o Dashboard">
-                    <img class="sidebar-logo" src="logo-transparente.jpg" alt="Logo GBM">
-                    <span class="sidebar-brand-text"><strong>GBM Finance</strong><span>Proteção financeira para você</span></span>
-                </a>
-                <button class="fechar-btn" type="button" aria-label="Fechar menu">&times;</button>
-            </div>
-            <nav class="sidebar-content" aria-label="Menu principal">
-                <div class="menu-grupo">
-                    <p class="menu-grupo-titulo">Resumo</p>
-                    <a href="dashboard.html" data-menu-page="dashboard.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">⌂</span><span class="menu-item-conteudo">Visão geral</span><span class="menu-item-ativo-indicador" aria-hidden="true"></span></a>
-                </div>
-                <div class="menu-grupo">
-                    <p class="menu-grupo-titulo">Movimentações</p>
-                    <a href="contas.html" data-menu-page="contas.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">▣</span><span class="menu-item-conteudo">Minhas contas</span></a>
-                    <a href="importacoes.html" data-menu-page="importacoes.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">↥</span><span class="menu-item-conteudo">Importações</span></a>
-                </div>
-                <div class="menu-grupo">
-                    <p class="menu-grupo-titulo">Planejamento</p>
-                    <a href="calendario.html" data-menu-page="calendario.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">□</span><span class="menu-item-conteudo">Calendário</span></a>
-                    <a href="limite-de-gastos.html" data-menu-page="limite-de-gastos.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">◒</span><span class="menu-item-conteudo">Limite de gastos</span></a>
-                    <a href="metas.html" data-menu-page="metas.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">◎</span><span class="menu-item-conteudo">Objetivos de poupança</span></a>
-                </div>
-                <div class="menu-grupo menu-grupo-premium">
-                    <p class="menu-grupo-titulo">Análises</p>
-                    <a href="relatorio.html" data-menu-page="relatorio.html" class="menu-item menu-item-premium menu-item-com-indicador"><span class="menu-item-icone" aria-hidden="true">▥</span><span class="menu-item-conteudo">Relatório mensal</span><span class="cadeado-premium">Premium</span></a>
-                    <a href="comparativo.html" data-menu-page="comparativo.html" class="menu-item menu-item-premium menu-item-com-indicador"><span class="menu-item-icone" aria-hidden="true">⇄</span><span class="menu-item-conteudo">Comparativo mensal</span><span class="cadeado-premium">Premium</span></a>
-                </div>
-                <div class="menu-grupo menu-grupo-conta">
-                    <p class="menu-grupo-titulo">Conta</p>
-                    <a href="notificacoes.html" data-menu-page="notificacoes.html" class="menu-item menu-item-com-indicador"><span class="menu-item-icone" aria-hidden="true">♧</span><span class="menu-item-conteudo">Notificações</span><span class="menu-item-indicadores"><span id="badge-alertas-menu" style="display:none;background:#ef4444;color:#fff;border-radius:10px;font-size:.56rem;padding:2px 7px;">0</span></span></a>
-                    <a href="configuracoes.html" data-menu-page="configuracoes.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">⚙</span><span class="menu-item-conteudo">Configurações</span></a>
-                    <a href="perfil.html" data-menu-page="perfil.html" class="menu-item"><span class="menu-item-icone" aria-hidden="true">♙</span><span class="menu-item-conteudo">Perfil</span></a>
-                    <a href="#" id="menu-sair" class="menu-item menu-item-sair texto-vermelho"><span class="menu-item-icone" aria-hidden="true">↪</span><span class="menu-item-conteudo">Sair</span></a>
-                </div>
-            </nav>
-        `;
-
-        document.body.append(overlay, menu);
-
-        const botao = document.getElementById('menu-btn');
-        const fechar = () => {
-            menu.classList.remove('aberto');
-            overlay.classList.remove('aberto');
-            document.body.classList.remove('gbm-menu-aberto');
-            botao?.setAttribute('aria-expanded','false');
-        };
-        const abrir = () => {
-            menu.classList.add('aberto');
-            overlay.classList.add('aberto');
-            document.body.classList.add('gbm-menu-aberto');
-            botao?.setAttribute('aria-expanded','true');
-        };
-
-        botao?.addEventListener('click', () => menu.classList.contains('aberto') ? fechar() : abrir());
-        overlay.addEventListener('click', fechar);
-        menu.querySelector('.fechar-btn')?.addEventListener('click', fechar);
-        document.addEventListener('keydown', (event) => { if (event.key === 'Escape') fechar(); });
-
-        const paginaAtual = (window.location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
-        menu.querySelectorAll('[data-menu-page]').forEach((link) => {
-            const alvo = String(link.getAttribute('data-menu-page') || '').toLowerCase();
-            const ativo = alvo === paginaAtual;
-            link.classList.toggle('menu-item-ativo', ativo);
-            if (!ativo) link.querySelector('.menu-item-ativo-indicador')?.remove();
-        });
-
-        menu.querySelectorAll('a[href]').forEach((link) => link.addEventListener('click', fechar));
-        menu.querySelector('#menu-sair')?.addEventListener('click', async (event) => {
-            event.preventDefault();
-            fechar();
-            if (typeof fazerLogout === 'function') return fazerLogout();
-            try { await fetch('/logout', { method:'POST', credentials:'include' }); } catch (_) {}
-            window.location.replace('index.html');
-        });
-
-        async function carregarPerfilCabecalho() {
-            if (typeof fetchApi !== 'function') return;
-            try {
-                const resposta = await fetchApi('/perfil');
-                const dados = await resposta.json();
-                if (!dados.success) return;
-                const perfil = dados.perfil || {};
-                const foto = document.getElementById('foto-perfil-cabecalho');
-                const nome = document.getElementById('nome-perfil-cabecalho');
-                if (foto && perfil.foto_perfil_url) foto.src = perfil.foto_perfil_url;
-                if (nome) nome.textContent = perfil.nome || perfil.nome_completo || perfil.email || 'Meu perfil';
-            } catch (_) {}
-        }
-
-        carregarPerfilCabecalho();
+    function css(){
+        if(document.getElementById('gbm-menu-style')) return;
+        const s=document.createElement('style');s.id='gbm-menu-style';s.textContent=`
+            .gbm-header{position:sticky!important;top:0;z-index:10000;height:74px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 34px;box-sizing:border-box;background:rgba(7,17,31,.30)!important;border-bottom:1px solid rgba(255,255,255,.12)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+            .gbm-logo-container{display:flex;align-items:center;gap:15px;min-width:0}.gbm-logo-container>a{display:flex;align-items:center;text-decoration:none!important}.gbm-logo-img{height:70px!important;width:auto!important;border-radius:8px;object-fit:contain}.gbm-title{margin:0;cursor:default;font:700 26px/1 'Rajdhani',sans-serif;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:gbm-menu-shine 4s linear infinite}@keyframes gbm-menu-shine{from{background-position:0 center}to{background-position:200% center}}
+            .gbm-header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}.atalho-perfil{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:4px 10px 4px 4px;border:1px solid rgba(95,255,168,.35);border-radius:999px;background:rgba(15,26,43,.78);color:#fff!important;text-decoration:none!important;box-sizing:border-box}.avatar-perfil-cabecalho{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid #39d98a;background:#101b2c}.nome-perfil-cabecalho{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.86rem;font-weight:700}.gbm-menu-btn{display:inline-flex!important;align-items:center;justify-content:center;width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;border:0!important;border-radius:8px!important;background:transparent!important;box-shadow:none!important;color:#dce6f0!important;cursor:pointer}.gbm-menu-btn:hover{color:#5fffa8!important;transform:scale(1.04)}.hamburger-icon{display:inline-flex;width:27px;flex-direction:column;gap:5px}.hamburger-icon span{display:block;width:100%;height:2px;border-radius:2px;background:linear-gradient(90deg,#5fffa8,#55a7ff);transition:transform .22s ease,opacity .18s ease}.gbm-menu-btn[aria-expanded="true"] .hamburger-icon span:nth-child(1){transform:translateY(7px) rotate(45deg)}.gbm-menu-btn[aria-expanded="true"] .hamburger-icon span:nth-child(2){opacity:0}.gbm-menu-btn[aria-expanded="true"] .hamburger-icon span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+            .menu-overlay{display:none!important;position:fixed!important;inset:0!important;z-index:9998!important;background:rgba(0,0,0,.28)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}.menu-overlay.aberto{display:block!important}
+            .sidebar-menu{position:fixed;top:0;right:-320px;width:300px;height:100dvh;max-height:100dvh;box-sizing:border-box;background:rgba(7,17,31,.97)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;border-left:1px solid rgba(85,167,255,.22)!important;box-shadow:-16px 0 36px rgba(0,0,0,.72)!important;z-index:9999;transition:right .38s cubic-bezier(.22,.75,.25,1);display:flex;flex-direction:column;overflow:hidden}.sidebar-menu.aberto{right:0!important}.sidebar-header{display:flex;align-items:center;justify-content:space-between;min-height:78px;padding:15px 14px 14px 16px;border-bottom:1px solid rgba(255,255,255,.08);box-sizing:border-box}.sidebar-brand{display:flex;align-items:center;gap:9px;min-width:0;text-decoration:none!important;color:inherit!important;cursor:default}.sidebar-logo{width:28px;height:28px;object-fit:contain;border-radius:7px}.sidebar-brand-text{display:flex;flex-direction:column;min-width:0;line-height:1.05}.sidebar-brand-text strong{color:#eef6ff!important;background:none!important;-webkit-text-fill-color:#eef6ff!important;font:700 .79rem 'Inter',sans-serif;letter-spacing:0}.sidebar-brand-text span{margin-top:3px;color:#718198!important;font:500 .56rem 'Inter',sans-serif}.fechar-btn{width:30px;height:30px;padding:0!important;border:0!important;background:transparent!important;color:#d9e7f5!important;font-size:25px!important;cursor:pointer}
+            .sidebar-content{padding:12px 10px 15px;display:flex;flex-direction:column;gap:0;flex:1;overflow-y:auto}.sidebar-content::-webkit-scrollbar{width:6px}.sidebar-content::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:10px}.menu-grupo{display:flex;flex-direction:column;gap:2px;padding:0 0 8px;margin:0!important}.menu-grupo+.menu-grupo{margin-top:2px!important}.menu-grupo-titulo{padding:9px 9px 5px;margin:0;color:#58708b!important;font:800 .5rem 'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase}.menu-grupo-conta{margin-top:auto!important;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}.menu-item{position:relative;display:flex!important;align-items:center;gap:9px;min-height:34px;box-sizing:border-box;padding:7px 9px!important;border-left:2px solid transparent!important;border-radius:7px;color:#dce6f0!important;background:transparent!important;font:600 .68rem 'Inter',sans-serif;text-decoration:none!important;cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease}.menu-item:hover{background:rgba(85,167,255,.07)!important;border-left-color:rgba(85,167,255,.45)!important;color:#f5f9ff!important}.menu-item-icone{width:15px!important;flex:0 0 15px;color:#7d9abd;display:inline-flex!important;align-items:center;justify-content:center}.menu-item-icone svg{width:15px;height:15px}.menu-item-conteudo{min-width:0;flex:1}.menu-item-indicadores{display:inline-flex;align-items:center;margin-left:auto}.menu-item-ativo{background:linear-gradient(90deg,rgba(46,139,87,.23),rgba(85,167,255,.08))!important;border-left-color:#39d98a!important;color:#effcff!important}.cadeado-premium{display:inline-flex;align-items:center;justify-content:center;min-height:18px;padding:2px 6px;border:1px solid rgba(85,167,255,.5);border-radius:999px;background:rgba(85,167,255,.12);color:#9dcbff;font-size:.48rem;font-weight:700}.menu-item-sair{color:#ff7d8a!important}.menu-item-sair .menu-item-icone{color:#ff7d8a}.menu-item-sair:hover{background:rgba(255,93,108,.08)!important;border-left-color:#ff5d6c!important}body.gbm-menu-aberto{overflow:hidden}
+            @media(max-width:768px){.gbm-header{height:62px!important;padding:0 15px}.gbm-logo-img{height:40px!important}.gbm-title{font-size:18px;letter-spacing:1px}.nome-perfil-cabecalho{display:none}.atalho-perfil{min-height:40px;padding:1px;border:0;background:transparent}.avatar-perfil-cabecalho{width:37px;height:37px}.sidebar-menu{width:min(286px,88vw);right:calc(-1 * min(306px,92vw))}}
+        `;document.head.appendChild(s);
     }
 
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inicializar, { once:true });
-    else inicializar();
+    function removerAntigos(){
+        document.querySelectorAll('body > .topbar,.gbm-header,.sidebar-menu,#sidebar-menu,#menu-overlay').forEach((el)=>el.remove());
+        if(paginaAtual()==='educacao-financeira.html') document.querySelectorAll('.site-header').forEach((el)=>el.remove());
+    }
+
+    function itens(){return itensMenu.map((grupo)=>'<div class="menu-grupo '+(grupo.classe||'')+'"><p class="menu-grupo-titulo">'+grupo.grupo+'</p>'+grupo.itens.map((item)=>{const classes=['menu-item',item.premium?'menu-item-premium':'',item.sair?'menu-item-sair':''].filter(Boolean).join(' ');const premium=item.premium?'<span class="menu-item-indicadores"><span class="cadeado-premium">Premium</span></span>':'';if(item.sair)return '<button type="button" class="'+classes+'" data-menu-sair="true"><span class="menu-item-icone">'+svg(item.icone)+'</span><span class="menu-item-conteudo">'+item.texto+'</span></button>';return '<a href="'+item.href+'" data-menu-page="'+item.pagina+'" class="'+classes+'"><span class="menu-item-icone">'+svg(item.icone)+'</span><span class="menu-item-conteudo">'+item.texto+'</span>'+premium+'</a>';}).join('')+'</div>').join('');}
+
+    function montar(){
+        removerAntigos();
+        const header=document.createElement('header');header.className='gbm-header';header.innerHTML='<div class="gbm-logo-container"><a href="dashboard.html" aria-label="Ir para o Dashboard"><img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img"></a><h1 class="gbm-title">Guardian Of Budget &amp; Money</h1></div><div class="gbm-header-actions"><a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil"><img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho"><span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span></a><button id="menu-btn" class="gbm-menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false"><span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span></button></div>';
+        document.body.prepend(header);
+        const overlay=document.createElement('div');overlay.id='menu-overlay';overlay.className='menu-overlay';document.body.appendChild(overlay);
+        const sidebar=document.createElement('aside');sidebar.id='sidebar-menu';sidebar.className='sidebar-menu';sidebar.innerHTML='<div class="sidebar-header"><div class="sidebar-brand"><img class="sidebar-logo" src="logo-transparente.jpg" alt="Logo GBM"><span class="sidebar-brand-text"><strong>GBM Finance</strong><span>Proteção financeira para você</span></span></div><button class="fechar-btn" type="button" aria-label="Fechar menu">&times;</button></div><nav class="sidebar-content" aria-label="Navegação interna">'+itens()+'</nav>';document.body.appendChild(sidebar);
+    }
+    function fechar(){document.getElementById('sidebar-menu')?.classList.remove('aberto');document.getElementById('menu-overlay')?.classList.remove('aberto');document.getElementById('menu-btn')?.setAttribute('aria-expanded','false');document.body.classList.remove('gbm-menu-aberto');}
+    function abrir(){document.getElementById('sidebar-menu')?.classList.add('aberto');document.getElementById('menu-overlay')?.classList.add('aberto');document.getElementById('menu-btn')?.setAttribute('aria-expanded','true');document.body.classList.add('gbm-menu-aberto');}
+    function ligar(){document.getElementById('menu-btn')?.addEventListener('click',()=>document.getElementById('menu-btn')?.getAttribute('aria-expanded')==='true'?fechar():abrir());document.getElementById('menu-overlay')?.addEventListener('click',fechar);document.querySelector('.fechar-btn')?.addEventListener('click',fechar);document.querySelectorAll('.menu-item:not([data-menu-sair])').forEach((i)=>i.addEventListener('click',fechar));document.querySelector('[data-menu-sair]')?.addEventListener('click',async()=>{fechar();if(typeof window.encerrarSessao==='function'){await window.encerrarSessao();return;}try{await fetch('/logout',{method:'POST',credentials:'include'});}catch(e){}window.location.replace('index.html');});document.addEventListener('keydown',(e)=>{if(e.key==='Escape')fechar();});}
+    async function atualizarPerfil(){const foto=document.getElementById('foto-perfil-cabecalho');const nome=document.getElementById('nome-perfil-cabecalho');if(!foto||!nome)return;try{const r=typeof window.fetchApi==='function'?await window.fetchApi('/perfil'):await fetch('/perfil',{credentials:'include'});if(!r.ok)return;const d=await r.json();const p=d?.perfil;if(!p)return;nome.textContent=p.nome_exibicao||p.nome||'Meu perfil';if(p.foto_perfil_url)foto.src=p.foto_perfil_url;}catch(e){}}
+    function iniciar(){if(paginasPublicas.has(paginaAtual()))return;document.body.classList.add('gbm-interna');adicionarEstilos();montar();aplicarEstadoAtivo();ligarEventos();atualizarPerfil();}
+    function adicionarEstilos(){css();}
+    function aplicarEstadoAtivo(){const atual=paginaAtual();document.querySelectorAll('[data-menu-page]').forEach((item)=>{const ativo=item.getAttribute('data-menu-page')===atual;item.classList.toggle('menu-item-ativo',ativo);if(ativo)item.setAttribute('aria-current','page');else item.removeAttribute('aria-current');});}
+    function ligarEventos(){ligar();}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar,{once:true});else iniciar();
 })();
