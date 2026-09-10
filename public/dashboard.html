@@ -240,6 +240,7 @@
             .sidebar-menu { width: min(286px,88vw); right: calc(-1 * min(306px,92vw)); }
         }
     </style>
+    <link rel="stylesheet" href="gbm-pages.css">
 </head>
 <body>
 
@@ -702,5 +703,6 @@ window.promessaVerificacaoAcesso.then(() => {
     (function loop(){ ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(loop); })();
 })();
 </script>
+    <script src="gbm-pages.js"></script>
 </body>
 </html>
