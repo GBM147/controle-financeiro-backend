@@ -1,0 +1,282 @@
+name: Apply GBM public UI standardization
+
+on:
+  push:
+    branches:
+      - agent/padronizacao-visual-public-2026-09
+
+permissions:
+  contents: write
+
+jobs:
+  standardize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply shared visual layer preserving line endings
+        shell: python
+        run: |
+          from pathlib import Path
+
+          root = Path('public')
+          css = root / 'gbm-pages.css'
+          js = root / 'gbm-pages.js'
+
+          def detect_eol(data: bytes) -> bytes:
+              return b'\r\n' if b'\r\n' in data else b'\n'
+
+          css_marker = b'/* ===== GBM INTERAÇÕES 2026 ===== */'
+          css_add = b'''/* ===== GBM INTERAÇÕES 2026 ===== */
+          /* Camada compartilhada de interação visual do GBM. */
+          :root {
+              --gbm-focus: #55a7ff;
+              --gbm-success: #39d98a;
+              --gbm-danger: #ff5d6c;
+              --gbm-ease: cubic-bezier(.22,.61,.36,1);
+          }
+
+          .card,
+          .btn,
+          .btn-acao,
+          .btn-voltar,
+          input,
+          select,
+          textarea,
+          .menu-item,
+          .atalho-perfil {
+              transition-property: transform, opacity, color, background-color, background, border-color, box-shadow, filter;
+              transition-duration: .22s;
+              transition-timing-function: var(--gbm-ease);
+          }
+
+          .card:hover {
+              transform: translateY(-3px);
+          }
+
+          .btn:hover,
+          .btn-acao:hover,
+          .btn-voltar:hover {
+              transform: translateY(-2px);
+              filter: brightness(1.045);
+          }
+
+          .btn:active,
+          .btn-acao:active,
+          .btn-voltar:active {
+              transform: translateY(0) scale(.985);
+          }
+
+          input:hover,
+          select:hover,
+          textarea:hover {
+              border-color: rgba(85,167,255,.34);
+          }
+
+          input:focus,
+          select:focus,
+          textarea:focus {
+              border-color: var(--gbm-focus);
+              box-shadow: 0 0 0 3px rgba(85,167,255,.11), 0 5px 18px rgba(0,0,0,.12);
+          }
+
+          .menu-item:hover {
+              transform: translateX(3px);
+          }
+
+          .progress > span {
+              transform-origin: left center;
+              animation: gbm-progress-in .8s var(--gbm-ease) both;
+          }
+
+          @keyframes gbm-progress-in {
+              from { transform: scaleX(0); }
+              to { transform: scaleX(1); }
+          }
+
+          tbody tr {
+              transition: background-color .18s var(--gbm-ease), transform .18s var(--gbm-ease);
+          }
+
+          tbody tr:hover {
+              background: rgba(85,167,255,.045);
+          }
+
+          .valor-positivo { color: var(--gbm-success) !important; }
+          .valor-negativo { color: var(--gbm-danger) !important; }
+          .valor-neutro { color: var(--texto-mutado, #b0bec5) !important; }
+
+          .gbm-entrada {
+              opacity: 0;
+              transform: translateY(14px);
+              animation: gbm-entrada .45s var(--gbm-ease) forwards;
+          }
+
+          .gbm-entrada:nth-child(1) { animation-delay: .04s; }
+          .gbm-entrada:nth-child(2) { animation-delay: .08s; }
+          .gbm-entrada:nth-child(3) { animation-delay: .12s; }
+          .gbm-entrada:nth-child(4) { animation-delay: .16s; }
+          .gbm-entrada:nth-child(5) { animation-delay: .20s; }
+          .gbm-entrada:nth-child(6) { animation-delay: .24s; }
+
+          @keyframes gbm-entrada {
+              to { opacity: 1; transform: translateY(0); }
+          }
+
+          .toast {
+              animation: gbm-toast-in .25s var(--gbm-ease) both;
+          }
+
+          @keyframes gbm-toast-in {
+              from { opacity: 0; transform: translateY(12px) scale(.97); }
+              to { opacity: 1; transform: translateY(0) scale(1); }
+          }
+
+          .gbm-loading {
+              position: relative;
+              overflow: hidden;
+          }
+
+          .gbm-loading::after {
+              content: '';
+              position: absolute;
+              inset: 0;
+              pointer-events: none;
+              background: linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent);
+              transform: translateX(-100%);
+              animation: gbm-skeleton 1.2s infinite;
+          }
+
+          @keyframes gbm-skeleton {
+              to { transform: translateX(100%); }
+          }
+
+          .gbm-premium-focus {
+              border-color: rgba(85,167,255,.42) !important;
+              box-shadow: 0 0 0 3px rgba(85,167,255,.08), 0 16px 36px rgba(0,0,0,.32);
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+              *, *::before, *::after {
+                  animation-duration: .01ms !important;
+                  animation-iteration-count: 1 !important;
+                  transition-duration: .01ms !important;
+                  scroll-behavior: auto !important;
+              }
+          }
+          '''
+
+          js_marker = b'/* ===== GBM INTERAÇÕES JS 2026 ===== */'
+          js_add = b'''/* ===== GBM INTERAÇÕES JS 2026 ===== */
+          (() => {
+              'use strict';
+
+              function iniciarEntradas() {
+                  document.querySelectorAll('[data-gbm-entrada]').forEach((el) => {
+                      el.classList.add('gbm-entrada');
+                  });
+              }
+
+              function observarProgresso() {
+                  if (!('IntersectionObserver' in window)) return;
+                  const observer = new IntersectionObserver((entries, obs) => {
+                      entries.forEach((entry) => {
+                          if (!entry.isIntersecting) return;
+                          const barra = entry.target;
+                          const destino = barra.dataset.gbmProgress;
+                          if (destino) barra.style.setProperty('--gbm-progress', destino);
+                          obs.unobserve(barra);
+                      });
+                  }, { threshold: .2 });
+
+                  document.querySelectorAll('[data-gbm-progress]').forEach((el) => observer.observe(el));
+              }
+
+              function aplicarClassesFinanceiras() {
+                  document.querySelectorAll('[data-valor-financeiro]').forEach((el) => {
+                      const texto = String(el.getAttribute('data-valor-financeiro') || el.textContent || '').trim();
+                      const valor = Number(texto.replace(/[^0-9,-]/g, '').replace(/\\./g, '').replace(',', '.'));
+                      el.classList.remove('valor-positivo', 'valor-negativo', 'valor-neutro');
+                      if (Number.isNaN(valor) || valor === 0) el.classList.add('valor-neutro');
+                      else if (valor > 0) el.classList.add('valor-positivo');
+                      else el.classList.add('valor-negativo');
+                  });
+              }
+
+              function registrarBotoesComLoading() {
+                  document.addEventListener('click', (evento) => {
+                      const botao = evento.target.closest('[data-gbm-loading]');
+                      if (!botao || botao.dataset.gbmLoadingAtivo === 'true') return;
+                      botao.dataset.gbmLoadingAtivo = 'true';
+                      botao.dataset.gbmTextoOriginal = botao.innerHTML;
+                      botao.innerHTML = botao.dataset.gbmLoadingText || 'Carregando...';
+                      botao.classList.add('gbm-loading');
+                      botao.setAttribute('aria-busy', 'true');
+
+                      window.setTimeout(() => {
+                          if (!document.body.contains(botao)) return;
+                          botao.dataset.gbmLoadingAtivo = 'false';
+                          botao.innerHTML = botao.dataset.gbmTextoOriginal || botao.innerHTML;
+                          botao.classList.remove('gbm-loading');
+                          botao.removeAttribute('aria-busy');
+                      }, Number(botao.dataset.gbmLoadingTimeout || 1800));
+                  });
+              }
+
+              function iniciar() {
+                  iniciarEntradas();
+                  observarProgresso();
+                  aplicarClassesFinanceiras();
+                  registrarBotoesComLoading();
+              }
+
+              if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+              } else {
+                  iniciar();
+              }
+          })();
+          '''
+
+          def append_preserving_eol(path: Path, marker: bytes, addition: bytes):
+              if not path.exists():
+                  return
+              data = path.read_bytes()
+              if marker in data:
+                  return
+              eol = detect_eol(data)
+              addition_normalized = addition.replace(b'\n', eol)
+              path.write_bytes(data.rstrip(b'\r\n') + eol + eol + addition_normalized.strip(b'\r\n') + eol)
+
+          append_preserving_eol(css, css_marker, css_add)
+          append_preserving_eol(js, js_marker, js_add)
+
+          for page in sorted(root.glob('*.html')):
+              data = page.read_bytes()
+              eol = detect_eol(data)
+
+              if b'href="gbm-pages.css"' not in data:
+                  data = data.replace(b'</head>', b'    <link rel="stylesheet" href="gbm-pages.css">' + eol + b'</head>', 1)
+
+              if b'src="gbm-pages.js"' not in data:
+                  data = data.replace(b'</body>', b'    <script src="gbm-pages.js"></script>' + eol + b'</body>', 1)
+
+              page.write_bytes(data)
+          PY
+
+      - name: Commit changes and remove helper workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/ .github/workflows/apply-public-ui-standardization.yml
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração necessária."
+            exit 0
+          fi
+          git rm -f .github/workflows/apply-public-ui-standardization.yml
+          git add public/
+          git commit -m "Padroniza interação visual das páginas public"
+          git push origin HEAD:agent/padronizacao-visual-public-2026-09
