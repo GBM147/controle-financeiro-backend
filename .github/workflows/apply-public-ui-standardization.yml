@@ -18,8 +18,9 @@ jobs:
           fetch-depth: 0
 
       - name: Apply shared visual layer preserving line endings
-        shell: python
+        shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
 
           root = Path('public')
@@ -268,6 +269,7 @@ jobs:
           PY
 
       - name: Commit changes and remove helper workflow
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
