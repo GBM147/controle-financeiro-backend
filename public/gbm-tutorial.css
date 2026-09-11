@@ -39,7 +39,7 @@ body.gbm-tour-bloqueado {
     z-index: 1;
     box-sizing: border-box;
     border: 2px solid var(--gbm-tour-verde);
-    border-radius: 13px;
+    border-radius: 14px;
     box-shadow:
         0 0 0 9999px rgba(1, 7, 16, .86),
         0 0 28px rgba(80, 227, 170, .5);
@@ -69,7 +69,7 @@ body.gbm-tour-bloqueado {
     overflow: auto;
     padding: 20px;
     border: 1px solid var(--gbm-tour-borda);
-    border-radius: 16px;
+    border-radius: 14px;
     background: var(--gbm-tour-fundo);
     color: var(--gbm-tour-texto);
     box-shadow: 0 22px 65px rgba(0, 0, 0, .65);
@@ -99,7 +99,7 @@ body.gbm-tour-bloqueado {
 
 .gbm-tour-contador {
     color: var(--gbm-tour-mutado);
-    font-size: .76rem;
+    font-size: 0.75rem;
     font-weight: 800;
     letter-spacing: .08em;
     white-space: nowrap;
@@ -111,10 +111,10 @@ body.gbm-tour-bloqueado {
     height: 34px;
     padding: 0;
     border: 1px solid rgba(255, 255, 255, .16);
-    border-radius: 9px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, .06);
     color: var(--gbm-tour-texto);
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     line-height: 1;
     cursor: pointer;
 }
@@ -144,8 +144,8 @@ body.gbm-tour-bloqueado {
 .gbm-tour-caixa h2 {
     margin: 0 0 10px;
     color: var(--gbm-tour-verde);
-    font-family: Rajdhani, Inter, Arial, sans-serif;
-    font-size: 1.3rem;
+    font-family: Sora, Inter, Arial, sans-serif;
+    font-size: 1.25rem;
     line-height: 1.2;
     letter-spacing: .02em;
 }
@@ -153,7 +153,7 @@ body.gbm-tour-bloqueado {
 .gbm-tour-caixa p {
     margin: 0 0 20px;
     color: var(--gbm-tour-texto);
-    font-size: .94rem;
+    font-size: 1rem;
     line-height: 1.58;
 }
 
@@ -173,9 +173,9 @@ body.gbm-tour-bloqueado {
     min-height: 40px;
     padding: 9px 14px;
     border: 0;
-    border-radius: 9px;
+    border-radius: 10px;
     font: inherit;
-    font-size: .84rem;
+    font-size: 0.8125rem;
     font-weight: 800;
     cursor: pointer;
 }
@@ -226,7 +226,7 @@ body.gbm-tour-bloqueado {
     color: #fff;
     box-shadow: 0 12px 32px rgba(0, 0, 0, .38);
     font-family: Inter, Arial, sans-serif;
-    font-size: .84rem;
+    font-size: 0.8125rem;
     font-weight: 800;
     cursor: pointer;
 }
@@ -238,7 +238,7 @@ body.gbm-tour-bloqueado {
 
 #gbm-tour-ajuda .gbm-tour-ajuda-icone {
     color: var(--gbm-tour-verde);
-    font-size: 1.05rem;
+    font-size: 1rem;
 }
 
 @media (max-width: 680px) {
@@ -284,7 +284,7 @@ body.gbm-tour-bloqueado {
     }
 
     .gbm-tour-contador {
-        font-size: .68rem;
+        font-size: 0.75rem;
         letter-spacing: .04em;
     }
 
@@ -299,12 +299,12 @@ body.gbm-tour-bloqueado {
 
     .gbm-tour-caixa h2 {
         margin-bottom: 7px;
-        font-size: 1.15rem;
+        font-size: 1.125rem;
     }
 
     .gbm-tour-caixa p {
         margin-bottom: 12px;
-        font-size: .86rem;
+        font-size: 0.875rem;
         line-height: 1.42;
     }
 
@@ -323,7 +323,7 @@ body.gbm-tour-bloqueado {
         width: 100%;
         min-height: 44px;
         padding: 8px;
-        font-size: .8rem;
+        font-size: 0.8125rem;
         line-height: 1.2;
     }
 
