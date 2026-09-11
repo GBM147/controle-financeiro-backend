@@ -3,7 +3,7 @@
 <head>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <title>Minha Assinatura | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,9 +42,9 @@
             height: 56px; position: sticky; top: 0; z-index: 10;
         }
         .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
-        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; }
+        .gbm-logo-img { height: 50px; width: auto; border-radius: 10px; }
         .gbm-title {
-            font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700;
+            font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700;
             text-transform: uppercase; letter-spacing: 2px; margin: 0;
             background: linear-gradient(90deg, #2E8B57 0%, #5fffa8 25%, #3d28ff 50%, #655aff 75%, #2E8B57 100%);
             background-size: 200% auto; -webkit-background-clip: text; background-clip: text;
@@ -54,8 +54,8 @@
 
         .btn-voltar {
             text-decoration: none; color: var(--texto-principal);
-            font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 1px;
-            background: #0f1a2b; padding: 8px 16px; border-radius: 8px;
+            font-family: 'Sora', sans-serif; font-weight: 700; letter-spacing: 1px;
+            background: #0f1a2b; padding: 8px 16px; border-radius: 10px;
             border: 1px solid rgba(95, 255, 168, 0.25); transition: 0.3s;
         }
         .btn-voltar:hover { border-color: #5fffa8; box-shadow: 0 0 14px rgba(95, 255, 168, 0.3); }
@@ -63,7 +63,7 @@
         .page-wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
 
         .titulo-pagina {
-            font-family: 'Rajdhani', sans-serif; text-align: center;
+            font-family: 'Sora', sans-serif; text-align: center;
             font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 700;
             letter-spacing: 1.5px; margin: 0 0 30px 0;
         }
@@ -71,7 +71,7 @@
         /* CARD DE ASSINATURA */
         .card {
             background: rgba(15, 26, 43, 0.7); backdrop-filter: blur(12px);
-            border: 1px solid rgba(95, 255, 168, 0.22); border-radius: 16px;
+            border: 1px solid rgba(95, 255, 168, 0.22); border-radius: 14px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 30px;
         }
 
@@ -81,11 +81,11 @@
         }
         .info-linha:last-child { border-bottom: none; }
         
-        .info-label { color: var(--texto-mutado); font-size: 0.95rem; font-weight: 600; }
-        .info-valor { font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #fff; }
+        .info-label { color: var(--texto-mutado); font-size: 1rem; font-weight: 600; }
+        .info-valor { font-family: 'Sora', sans-serif; font-size: 1.25rem; font-weight: 700; color: #fff; }
 
         .badge-status {
-            padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;
+            padding: 4px 12px; border-radius: 14px; font-size: 0.8125rem;
             font-family: 'Inter', sans-serif; font-weight: bold; text-transform: uppercase;
         }
         .status-ativo { background: rgba(16,185,129,0.2); color: var(--cor-receita); border: 1px solid var(--cor-receita); }
@@ -95,7 +95,7 @@
         .btn-cancelar-assinatura {
             width: 100%; padding: 15px; margin-top: 30px;
             background: rgba(239, 68, 68, 0.1); color: #ff4d4d;
-            border: 1px solid #ff4d4d; border-radius: 8px;
+            border: 1px solid #ff4d4d; border-radius: 10px;
             font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600;
             cursor: pointer; transition: all 0.3s ease;
         }
@@ -115,7 +115,7 @@
         .plano-card {
             background: rgba(20, 30, 40, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 25px;
             position: relative;
             backdrop-filter: blur(10px);
@@ -135,7 +135,7 @@
             background: #8a9ba8;
             color: #1a1a2e;
             padding: 4px 15px;
-            border-radius: 20px;
+            border-radius: 14px;
             font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
@@ -149,7 +149,7 @@
             flex-grow: 1;
         }
         .plano-features li {
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             color: #d1d9e0;
             margin-bottom: 12px;
             display: flex;
@@ -161,7 +161,7 @@
             text-decoration: line-through;
         }
         .btn-upgrade {
-            width: 100%; padding: 14px; background: #2E8B57; color: #fff; border: none; border-radius: 8px; 
+            width: 100%; padding: 14px; background: #2E8B57; color: #fff; border: none; border-radius: 10px; 
             font-weight: 600; cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif;
             box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
         }
@@ -260,8 +260,8 @@
                     <div class="plano-card ${isFreeActive ? 'plano-ativo' : ''}" style="border: 1px solid ${isFreeActive ? '#8a9ba8' : 'rgba(255,255,255,0.05)'};">
                         ${isFreeActive ? '<div class="plano-badge-atual">Seu Plano Atual</div>' : ''}
                         
-                        <h3 style="margin:0 0 5px 0; color: #fff; font-size: 1.2rem;">Plano Gratuito</h3>
-                        <h2 style="margin:0 0 25px 0; color: #8a9ba8; font-size: 1.8rem;">R$ 0,00 <span style="font-size: 0.9rem; font-weight: 400;">/ mês</span></h2>
+                        <h3 style="margin:0 0 5px 0; color: #fff; font-size: 1.25rem;">Plano Gratuito</h3>
+                        <h2 style="margin:0 0 25px 0; color: #8a9ba8; font-size: 1.75rem;">R$ 0,00 <span style="font-size: 0.875rem; font-weight: 400;">/ mês</span></h2>
                         
                         <ul class="plano-features">
                             <li>Importação de OFX e PDF</li>
@@ -276,16 +276,16 @@
                         </ul>
                         
                         ${isFreeActive 
-                            ? `<button disabled style="width: 100%; padding: 14px; margin-top: 15px; background: rgba(255,255,255,0.05); color: #8a9ba8; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-weight: 600; cursor: not-allowed; font-family: 'Inter', sans-serif;">Plano em uso</button>` 
-                            : `<div style="text-align: center; color: #6c7a87; font-size: 0.9rem; margin-top: 15px; padding: 14px;">Plano base da conta</div>`}
+                            ? `<button disabled style="width: 100%; padding: 14px; margin-top: 15px; background: rgba(255,255,255,0.05); color: #8a9ba8; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; font-weight: 600; cursor: not-allowed; font-family: 'Inter', sans-serif;">Plano em uso</button>` 
+                            : `<div style="text-align: center; color: #6c7a87; font-size: 0.875rem; margin-top: 15px; padding: 14px;">Plano base da conta</div>`}
                     </div>
 
                     <!-- CARD: PREMIUM GBM -->
                     <div class="plano-card ${isPremiumActive ? 'plano-ativo' : ''}" style="border: 1px solid ${isPremiumActive ? '#2E8B57' : 'rgba(255,255,255,0.05)'};">
                         ${isPremiumActive ? '<div class="plano-badge-atual" style="background: #2E8B57; color: #fff;">Seu Plano Atual</div>' : ''}
                         
-                        <h3 style="margin:0 0 5px 0; color: #fff; font-size: 1.2rem;">Premium GBM</h3>
-                        <h2 style="margin:0 0 25px 0; color: #fff; font-size: 1.8rem;">R$ 9,90 <span style="font-size: 0.9rem; font-weight: 400; color: #8a9ba8;">/ mês</span></h2>
+                        <h3 style="margin:0 0 5px 0; color: #fff; font-size: 1.25rem;">Premium GBM</h3>
+                        <h2 style="margin:0 0 25px 0; color: #fff; font-size: 1.75rem;">R$ 9,90 <span style="font-size: 0.875rem; font-weight: 400; color: #8a9ba8;">/ mês</span></h2>
                         
                         <ul class="plano-features">
                             <li>Importação de OFX e PDF</li>
@@ -301,10 +301,10 @@
                         
                         <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <span style="font-size: 0.9rem; color: #8a9ba8;">Status:</span>
+                                <span style="font-size: 0.875rem; color: #8a9ba8;">Status:</span>
                                 ${statusPremiumHtml}
                             </div>
-                            <p style="font-size: 0.85rem; color: #8a9ba8; margin-bottom: 15px; text-align: center;">${infoPremiumHtml}</p>
+                            <p style="font-size: 0.875rem; color: #8a9ba8; margin-bottom: 15px; text-align: center;">${infoPremiumHtml}</p>
                             ${botaoPremiumHtml}
                         </div>
                     </div>
@@ -352,7 +352,7 @@
         const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)' : tipo === 'aviso' ? 'rgba(245,158,11,0.3)' : 'rgba(95,255,168,0.3)';
 
         document.getElementById('lista-notificacoes-modal').innerHTML = `
-            <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+            <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:1rem; line-height:1.6; text-align:center;">
                 ${escaparMensagemModal(mensagem)}
             </div>`;
         document.getElementById('btn-confirmar-modal').style.display = 'none';
@@ -365,7 +365,7 @@
         return new Promise(resolve => {
             _resolveConfirm = resolve;
             document.getElementById('lista-notificacoes-modal').innerHTML = `
-                <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
+                <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:1rem; line-height:1.6; text-align:center;">
                     ${escaparMensagemModal(mensagem)}
                 </div>`;
             document.getElementById('btn-confirmar-modal').style.display = 'block';
@@ -385,18 +385,18 @@
 
 <!-- MODAL DE NOTIFICAÇÕES GBM -->
 <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
-    <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+    <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:14px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <img src="logo-transparente.jpg" alt="GBM" style="height:28px;">
-                <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
+                <span style="font-family:'Sora',sans-serif; font-size:1.25rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
             </div>
             <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
         </div>
         <div id="lista-notificacoes-modal"></div>
         <div style="display:flex; gap:10px; margin-top:20px;">
-            <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:rgba(239, 68, 68, 0.8); color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#ff4d4d'" onmouseout="this.style.background='rgba(239, 68, 68, 0.8)'">QUERO CANCELAR</button>
-            <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
+            <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:rgba(239, 68, 68, 0.8); color:#fff; border:none; border-radius:10px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#ff4d4d'" onmouseout="this.style.background='rgba(239, 68, 68, 0.8)'">QUERO CANCELAR</button>
+            <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
         </div>
     </div>
 </div>
