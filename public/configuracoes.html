@@ -6,7 +6,7 @@
     <title>Configurações | GBM</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="gbm-pages.css">
     <style>
         :root {
@@ -40,44 +40,44 @@
         .link-cartao:hover { border-color: var(--destaque); color: var(--destaque); box-shadow: 0 0 14px rgba(95,255,168,.2); }
         main { max-width: 960px; margin: 42px auto; padding: 0 22px 48px; }
         h1, h2 { font-family: Rajdhani, sans-serif; letter-spacing: .04em; }
-        h1 { margin: 0; font-size: 2.2rem; }
+        h1 { margin: 0; font-size: 2rem; }
         .introducao { margin: 8px 0 30px; color: var(--mutado); }
         .grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
         .cartao, .zona-perigo {
             border: 1px solid var(--borda);
-            border-radius: 16px;
+            border-radius: 14px;
             background: var(--painel);
             box-shadow: 0 12px 28px rgba(0,0,0,.18);
         }
         .cartao { padding: 22px; min-height: 210px; display: flex; flex-direction: column; }
-        .cartao h2 { margin: 0 0 8px; font-size: 1.35rem; }
-        .cartao p { color: var(--mutado); font-size: .92rem; line-height: 1.55; margin: 0 0 20px; }
+        .cartao h2 { margin: 0 0 8px; font-size: 1.25rem; }
+        .cartao p { color: var(--mutado); font-size: 0.875rem; line-height: 1.55; margin: 0 0 20px; }
         .link-cartao { margin-top: auto; text-align: center; font-weight: 600; }
         .zona-perigo { margin-top: 30px; padding: 24px; border-color: rgba(255, 100, 115, .55); }
         .zona-perigo h2 { color: var(--perigo); margin: 0 0 8px; }
         .zona-perigo > p { color: var(--mutado); margin: 0 0 18px; line-height: 1.55; }
         details { border-top: 1px solid rgba(255,255,255,.12); padding-top: 16px; }
         summary { cursor: pointer; color: var(--perigo); font-weight: 600; }
-        .aviso { color: #ffced4; font-size: .9rem; line-height: 1.55; margin: 16px 0; }
+        .aviso { color: #ffced4; font-size: 0.875rem; line-height: 1.55; margin: 16px 0; }
         .campo { margin-top: 14px; }
-        label { display: block; margin-bottom: 7px; font-size: .88rem; color: var(--mutado); }
+        label { display: block; margin-bottom: 7px; font-size: 0.875rem; color: var(--mutado); }
         input[type="password"], input[type="text"] {
             width: 100%;
             padding: 12px;
             color: var(--texto);
             border: 1px solid #41516b;
-            border-radius: 9px;
+            border-radius: 10px;
             background: rgba(6, 15, 29, .75);
             outline: none;
         }
         input:focus { border-color: var(--destaque); box-shadow: 0 0 0 3px rgba(72,216,154,.12); }
-        .confirmacao { display: flex; gap: 9px; align-items: flex-start; margin: 18px 0; color: var(--mutado); font-size: .88rem; line-height: 1.45; }
+        .confirmacao { display: flex; gap: 9px; align-items: flex-start; margin: 18px 0; color: var(--mutado); font-size: 0.875rem; line-height: 1.45; }
         .confirmacao input { margin-top: 3px; accent-color: var(--perigo); }
         .acoes { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
         button {
             cursor: pointer;
             border: 1px solid var(--perigo);
-            border-radius: 9px;
+            border-radius: 10px;
             padding: 12px 16px;
             background: rgba(255, 100, 115, .12);
             color: #ffd9de;
@@ -85,7 +85,7 @@
         }
         button:hover:not(:disabled) { background: rgba(255, 100, 115, .24); }
         button:disabled { cursor: wait; opacity: .62; }
-        #mensagem { min-height: 24px; margin: 14px 0 0; color: var(--mutado); font-size: .9rem; }
+        #mensagem { min-height: 24px; margin: 14px 0 0; color: var(--mutado); font-size: 0.875rem; }
         #mensagem.erro { color: #ffb2bc; }
         #mensagem.sucesso { color: var(--destaque); }
         @media (max-width: 760px) {
