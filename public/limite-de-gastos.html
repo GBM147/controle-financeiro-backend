@@ -107,7 +107,7 @@
         async function carregarEditor() {
             try {
                 const dados = await gbmJson(await fetchApi('/metas-resumo'));
-                metasCarregadas = (dados.data || []).filter(m => m.categoria);
+                metasCarregadas = (Array.isArray(dados) ? dados : (dados.data || [])).filter(m => m.categoria);
                 const c = document.getElementById('editor-container');
                 if (!metasCarregadas.length) {
                     c.innerHTML = '<div class="empty">Você ainda não definiu limites. Use o formulário acima para criar o primeiro.</div>';
