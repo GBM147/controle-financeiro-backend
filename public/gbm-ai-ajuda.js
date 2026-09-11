@@ -17,6 +17,7 @@
         let texto = escapeHtml(valor ?? '');
         texto = texto.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         texto = texto.replace(/__([^_]+?)__/g, '<strong>$1</strong>');
+        texto = texto.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="gbm-ai-link-pagina">$1</a>');
         texto = texto.replace(/\n/g, '<br>');
         return texto;
     }
@@ -65,6 +66,12 @@
             .gbm-ai-mensagem strong{font-weight:800;color:#fff}
             .gbm-ai-mensagem.ia{align-self:flex-start;border:1px solid rgba(85,167,255,.18);background:rgba(15,26,43,.92);color:#eaf4ff}
             .gbm-ai-mensagem.usuario{align-self:flex-end;border:1px solid rgba(95,255,168,.22);background:rgba(46,139,87,.15);color:#ecfff5;white-space:pre-wrap}
+            .gbm-ai-link-pagina{display:inline-flex;margin-top:8px;padding:6px 10px;border:1px solid rgba(85,167,255,.25);border-radius:8px;background:rgba(85,167,255,.08);color:#a9d7ff;text-decoration:none;font-weight:700}
+            .gbm-ai-link-pagina:hover{border-color:rgba(85,167,255,.55);background:rgba(85,167,255,.14);color:#fff}
+            .gbm-ai-navegacao{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}
+            .gbm-ai-navegacao-descricao{color:#a9b8c8;font-size:.76rem;margin-bottom:7px}
+            .gbm-ai-navegacao-botao{display:inline-flex;align-items:center;padding:7px 10px;border:1px solid rgba(95,255,168,.3);border-radius:8px;background:rgba(46,139,87,.14);color:#dffff0;text-decoration:none;font-weight:700;font-size:.76rem}
+            .gbm-ai-navegacao-botao:hover{background:rgba(46,139,87,.24);border-color:rgba(95,255,168,.55)}
             .gbm-ai-carregando{display:inline-flex;align-items:center;gap:6px;color:#9eb2c8}
             .gbm-ai-carregando span{width:6px;height:6px;border-radius:50%;background:#55a7ff;animation:gbm-ai-pulso 1.1s infinite ease-in-out}
             .gbm-ai-carregando span:nth-child(2){animation-delay:.16s}.gbm-ai-carregando span:nth-child(3){animation-delay:.32s}
@@ -108,10 +115,10 @@
                 <div class="gbm-ai-sugestoes" id="gbm-ai-sugestoes"></div>
                 <div class="gbm-ai-acoes">
                     <button type="button" class="gbm-ai-link" id="gbm-ai-tutorial">Ver tutorial passo a passo</button>
-                    <span style="color:#718198;font-size:.68rem">Posso responder dúvidas sobre esta página.</span>
+                    <span style="color:#718198;font-size:.68rem">Posso orientar você pelo GBM inteiro.</span>
                 </div>
                 <form class="gbm-ai-form" id="gbm-ai-form">
-                    <textarea class="gbm-ai-input" id="gbm-ai-input" rows="1" maxlength="1200" placeholder="Digite sua dúvida sobre esta página..." aria-label="Sua dúvida"></textarea>
+                    <textarea class="gbm-ai-input" id="gbm-ai-input" rows="1" maxlength="1200" placeholder="Digite sua dúvida sobre o GBM..." aria-label="Sua dúvida"></textarea>
                     <button type="submit" class="gbm-ai-enviar" id="gbm-ai-enviar">Enviar</button>
                 </form>
             </section>
@@ -129,9 +136,9 @@
         });
 
         const sugestoes = [
-            'O que posso fazer nesta página?',
-            'Como faço para usar esta página?',
-            'Qual é a função desta tela?'
+            'Como cadastro um novo gasto?',
+            'Como importo meu extrato?',
+            'Onde vejo minhas contas?'
         ];
         const container = document.getElementById('gbm-ai-sugestoes');
         sugestoes.forEach((texto) => {
@@ -146,7 +153,7 @@
             container.appendChild(botao);
         });
 
-        adicionarMensagem('ia', `Olá! Posso explicar como usar a página “${tituloPagina()}” e responder dúvidas sobre os recursos dela.`);
+        adicionarMensagem('ia', `Olá! Posso explicar qualquer função do GBM, mesmo que ela esteja em outra página. Você está em “${tituloPagina()}”.`);
     }
 
     function abrir() {
@@ -166,16 +173,28 @@
         document.body.style.overflow = '';
     }
 
-    function adicionarMensagem(tipo, texto) {
+    function adicionarMensagem(tipo, texto, navegacao = null) {
         const conversa = document.getElementById('gbm-ai-conversa');
         if (!conversa) return;
+
         const mensagem = document.createElement('div');
         mensagem.className = `gbm-ai-mensagem ${tipo}`;
         if (tipo === 'ia') {
             mensagem.innerHTML = formatarResposta(texto);
+
+            if (navegacao?.url) {
+                const area = document.createElement('div');
+                area.className = 'gbm-ai-navegacao';
+                area.innerHTML = `
+                    <div class="gbm-ai-navegacao-descricao">${escapeHtml(navegacao.descricao || '')}</div>
+                    <a class="gbm-ai-navegacao-botao" href="${escapeHtml(navegacao.url)}">Abrir ${escapeHtml(navegacao.titulo || 'página')}</a>
+                `;
+                mensagem.appendChild(area);
+            }
         } else {
             mensagem.textContent = texto;
         }
+
         conversa.appendChild(mensagem);
         conversa.scrollTop = conversa.scrollHeight;
         return mensagem;
@@ -230,12 +249,15 @@
                     historico: historico.slice(-6)
                 })
             });
+
             const dados = await resposta.json().catch(() => ({}));
             carregando.remove();
+
             if (!resposta.ok || !dados.success) {
                 throw new Error(dados.error || 'Não foi possível obter uma resposta.');
             }
-            adicionarMensagem('ia', dados.resposta);
+
+            adicionarMensagem('ia', dados.resposta, dados.navegacao);
             registrarHistorico('model', dados.resposta);
         } catch (erro) {
             carregando.remove();
