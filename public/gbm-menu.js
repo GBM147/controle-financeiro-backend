@@ -27,7 +27,7 @@
             .gbm-header{background:rgba(7,17,31,.3);border-bottom:1px solid rgba(255,255,255,.12);padding:0 34px;display:flex;align-items:center;justify-content:space-between;height:74px;box-sizing:border-box;position:sticky;top:0;z-index:10000;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);}
             .gbm-logo-container{display:flex;align-items:center;gap:15px;min-width:0;}
             .gbm-logo-img{height:70px !important;width:auto !important;border-radius:8px;}
-            .gbm-title{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0;cursor:default;background:linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:gbm-shine 4s linear infinite;transition:letter-spacing .3s ease,transform .3s ease;}
+            .gbm-title{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0;cursor:default;background:linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:gbm-shine 4s linear infinite;transition:letter-spacing .3s ease,transform .3s ease;}
             .gbm-title:hover{letter-spacing:4px;transform:scale(1.03);animation-duration:1.5s;}
             @keyframes gbm-shine{0%{background-position:0% center}100%{background-position:200% center}}
             .gbm-header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;}
