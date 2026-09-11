@@ -8,9 +8,9 @@
     <style>
         .conta-card { display:flex; flex-direction:column; gap:13px; }
         .conta-topo { display:flex; justify-content:space-between; gap:12px; }
-        .conta-saldo { font-size:1.7rem; font-weight:850; }
+        .conta-saldo { font-size:1.75rem; font-weight:850; }
         .conta-detalhes { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-        .conta-detalhes div { padding:10px; border-radius:9px; background:rgba(255,255,255,.04); }
+        .conta-detalhes div { padding:10px; border-radius:10px; background:rgba(255,255,255,.04); }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
@@ -94,7 +94,7 @@
                         <div class="conta-saldo">${gbmMoeda(conta.saldo)}</div>
                         <div class="conta-detalhes">
                             <div class="stat">Movimentações<br><strong>${Number(conta.quantidade_transacoes)}</strong></div>
-                            <div class="stat">Última<br><strong style="font-size:.9rem">${gbmData(conta.ultima_movimentacao)}</strong></div>
+                            <div class="stat">Última<br><strong style="font-size:0.875rem">${gbmData(conta.ultima_movimentacao)}</strong></div>
                         </div>
                         <div class="actions">
                             <button class="btn btn-small" onclick="editarConta(${conta.id})">Editar</button>
