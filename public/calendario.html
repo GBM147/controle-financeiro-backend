@@ -9,7 +9,7 @@
         .resumo-calendario { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:18px; }
         .evento { display:grid; grid-template-columns:70px 1fr auto; gap:13px; align-items:center; padding:13px 0; border-bottom:1px solid rgba(255,255,255,.08); }
         .evento-data { text-align:center; font-weight:800; color:var(--blue); }
-        .evento-data strong { display:block; font-size:1.35rem; }
+        .evento-data strong { display:block; font-size:1.25rem; }
         .evento-valor.receita { color:#7fffb7; }
         .evento-valor.despesa { color:#ff909c; }
         .tipo-receita { color:#7fffb7; }
@@ -123,7 +123,7 @@
                             <strong>${gbmEscapar(item.descricao)}</strong>
                             <span class="${item.tipo === 'Receita' ? 'tipo-receita' : 'tipo-despesa'}">${gbmMoeda(item.valor)}</span>
                         </div>
-                        <p style="color:var(--muted);font-size:.78rem">Todo dia ${item.dia_mes} · ${gbmEscapar(item.conta)}</p>
+                        <p style="color:var(--muted);font-size:0.75rem">Todo dia ${item.dia_mes} · ${gbmEscapar(item.conta)}</p>
                         <div class="actions">
                             <button class="btn btn-small" onclick="alternarRecorrencia(${item.id}, ${Number(item.ativa) ? 'false' : 'true'})">${Number(item.ativa) ? 'Pausar' : 'Ativar'}</button>
                             <button class="btn btn-danger btn-small" onclick="excluirRecorrencia(${item.id})">Excluir</button>
