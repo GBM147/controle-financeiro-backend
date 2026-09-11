@@ -20,6 +20,152 @@ function gbmEscapar(valor) {
         .replaceAll("'", '&#039;');
 }
 
+/* ===== ACABAMENTO VISUAL GLOBAL =====
+   Esta camada altera apenas a aparência. A estrutura e o conteúdo das páginas
+   permanecem exatamente como foram definidos em cada HTML.
+*/
+function gbmAplicarTemaVisual() {
+    if (document.getElementById('gbm-tema-visual')) return;
+
+    const fonte = document.createElement('link');
+    fonte.rel = 'stylesheet';
+    fonte.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap';
+    document.head.appendChild(fonte);
+
+    const estilo = document.createElement('style');
+    estilo.id = 'gbm-tema-visual';
+    estilo.textContent = `
+        :root {
+            --gbm-surface: rgba(10, 24, 42, .82);
+            --gbm-surface-strong: rgba(10, 24, 42, .94);
+            --gbm-surface-soft: rgba(17, 36, 59, .58);
+            --gbm-line: rgba(117, 181, 232, .18);
+            --gbm-line-focus: rgba(95, 255, 168, .48);
+            --gbm-text: #f4f7fb;
+            --gbm-muted: #a8b4c3;
+            --gbm-green: #3be696;
+            --gbm-blue: #62aef7;
+            --gbm-red: #ff6070;
+            --gbm-radius: 12px;
+            --gbm-shadow: 0 14px 36px rgba(0, 5, 12, .22);
+        }
+
+        html { color-scheme: dark; }
+
+        body.gbm-interna {
+            font-family: 'Inter', system-ui, sans-serif !important;
+            color: var(--gbm-text);
+            letter-spacing: 0;
+        }
+
+        body.gbm-interna::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background: rgba(3, 10, 19, .2);
+        }
+
+        body.gbm-interna :where(h1, h2, h3, .gbm-title, .titulo, .titulo-pagina, .card-titulo, .logo-text) {
+            font-family: 'Sora', 'Inter', sans-serif !important;
+            letter-spacing: 0 !important;
+            text-shadow: none !important;
+        }
+
+        body.gbm-interna :where(p, span, label, input, select, textarea, button, a, td, th) {
+            letter-spacing: 0;
+        }
+
+        body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .modal-content, .plano-card, .form-card) {
+            background-color: var(--gbm-surface) !important;
+            border-color: var(--gbm-line) !important;
+            border-radius: var(--gbm-radius) !important;
+            box-shadow: var(--gbm-shadow) !important;
+            backdrop-filter: blur(12px);
+        }
+
+        body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card) {
+            transition: border-color .2s ease, background-color .2s ease, transform .2s ease, box-shadow .2s ease;
+        }
+
+        body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card):hover {
+            border-color: rgba(117, 181, 232, .3) !important;
+            box-shadow: 0 18px 42px rgba(0, 5, 12, .28) !important;
+        }
+
+        body.gbm-interna :where(input, select, textarea) {
+            min-height: 42px;
+            color: var(--gbm-text) !important;
+            background-color: rgba(5, 18, 33, .72) !important;
+            border-color: var(--gbm-line) !important;
+            border-radius: 9px !important;
+            box-shadow: none !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
+            transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+        }
+
+        body.gbm-interna :where(input, select, textarea):focus {
+            border-color: var(--gbm-line-focus) !important;
+            background-color: rgba(7, 23, 40, .94) !important;
+            box-shadow: 0 0 0 3px rgba(59, 230, 150, .1) !important;
+            outline: none;
+        }
+
+        body.gbm-interna :where(button, .btn, .btn-voltar) {
+            border-radius: 9px !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
+            font-weight: 700;
+            text-shadow: none !important;
+            box-shadow: none;
+            transition: filter .2s ease, border-color .2s ease, background-color .2s ease, transform .2s ease;
+        }
+
+        body.gbm-interna :where(button, .btn, .btn-voltar):hover {
+            filter: brightness(1.07);
+        }
+
+        body.gbm-interna :where(.valor, .price, .preco, .info-valor, .evento-valor, [id*='saldo'], [id*='total']) {
+            font-variant-numeric: tabular-nums;
+            text-shadow: none !important;
+        }
+
+        body.gbm-interna :where(table) {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        body.gbm-interna :where(th) {
+            color: var(--gbm-muted) !important;
+            font-size: .75rem;
+            text-transform: uppercase;
+        }
+
+        body.gbm-interna :where(td, th) {
+            border-color: rgba(117, 181, 232, .1) !important;
+        }
+
+        body.gbm-interna :where(.topbar, .gbm-header, header) {
+            border-color: rgba(117, 181, 232, .14) !important;
+            box-shadow: 0 8px 30px rgba(0, 5, 12, .16) !important;
+            backdrop-filter: blur(14px);
+        }
+
+        #particles-canvas { opacity: .42 !important; }
+
+        @media (prefers-reduced-motion: reduce) {
+            body.gbm-interna *, body.gbm-interna *::before, body.gbm-interna *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
+        }
+    `;
+    document.head.appendChild(estilo);
+}
+
+gbmAplicarTemaVisual();
+
 function gbmToast(mensagem, tipo = 'sucesso') {
     document.querySelector('.toast')?.remove();
     const toast = document.createElement('div');
