@@ -29,31 +29,34 @@ function gbmAplicarTemaVisual() {
 
     const fonte = document.createElement('link');
     fonte.rel = 'stylesheet';
-    fonte.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap';
+    fonte.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap';
     document.head.appendChild(fonte);
 
     const estilo = document.createElement('style');
     estilo.id = 'gbm-tema-visual';
     estilo.textContent = `
         :root {
-            --gbm-surface: rgba(10, 24, 42, .82);
-            --gbm-surface-strong: rgba(10, 24, 42, .94);
-            --gbm-surface-soft: rgba(17, 36, 59, .58);
-            --gbm-line: rgba(117, 181, 232, .18);
-            --gbm-line-focus: rgba(95, 255, 168, .48);
-            --gbm-text: #f4f7fb;
-            --gbm-muted: #a8b4c3;
-            --gbm-green: #3be696;
-            --gbm-blue: #62aef7;
+            --gbm-bg: #071015;
+            --gbm-surface: rgba(16, 32, 40, .96);
+            --gbm-surface-strong: rgba(11, 26, 34, .96);
+            --gbm-surface-soft: rgba(19, 40, 50, .72);
+            --gbm-line: rgba(52, 166, 216, .2);
+            --gbm-line-focus: rgba(34, 201, 139, .7);
+            --gbm-text: #f1f7f5;
+            --gbm-muted: #9aadb2;
+            --gbm-green: #22c98b;
+            --gbm-blue: #34a6d8;
             --gbm-red: #ff6070;
-            --gbm-radius: 12px;
-            --gbm-shadow: 0 14px 36px rgba(0, 5, 12, .22);
+            --gbm-radius: 8px;
+            --gbm-shadow: 0 10px 26px rgba(0, 0, 0, .22), inset 0 1px rgba(255, 255, 255, .025);
         }
 
         html { color-scheme: dark; }
 
         body.gbm-interna {
-            font-family: 'Inter', system-ui, sans-serif !important;
+            background: var(--gbm-bg) !important;
+            background-image: radial-gradient(circle at 16% 5%, rgba(34, 201, 139, .055), transparent 28%), radial-gradient(circle at 86% 20%, rgba(52, 166, 216, .05), transparent 24%) !important;
+            font-family: 'Manrope', system-ui, sans-serif !important;
             color: var(--gbm-text);
             letter-spacing: 0;
         }
@@ -64,7 +67,7 @@ function gbmAplicarTemaVisual() {
             inset: 0;
             z-index: -1;
             pointer-events: none;
-            background: rgba(3, 10, 19, .2);
+            background: linear-gradient(180deg, rgba(7, 16, 21, .12), rgba(7, 16, 21, .54));
         }
 
         body.gbm-interna :where(h1, h2, h3, .gbm-title, .titulo, .titulo-pagina, .card-titulo, .logo-text) {
@@ -77,12 +80,16 @@ function gbmAplicarTemaVisual() {
             letter-spacing: 0;
         }
 
+        body.gbm-interna :where(p, .page-title p, .card-subtitulo, label) {
+            color: var(--gbm-muted) !important;
+        }
+
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .modal-content, .plano-card, .form-card) {
-            background-color: var(--gbm-surface) !important;
+            background: linear-gradient(145deg, var(--gbm-surface), var(--gbm-surface-strong)) !important;
             border-color: var(--gbm-line) !important;
             border-radius: var(--gbm-radius) !important;
             box-shadow: var(--gbm-shadow) !important;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(10px);
         }
 
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card) {
@@ -90,31 +97,32 @@ function gbmAplicarTemaVisual() {
         }
 
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card):hover {
-            border-color: rgba(117, 181, 232, .3) !important;
-            box-shadow: 0 18px 42px rgba(0, 5, 12, .28) !important;
+            transform: none !important;
+            border-color: rgba(52, 166, 216, .34) !important;
+            box-shadow: 0 14px 32px rgba(0, 0, 0, .26) !important;
         }
 
         body.gbm-interna :where(input, select, textarea) {
             min-height: 42px;
             color: var(--gbm-text) !important;
-            background-color: rgba(5, 18, 33, .72) !important;
+            background-color: rgba(7, 20, 27, .9) !important;
             border-color: var(--gbm-line) !important;
-            border-radius: 9px !important;
-            box-shadow: none !important;
-            font-family: 'Inter', system-ui, sans-serif !important;
+            border-radius: 7px !important;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, .16) !important;
+            font-family: 'Manrope', system-ui, sans-serif !important;
             transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
         }
 
         body.gbm-interna :where(input, select, textarea):focus {
             border-color: var(--gbm-line-focus) !important;
-            background-color: rgba(7, 23, 40, .94) !important;
-            box-shadow: 0 0 0 3px rgba(59, 230, 150, .1) !important;
+            background-color: rgba(7, 20, 27, .96) !important;
+            box-shadow: 0 0 0 3px rgba(34, 201, 139, .1) !important;
             outline: none;
         }
 
         body.gbm-interna :where(button, .btn, .btn-voltar) {
-            border-radius: 9px !important;
-            font-family: 'Inter', system-ui, sans-serif !important;
+            border-radius: 7px !important;
+            font-family: 'Manrope', system-ui, sans-serif !important;
             font-weight: 700;
             text-shadow: none !important;
             box-shadow: none;
@@ -142,16 +150,17 @@ function gbmAplicarTemaVisual() {
         }
 
         body.gbm-interna :where(td, th) {
-            border-color: rgba(117, 181, 232, .1) !important;
+            border-color: rgba(52, 166, 216, .1) !important;
         }
 
         body.gbm-interna :where(.topbar, .gbm-header, header) {
-            border-color: rgba(117, 181, 232, .14) !important;
-            box-shadow: 0 8px 30px rgba(0, 5, 12, .16) !important;
+            background-color: rgba(7, 16, 21, .88) !important;
+            border-color: rgba(52, 166, 216, .16) !important;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, .16) !important;
             backdrop-filter: blur(14px);
         }
 
-        #particles-canvas { opacity: .42 !important; }
+        #particles-canvas { opacity: .2 !important; }
 
         @media (prefers-reduced-motion: reduce) {
             body.gbm-interna *, body.gbm-interna *::before, body.gbm-interna *::after {
