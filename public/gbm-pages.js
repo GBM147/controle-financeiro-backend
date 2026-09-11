@@ -333,3 +333,13 @@ function gbmRemoverCabecalhoPagina() {
 }
 
 document.addEventListener('DOMContentLoaded', gbmRemoverCabecalhoPagina, { once: true });
+
+/* ===== ASSISTENTE IA "COMO USAR ESTA PÁGINA" ===== */
+(function carregarAssistenteGbm() {
+    if (document.getElementById('gbm-ai-ajuda-script')) return;
+    const script = document.createElement('script');
+    script.id = 'gbm-ai-ajuda-script';
+    script.src = 'gbm-ai-ajuda.js';
+    script.async = false;
+    document.head.appendChild(script);
+})();
