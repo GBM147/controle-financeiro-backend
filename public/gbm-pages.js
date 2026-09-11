@@ -318,11 +318,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ===== CABEÇALHOS DAS PÁGINAS =====
    Remove somente o bloco de identificação/descrição no topo das páginas.
-   O restante do conteúdo, filtros, cards, gráficos e funcionalidades permanece intacto.
+   No Dashboard, mantém os filtros do período e da conta, removendo apenas a identificação.
 */
 function gbmRemoverCabecalhoPagina() {
     const seletores = [
-        '.dashboard-topo',
+        '.dashboard-heading',
         '.page-title',
         '.titulo-pagina'
     ];
