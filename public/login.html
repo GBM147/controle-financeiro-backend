@@ -13,6 +13,18 @@
 <meta name="apple-mobile-web-app-title" content="GBM Finance">
 <link rel="apple-touch-icon" href="logo-transparente.png">
     <style>
+
+        /* === GBM design tokens (regua visual unica) === */
+        :root {
+            --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
+            --space-4: 16px; --space-5: 20px; --space-6: 24px; --space-8: 32px;
+            --radius-sm: 8px; --radius-md: 10px; --radius-lg: 14px; --radius-pill: 999px;
+            --shadow-1: 0 1px 2px rgba(0,0,0,.30);
+            --shadow-2: 0 8px 24px rgba(0,0,0,.28);
+            --fonte-titulo: 'Sora', 'Inter', sans-serif;
+            --fonte-texto: 'Inter', system-ui, sans-serif;
+        }
+
         /* --- ESTILOS GERAIS & BACKGROUND --- */
         * {
             box-sizing: border-box;
@@ -53,7 +65,7 @@
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
+            border-radius: 14px;
             padding: 40px;
             width: 90%;
             max-width: 420px;
@@ -66,7 +78,7 @@
             .login-container {
                 padding: 30px 20px;
                 max-width: 100%;
-                border-radius: 12px;
+                border-radius: 14px;
             }
         }
 
@@ -139,7 +151,7 @@
             font-weight: 600;
             background: #060a12; /* Fundo para cobrir a borda ao flutuar */
             padding: 0 4px;
-            border-radius: 4px;
+            border-radius: 8px;
         }
 
         /* Borda dourada e glow ao focar */
@@ -277,7 +289,28 @@
             letter-spacing: 1.5px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
-    </style>
+    
+        /* === GBM normalizacao visual: hierarquia, numeros e sombras === */
+        h1, h2, h3, .gbm-title, .card-titulo, .logo-text, .hero h1, .price {
+            font-family: var(--fonte-titulo);
+        }
+        body, p, span, td, th, input, select, button, label, .card, .card p, .card h3 {
+            font-family: var(--fonte-texto);
+        }
+        .card p, td, th, .valor, .card-fluxo p, .price, table {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+        .card p, .card-fluxo p, .grid-cards .card p {
+            text-shadow: none !important;
+        }
+        .card, .insights-panel, .categorias-panel, .chart-container, .painel-ajustes,
+        .container-tabela, .feature-card, .price-card {
+            border-radius: var(--radius-lg) !important;
+            box-shadow: var(--shadow-2);
+        }
+        .card { padding: var(--space-5) var(--space-5); }
+</style>
     <link rel="stylesheet" href="gbm-pages.css">
 </head>
 <body>
@@ -429,7 +462,7 @@
             <input type="hidden" id="temp-recuperar-email">
             
             <div class="input-group">
-                <input type="text" id="redefinir-codigo" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.2rem; font-weight: bold;">
+                <input type="text" id="redefinir-codigo" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.25rem; font-weight: bold;">
                 <label>Código de 6 dígitos</label>
             </div>
             
@@ -889,7 +922,7 @@
                         :                    'rgba(95,255,168,0.3)';
 
             document.getElementById('lista-notificacoes-modal').innerHTML = `
-                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
+                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:1rem; line-height:1.6; text-align:center; color: #fff;">
                     ${escaparMensagemModal(mensagem)}
                 </div>`;
 
@@ -904,7 +937,7 @@
                 _resolveConfirm = resolve;
 
                 document.getElementById('lista-notificacoes-modal').innerHTML = `
-                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center; color: #fff;">
+                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:1rem; line-height:1.6; text-align:center; color: #fff;">
                         ${escaparMensagemModal(mensagem)}
                     </div>`;
 
@@ -924,18 +957,18 @@
     </script>
 
     <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
-        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:14px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <img src="logo-transparente.jpg" alt="GBM" style="height:28px;">
-                    <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
+                    <span style="font-family:'Sora',sans-serif; font-size:1.25rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
                 </div>
                 <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
             </div>
             <div id="lista-notificacoes-modal"></div>
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#205c4e; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#297a66'" onmouseout="this.style.background='#205c4e'">CONFIRMAR</button>
-                <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
+                <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#205c4e; color:#fff; border:none; border-radius:10px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#297a66'" onmouseout="this.style.background='#205c4e'">CONFIRMAR</button>
+                <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">FECHAR</button>
             </div>
         </div>
     </div>
