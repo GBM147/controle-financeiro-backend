@@ -97,6 +97,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // O Dashboard passa a utilizar exatamente o mesmo menu global das demais páginas.
+    // Removemos somente os elementos de cabeçalho/menu próprios dele antes de
+    // carregar o gbm-menu.js, evitando a coexistência de duas versões do menu.
+    const paginaAtual = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    if (paginaAtual === 'dashboard.html') {
+        document.querySelectorAll(
+            'body > .gbm-header, body > .topbar, body > .sidebar-menu, body > #sidebar-menu, body > #menu-overlay'
+        ).forEach((elemento) => elemento.remove());
+
+        if (!document.querySelector('script[data-gbm-dashboard-menu]')) {
+            const scriptMenu = document.createElement('script');
+            scriptMenu.src = 'gbm-menu.js';
+            scriptMenu.dataset.gbmDashboardMenu = 'true';
+            document.body.appendChild(scriptMenu);
+        }
+    }
+
     // O nome canônico desta página é /limite-de-gastos.html.
     // Não converta essa URL para limite-gastos.html, pois isso cria
     // um ciclo quando o servidor redireciona a rota legada para a canônica.
