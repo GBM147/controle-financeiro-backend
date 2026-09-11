@@ -1,5 +1,5 @@
-const VERSAO_TUTORIAL = '1.1.49';
-const CACHE_GBM = 'gbm-estatico-v23';
+const VERSAO_TUTORIAL = '1.1.48';
+const CACHE_GBM = 'gbm-estatico-v24';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -13,7 +13,7 @@ const ARQUIVOS_ESTATICOS = [
     '/auth.js',
     '/gbm-pages.css',
     '/gbm-pages.js',
-    '/gbm-ai-ajuda.js',
+    '/gbm-padrao-visual.js',
     `/gbm-tutorial.css?v=${VERSAO_TUTORIAL}`,
     `/gbm-tutorial.js?v=${VERSAO_TUTORIAL}`,
     '/logo-transparente.png',
@@ -43,6 +43,38 @@ self.addEventListener('activate', (evento) => {
     );
 });
 
+async function servirNavegacaoComPadraoVisual(requisicao) {
+    const resposta = await fetch(requisicao);
+    if (!resposta.ok) return resposta;
+
+    const tipo = resposta.headers.get('content-type') || '';
+    if (!tipo.includes('text/html')) return resposta;
+
+    let html = await resposta.text();
+    const marcador = '/gbm-padrao-visual.js';
+
+    if (!html.includes(marcador)) {
+        const script = `<script src="${marcador}"></script>`;
+        if (html.includes('</head>')) {
+            html = html.replace('</head>', `${script}</head>`);
+        } else if (html.includes('</body>')) {
+            html = html.replace('</body>', `${script}</body>`);
+        } else {
+            html += script;
+        }
+    }
+
+    const headers = new Headers(resposta.headers);
+    headers.delete('content-length');
+    headers.delete('content-encoding');
+
+    return new Response(html, {
+        status: resposta.status,
+        statusText: resposta.statusText,
+        headers
+    });
+}
+
 self.addEventListener('fetch', (evento) => {
     const requisicao = evento.request;
     if (requisicao.method !== 'GET') return;
@@ -50,10 +82,12 @@ self.addEventListener('fetch', (evento) => {
     const url = new URL(requisicao.url);
     if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
+    // Navegação: usa a rede primeiro e injeta a camada visual compartilhada.
+    // Em caso de falha, mantém o comportamento offline anterior.
     if (requisicao.mode === 'navigate') {
         evento.respondWith((async () => {
             try {
-                return await fetch(requisicao);
+                return await servirNavegacaoComPadraoVisual(requisicao);
             } catch {
                 return (await caches.match(requisicao))
                     || (await caches.match('/offline.html'))
@@ -67,30 +101,13 @@ self.addEventListener('fetch', (evento) => {
     if (!recursoEstatico) return;
 
     evento.respondWith((async () => {
-        const cache = await caches.open(CACHE_GBM);
-
-        // JavaScript usa rede primeiro para que correções de interface, como a
-        // ajuda do Dashboard, não fiquem presas em uma versão antiga.
-        if (requisicao.destination === 'script') {
-            try {
-                const resposta = await fetch(requisicao, {
-                    credentials: 'same-origin',
-                    cache: 'no-store'
-                });
-                if (resposta.ok) await cache.put(requisicao, resposta.clone());
-                return resposta;
-            } catch {
-                const armazenado = await cache.match(requisicao);
-                return armazenado || Response.error();
-            }
-        }
-
         const arquivoTutorial =
             url.pathname.endsWith('/gbm-tutorial.js')
             || url.pathname.endsWith('/gbm-tutorial.css');
         const chaveCache = arquivoTutorial
             ? new Request(`${url.pathname}?v=${encodeURIComponent(VERSAO_TUTORIAL)}`)
             : requisicao;
+        const cache = await caches.open(CACHE_GBM);
         const armazenado = await cache.match(chaveCache);
         const atualizar = fetch(chaveCache, { credentials: 'same-origin' })
             .then(async (resposta) => {
