@@ -1,3 +1,5 @@
+require('./ia-assistente-loader');
+
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Inicializa a IA usando a chave da Render
