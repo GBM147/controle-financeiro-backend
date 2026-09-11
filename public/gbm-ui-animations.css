@@ -1,14 +1,143 @@
-/* GBM UI animations */
-body.gbm-interna main,body.gbm-interna .container,body.gbm-interna .page-wrapper{animation:gbm-page-enter .42s ease both}
-@keyframes gbm-page-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-body.gbm-interna .card{transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease}
-body.gbm-interna .card:hover{transform:translateY(-3px);border-color:rgba(85,167,255,.34);box-shadow:0 18px 42px rgba(0,0,0,.42),0 0 0 1px rgba(95,255,168,.035) inset}
-body.gbm-interna .btn,body.gbm-interna button{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease}
-body.gbm-interna .btn:hover,body.gbm-interna button:hover{transform:translateY(-2px)}
-body.gbm-interna .btn:active,body.gbm-interna button:active{transform:translateY(0) scale(.985)}
-body.gbm-interna input,body.gbm-interna select,body.gbm-interna textarea{transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease,transform .2s ease}
-body.gbm-interna input:focus,body.gbm-interna select:focus,body.gbm-interna textarea:focus{transform:translateY(-1px)}
-body.gbm-interna table tbody tr{transition:background-color .18s ease}body.gbm-interna table tbody tr:hover{background:rgba(85,167,255,.045)}
-body.gbm-interna .progress>span{transform-origin:left center;animation:gbm-progress-in .7s ease both}@keyframes gbm-progress-in{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-@media(max-width:768px){body.gbm-interna .card:hover{transform:translateY(-1px)}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
+/* GBM UI animations — leves e sem observadores globais */
+body.gbm-interna main,
+body.gbm-interna .container,
+body.gbm-interna .page-wrapper {
+    animation: gbm-page-enter .42s ease both;
+}
+
+@keyframes gbm-page-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+body.gbm-interna .card {
+    transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease;
+}
+
+body.gbm-interna .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(85,167,255,.34);
+    box-shadow: 0 18px 42px rgba(0,0,0,.42), 0 0 0 1px rgba(95,255,168,.035) inset;
+}
+
+body.gbm-interna .btn,
+body.gbm-interna button {
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
+}
+
+body.gbm-interna .btn:hover,
+body.gbm-interna button:hover {
+    transform: translateY(-2px);
+}
+
+body.gbm-interna .btn:active,
+body.gbm-interna button:active {
+    transform: translateY(0) scale(.985);
+}
+
+body.gbm-interna input,
+body.gbm-interna select,
+body.gbm-interna textarea {
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+body.gbm-interna input:focus,
+body.gbm-interna select:focus,
+body.gbm-interna textarea:focus {
+    transform: translateY(-1px);
+}
+
+/* Tabelas: destaca somente a linha sob o cursor. */
+body.gbm-interna table tbody tr {
+    transition: background-color .18s ease, box-shadow .18s ease;
+}
+
+body.gbm-interna table tbody tr:hover {
+    background: rgba(85,167,255,.045);
+    box-shadow: inset 2px 0 0 rgba(95,255,168,.35);
+}
+
+.gbm-valor-positivo {
+    color: #55e59a !important;
+}
+
+.gbm-valor-negativo {
+    color: #ff6b78 !important;
+}
+
+/* Barras: entram uma vez, de 0% até o valor real. */
+body.gbm-interna .progress > span,
+body.gbm-interna .barra div[data-width] {
+    transform-origin: left center;
+    animation: gbm-progress-in .72s cubic-bezier(.22,.75,.25,1) both;
+}
+
+@keyframes gbm-progress-in {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+/* Cards de fluxo: movimento contínuo, discreto e sem alterar dados. */
+body.gbm-interna .card-fluxo {
+    position: relative;
+    overflow: hidden;
+}
+
+body.gbm-interna .card-fluxo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,.035) 48%, transparent 72%);
+    transform: translateX(-120%);
+    animation: gbm-fluxo-luz 6.5s ease-in-out infinite;
+}
+
+@keyframes gbm-fluxo-luz {
+    0%, 58%, 100% { transform: translateX(-120%); }
+    76% { transform: translateX(120%); }
+}
+
+body.gbm-interna .fluxo-sparkline path {
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+    animation: gbm-sparkline 3.8s ease-in-out infinite alternate;
+}
+
+@keyframes gbm-sparkline {
+    from { stroke-dashoffset: 120; opacity: .55; }
+    to { stroke-dashoffset: 0; opacity: 1; }
+}
+
+body.gbm-interna .card-resultado-grafico {
+    position: relative;
+}
+
+body.gbm-interna .card-resultado-grafico::after {
+    content: '';
+    position: absolute;
+    inset: 10% 4%;
+    border-radius: 999px;
+    box-shadow: 0 0 0 0 rgba(85,167,255,0);
+    animation: gbm-grafico-pulso 4.2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes gbm-grafico-pulso {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(85,167,255,0); }
+    48% { box-shadow: 0 0 28px 2px rgba(85,167,255,.06); }
+    62% { box-shadow: 0 0 38px 5px rgba(95,255,168,.035); }
+}
+
+@media (max-width: 768px) {
+    body.gbm-interna .card:hover { transform: translateY(-1px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .001ms !important;
+    }
+}
