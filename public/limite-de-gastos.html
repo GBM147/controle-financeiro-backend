@@ -11,9 +11,9 @@
         .percentual-row{display:flex;gap:9px;max-width:340px}
         .percentual-row input{max-width:190px}
         .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-        .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid rgba(95,255,168,.3);border-radius:999px;background:rgba(38,135,78,.12);color:#8dffc1;font-size:.78rem;font-weight:700}
-        .chip button{min-width:20px;height:20px;padding:0 7px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:.68rem;line-height:20px;white-space:nowrap}
-        .dica{margin:7px 0 0;color:var(--muted);font-size:.72rem;line-height:1.45}
+        .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid rgba(95,255,168,.3);border-radius:999px;background:rgba(38,135,78,.12);color:#8dffc1;font-size:0.75rem;font-weight:700}
+        .chip button{min-width:20px;height:20px;padding:0 7px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:0.75rem;line-height:20px;white-space:nowrap}
+        .dica{margin:7px 0 0;color:var(--muted);font-size:0.75rem;line-height:1.45}
         .lista-metas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
         .meta-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:1rem}
         .meta-head strong:last-child{white-space:nowrap;flex-shrink:0}
@@ -54,7 +54,7 @@
                 </div>
                 <div class="percentuais">
                     <label class="field" style="display:block">
-                        <span style="color:var(--muted);font-size:.78rem;font-weight:600">Quando você quer ser avisado?</span>
+                        <span style="color:var(--muted);font-size:0.75rem;font-weight:600">Quando você quer ser avisado?</span>
                         <span class="percentual-row" style="margin-top:7px">
                             <input type="number" id="novo-percentual" min="1" max="100" step="1" placeholder="Ex.: 50">
                             <button type="button" class="btn btn-purple" onclick="adicionarPercentual()">Adicionar</button>
@@ -121,11 +121,11 @@
                     return `<article class="card">
                         <div class="meta-head"><strong>${gbmEscapar(m.categoria)}</strong><strong class="gbm-count-up" style="color:${cor}">${p.toFixed(1)}%</strong></div>
                         <div class="progress"><span data-width="${w}%" style="background:${cor}"></span></div>
-                        <div style="display:flex;justify-content:space-between;gap:10px;margin-top:10px;color:var(--muted);font-size:.82rem">
+                        <div style="display:flex;justify-content:space-between;gap:10px;margin-top:10px;color:var(--muted);font-size:0.8125rem">
                             <span>${gbmMoeda(gasto)} de ${gbmMoeda(limite)}</span><span>Gasto</span>
                         </div>
                         <div class="alertas">
-                            <div><span style="font-size:.75rem;color:var(--muted)">Avisos configurados</span><div class="chips">${ps.map(x => `<span class="chip">${x}%</span>`).join('')}</div></div>
+                            <div><span style="font-size:0.75rem;color:var(--muted)">Avisos configurados</span><div class="chips">${ps.map(x => `<span class="chip">${x}%</span>`).join('')}</div></div>
                             <button class="btn btn-small" onclick="editarLimite(${i})">Editar</button>
                         </div>
                     </article>`;
