@@ -254,6 +254,7 @@ function fecharModalNotificacoes(confirmado = false) {
         _resolveConfirm = null;
     }
 }
+
 /* ===== RIPPLE NOS BOTÕES ===== */
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn');
@@ -270,25 +271,18 @@ document.addEventListener('click', (e) => {
 /* ===== CONTAGEM ANIMADA NOS NÚMEROS ===== */
 function gbmContarAte(el) {
     const texto = el.textContent.trim();
-    const ehPercentual = /%\s*$/.test(texto);
-    const match = texto.match(/(R\$\s*)?([\d.,]+)(%)?\s*$/);
+    const match = texto.match(/(R\$\s*)?([\d.,]+)/);
     if (!match) return;
     const prefixo = match[1] || '';
-    const sufixo = ehPercentual ? '%' : '';
-    const alvo = ehPercentual
-        ? parseFloat(match[2].replace(',', '.'))
-        : parseFloat(match[2].replace(/\./g, '').replace(',', '.'));
+    const alvo = parseFloat(match[2].replace(/\./g, '').replace(',', '.'));
     if (isNaN(alvo)) return;
     const duracao = 900;
     const inicio = performance.now();
     function step(agora) {
         const progresso = Math.min((agora - inicio) / duracao, 1);
         const ease = 1 - Math.pow(1 - progresso, 3);
-        const atual = (alvo * ease).toLocaleString('pt-BR', {
-            minimumFractionDigits: ehPercentual ? 1 : 2,
-            maximumFractionDigits: ehPercentual ? 1 : 2
-        });
-        el.textContent = prefixo + atual + sufixo;
+        const atual = (alvo * ease).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        el.textContent = prefixo + atual;
         if (progresso < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -321,3 +315,21 @@ const observadorBarras = new IntersectionObserver((entradas) => {
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.progress > span[data-width], .barra div[data-width]').forEach(el => observadorBarras.observe(el));
 });
+
+/* ===== CABEÇALHOS DAS PÁGINAS =====
+   Remove somente o bloco de identificação/descrição no topo das páginas.
+   O restante do conteúdo, filtros, cards, gráficos e funcionalidades permanece intacto.
+*/
+function gbmRemoverCabecalhoPagina() {
+    const seletores = [
+        '.dashboard-topo',
+        '.page-title',
+        '.titulo-pagina'
+    ];
+
+    document.querySelectorAll(seletores.join(',')).forEach((elemento) => {
+        elemento.remove();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', gbmRemoverCabecalhoPagina, { once: true });
