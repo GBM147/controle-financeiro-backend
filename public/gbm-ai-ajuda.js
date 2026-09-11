@@ -4,12 +4,22 @@
     if (window.__gbmAiAjudaInicializado) return;
     window.__gbmAiAjudaInicializado = true;
 
+    const historico = [];
+
     const escapeHtml = (valor) => String(valor ?? '')
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+
+    function formatarResposta(valor) {
+        let texto = escapeHtml(valor ?? '');
+        texto = texto.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        texto = texto.replace(/__([^_]+?)__/g, '<strong>$1</strong>');
+        texto = texto.replace(/\n/g, '<br>');
+        return texto;
+    }
 
     function paginaAtual() {
         const nome = (window.location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
@@ -51,9 +61,10 @@
             .gbm-ai-fechar{width:34px;height:34px;border:0;border-radius:9px;background:transparent;color:#b9c7d5;font-size:21px;cursor:pointer}
             .gbm-ai-fechar:hover{background:rgba(255,255,255,.06);color:#fff}
             .gbm-ai-conversa{display:flex;flex:1;flex-direction:column;gap:11px;min-height:250px;overflow:auto;padding:17px}
-            .gbm-ai-mensagem{max-width:88%;padding:11px 13px;border-radius:13px;font-size:.87rem;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+            .gbm-ai-mensagem{max-width:88%;padding:11px 13px;border-radius:13px;font-size:.87rem;line-height:1.55;white-space:normal;word-break:break-word}
+            .gbm-ai-mensagem strong{font-weight:800;color:#fff}
             .gbm-ai-mensagem.ia{align-self:flex-start;border:1px solid rgba(85,167,255,.18);background:rgba(15,26,43,.92);color:#eaf4ff}
-            .gbm-ai-mensagem.usuario{align-self:flex-end;border:1px solid rgba(95,255,168,.22);background:rgba(46,139,87,.15);color:#ecfff5}
+            .gbm-ai-mensagem.usuario{align-self:flex-end;border:1px solid rgba(95,255,168,.22);background:rgba(46,139,87,.15);color:#ecfff5;white-space:pre-wrap}
             .gbm-ai-carregando{display:inline-flex;align-items:center;gap:6px;color:#9eb2c8}
             .gbm-ai-carregando span{width:6px;height:6px;border-radius:50%;background:#55a7ff;animation:gbm-ai-pulso 1.1s infinite ease-in-out}
             .gbm-ai-carregando span:nth-child(2){animation-delay:.16s}.gbm-ai-carregando span:nth-child(3){animation-delay:.32s}
@@ -97,7 +108,7 @@
                 <div class="gbm-ai-sugestoes" id="gbm-ai-sugestoes"></div>
                 <div class="gbm-ai-acoes">
                     <button type="button" class="gbm-ai-link" id="gbm-ai-tutorial">Ver tutorial passo a passo</button>
-                    <span style="color:#718198;font-size:.68rem">As respostas tratam apenas do uso do GBM.</span>
+                    <span style="color:#718198;font-size:.68rem">Posso responder dúvidas sobre esta página.</span>
                 </div>
                 <form class="gbm-ai-form" id="gbm-ai-form">
                     <textarea class="gbm-ai-input" id="gbm-ai-input" rows="1" maxlength="1200" placeholder="Digite sua dúvida sobre esta página..." aria-label="Sua dúvida"></textarea>
@@ -160,7 +171,11 @@
         if (!conversa) return;
         const mensagem = document.createElement('div');
         mensagem.className = `gbm-ai-mensagem ${tipo}`;
-        mensagem.textContent = texto;
+        if (tipo === 'ia') {
+            mensagem.innerHTML = formatarResposta(texto);
+        } else {
+            mensagem.textContent = texto;
+        }
         conversa.appendChild(mensagem);
         conversa.scrollTop = conversa.scrollHeight;
         return mensagem;
@@ -181,6 +196,11 @@
         return fetch(url, { credentials: 'include', ...opcoes });
     }
 
+    function registrarHistorico(role, text) {
+        historico.push({ role, text });
+        while (historico.length > 6) historico.shift();
+    }
+
     async function enviarPergunta(evento) {
         if (evento) evento.preventDefault();
         return enviarPerguntaAtual();
@@ -195,6 +215,7 @@
         if (!pergunta || enviar.disabled) return;
 
         adicionarMensagem('usuario', pergunta);
+        registrarHistorico('user', pergunta);
         input.value = '';
         enviar.disabled = true;
         const carregando = adicionarCarregando();
@@ -203,7 +224,11 @@
             const resposta = await apiFetch('/assistente-ajuda', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pergunta, pagina: paginaAtual() })
+                body: JSON.stringify({
+                    pergunta,
+                    pagina: paginaAtual(),
+                    historico: historico.slice(-6)
+                })
             });
             const dados = await resposta.json().catch(() => ({}));
             carregando.remove();
@@ -211,6 +236,7 @@
                 throw new Error(dados.error || 'Não foi possível obter uma resposta.');
             }
             adicionarMensagem('ia', dados.resposta);
+            registrarHistorico('model', dados.resposta);
         } catch (erro) {
             carregando.remove();
             adicionarMensagem('ia', erro.message || 'Não consegui responder agora. Tente novamente.');
