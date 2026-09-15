@@ -27,6 +27,13 @@ function gbmEscapar(valor) {
 function gbmAplicarTemaVisual() {
     if (document.getElementById('gbm-tema-visual')) return;
 
+    const ativarTemaNaPagina = () => document.body?.classList.add('gbm-interna');
+    if (document.body) {
+        ativarTemaNaPagina();
+    } else {
+        document.addEventListener('DOMContentLoaded', ativarTemaNaPagina, { once: true });
+    }
+
     const fonte = document.createElement('link');
     fonte.rel = 'stylesheet';
     fonte.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap';
