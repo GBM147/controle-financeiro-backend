@@ -2,6 +2,7 @@
     'use strict';
 
     const NOME_ARQUIVO = (window.location.pathname.split('/').pop() || '').toLowerCase();
+    const PAGINAS_TEMA_SEM_CABECALHO = new Set(['relatorio.html', 'comparativo.html']);
 
     function injetarEstilos() {
         if (document.getElementById('gbm-padrao-visual-style')) return;
@@ -19,7 +20,11 @@
             body.gbm-interna .gbm-padrao-voltar:hover{transform:translateY(-1px);border-color:rgba(85,167,255,.58);box-shadow:0 8px 22px rgba(0,0,0,.3)}
             body.gbm-interna .gbm-padrao-atalho{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 12px;border:1px solid rgba(85,167,255,.25);border-radius:10px;background:rgba(85,167,255,.08);color:#bfe0ff;text-decoration:none;font-family:Sora,Inter,sans-serif;font-size:.75rem;font-weight:700;transition:transform .2s ease,border-color .2s ease,background .2s ease}
             body.gbm-interna .gbm-padrao-atalho:hover{transform:translateY(-1px);border-color:rgba(85,167,255,.58);background:rgba(85,167,255,.13)}
-            @media(max-width:760px){body.gbm-interna .gbm-padrao-topbar{min-height:58px;padding:0 12px}body.gbm-interna .gbm-padrao-brand{gap:8px}body.gbm-interna .gbm-padrao-brand img{height:58px}body.gbm-interna .gbm-padrao-brand span{max-width:42vw;font-size:1rem;letter-spacing:1.2px}body.gbm-interna .gbm-padrao-top-actions{flex-wrap:nowrap}body.gbm-interna .gbm-padrao-voltar,body.gbm-interna .gbm-padrao-atalho{min-height:34px;padding:6px 9px;font-size:.72rem}}
+            body.gbm-interna.gbm-relatorio-padrao,body.gbm-interna.gbm-comparativo-padrao{background:#071015 !important;background-image:radial-gradient(circle at 16% 5%,rgba(34,201,139,.055),transparent 28%),radial-gradient(circle at 86% 20%,rgba(52,166,216,.05),transparent 24%) !important}
+            .gbm-dashboard-ajuda-fallback{position:fixed;right:20px;bottom:20px;z-index:2147480000;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 15px;border:1px solid rgba(80,227,170,.65);border-radius:999px;background:#0d1b2d;color:#fff;box-shadow:0 12px 32px rgba(0,0,0,.38);font:800 .84rem Inter,Arial,sans-serif;cursor:pointer}
+            .gbm-dashboard-ajuda-fallback .icone{color:#50e3aa;font-size:1.08rem;line-height:1}
+            .gbm-dashboard-ajuda-fallback:hover{background:#142941;border-color:#50e3aa}
+            @media(max-width:760px){body.gbm-interna .gbm-padrao-topbar{min-height:58px;padding:0 12px}body.gbm-interna .gbm-padrao-brand{gap:8px}body.gbm-interna .gbm-padrao-brand img{height:58px}body.gbm-interna .gbm-padrao-brand span{max-width:42vw;font-size:1rem;letter-spacing:1.2px}body.gbm-interna .gbm-padrao-top-actions{flex-wrap:nowrap}body.gbm-interna .gbm-padrao-voltar,body.gbm-interna .gbm-padrao-atalho{min-height:34px;padding:6px 9px;font-size:.72rem}.gbm-dashboard-ajuda-fallback{right:12px;bottom:12px;width:46px;height:46px;justify-content:center;padding:0}.gbm-dashboard-ajuda-fallback .texto{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
             @media(max-width:430px){body.gbm-interna .gbm-padrao-brand span{max-width:88px}body.gbm-interna .gbm-padrao-atalho{display:none}}
         `;
         document.head.appendChild(style);
@@ -71,13 +76,66 @@
         else document.body.prepend(cabecalho);
     }
 
+    function aplicarTemaRelatorios() {
+        if (NOME_ARQUIVO === 'relatorio.html') document.body.classList.add('gbm-relatorio-padrao');
+        if (NOME_ARQUIVO === 'comparativo.html') document.body.classList.add('gbm-comparativo-padrao');
+    }
+
+    function garantirAjudaDashboard() {
+        if (NOME_ARQUIVO !== 'dashboard.html') return;
+        if (document.getElementById('gbm-tour-ajuda')) return;
+        if (document.getElementById('gbm-dashboard-ajuda-fallback')) return;
+
+        const botao = document.createElement('button');
+        botao.id = 'gbm-dashboard-ajuda-fallback';
+        botao.className = 'gbm-dashboard-ajuda-fallback';
+        botao.type = 'button';
+        botao.title = 'Como usar esta página';
+        botao.setAttribute('aria-label', 'Abrir ajuda do Dashboard');
+        botao.innerHTML = '<span class="icone" aria-hidden="true">?</span><span class="texto">Como usar esta página</span>';
+        document.body.appendChild(botao);
+
+        botao.addEventListener('click', () => {
+            const ajudaOriginal = document.getElementById('gbm-tour-ajuda');
+            if (ajudaOriginal) {
+                ajudaOriginal.click();
+                return;
+            }
+
+            const overlay = document.getElementById('gbm-ai-overlay');
+            if (overlay && typeof window.__gbmAbrirAjuda === 'function') {
+                window.__gbmAbrirAjuda();
+                return;
+            }
+
+            window.dispatchEvent(new CustomEvent('gbm:abrir-ajuda-dashboard'));
+        });
+    }
+
     function removerRestosDoCabecalhoAntigo() {
+        if (NOME_ARQUIVO === 'dashboard.html') return;
         document.querySelector('body.gbm-interna > #menu-overlay')?.remove();
         document.querySelector('body.gbm-interna > #sidebar-menu')?.remove();
     }
 
     function inicializar() {
-        if (NOME_ARQUIVO === 'dashboard.html' || !document.body?.classList.contains('gbm-interna')) return;
+        const eRelatorio = PAGINAS_TEMA_SEM_CABECALHO.has(NOME_ARQUIVO);
+        const interna = document.body?.classList.contains('gbm-interna');
+
+        if (eRelatorio) {
+            document.body.classList.add('gbm-interna');
+            aplicarTemaRelatorios();
+            injetarEstilos();
+            return;
+        }
+
+        if (NOME_ARQUIVO === 'dashboard.html') {
+            injetarEstilos();
+            garantirAjudaDashboard();
+            return;
+        }
+
+        if (!interna) return;
         injetarEstilos();
         criarCabecalho();
         removerRestosDoCabecalhoAntigo();
