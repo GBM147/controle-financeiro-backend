@@ -2,7 +2,11 @@
     'use strict';
 
     const NOME_ARQUIVO = (window.location.pathname.split('/').pop() || '').toLowerCase();
-    const PAGINAS_TEMA_SEM_CABECALHO = new Set(['relatorio.html', 'comparativo.html']);
+    const PAGINAS_SEM_CABECALHO_AUTOMATICO = new Set([
+        'importacoes.html',
+        'relatorio.html',
+        'comparativo.html'
+    ]);
 
     function injetarEstilos() {
         if (document.getElementById('gbm-padrao-visual-style')) return;
@@ -20,10 +24,9 @@
             body.gbm-interna .gbm-padrao-voltar:hover{transform:translateY(-1px);border-color:rgba(85,167,255,.58);box-shadow:0 8px 22px rgba(0,0,0,.3)}
             body.gbm-interna .gbm-padrao-atalho{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 12px;border:1px solid rgba(85,167,255,.25);border-radius:10px;background:rgba(85,167,255,.08);color:#bfe0ff;text-decoration:none;font-family:Sora,Inter,sans-serif;font-size:.75rem;font-weight:700;transition:transform .2s ease,border-color .2s ease,background .2s ease}
             body.gbm-interna .gbm-padrao-atalho:hover{transform:translateY(-1px);border-color:rgba(85,167,255,.58);background:rgba(85,167,255,.13)}
-            body.gbm-interna.gbm-relatorio-padrao,body.gbm-interna.gbm-comparativo-padrao{background:#071015 !important;background-image:radial-gradient(circle at 16% 5%,rgba(34,201,139,.055),transparent 28%),radial-gradient(circle at 86% 20%,rgba(52,166,216,.05),transparent 24%) !important}
-            #gbm-tour-ajuda.gbm-dashboard-ajuda-fallback{position:fixed;right:20px;bottom:20px;z-index:2147480000;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 15px;border:1px solid rgba(80,227,170,.65);border-radius:999px;background:#0d1b2d;color:#fff;box-shadow:0 12px 32px rgba(0,0,0,.38);font:800 .84rem Inter,Arial,sans-serif;cursor:pointer}
-            #gbm-tour-ajuda.gbm-dashboard-ajuda-fallback .icone{color:#50e3aa;font-size:1.08rem;line-height:1}
-            #gbm-tour-ajuda.gbm-dashboard-ajuda-fallback:hover{background:#142941;border-color:#50e3aa}
+            body.gbm-interna.gbm-relatorio-padrao,body.gbm-interna.gbm-comparativo-padrao{background-color:#07111f !important;background-image:linear-gradient(rgba(15,23,42,.85),rgba(15,23,42,.9)),url('fundo-marmore.jpg') !important;background-position:center !important;background-size:cover !important;background-attachment:fixed !important}
+            #gbm-tour-ajuda.gbm-dashboard-ajuda-fallback{position:fixed;right:20px;bottom:20px;z-index:9000;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 15px;border:1px solid rgba(80,227,170,.65);border-radius:999px;background:#0d1b2d;color:#fff;box-shadow:0 12px 32px rgba(0,0,0,.38);font:800 .84rem Inter,Arial,sans-serif;cursor:pointer}
+            body:has(.sidebar-menu.aberto) #gbm-tour-ajuda{display:none !important}
             @media(max-width:760px){body.gbm-interna .gbm-padrao-topbar{min-height:58px;padding:0 12px}body.gbm-interna .gbm-padrao-brand{gap:8px}body.gbm-interna .gbm-padrao-brand img{height:58px}body.gbm-interna .gbm-padrao-brand span{max-width:42vw;font-size:1rem;letter-spacing:1.2px}body.gbm-interna .gbm-padrao-top-actions{flex-wrap:nowrap}body.gbm-interna .gbm-padrao-voltar,body.gbm-interna .gbm-padrao-atalho{min-height:34px;padding:6px 9px;font-size:.72rem}#gbm-tour-ajuda.gbm-dashboard-ajuda-fallback{right:12px;bottom:12px;width:46px;height:46px;justify-content:center;padding:0}#gbm-tour-ajuda.gbm-dashboard-ajuda-fallback .texto{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
             @media(max-width:430px){body.gbm-interna .gbm-padrao-brand span{max-width:88px}body.gbm-interna .gbm-padrao-atalho{display:none}}
         `;
@@ -31,6 +34,7 @@
     }
 
     function criarCabecalho() {
+        if (PAGINAS_SEM_CABECALHO_AUTOMATICO.has(NOME_ARQUIVO)) return;
         if (document.querySelector('body.gbm-interna > .topbar')) return;
 
         const antigo = document.querySelector('body.gbm-interna > .gbm-header');
@@ -77,8 +81,12 @@
     }
 
     function aplicarTemaRelatorios() {
-        if (NOME_ARQUIVO === 'relatorio.html') document.body.classList.add('gbm-relatorio-padrao');
-        if (NOME_ARQUIVO === 'comparativo.html') document.body.classList.add('gbm-comparativo-padrao');
+        if (NOME_ARQUIVO === 'relatorio.html') {
+            document.body.classList.add('gbm-relatorio-padrao', 'gbm-interna');
+        }
+        if (NOME_ARQUIVO === 'comparativo.html') {
+            document.body.classList.add('gbm-comparativo-padrao', 'gbm-interna');
+        }
     }
 
     function garantirAjudaDashboard() {
@@ -91,38 +99,36 @@
         botao.type = 'button';
         botao.title = 'Como usar esta página';
         botao.setAttribute('aria-label', 'Abrir ajuda do Dashboard');
-        botao.innerHTML = '<span class="icone" aria-hidden="true">?</span><span class="texto">Como usar esta página</span>';
+        botao.innerHTML = '<span aria-hidden="true">?</span><span class="texto">Como usar esta página</span>';
         document.body.appendChild(botao);
         botao.addEventListener('click', () => {
-            if (typeof window.__gbmAbrirAjuda === 'function') window.__gbmAbrirAjuda();
+            if (typeof window.__gbmAbrirAjuda === 'function') {
+                window.__gbmAbrirAjuda();
+            } else {
+                const existente = document.querySelector('#gbm-ai-overlay');
+                if (existente) existente.classList.add('aberto');
+            }
         });
     }
 
     function removerRestosDoCabecalhoAntigo() {
-        if (NOME_ARQUIVO === 'dashboard.html') return;
+        if (PAGINAS_SEM_CABECALHO_AUTOMATICO.has(NOME_ARQUIVO) || NOME_ARQUIVO === 'dashboard.html') return;
         document.querySelector('body.gbm-interna > #menu-overlay')?.remove();
         document.querySelector('body.gbm-interna > #sidebar-menu')?.remove();
     }
 
     function inicializar() {
-        const eRelatorio = PAGINAS_TEMA_SEM_CABECALHO.has(NOME_ARQUIVO);
-        const interna = document.body?.classList.contains('gbm-interna');
-
-        if (eRelatorio) {
-            document.body.classList.add('gbm-interna');
-            aplicarTemaRelatorios();
-            injetarEstilos();
-            return;
-        }
+        aplicarTemaRelatorios();
+        injetarEstilos();
 
         if (NOME_ARQUIVO === 'dashboard.html') {
-            injetarEstilos();
             garantirAjudaDashboard();
             return;
         }
 
-        if (!interna) return;
-        injetarEstilos();
+        if (PAGINAS_SEM_CABECALHO_AUTOMATICO.has(NOME_ARQUIVO)) return;
+        if (!document.body?.classList.contains('gbm-interna')) return;
+
         criarCabecalho();
         removerRestosDoCabecalhoAntigo();
     }
