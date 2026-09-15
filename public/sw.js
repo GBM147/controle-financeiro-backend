@@ -1,11 +1,6 @@
 const VERSAO_TUTORIAL = '1.1.48';
 const CACHE_GBM = 'gbm-estatico-v25';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
-const PAGINAS_AJUSTE_VISUAL = new Set([
-    '/relatorio.html',
-    '/comparativo.html',
-    '/importacoes.html'
-]);
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
     '/login.html',
@@ -19,7 +14,6 @@ const ARQUIVOS_ESTATICOS = [
     '/gbm-pages.css',
     '/gbm-pages.js',
     '/gbm-padrao-visual.js',
-    '/gbm-relatorios-visual.css',
     `/gbm-tutorial.css?v=${VERSAO_TUTORIAL}`,
     `/gbm-tutorial.js?v=${VERSAO_TUTORIAL}`,
     '/logo-transparente.png',
@@ -56,34 +50,17 @@ async function servirNavegacaoComPadraoVisual(requisicao) {
     const tipo = resposta.headers.get('content-type') || '';
     if (!tipo.includes('text/html')) return resposta;
 
-    const url = new URL(requisicao.url);
-    const caminho = url.pathname.toLowerCase();
-    const paginaAjustada = PAGINAS_AJUSTE_VISUAL.has(caminho);
-
     let html = await resposta.text();
+    const marcador = '/gbm-padrao-visual.js';
 
-    // Nessas três páginas o cabeçalho/menu já pertence ao próprio HTML.
-    // Não substituímos a estrutura por outro cabeçalho para evitar duplicidade
-    // e para preservar as alterações visuais e o menu existentes.
-    if (!paginaAjustada && !html.includes('/gbm-padrao-visual.js')) {
-        const script = `<script src="/gbm-padrao-visual.js"></script>`;
+    if (!html.includes(marcador)) {
+        const script = `<script src="${marcador}"></script>`;
         if (html.includes('</head>')) {
             html = html.replace('</head>', `${script}</head>`);
         } else if (html.includes('</body>')) {
             html = html.replace('</body>', `${script}</body>`);
         } else {
             html += script;
-        }
-    }
-
-    if (paginaAjustada && !html.includes('/gbm-relatorios-visual.css')) {
-        const link = '<link rel="stylesheet" href="/gbm-relatorios-visual.css">';
-        if (html.includes('</head>')) {
-            html = html.replace('</head>', `${link}</head>`);
-        } else if (html.includes('</body>')) {
-            html = html.replace('</body>', `${link}</body>`);
-        } else {
-            html += link;
         }
     }
 
@@ -105,7 +82,6 @@ self.addEventListener('fetch', (evento) => {
     const url = new URL(requisicao.url);
     if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
-    // Navegação: usa a rede primeiro e aplica apenas o acabamento necessário.
     if (requisicao.mode === 'navigate') {
         evento.respondWith((async () => {
             try {
