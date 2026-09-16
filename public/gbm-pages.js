@@ -99,6 +99,28 @@ function gbmAplicarTemaVisual() {
             backdrop-filter: blur(10px);
         }
 
+        body.gbm-interna :where(.page-wrapper, .container) {
+            width: min(1180px, calc(100% - 40px));
+            margin-inline: auto;
+        }
+
+        body.gbm-interna :where(.page-wrapper > .card, .container > .card, #card-resultado, .filtros-card, .grafico-wrapper, .resumo-item) {
+            background: linear-gradient(145deg, var(--gbm-surface), var(--gbm-surface-strong)) !important;
+            border: 1px solid var(--gbm-line) !important;
+            border-radius: var(--gbm-radius) !important;
+            box-shadow: var(--gbm-shadow) !important;
+        }
+
+        body.gbm-interna :where(.filtros) {
+            background: rgba(7, 20, 27, .76) !important;
+            border: 1px solid rgba(52, 166, 216, .14) !important;
+            border-radius: var(--gbm-radius) !important;
+        }
+
+        body.gbm-interna :where(.resumo-ano, .resumo-rapido) {
+            gap: 10px !important;
+        }
+
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card) {
             transition: border-color .2s ease, background-color .2s ease, transform .2s ease, box-shadow .2s ease;
         }
@@ -167,6 +189,12 @@ function gbmAplicarTemaVisual() {
             backdrop-filter: blur(14px);
         }
 
+        @media (max-width: 700px) {
+            body.gbm-interna :where(.page-wrapper, .container) {
+                width: min(100% - 24px, 1180px);
+            }
+        }
+
         #particles-canvas { opacity: .2 !important; }
 
         @media (prefers-reduced-motion: reduce) {
@@ -181,6 +209,23 @@ function gbmAplicarTemaVisual() {
 }
 
 gbmAplicarTemaVisual();
+
+/* Mantém somente o cabeçalho compartilhado quando páginas antigas ainda
+   carregam uma cópia própria ou algum script legado tenta recriá-la. */
+function gbmGarantirCabecalhoUnico() {
+    const cabecalhos = [...document.querySelectorAll('body > .gbm-header')];
+    if (cabecalhos.length < 2) return;
+    cabecalhos.slice(0, -1).forEach((cabecalho) => cabecalho.remove());
+}
+
+function gbmObservarCabecalho() {
+    gbmGarantirCabecalhoUnico();
+    const observador = new MutationObserver(gbmGarantirCabecalhoUnico);
+    observador.observe(document.body, { childList: true });
+}
+
+if (document.body) gbmObservarCabecalho();
+else document.addEventListener('DOMContentLoaded', gbmObservarCabecalho, { once: true });
 
 function gbmToast(mensagem, tipo = 'sucesso') {
     document.querySelector('.toast')?.remove();
