@@ -6,30 +6,28 @@
     <title>Educação financeira prática | GBM Finance</title>
     <meta name="description" content="Guias gratuitos e originais sobre orçamento, controle de gastos, reserva de emergência, dívidas e metas financeiras.">
     <meta name="google-adsense-account" content="ca-pub-2735805392775741">
-    <link rel="canonical" href="https://gbm-finance.com/educacao-financeira.html">
-    <link rel="stylesheet" href="guias.css">
+
     <link rel="stylesheet" href="gbm-pages.css">
+    <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
-<body>
-    <header class="site-header">
-        <a class="brand" href="index.html">GBM <span>Finance</span></a>
-        <nav class="site-nav" aria-label="Navegação principal">
-            <a href="educacao-financeira.html">Guias</a>
-            <a href="sobre.html">Sobre</a>
-            <a href="fale-conosco.html">Contato</a>
-            <a href="login.html">Entrar</a>
-        </nav>
+<body class="gbm-interna">
+    <header class="topbar">
+        <a class="brand" href="index.html"><span>GBM Finance</span></a>
+        <div class="top-actions">
+            <a class="btn btn-small" href="sobre.html">Sobre</a>
+            <a class="btn btn-small" href="fale-conosco.html">Contato</a>
+            <a class="btn btn-primary btn-small" href="login.html">Entrar</a>
+        </div>
     </header>
-    <main>
-        <section class="hero">
-            <p class="eyebrow">Biblioteca GBM</p>
+    <main class="container">
+        <div class="page-title">
             <h1>Finanças pessoais explicadas sem complicação</h1>
-            <p class="lead">Conteúdo educativo para transformar extratos, contas e objetivos em decisões possíveis. Os guias abaixo foram escritos para quem quer começar com o que tem hoje, sem fórmulas mágicas ou promessas de enriquecimento rápido.</p>
-        </section>
+            <p>Conteúdo educativo para transformar extratos, contas e objetivos em decisões possíveis. Os guias abaixo foram escritos para quem quer começar com o que tem hoje, sem fórmulas mágicas ou promessas de enriquecimento rápido.</p>
+        </div>
 
         <section aria-labelledby="guias-disponiveis">
-            <h2 id="guias-disponiveis">Comece pelo seu desafio atual</h2>
-            <div class="cards">
+            <h2 id="guias-disponiveis" style="margin:0 0 14px">Comece pelo seu desafio atual</h2>
+            <div class="grid grid-2 educacao-cards">
                 <a class="card" href="guias/orcamento-pessoal.html">
                     <p class="eyebrow">Fundamentos</p>
                     <h3>Como montar um orçamento pessoal realista</h3>
@@ -58,16 +56,16 @@
             </div>
         </section>
 
-        <section class="article-note" aria-labelledby="criterio-editorial">
+        <section class="card" aria-labelledby="criterio-editorial" style="margin-top:18px">
             <h2 id="criterio-editorial">Nosso critério editorial</h2>
             <p>Priorizamos explicações verificáveis, exemplos transparentes e limites claros. Não recomendamos produtos financeiros específicos, não recebemos comissão para citar instituições e não tratamos conteúdo educativo como aconselhamento individual. Quando um tema envolver risco, impostos ou contrato, recomendamos confirmar as condições com a instituição e, se necessário, com um profissional habilitado.</p>
         </section>
-    </main>
-    <footer class="site-footer">
-        <nav><a href="sobre.html">Sobre</a><a href="termos.html">Termos</a><a href="politica-de-privacidade.html">Privacidade</a><a href="fale-conosco.html">Contato</a></nav>
-        <small> 2026 GBM Finance. Conteúdo educativo, não constitui recomendação financeira.</small>
-    </footer>
-    <script src="gbm-menu.js"></script>
-    <script src="gbm-pages.js"></script>
+    </main><script src="gbm-pages.js"></script>
+    <style>
+        .educacao-cards .card{text-decoration:none;color:var(--text)}
+        .educacao-cards .card .eyebrow{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+        .educacao-cards .card p{line-height:1.55}
+        .educacao-cards .card h3{font-size:1.05rem;margin:8px 0}
+    </style>
 </body>
 </html>
