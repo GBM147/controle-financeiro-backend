@@ -208,7 +208,12 @@ function gbmAplicarTemaVisual() {
     document.head.appendChild(estilo);
 }
 
-gbmAplicarTemaVisual();
+
+const gbmPaginaVisualAtual = (window.location.pathname.split('/').pop() || '').toLowerCase();
+if (gbmPaginaVisualAtual !== 'dashboard.html') {
+    gbmAplicarTemaVisual();
+}
+
 
 /* Mantém somente o cabeçalho compartilhado quando páginas antigas ainda
    carregam uma cópia própria ou algum script legado tenta recriá-la. */
@@ -539,7 +544,11 @@ function gbmRemoverCabecalhoPagina() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', gbmRemoverCabecalhoPagina, { once: true });
+document.addEventListener('DOMContentLoaded', () => {
+    const paginaAtual = (window.location.pathname.split('/').pop() || '').toLowerCase();
+    if (paginaAtual === 'dashboard.html') return;
+    gbmRemoverCabecalhoPagina();
+}, { once: true });
 
 /* ===== ASSISTENTE IA "COMO USAR ESTA PÁGINA" ===== */
 (function carregarAssistenteGbm() {
