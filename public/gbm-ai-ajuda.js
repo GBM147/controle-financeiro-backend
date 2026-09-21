@@ -85,9 +85,18 @@
     function apiFetch(url,opcoes){if(typeof window.fetchApi==='function')return window.fetchApi(url,opcoes);return fetch(url,{credentials:'include',...opcoes});}
     function registrarHistorico(role,text){historico.push({role,text});while(historico.length>6)historico.shift();}
     async function enviarPergunta(evento){if(evento)evento.preventDefault();return enviarPerguntaAtual();}
-    async function enviarPerguntaAtual(){const input=document.getElementById('gbm-ai-input');const enviar=document.getElementById('gbm-ai-enviar');if(!input||!enviar)return;const pergunta=input.value.trim();if(!pergunta||enviar.disabled)return;adicionarMensagem('usuario',pergunta);registrarHistorico('user',pergunta);input.value='';enviar.disabled=true;const carregando=adicionarCarregando();try{const resposta=await apiFetch('/assistente-ajuda',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pergunta,pagina:paginaAtual(),historico:historico.slice(-6)})});const dados=await resposta.json().catch(()=>({}));carregando.remove();if(!resposta.ok||!dados.success)throw new Error(dados.error||'Não foi possível obter uma resposta.');adicionarMensagem('ia',dados.resposta,dados.navegacao);registrarHistorico('model',dados.resposta);}catch(erro){carregando.remove();adicionarMensagem('ia',erro.message||'Não consegui responder agora. Tente novamente.');}finally{enviar.disabled=false;input.focus();}}
+    async function enviarPerguntaAtual(contextoExtra=''){const input=document.getElementById('gbm-ai-input');const enviar=document.getElementById('gbm-ai-enviar');if(!input||!enviar)return;const pergunta=input.value.trim();if(!pergunta||enviar.disabled)return;adicionarMensagem('usuario',pergunta);registrarHistorico('user',pergunta);input.value='';enviar.disabled=true;const carregando=adicionarCarregando();try{const resposta=await apiFetch('/assistente-ajuda',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pergunta,pagina:paginaAtual(),historico:historico.slice(-6),contexto:String(contextoExtra||'').slice(0,5000)})});const dados=await resposta.json().catch(()=>({}));carregando.remove();if(!resposta.ok||!dados.success)throw new Error(dados.error||'Não foi possível obter uma resposta.');adicionarMensagem('ia',dados.resposta,dados.navegacao);registrarHistorico('model',dados.resposta);}catch(erro){carregando.remove();adicionarMensagem('ia',erro.message||'Não consegui responder agora. Tente novamente.');}finally{enviar.disabled=false;input.focus();}}
     function abrirTutorialOriginal(){fechar();const botao=document.getElementById('gbm-tour-ajuda');if(!botao)return;botao.dataset.gbmIgnorarAssistente='1';botao.click();}
     function interceptarBotaoExistente(){document.addEventListener('click',(evento)=>{const botao=evento.target.closest('#gbm-tour-ajuda');if(!botao)return;if(botao.dataset.gbmIgnorarAssistente==='1'){delete botao.dataset.gbmIgnorarAssistente;return;}evento.preventDefault();evento.stopPropagation();evento.stopImmediatePropagation();abrir();},true);}
     function inicializar(){injetarEstilos();garantirBotaoDashboard();criarInterface();interceptarBotaoExistente();}
+    window.__gbmAbrirAjuda = abrir;
+    window.__gbmFecharAjuda = fechar;
+    window.gbmAiPerguntar = async function(pergunta, contexto=''){
+        abrir();
+        const input=document.getElementById('gbm-ai-input');
+        if(!input) return;
+        input.value=String(pergunta||'').trim();
+        return enviarPerguntaAtual(contexto);
+    };
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inicializar,{once:true});else inicializar();
 })();
