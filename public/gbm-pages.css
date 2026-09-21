@@ -42,10 +42,8 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     color: var(--text);
-    background-image:
-        linear-gradient(rgba(15, 23, 42, .85), rgba(15, 23, 42, .9)),
-        url("fundo-marmore.jpg");
-    background-position: center;
+    background-image: radial-gradient(circle at 16% 5%, rgba(34,201,139,.055), transparent 28%), radial-gradient(circle at 86% 20%, rgba(52,166,216,.05), transparent 24%);
+background-position: center;
     background-size: cover;
     background-attachment: fixed;
     font-family: Inter, "Segoe UI", sans-serif;
@@ -380,10 +378,8 @@ body.gbm-interna {
     --mutado: #b0bec5;
     --texto-mutado: #b0bec5;
     color: #fff;
-    background-image:
-        linear-gradient(rgba(15, 23, 42, .85), rgba(15, 23, 42, .9)),
-        url("fundo-marmore.jpg");
-    background-position: center;
+    background-image: radial-gradient(circle at 16% 5%, rgba(34,201,139,.055), transparent 28%), radial-gradient(circle at 86% 20%, rgba(52,166,216,.05), transparent 24%);
+background-position: center;
     background-size: cover;
     background-attachment: fixed;
 }
