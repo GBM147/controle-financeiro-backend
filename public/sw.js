@@ -1,5 +1,5 @@
 const VERSAO_TUTORIAL = '1.1.48';
-const CACHE_GBM = 'gbm-estatico-v28';
+const CACHE_GBM = 'gbm-estatico-v29';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -17,7 +17,6 @@ const ARQUIVOS_ESTATICOS = [
     `/gbm-tutorial.js?v=${VERSAO_TUTORIAL}`,
     '/logo-transparente.png',
     '/logo-transparente.jpg',
-    '/fundo-marmore.jpg',
     '/manifest.json'
 ];
 
