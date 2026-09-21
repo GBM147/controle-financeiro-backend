@@ -999,9 +999,7 @@ body.gbm-interna :is(.card, .cartao, .zona-perigo, .perfil-card, .contato-card) 
             --dash-red: #ff5d6c;
             min-height:100vh;
             color:var(--dash-text);
-            background-image:
-                linear-gradient(rgba(15,23,42,.85),rgba(15,23,42,.9)),
-                url("fundo-marmore.jpg") !important;
+            background-image:radial-gradient(circle at 16% 5%,rgba(34,201,139,.055),transparent 28%),radial-gradient(circle at 86% 20%,rgba(52,166,216,.05),transparent 24%) !important;
             background-position:center !important;
             background-size:cover !important;
             background-attachment:fixed !important;
@@ -2329,6 +2327,39 @@ body.gbm-interna :is(.card, .cartao, .zona-perigo, .perfil-card, .contato-card) 
                 width:min(286px,88vw) !important;
                 right:calc(-1 * min(306px,92vw)) !important;
             }
+        }
+
+        /* Tipografia compacta dos cards auxiliares — igual à régua das páginas padrão. */
+        body.gbm-interna.gbm-dashboard-padrao .linha-paineis .grupo-ajuste label,
+        body.gbm-interna.gbm-dashboard-padrao .painel-controles-grafico .grupo-ajuste label{
+            color:#91a4ba !important;
+            font-size:.68rem !important;
+            line-height:1.25 !important;
+            font-weight:700 !important;
+        }
+        body.gbm-interna.gbm-dashboard-padrao .linha-paineis .grupo-ajuste :is(input,select,button),
+        body.gbm-interna.gbm-dashboard-padrao .painel-controles-grafico .grupo-ajuste :is(input,select,button){
+            font-size:.70rem !important;
+            font-weight:600 !important;
+            min-height:38px !important;
+        }
+        body.gbm-interna.gbm-dashboard-padrao #lista-categorias-personalizadas > span{
+            font-size:.68rem !important;
+            padding:4px 8px !important;
+            border-radius:10px !important;
+        }
+        body.gbm-interna.gbm-dashboard-padrao #lista-categorias-personalizadas > span button{
+            font-size:.68rem !important;
+        }
+        body.gbm-interna.gbm-dashboard-padrao .card-ofx,
+        body.gbm-interna.gbm-dashboard-padrao #card-ofx h3{
+            font-size:.78rem !important;
+        }
+
+        body.gbm-interna.gbm-dashboard-padrao{
+            background-color:#07111f !important;
+            background-image:radial-gradient(circle at 16% 5%,rgba(34,201,139,.055),transparent 28%),radial-gradient(circle at 86% 20%,rgba(52,166,216,.05),transparent 24%) !important;
+            background-attachment:fixed !important;
         }
 `;
             document.head.appendChild(dashboardStyle);
