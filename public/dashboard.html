@@ -1796,11 +1796,6 @@ document.addEventListener('keydown', (evento) => {
         fecharModalInsights();
         return;
     }
-    const modalInsights = document.getElementById('modal-insights-dashboard');
-    if (modalInsights?.classList.contains('aberto')) {
-        fecharModalInsights();
-        return;
-    }
     const modalTransacoes = document.getElementById('modal-transacoes');
     if (modalTransacoes.style.display === 'flex') fecharModalTransacoes();
 });
