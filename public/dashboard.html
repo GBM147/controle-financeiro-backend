@@ -194,8 +194,13 @@
 
 <div class="dashboard-secundario-grid">
     <section class="insights-panel" aria-labelledby="titulo-insights">
-        <h2 id="titulo-insights">O que merece atenção</h2>
-        <p class="insights-subtitulo">Insights baseados no comportamento deste período</p>
+        <div class="insights-cabecalho">
+            <div>
+                <h2 id="titulo-insights">O que merece atenção</h2>
+                <p class="insights-subtitulo">Resumo dos pontos que merecem sua atenção neste período</p>
+            </div>
+            <button type="button" id="btn-ver-mais-insights" class="insights-ver-mais" onclick="abrirModalInsights()" hidden>Ver mais</button>
+        </div>
         <div id="insights-lista" class="insights-lista">
             <div class="insight-item"><span>Analisando seu mês...</span></div>
         </div>
@@ -209,6 +214,27 @@
         </div>
         <a href="#" class="categorias-link" onclick="abrirModalTransacoes(); return false;">Ver relatório completo</a>
     </section>
+</div>
+
+<div id="modal-insights-dashboard" class="modal-insights-dashboard" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-insights" aria-hidden="true">
+    <div class="modal-insights-dashboard-dialog">
+        <div class="modal-insights-dashboard-topo">
+            <div>
+                <span class="modal-insights-dashboard-kicker">Análise do período</span>
+                <h2 id="titulo-modal-insights">O que merece atenção</h2>
+                <p id="subtitulo-modal-insights">Veja os pontos identificados no comportamento financeiro deste período.</p>
+            </div>
+            <button type="button" class="modal-insights-dashboard-fechar" onclick="fecharModalInsights()" aria-label="Fechar análise">×</button>
+        </div>
+        <div id="insights-detalhados" class="insights-detalhados"></div>
+        <div class="modal-insights-dashboard-ia">
+            <div>
+                <strong>Quer entender melhor?</strong>
+                <span>Converse com a IA usando os insights desta análise como contexto.</span>
+            </div>
+            <button type="button" class="btn-insights-ia" onclick="perguntarIAInsights()">Perguntar à IA</button>
+        </div>
+    </div>
 </div>
 
 <div class="lancamento-rapido dashboard-lancamento-rapido" style="margin: 0 20px 20px; padding: 20px 25px;">
@@ -683,14 +709,37 @@
                             borderWidth: 2,
                             fill: true,
                             tension: .35,
-                            pointRadius: 0
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            pointHitRadius: 18,
+                            pointHoverBackgroundColor: corLinhaResultado,
+                            pointHoverBorderColor: '#ffffff',
+                            pointHoverBorderWidth: 1.5
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        hover: { mode: 'index', intersect: false },
                         scales: { x: { display: false }, y: { display: false } },
-                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                displayColors: false,
+                                backgroundColor: 'rgba(7,17,31,.96)',
+                                borderColor: 'rgba(85,167,255,.35)',
+                                borderWidth: 1,
+                                padding: 10,
+                                titleColor: '#b9cce0',
+                                bodyColor: '#eef6ff',
+                                callbacks: {
+                                    title: (items) => items.length ? items[0].label : '',
+                                    label: (context) => `Resultado acumulado: ${Number(context.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+                                }
+                            }
+                        }
                     }
                 });
             } catch (erro) {
@@ -1742,42 +1791,112 @@ document.addEventListener('keydown', (evento) => {
         fecharVinculoObjetivo();
         return;
     }
+    const modalInsights = document.getElementById('modal-insights-dashboard');
+    if (modalInsights?.classList.contains('aberto')) {
+        fecharModalInsights();
+        return;
+    }
     const modalTransacoes = document.getElementById('modal-transacoes');
     if (modalTransacoes.style.display === 'flex') fecharModalTransacoes();
 });
+let insightsDashboardAtuais = [];
+
+function formatarDetalhesInsight(item) {
+    const detalhes = [];
+    if (item?.categoria) detalhes.push(`Categoria: ${escaparHtmlDashboard(item.categoria)}`);
+    if (item?.banco) detalhes.push(`Conta/banco: ${escaparHtmlDashboard(item.banco)}`);
+    if (item?.valor !== undefined && item?.valor !== null) detalhes.push(`Valor: ${Number(item.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+    if (item?.percentual !== undefined && item?.percentual !== null) detalhes.push(`Variação: ${Number(item.percentual).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`);
+    if (item?.diferenca !== undefined && item?.diferenca !== null) detalhes.push(`Diferença: ${Number(item.diferenca || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+    return detalhes;
+}
+
+function montarInsightHtml(item, detalhado = false) {
+    const tipo = item?.tipo || 'alerta';
+    const estilo = tipo === 'aumento'
+        ? { borda: '#55a7ff', rotulo: 'ATENÇÃO', badge: 'Aumento identificado' }
+        : tipo === 'positivo'
+            ? { borda: '#39d98a', rotulo: 'DESEMPENHO', badge: 'Desempenho positivo' }
+            : { borda: '#ff9aa4', rotulo: 'ALERTA', badge: 'Ponto de atenção' };
+    const detalhes = detalhado ? formatarDetalhesInsight(item) : [];
+    return `
+        <article class="insight-item" style="border-left:3px solid ${estilo.borda};">
+            <span class="insight-rotulo">${estilo.rotulo}</span>
+            <strong>${escaparHtmlDashboard(item?.titulo || '')}</strong>
+            <span>${escaparHtmlDashboard(item?.texto || '')}</span>
+            ${detalhes.length ? `<div class="insight-detalhes-extras">${detalhes.map((d) => `<span>${d}</span>`).join('')}</div>` : ''}
+            ${!detalhado && estilo.badge ? `<span class="insight-badge">${estilo.badge}</span>` : ''}
+            ${!detalhado && tipo !== 'positivo' ? `<a href="#" class="insight-link" onclick="abrirModalTransacoes(); return false;">Ver movimentações</a>` : ''}
+        </article>`;
+}
+
+function montarContextoInsightsIA() {
+    if (!insightsDashboardAtuais.length) return '';
+    const periodo = document.getElementById('rotulo-periodo-ciclo')?.textContent?.trim() || 'período atual';
+    const conta = document.getElementById('filtro-conta-dashboard')?.selectedOptions?.[0]?.textContent?.trim() || 'Todas as contas';
+    const linhas = insightsDashboardAtuais.map((item, indice) => {
+        const detalhes = formatarDetalhesInsight(item);
+        return [
+            `Insight ${indice + 1}`,
+            `Tipo: ${item?.tipo || 'alerta'}`,
+            `Título: ${item?.titulo || ''}`,
+            `Descrição: ${item?.texto || ''}`,
+            detalhes.length ? detalhes.join(' | ') : ''
+        ].filter(Boolean).join(' — ');
+    });
+    return `Período: ${periodo}\nConta: ${conta}\n\nInsights identificados:\n${linhas.join('\n')}`;
+}
+
+function abrirModalInsights() {
+    const modal = document.getElementById('modal-insights-dashboard');
+    const lista = document.getElementById('insights-detalhados');
+    if (!modal || !lista) return;
+    lista.innerHTML = insightsDashboardAtuais.length
+        ? insightsDashboardAtuais.map((item) => montarInsightHtml(item, true)).join('')
+        : '<div class="insights-vazio">Não há insights suficientes para uma análise mais detalhada neste período.</div>';
+    modal.classList.add('aberto');
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function fecharModalInsights() {
+    const modal = document.getElementById('modal-insights-dashboard');
+    if (!modal) return;
+    modal.classList.remove('aberto');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+async function perguntarIAInsights() {
+    const contexto = montarContextoInsightsIA();
+    const pergunta = 'Analise estes pontos de atenção do meu período e explique o que eu deveria observar em cada um deles. Não invente dados que não estejam no contexto.';
+    if (typeof window.gbmAiPerguntar === 'function') {
+        await window.gbmAiPerguntar(pergunta, contexto);
+        return;
+    }
+    if (typeof window.__gbmAbrirAjuda === 'function') {
+        window.__gbmAbrirAjuda();
+    }
+}
+
 async function carregarInsights() {
     const container = document.getElementById('insights-lista');
     try {
         const res = await fetchApi(`/insights?${queryContaDashboard().replace(/^&/, '')}`);
         if (!res.ok) throw new Error('Falha ao carregar insights.');
         const insights = await res.json();
-        const corPorTipo = (tipo) => tipo === 'aumento'
-            ? { borda: '#55a7ff', badge: null }
-            : tipo === 'positivo'
-                ? { borda: '#39d98a', badge: 'Desempenho positivo' }
-                : { borda: '#ff9aa4', badge: null };
-        const rotuloPorTipo = (tipo) => tipo === 'aumento'
-            ? 'ATENÇÃO'
-            : tipo === 'positivo'
-                ? 'DESEMPENHO'
-                : 'ALERTA';
-        container.innerHTML = insights.length
-            ? insights.map((item) => {
-                const estilo = corPorTipo(item.tipo);
-                return `
-                <div class="insight-item" style="border-left:3px solid ${estilo.borda};">
-                    <span class="insight-rotulo">${rotuloPorTipo(item.tipo)}</span>
-                    <strong>${escaparHtmlDashboard(item.titulo || '')}</strong>
-                    <span>${escaparHtmlDashboard(item.texto || '')}</span>
-                    ${estilo.badge
-                        ? `<span class="insight-badge">${estilo.badge}</span>`
-                        : `<a href="#" class="insight-link" onclick="abrirModalTransacoes(); return false;">Ver movimentações</a>`}
-                </div>
-            `;
-            }).join('')
+        insightsDashboardAtuais = Array.isArray(insights) ? insights : [];
+
+        const principais = insightsDashboardAtuais.slice(0, 3);
+        container.innerHTML = principais.length
+            ? principais.map((item) => montarInsightHtml(item, false)).join('')
             : '<div class="insight-item"><span>Continue lançando seus dados para receber análises personalizadas.</span></div>';
+
+        const btnMais = document.getElementById('btn-ver-mais-insights');
+        if (btnMais) btnMais.hidden = insightsDashboardAtuais.length === 0;
     } catch (erro) {
-        container.innerHTML = '<div class="insight-item"><span>Os insights estarão disponíveis quando houver dados suficientes.</span></div>';
+        insightsDashboardAtuais = [];
+        if (container) container.innerHTML = '<div class="insight-item"><span>Os insights estarão disponíveis quando houver dados suficientes.</span></div>';
+        const btnMais = document.getElementById('btn-ver-mais-insights');
+        if (btnMais) btnMais.hidden = true;
     }
 }
 async function carregarAlertas() {
@@ -1902,6 +2021,7 @@ window.promessaVerificacaoAcesso.then(() => {
         animate();
     })();
 </script>
+    <script id="gbm-ai-ajuda-script" src="gbm-ai-ajuda.js"></script>
     <script src="gbm-tutorial.js"></script>
     <script src="gbm-pages.js"></script>
 </body>
