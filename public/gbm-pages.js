@@ -27,7 +27,13 @@ function gbmEscapar(valor) {
 function gbmAplicarTemaVisual() {
     if (document.getElementById('gbm-tema-visual')) return;
 
-    const ativarTemaNaPagina = () => document.body?.classList.add('gbm-interna');
+    const ativarTemaNaPagina = () => {
+        if (!document.body) return;
+        document.body.classList.add('gbm-interna');
+        if ((window.location.pathname.split('/').pop() || '').toLowerCase() === 'dashboard.html') {
+            document.body.classList.add('gbm-dashboard-padrao');
+        }
+    };
     if (document.body) {
         ativarTemaNaPagina();
     } else {
@@ -210,9 +216,7 @@ function gbmAplicarTemaVisual() {
 
 
 const gbmPaginaVisualAtual = (window.location.pathname.split('/').pop() || '').toLowerCase();
-if (gbmPaginaVisualAtual !== 'dashboard.html') {
-    gbmAplicarTemaVisual();
-}
+gbmAplicarTemaVisual();
 
 
 /* Mantém somente o cabeçalho compartilhado quando páginas antigas ainda
