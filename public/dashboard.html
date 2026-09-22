@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <title>Controlador Financeiro</title>
@@ -8,10 +10,11 @@
     <meta name="robots" content="noindex, nofollow, noarchive">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="stylesheet" href="gbm-pages.css?v=20260922">
+    <link rel="stylesheet" href="gbm-pages.css">
     <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
-<body class="gbm-interna">
+<body>
+<canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
 <!-- NOVO CABEÇALHO GBM COMPLETO -->
 <header class="gbm-header">
     <div class="gbm-logo-container">
@@ -190,13 +193,8 @@
 
 <div class="dashboard-secundario-grid">
     <section class="insights-panel" aria-labelledby="titulo-insights">
-        <div class="insights-cabecalho">
-            <div>
-                <h2 id="titulo-insights">O que merece atenção</h2>
-                <p class="insights-subtitulo">Resumo dos pontos que merecem sua atenção neste período</p>
-            </div>
-            <button type="button" id="btn-ver-mais-insights" class="insights-ver-mais" onclick="abrirModalInsights()" hidden>Ver mais</button>
-        </div>
+        <h2 id="titulo-insights">O que merece atenção</h2>
+        <p class="insights-subtitulo">Insights baseados no comportamento deste período</p>
         <div id="insights-lista" class="insights-lista">
             <div class="insight-item"><span>Analisando seu mês...</span></div>
         </div>
@@ -208,29 +206,8 @@
         <div id="principais-categorias-lista" class="principais-categorias-lista">
             <div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div>
         </div>
-
+        <a href="#" class="categorias-link" onclick="abrirModalTransacoes(); return false;">Ver relatório completo</a>
     </section>
-</div>
-
-<div id="modal-insights-dashboard" class="modal-insights-dashboard" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-insights" aria-hidden="true">
-    <div class="modal-insights-dashboard-dialog">
-        <div class="modal-insights-dashboard-topo">
-            <div>
-                <span class="modal-insights-dashboard-kicker">Análise do período</span>
-                <h2 id="titulo-modal-insights">O que merece atenção</h2>
-                <p id="subtitulo-modal-insights">Veja os pontos identificados no comportamento financeiro deste período.</p>
-            </div>
-            <button type="button" class="modal-insights-dashboard-fechar" onclick="fecharModalInsights()" aria-label="Fechar análise">×</button>
-        </div>
-        <div id="insights-detalhados" class="insights-detalhados"></div>
-        <div class="modal-insights-dashboard-ia">
-            <div>
-                <strong>Quer entender melhor?</strong>
-                <span>Converse com a IA usando os insights desta análise como contexto.</span>
-            </div>
-            <button type="button" class="btn-insights-ia" onclick="perguntarIAInsights()">Perguntar à IA</button>
-        </div>
-    </div>
 </div>
 
 <div class="lancamento-rapido dashboard-lancamento-rapido" style="margin: 0 20px 20px; padding: 20px 25px;">
@@ -258,6 +235,39 @@
 
 <div id="card-economia-legado" class="card" style="display:none;"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p><div id="detalhe-economia"></div></div>
 
+<div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
+    <div class="modal-gbm-dialogo">
+        <div class="modal-gbm-topo">
+            <h2 id="titulo-modal-transacoes" style="margin:0;">Categorias e objetivos das transações</h2>
+            <button type="button" class="modal-gbm-fechar" onclick="fecharModalTransacoes()" aria-label="Fechar transações">✕</button>
+        </div>
+        <p style="color:#a0a0a0; margin-bottom:20px; font-size:0.875rem;">
+            Corrija categorias, exclua uma movimentação ou destine-a a um objetivo de poupança. Salve todas as mudanças de categoria de uma só vez.
+        </p>
+        <div id="lista-transacoes-modal">Carregando...</div>
+    </div>
+</div>
+<div id="modal-vinculo-objetivo" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-vinculo-objetivo" aria-hidden="true">
+    <div class="modal-gbm-dialogo modal-gbm-dialogo-pequeno">
+        <div class="modal-gbm-topo">
+            <h2 id="titulo-vinculo-objetivo" style="margin:0;">Destinar ao objetivo</h2>
+            <button type="button" class="modal-gbm-fechar" onclick="fecharVinculoObjetivo()" aria-label="Cancelar vínculo">✕</button>
+        </div>
+        <p id="resumo-transacao-vinculo" style="color:#d1d5db;line-height:1.5"></p>
+        <div id="aviso-despesa-vinculo" class="aviso-vinculo" hidden></div>
+        <div class="campo-vinculo-objetivo">
+            <label for="objetivo-vinculo-select">Objetivo de poupança ativo</label>
+            <select id="objetivo-vinculo-select" required></select>
+        </div>
+        <p style="color:#9ca3af;font-size:0.8125rem;line-height:1.5">
+            A categoria, o tipo, o valor, a data e a descrição da transação permanecerão inalterados.
+        </p>
+        <div class="acoes-vinculo">
+            <button type="button" class="btn-objetivo-transacao secundario" onclick="fecharVinculoObjetivo()">Cancelar</button>
+            <button type="button" id="confirmar-vinculo-objetivo" class="btn-objetivo-transacao" onclick="confirmarVinculoObjetivo()">Confirmar vínculo</button>
+        </div>
+    </div>
+</div>
 <div class="linha-paineis">
 
 <div class="painel-ajustes" id="painel-limite">
@@ -356,7 +366,9 @@
     
     <form id="form-upload-ofx" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
         <button type="button" class="btn-acao"  onclick="window.location.href='importacoes.html'">Abrir Central de Importações</button>
-
+        <button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" >
+     Gerenciar Categorias
+</button>
     </form>
 </div>
 <script src="auth.js"></script>
@@ -670,37 +682,14 @@
                             borderWidth: 2,
                             fill: true,
                             tension: .35,
-                            pointRadius: 0,
-                            pointHoverRadius: 5,
-                            pointHitRadius: 18,
-                            pointHoverBackgroundColor: corLinhaResultado,
-                            pointHoverBorderColor: '#ffffff',
-                            pointHoverBorderWidth: 1.5
+                            pointRadius: 0
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
-                        hover: { mode: 'index', intersect: false },
                         scales: { x: { display: false }, y: { display: false } },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                enabled: true,
-                                displayColors: false,
-                                backgroundColor: 'rgba(7,17,31,.96)',
-                                borderColor: 'rgba(85,167,255,.35)',
-                                borderWidth: 1,
-                                padding: 10,
-                                titleColor: '#b9cce0',
-                                bodyColor: '#eef6ff',
-                                callbacks: {
-                                    title: (items) => items.length ? items[0].label : '',
-                                    label: (context) => `Resultado acumulado: ${Number(context.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
-                                }
-                            }
-                        }
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
                     }
                 });
             } catch (erro) {
@@ -1399,6 +1388,11 @@ function categoriasOpcoes(selecionada) {
     ).join('');
 }
 
+let transacoesModal = [];
+let objetivosAtivosVinculo = [];
+let transacaoSelecionadaVinculo = null;
+let focoAnteriorVinculo = null;
+
 function escaparHtmlDashboard(valor) {
     return String(valor ?? '')
         .replaceAll('&', '&amp;')
@@ -1406,6 +1400,311 @@ function escaparHtmlDashboard(valor) {
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#39;');
+}
+
+async function carregarObjetivosVinculo(forcar = false) {
+    if (objetivosAtivosVinculo.length && !forcar) return objetivosAtivosVinculo;
+    const resposta = await fetchApi('/objetivos');
+    const dados = await resposta.json();
+    if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar os objetivos.');
+    objetivosAtivosVinculo = dados.filter((objetivo) => objetivo.status === 'ativo');
+    return objetivosAtivosVinculo;
+}
+
+function renderizarAcaoObjetivoTransacao(transacao) {
+    if (transacao.objetivo_id) {
+        return `
+            <span class="vinculo-objetivo-atual"> ${escaparHtmlDashboard(transacao.objetivo_nome)}</span><br>
+            <button type="button" class="btn-objetivo-transacao secundario"
+                onclick="desvincularTransacaoObjetivo(${Number(transacao.id)})"
+                aria-label="Desvincular a transação do objetivo ${escaparHtmlDashboard(transacao.objetivo_nome)}">
+                Desvincular
+            </button>`;
+    }
+    return `
+        <button type="button" class="btn-objetivo-transacao"
+            onclick="abrirVinculoObjetivo(${Number(transacao.id)}, this)"
+            aria-label="Destinar esta transação a um objetivo de poupança">
+            Destinar ao objetivo
+        </button>`;
+}
+
+async function abrirModalTransacoes() {
+    const modal = document.getElementById('modal-transacoes');
+    const container = document.getElementById('lista-transacoes-modal');
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    container.innerHTML = '<p style="color:#a0a0a0;text-align:center;">Carregando...</p>';
+    try {
+        const { mes: mesCiclo, ano: anoCiclo } = cicloAtual();
+        const res = await fetchApi(`/transacoes-individuais?mes=${mesCiclo}&ano=${anoCiclo}${queryContaDashboard()}`);
+        const dados = await res.json();
+        if (!res.ok) throw new Error(dados.error || 'Não foi possível carregar as transações.');
+        transacoesModal = dados;
+        carregarObjetivosVinculo().catch(() => {});
+
+        if (!transacoesModal.length) {
+            container.innerHTML = `<p style="color:#a0a0a0; text-align:center;">Nenhuma transação no período (${intervaloCiclo(mesCiclo, anoCiclo)}).</p>`;
+            return;
+        }
+
+        let html = `
+            <div class="acoes-categorias-transacoes">
+                <span id="resumo-alteracoes-categoria" class="resumo-alteracoes-categoria" aria-live="polite">
+                    Nenhuma categoria alterada.
+                </span>
+                <button type="button" id="btn-salvar-categorias" class="btn-salvar-categorias"
+                    onclick="salvarCorrecoesCategoria()" disabled>
+                    Salvar alterações
+                </button>
+            </div>
+            <div class="transacoes-scroll"><table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="color:#a0a0a0; font-size:0.875rem;">
+                    <th style="text-align:left; padding:10px;">Data</th>
+                    <th style="text-align:left; padding:10px;">Descrição</th>
+                    <th style="text-align:left; padding:10px;">Valor</th>
+                    <th style="text-align:left; padding:10px;">Banco</th>
+                    <th style="text-align:left; padding:10px;">Categoria</th>
+                    <th style="text-align:left; padding:10px;">Objetivo de poupança</th>
+                    <th style="padding:10px;">Excluir</th>
+                </tr>
+            </thead><tbody>`;
+
+        transacoesModal.forEach((t) => {
+            const cor = t.tipo === 'Receita' ? '#10b981' : '#ef4444';
+            const sinal = t.tipo === 'Receita' ? '+' : '-';
+            const [ano, mes, dia] = String(t.data_transacao).slice(0, 10).split('-');
+            const data = ano && mes && dia ? `${dia}/${mes}/${ano}` : '—';
+            html += `
+                <tr id="transacao-${Number(t.id)}" style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <td style="padding:10px; font-size:0.8125rem; color:#a0a0a0; white-space:nowrap;">${data}</td>
+                    <td style="padding:10px; font-size:0.8125rem; max-width:250px;">${escaparHtmlDashboard(t.descricao)}</td>
+                    <td style="padding:10px; font-weight:bold; color:${cor}; white-space:nowrap;">${sinal} R$ ${Number(t.valor).toFixed(2)}</td>
+                    <td style="padding:10px;">${etiquetaBanco(t.banco)}</td>
+                    <td style="padding:10px;">
+                        <label class="sr-only" for="cat-${Number(t.id)}">Categoria de ${escaparHtmlDashboard(t.descricao)}</label>
+                        <select id="cat-${Number(t.id)}" onchange="atualizarEstadoSalvarCategorias()"
+                            style="min-height:44px;background:#2a2a2a; border:1px solid rgba(255,255,255,0.15); color:white; padding:6px 8px; border-radius:10px; font-size:0.8125rem; width:100%;">
+                            ${categoriasOpcoes(t.categoria)}
+                        </select>
+                    </td>
+                    <td style="padding:10px;min-width:190px;">${renderizarAcaoObjetivoTransacao(t)}</td>
+                    <td style="padding:10px;text-align:center;">
+                        <button type="button" id="excluir-transacao-${Number(t.id)}" class="btn-excluir-transacao"
+                            onclick="excluirTransacao(${Number(t.id)})"
+                            aria-label="Excluir somente a transação ${escaparHtmlDashboard(t.descricao)}">
+                            Excluir
+                        </button>
+                    </td>
+                </tr>`;
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+        atualizarEstadoSalvarCategorias();
+    } catch (erro) {
+        container.innerHTML = `<p style="color:#fca5a5;text-align:center;">${escaparHtmlDashboard(erro.message)}</p>`;
+        gbmAlerta(erro.message, 'erro');
+    }
+}
+
+function obterAlteracoesCategorias() {
+    return transacoesModal.flatMap((transacao) => {
+        const select = document.getElementById(`cat-${Number(transacao.id)}`);
+        if (!select || select.value === String(transacao.categoria || '')) return [];
+        return [{
+            transacaoId: Number(transacao.id),
+            novaCategoria: select.value
+        }];
+    });
+}
+
+function atualizarEstadoSalvarCategorias() {
+    const alteracoes = obterAlteracoesCategorias();
+    const botao = document.getElementById('btn-salvar-categorias');
+    const resumo = document.getElementById('resumo-alteracoes-categoria');
+    if (!botao || !resumo) return;
+    botao.disabled = alteracoes.length === 0;
+    resumo.textContent = alteracoes.length === 0
+        ? 'Nenhuma categoria alterada.'
+        : `${alteracoes.length} ${alteracoes.length === 1 ? 'categoria alterada' : 'categorias alteradas'}.`;
+}
+
+async function salvarCorrecoesCategoria() {
+    const alteracoes = obterAlteracoesCategorias();
+    if (!alteracoes.length) return;
+    const botao = document.getElementById('btn-salvar-categorias');
+    const textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Salvando...';
+
+    try {
+        const resposta = await fetchApi('/corrigir-categorias', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ alteracoes })
+        });
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.error || 'Não foi possível salvar as categorias.');
+
+        const categoriasPorId = new Map(
+            alteracoes.map((alteracao) => [Number(alteracao.transacaoId), alteracao.novaCategoria])
+        );
+        transacoesModal.forEach((transacao) => {
+            if (categoriasPorId.has(Number(transacao.id))) {
+                transacao.categoria = categoriasPorId.get(Number(transacao.id));
+            }
+        });
+        atualizarEstadoSalvarCategorias();
+        carregarDados();
+        carregarInsights();
+        gbmAlerta(
+            `${dados.atualizadas} ${dados.atualizadas === 1 ? 'categoria foi atualizada' : 'categorias foram atualizadas'} com sucesso.`
+        );
+    } catch (erro) {
+        gbmAlerta(erro.message, 'erro');
+    } finally {
+        botao.textContent = textoOriginal;
+        atualizarEstadoSalvarCategorias();
+    }
+}
+
+async function excluirTransacao(transacaoId) {
+    const transacao = transacoesModal.find((item) => Number(item.id) === Number(transacaoId));
+    if (!transacao) return;
+    const valor = Math.abs(Number(transacao.valor || 0)).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+    const ok = await gbmConfirmar(
+        `Excluir somente a movimentação “${transacao.descricao}”, no valor de ${valor}? Esta ação não pode ser desfeita e não exclui outras parcelas, recorrências ou itens da mesma importação.`
+    );
+    if (!ok) return;
+
+    const botao = document.getElementById(`excluir-transacao-${Number(transacaoId)}`);
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = 'Excluindo...';
+    }
+
+    try {
+        const resposta = await fetchApi(`/transacoes/${Number(transacaoId)}`, { method: 'DELETE' });
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.error || 'Não foi possível excluir a movimentação.');
+
+        transacoesModal = transacoesModal.filter((item) => Number(item.id) !== Number(transacaoId));
+        document.getElementById(`transacao-${Number(transacaoId)}`)?.remove();
+        if (!transacoesModal.length) {
+            document.getElementById('lista-transacoes-modal').innerHTML =
+                '<p style="color:#a0a0a0;text-align:center;">Nenhuma transação neste período.</p>';
+        } else {
+            atualizarEstadoSalvarCategorias();
+        }
+        if (transacao.objetivo_id) carregarObjetivosVinculo(true).catch(() => {});
+        carregarDados();
+        carregarInsights();
+        gbmAlerta('Movimentação excluída com sucesso.');
+    } catch (erro) {
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = 'Excluir';
+        }
+        gbmAlerta(erro.message, 'erro');
+    }
+}
+
+async function abrirVinculoObjetivo(transacaoId, botaoOrigem) {
+    const transacao = transacoesModal.find((item) => Number(item.id) === Number(transacaoId));
+    if (!transacao) return;
+    try {
+        const objetivos = await carregarObjetivosVinculo(true);
+        if (!objetivos.length) {
+            gbmAlerta('Crie um objetivo de poupança ativo antes de destinar uma transação.', 'aviso');
+            return;
+        }
+        transacaoSelecionadaVinculo = transacao;
+        focoAnteriorVinculo = botaoOrigem || document.activeElement;
+        const select = document.getElementById('objetivo-vinculo-select');
+        select.innerHTML = objetivos.map((objetivo) => (
+            `<option value="${Number(objetivo.id)}">${escaparHtmlDashboard(objetivo.nome)} — ${Number(objetivo.valor_guardado || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</option>`
+        )).join('');
+        document.getElementById('resumo-transacao-vinculo').textContent =
+            `${transacao.descricao} — ${Math.abs(Number(transacao.valor)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        const aviso = document.getElementById('aviso-despesa-vinculo');
+        const confirmar = document.getElementById('confirmar-vinculo-objetivo');
+        if (transacao.tipo === 'Despesa') {
+            aviso.hidden = false;
+            aviso.textContent = 'Esta movimentação continuará sendo uma Despesa. O valor será contado somente como progresso do objetivo, sem alterar saldo, categoria ou relatórios.';
+            confirmar.textContent = 'Confirmar e manter como despesa';
+        } else {
+            aviso.hidden = true;
+            aviso.textContent = '';
+            confirmar.textContent = 'Confirmar vínculo';
+        }
+        const modal = document.getElementById('modal-vinculo-objetivo');
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        window.setTimeout(() => select.focus(), 0);
+    } catch (erro) {
+        gbmAlerta(erro.message, 'erro');
+    }
+}
+
+function fecharVinculoObjetivo() {
+    const modal = document.getElementById('modal-vinculo-objetivo');
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    transacaoSelecionadaVinculo = null;
+    if (focoAnteriorVinculo?.focus) focoAnteriorVinculo.focus();
+    focoAnteriorVinculo = null;
+}
+
+async function confirmarVinculoObjetivo() {
+    if (!transacaoSelecionadaVinculo) return;
+    const objetivoId = Number(document.getElementById('objetivo-vinculo-select').value);
+    const botao = document.getElementById('confirmar-vinculo-objetivo');
+    botao.disabled = true;
+    try {
+        const resposta = await fetchApi(`/transacoes/${Number(transacaoSelecionadaVinculo.id)}/objetivo`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ objetivo_id: objetivoId })
+        });
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.error || 'Não foi possível vincular a transação.');
+        const eraDespesa = transacaoSelecionadaVinculo.tipo === 'Despesa';
+        fecharVinculoObjetivo();
+        gbmAlerta(
+            eraDespesa
+                ? `Despesa vinculada a “${dados.objetivo_nome}” sem alterar a movimentação.`
+                : `Transação destinada a “${dados.objetivo_nome}”.`
+        );
+        await carregarObjetivosVinculo(true);
+        await abrirModalTransacoes();
+        carregarDados();
+    } catch (erro) {
+        gbmAlerta(erro.message, 'erro');
+    } finally {
+        botao.disabled = false;
+    }
+}
+
+async function desvincularTransacaoObjetivo(transacaoId) {
+    const transacao = transacoesModal.find((item) => Number(item.id) === Number(transacaoId));
+    if (!transacao?.objetivo_id) return;
+    if (!confirm(`Desvincular de “${transacao.objetivo_nome}”? A transação e a contribuição manual de outras origens não serão alteradas.`)) return;
+    try {
+        const resposta = await fetchApi(`/transacoes/${Number(transacaoId)}/objetivo`, { method: 'DELETE' });
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.error || 'Não foi possível desvincular a transação.');
+        gbmAlerta(`Transação desvinculada de “${dados.objetivo_nome || transacao.objetivo_nome}”.`);
+        await carregarObjetivosVinculo(true);
+        await abrirModalTransacoes();
+        carregarDados();
+    } catch (erro) {
+        gbmAlerta(erro.message, 'erro');
+    }
 }
 
 async function salvarObjetivo() {
@@ -1427,103 +1726,57 @@ async function salvarObjetivo() {
             } catch (error) { gbmAlerta('Erro ao criar o objetivo de poupança.', 'erro'); }
         }
 
-let insightsDashboardAtuais = [];
-
-function formatarDetalhesInsight(item) {
-    const detalhes = [];
-    if (item?.categoria) detalhes.push(`Categoria: ${escaparHtmlDashboard(item.categoria)}`);
-    if (item?.banco) detalhes.push(`Conta/banco: ${escaparHtmlDashboard(item.banco)}`);
-    if (item?.valor !== undefined && item?.valor !== null) detalhes.push(`Valor: ${Number(item.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
-    if (item?.percentual !== undefined && item?.percentual !== null) detalhes.push(`Variação: ${Number(item.percentual).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`);
-    if (item?.diferenca !== undefined && item?.diferenca !== null) detalhes.push(`Diferença: ${Number(item.diferenca || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
-    return detalhes;
-}
-
-function montarInsightHtml(item, detalhado = false) {
-    const tipo = item?.tipo || 'alerta';
-    const estilo = tipo === 'aumento'
-        ? { borda: '#55a7ff', rotulo: 'ATENÇÃO', badge: 'Aumento identificado' }
-        : tipo === 'positivo'
-            ? { borda: '#39d98a', rotulo: 'DESEMPENHO', badge: 'Desempenho positivo' }
-            : { borda: '#ff9aa4', rotulo: 'ALERTA', badge: 'Ponto de atenção' };
-    const detalhes = detalhado ? formatarDetalhesInsight(item) : [];
-    return `
-        <article class="insight-item" style="border-left:3px solid ${estilo.borda};">
-            <span class="insight-rotulo">${estilo.rotulo}</span>
-            <strong>${escaparHtmlDashboard(item?.titulo || '')}</strong>
-            <span>${escaparHtmlDashboard(item?.texto || '')}</span>
-            ${detalhes.length ? `<div class="insight-detalhes-extras">${detalhes.map((d) => `<span>${d}</span>`).join('')}</div>` : ''}
-            ${!detalhado && estilo.badge ? `<span class="insight-badge">${estilo.badge}</span>` : ''}
-        </article>`;
-}
-
-function montarContextoInsightsIA() {
-    if (!insightsDashboardAtuais.length) return '';
-    const periodo = document.getElementById('rotulo-periodo-ciclo')?.textContent?.trim() || 'período atual';
-    const conta = document.getElementById('filtro-conta-dashboard')?.selectedOptions?.[0]?.textContent?.trim() || 'Todas as contas';
-    const linhas = insightsDashboardAtuais.map((item, indice) => {
-        const detalhes = formatarDetalhesInsight(item);
-        return [
-            `Insight ${indice + 1}`,
-            `Tipo: ${item?.tipo || 'alerta'}`,
-            `Título: ${item?.titulo || ''}`,
-            `Descrição: ${item?.texto || ''}`,
-            detalhes.length ? detalhes.join(' | ') : ''
-        ].filter(Boolean).join(' — ');
-    });
-    return `Período: ${periodo}\nConta: ${conta}\n\nInsights identificados:\n${linhas.join('\n')}`;
-}
-
-function abrirModalInsights() {
-    const modal = document.getElementById('modal-insights-dashboard');
-    const lista = document.getElementById('insights-detalhados');
-    if (!modal || !lista) return;
-    lista.innerHTML = insightsDashboardAtuais.length
-        ? insightsDashboardAtuais.map((item) => montarInsightHtml(item, true)).join('')
-        : '<div class="insights-vazio">Não há insights suficientes para uma análise mais detalhada neste período.</div>';
-    modal.classList.add('aberto');
-    modal.setAttribute('aria-hidden', 'false');
-}
-
-function fecharModalInsights() {
-    const modal = document.getElementById('modal-insights-dashboard');
-    if (!modal) return;
-    modal.classList.remove('aberto');
+function fecharModalTransacoes() {
+    fecharVinculoObjetivo();
+    const modal = document.getElementById('modal-transacoes');
+    modal.style.display = 'none';
     modal.setAttribute('aria-hidden', 'true');
+    document.getElementById('btn-gerenciar-categorias')?.focus();
 }
 
-async function perguntarIAInsights() {
-    const contexto = montarContextoInsightsIA();
-    const pergunta = 'Analise estes pontos de atenção do meu período e explique o que eu deveria observar em cada um deles. Não invente dados que não estejam no contexto.';
-    if (typeof window.gbmAiPerguntar === 'function') {
-        await window.gbmAiPerguntar(pergunta, contexto);
+document.addEventListener('keydown', (evento) => {
+    if (evento.key !== 'Escape') return;
+    const modalVinculo = document.getElementById('modal-vinculo-objetivo');
+    if (modalVinculo.style.display === 'flex') {
+        fecharVinculoObjetivo();
         return;
     }
-    if (typeof window.__gbmAbrirAjuda === 'function') {
-        window.__gbmAbrirAjuda();
-    }
-}
-
+    const modalTransacoes = document.getElementById('modal-transacoes');
+    if (modalTransacoes.style.display === 'flex') fecharModalTransacoes();
+});
 async function carregarInsights() {
     const container = document.getElementById('insights-lista');
     try {
         const res = await fetchApi(`/insights?${queryContaDashboard().replace(/^&/, '')}`);
         if (!res.ok) throw new Error('Falha ao carregar insights.');
         const insights = await res.json();
-        insightsDashboardAtuais = Array.isArray(insights) ? insights : [];
-        const principais = insightsDashboardAtuais.slice(0, 3);
-        if (container) {
-            container.innerHTML = principais.length
-                ? principais.map((item) => montarInsightHtml(item, false)).join('')
-                : '<div class="insight-item"><span>Continue lançando seus dados para receber análises personalizadas.</span></div>';
-        }
-        const btnMais = document.getElementById('btn-ver-mais-insights');
-        if (btnMais) btnMais.hidden = insightsDashboardAtuais.length === 0;
+        const corPorTipo = (tipo) => tipo === 'aumento'
+            ? { borda: '#55a7ff', badge: null }
+            : tipo === 'positivo'
+                ? { borda: '#39d98a', badge: 'Desempenho positivo' }
+                : { borda: '#ff9aa4', badge: null };
+        const rotuloPorTipo = (tipo) => tipo === 'aumento'
+            ? 'ATENÇÃO'
+            : tipo === 'positivo'
+                ? 'DESEMPENHO'
+                : 'ALERTA';
+        container.innerHTML = insights.length
+            ? insights.map((item) => {
+                const estilo = corPorTipo(item.tipo);
+                return `
+                <div class="insight-item" style="border-left:3px solid ${estilo.borda};">
+                    <span class="insight-rotulo">${rotuloPorTipo(item.tipo)}</span>
+                    <strong>${escaparHtmlDashboard(item.titulo || '')}</strong>
+                    <span>${escaparHtmlDashboard(item.texto || '')}</span>
+                    ${estilo.badge
+                        ? `<span class="insight-badge">${estilo.badge}</span>`
+                        : `<a href="#" class="insight-link" onclick="abrirModalTransacoes(); return false;">Ver movimentações</a>`}
+                </div>
+            `;
+            }).join('')
+            : '<div class="insight-item"><span>Continue lançando seus dados para receber análises personalizadas.</span></div>';
     } catch (erro) {
-        insightsDashboardAtuais = [];
-        if (container) container.innerHTML = '<div class="insight-item"><span>Os insights estarão disponíveis quando houver dados suficientes.</span></div>';
-        const btnMais = document.getElementById('btn-ver-mais-insights');
-        if (btnMais) btnMais.hidden = true;
+        container.innerHTML = '<div class="insight-item"><span>Os insights estarão disponíveis quando houver dados suficientes.</span></div>';
     }
 }
 async function carregarAlertas() {
@@ -1601,7 +1854,53 @@ window.promessaVerificacaoAcesso.then(() => {
         </div>
     </div>
 
-<script id="gbm-ai-ajuda-script" src="gbm-ai-ajuda.js"></script>
+<script>
+    (function() {
+        const canvas = document.getElementById('particles-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function Particle() {
+            this.x = Math.random() * canvas.width;
+            this.y = canvas.height + Math.random() * 100;
+            this.size = Math.random() * 2.5 + 0.8;
+            this.speedY = Math.random() * 1.2 + 0.3;
+            this.opacity = Math.random() * 0.4 + 0.2;
+        }
+        Particle.prototype.update = function() {
+            this.y -= this.speedY;
+            if (this.y < -10) {
+                this.y = canvas.height + 10;
+                this.x = Math.random() * canvas.width;
+                this.opacity = Math.random() * 0.4 + 0.2;
+            }
+        };
+        Particle.prototype.draw = function() {
+            ctx.fillStyle = `rgba(85, 167, 255, ${this.opacity * .28})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        };
+
+        const count = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 22000), 40);
+        for (let i = 0; i < count; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    })();
+</script>
     <script src="gbm-tutorial.js"></script>
     <script src="gbm-pages.js"></script>
 </body>
