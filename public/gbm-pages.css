@@ -627,15 +627,8 @@ body.gbm-interna.gbm-dashboard-padrao .dashboard-topo .dashboard-heading h2{
     letter-spacing:0 !important;
     text-shadow:none !important;
 }
-body.gbm-interna.gbm-dashboard-padrao .dashboard-topo .dashboard-heading p{
-    color:var(--gbm-muted) !important;
-}
-body.gbm-interna.gbm-dashboard-padrao .dashboard-breadcrumb{
-    color:var(--gbm-muted);
-}
-body.gbm-interna.gbm-dashboard-padrao :is(.dashboard-principal-grid,.dashboard-secundario-grid,.dashboard-lancamento-rapido,.linha-paineis,.painel-controles-grafico,.chart-container,#card-ofx){
-    width:min(1180px,calc(100% - 40px));
-}
+body.gbm-interna.gbm-dashboard-padrao .dashboard-topo .dashboard-heading p{color:var(--gbm-muted) !important}
+body.gbm-interna.gbm-dashboard-padrao .dashboard-breadcrumb{color:var(--gbm-muted)}
 body.gbm-interna.gbm-dashboard-padrao :is(input,select,textarea){
     font-family:'Manrope',system-ui,sans-serif !important;
 }
@@ -1356,15 +1349,11 @@ body.gbm-interna .cartao > * {
 
 /* ===== LAYOUT DO DASHBOARD — usa a mesma régua visual das páginas padrão ===== */
 body.gbm-interna.gbm-dashboard-padrao .dashboard-topo{
-    width:min(1180px,calc(100% - 40px));
-    margin:0 auto;
-    padding:30px 0 16px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-    display:flex;
-    align-items:flex-end;
-    justify-content:space-between;
-    gap:20px;
-}
+            width:min(1180px,calc(100% - 40px));
+            margin:0 auto;
+            padding:30px 0 16px;
+            border-bottom:1px solid rgba(255,255,255,.08);
+            display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
 body.gbm-interna.gbm-dashboard-padrao .dashboard-heading{min-width:0}
 body.gbm-interna.gbm-dashboard-padrao .dashboard-breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 body.gbm-interna.gbm-dashboard-padrao .dashboard-heading h2{margin:0 0 7px}
@@ -1435,7 +1424,8 @@ body.gbm-interna.gbm-dashboard-padrao .container-tabela{flex:1;min-width:0;overf
 body.gbm-interna.gbm-dashboard-padrao .grafico-wrapper{flex:1;min-width:0;position:relative}
 body.gbm-interna.gbm-dashboard-padrao table{width:100%}
 body.gbm-interna.gbm-dashboard-padrao td,body.gbm-interna.gbm-dashboard-padrao th{padding:10px 12px}
-body.gbm-interna.gbm-dashboard-padrao #card-ofx{width:min(1320px,calc(100% - 40px))!important;margin:0 auto 20px!important;padding:16px 20px!important}
+body.gbm-interna.gbm-dashboard-padrao #card-ofx{
+            width:min(1180px,calc(100% - 40px))!important;margin:0 auto 20px!important;padding:16px 20px!important}
 body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard{position:fixed!important;inset:0!important;z-index:100000!important;display:none;align-items:center;justify-content:center;padding:18px}
 body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard.aberto{display:flex!important}
 body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard-dialog{width:min(760px,100%);max-height:min(760px,calc(100vh - 36px));display:flex;flex-direction:column;overflow:hidden}
@@ -1452,7 +1442,6 @@ body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard-ia>div{display:f
 body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard-ia span{line-height:1.35}
 body.gbm-interna.gbm-dashboard-padrao .btn-insights-ia{flex:0 0 auto;min-height:40px;padding:9px 13px;cursor:pointer}
 @media(max-width:900px){body.gbm-interna.gbm-dashboard-padrao .dashboard-principal-grid{grid-template-columns:minmax(0,1fr) minmax(250px,.75fr)}body.gbm-interna.gbm-dashboard-padrao .card-pulso{grid-column:1/-1}body.gbm-interna.gbm-dashboard-padrao .linha-paineis{grid-template-columns:1fr 1fr}body.gbm-interna.gbm-dashboard-padrao .dashboard-lancamento-rapido{grid-template-columns:1fr}body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-form{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:700px){body.gbm-interna.gbm-dashboard-padrao .dashboard-topo,
-body.gbm-interna.gbm-dashboard-padrao .dashboard-principal-grid,body.gbm-interna.gbm-dashboard-padrao .dashboard-secundario-grid,body.gbm-interna.gbm-dashboard-padrao .dashboard-lancamento-rapido,body.gbm-interna.gbm-dashboard-padrao .linha-paineis,body.gbm-interna.gbm-dashboard-padrao .painel-controles-grafico,body.gbm-interna.gbm-dashboard-padrao .chart-container,body.gbm-interna.gbm-dashboard-padrao #card-ofx{width:min(100% - 24px,1320px)}body.gbm-interna.gbm-dashboard-padrao .dashboard-topo{padding:20px 0 14px;align-items:stretch;flex-direction:column}body.gbm-interna.gbm-dashboard-padrao .dashboard-filtros{justify-content:stretch;min-width:0}body.gbm-interna.gbm-dashboard-padrao .dashboard-filtros select,body.gbm-interna.gbm-dashboard-padrao .dashboard-periodo{flex:1 1 0;min-width:0}body.gbm-interna.gbm-dashboard-padrao .dashboard-principal-grid{grid-template-columns:1fr;gap:12px}body.gbm-interna.gbm-dashboard-padrao .coluna-fluxo{gap:12px}body.gbm-interna.gbm-dashboard-padrao .dashboard-secundario-grid{grid-template-columns:1fr;gap:12px;margin-top:12px}body.gbm-interna.gbm-dashboard-padrao .dashboard-lancamento-rapido{margin-top:12px!important;grid-template-columns:1fr;gap:14px}body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-form{grid-template-columns:1fr 1fr}body.gbm-interna.gbm-dashboard-padrao .linha-paineis{grid-template-columns:1fr;gap:12px}body.gbm-interna.gbm-dashboard-padrao .painel-controles-grafico{flex-direction:column;align-items:stretch}body.gbm-interna.gbm-dashboard-padrao .chart-container{min-height:360px;height:360px;flex-direction:column}body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard{padding:8px}body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard-dialog{max-height:calc(100vh - 16px)}body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard-ia{align-items:stretch;flex-direction:column}body.gbm-interna.gbm-dashboard-padrao .btn-insights-ia{width:100%}}
+@media(max-width:700px){body.gbm-interna.gbm-dashboard-padrao .dashboard-topo,body.gbm-interna.gbm-dashboard-padrao .dashboard-principal-grid,body.gbm-interna.gbm-dashboard-padrao .dashboard-secundario-grid,body.gbm-interna.gbm-dashboard-padrao .dashboard-lancamento-rapido,body.gbm-interna.gbm-dashboard-padrao .linha-paineis,body.gbm-interna.gbm-dashboard-padrao .painel-controles-grafico,body.gbm-interna.gbm-dashboard-padrao .chart-container,body.gbm-interna.gbm-dashboard-padrao #card-ofx{width:min(100% - 24px,1320px)}body.gbm-interna.gbm-dashboard-padrao .dashboard-topo{padding:20px 0 14px;align-items:stretch;flex-direction:column}body.gbm-interna.gbm-dashboard-padrao .dashboard-filtros{justify-content:stretch;min-width:0}body.gbm-interna.gbm-dashboard-padrao .dashboard-filtros select,body.gbm-interna.gbm-dashboard-padrao .dashboard-periodo{flex:1 1 0;min-width:0}body.gbm-interna.gbm-dashboard-padrao .dashboard-principal-grid{grid-template-columns:1fr;gap:12px}body.gbm-interna.gbm-dashboard-padrao .coluna-fluxo{gap:12px}body.gbm-interna.gbm-dashboard-padrao .dashboard-secundario-grid{grid-template-columns:1fr;gap:12px;margin-top:12px}body.gbm-interna.gbm-dashboard-padrao .dashboard-lancamento-rapido{margin-top:12px!important;grid-template-columns:1fr;gap:14px}body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-form{grid-template-columns:1fr 1fr}body.gbm-interna.gbm-dashboard-padrao .linha-paineis{grid-template-columns:1fr;gap:12px}body.gbm-interna.gbm-dashboard-padrao .painel-controles-grafico{flex-direction:column;align-items:stretch}body.gbm-interna.gbm-dashboard-padrao .chart-container{min-height:360px;height:360px;flex-direction:column}body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard{padding:8px}body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard-dialog{max-height:calc(100vh - 16px)}body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard-ia{align-items:stretch;flex-direction:column}body.gbm-interna.gbm-dashboard-padrao .btn-insights-ia{width:100%}}
 @media(max-width:430px){body.gbm-interna.gbm-dashboard-padrao .dashboard-filtros{display:grid;grid-template-columns:1fr 1fr}body.gbm-interna.gbm-dashboard-padrao .dashboard-periodo{grid-column:1/-1;justify-content:center}body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-form{grid-template-columns:1fr}}
 
