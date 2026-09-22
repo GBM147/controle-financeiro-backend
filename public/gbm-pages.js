@@ -119,10 +119,18 @@ function gbmAplicarTemaVisual() {
         }
 
         body.gbm-interna :where(.page-wrapper > .card, .container > .card, #card-resultado, .filtros-card, .grafico-wrapper, .resumo-item) {
-            background: linear-gradient(145deg, var(--gbm-surface), var(--gbm-surface-strong)) !important;
-            border: 1px solid var(--gbm-line) !important;
-            border-radius: var(--gbm-radius) !important;
-            box-shadow: var(--gbm-shadow) !important;
+            background: #132036 !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+        body.gbm-interna :where(.page-wrapper > .card, .container > .card, #card-resultado, .filtros-card, .grafico-wrapper, .resumo-item)::after {
+            content: '';
+            display: block;
+            height: 1px;
+            margin-top: 18px;
+            background: rgba(85, 167, 255, .16);
+            pointer-events: none;
         }
 
         body.gbm-interna :where(.filtros) {
