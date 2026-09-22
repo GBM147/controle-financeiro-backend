@@ -222,7 +222,39 @@ function gbmAplicarTemaVisual() {
 
 
 const gbmPaginaVisualAtual = (window.location.pathname.split('/').pop() || '').toLowerCase();
+
+/* ===== MENU INTERNO GLOBAL =====
+   Todas as telas internas usam o mesmo cabeçalho e menu lateral.
+   Páginas públicas continuam com sua navegação própria.
+*/
+function gbmGarantirMenuInterno() {
+    const nomePagina = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    const paginasPublicas = new Set([
+        'index.html',
+        'login.html',
+        'termos.html',
+        'privacidade.html',
+        'politica-de-privacidade.html',
+        'sobre.html',
+        'fale-conosco.html',
+        'educacao-financeira.html',
+        'offline.html',
+        'sw-reset.html'
+    ]);
+
+    if (paginasPublicas.has(nomePagina)) return;
+    if (document.querySelector('script[src$="gbm-menu.js"]')) return;
+    if (document.getElementById('gbm-menu-bootstrap')) return;
+
+    const script = document.createElement('script');
+    script.id = 'gbm-menu-bootstrap';
+    script.src = 'gbm-menu.js';
+    script.async = false;
+    (document.head || document.documentElement).appendChild(script);
+}
+
 gbmAplicarTemaVisual();
+gbmGarantirMenuInterno();
 
 
 /* Mantém somente o cabeçalho compartilhado quando páginas antigas ainda
