@@ -101,16 +101,8 @@ function gbmAplicarTemaVisual() {
             background: #132036 !important;
             border: 0 !important;
             border-radius: 0 !important;
-            box-shadow: none !important;
+            box-shadow: inset 0 -1px 0 rgba(85, 167, 255, .16) !important;
             backdrop-filter: none !important;
-        }
-        body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .modal-content, .plano-card, .form-card)::after {
-            content: '';
-            display: block;
-            height: 1px;
-            margin-top: 18px;
-            background: rgba(85, 167, 255, .16);
-            pointer-events: none;
         }
 
         body.gbm-interna :where(.page-wrapper, .container) {
@@ -122,15 +114,7 @@ function gbmAplicarTemaVisual() {
             background: #132036 !important;
             border: 0 !important;
             border-radius: 0 !important;
-            box-shadow: none !important;
-        }
-        body.gbm-interna :where(.page-wrapper > .card, .container > .card, #card-resultado, .filtros-card, .grafico-wrapper, .resumo-item)::after {
-            content: '';
-            display: block;
-            height: 1px;
-            margin-top: 18px;
-            background: rgba(85, 167, 255, .16);
-            pointer-events: none;
+            box-shadow: inset 0 -1px 0 rgba(85, 167, 255, .16) !important;
         }
 
         body.gbm-interna :where(.filtros) {
