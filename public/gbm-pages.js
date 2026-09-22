@@ -110,7 +110,13 @@ function gbmAplicarTemaVisual() {
             margin-inline: auto;
         }
 
-        body.gbm-interna :where(.page-wrapper > .card, .container > .card, #card-resultado, .filtros-card, .grafico-wrapper, .resumo-item) {
+        body.gbm-interna :where(.page-wrapper > .card, .container > .card) {
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: inset 0 -1px 0 rgba(85, 167, 255, .16) !important;
+        }
+        body.gbm-interna :where(#card-resultado, .filtros-card, .grafico-wrapper, .resumo-item) {
             background: #132036 !important;
             border: 0 !important;
             border-radius: 0 !important;
