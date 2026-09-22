@@ -334,6 +334,72 @@
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
     <link rel="stylesheet" href="gbm-pages.css">
+
+    <style id="gbm-padrao-visual-local">
+        /* ===== RÉGUA VISUAL CANÔNICA =====
+           A estrutura desta página permanece própria da MAIN.
+           Este bloco normaliza somente a aparência para a mesma régua visual
+           usada pelas demais páginas internas. */
+        body.gbm-interna {
+            --cor-destaque: var(--green);
+            --cor-destaque-hover: var(--green-dark);
+            --texto-principal: var(--text);
+            --texto-mutado: var(--muted);
+            --borda: var(--border-soft);
+            --sombra: var(--shadow);
+            --cor-receita: var(--green);
+            --cor-despesa: var(--red);
+            color: var(--text) !important;
+            background: var(--bg) !important;
+            background-image: radial-gradient(circle at 16% 5%, rgba(34,201,139,.055), transparent 28%), radial-gradient(circle at 86% 20%, rgba(52,166,216,.05), transparent 24%) !important;
+            background-position: center !important;
+            background-size: cover !important;
+            background-attachment: fixed !important;
+            font-family: Inter, "Segoe UI", sans-serif !important;
+        }
+
+        body.gbm-interna :where(.card, .painel-ajustes, .chart-container, .lancamento-rapido, .insights-panel, .categorias-panel, .resumo-container, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .form-card) {
+            background: linear-gradient(145deg, rgba(16,32,40,.96), rgba(11,26,34,.96)) !important;
+            border-color: rgba(52,166,216,.2) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 10px 26px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.025) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        body.gbm-interna :where(.filtros) {
+            background: rgba(7,20,27,.76) !important;
+            border-color: rgba(52,166,216,.14) !important;
+            border-radius: 8px !important;
+        }
+
+        body.gbm-interna :where(input, select, textarea) {
+            color: #f1f7f5 !important;
+            background-color: rgba(7,20,27,.9) !important;
+            border-color: rgba(52,166,216,.2) !important;
+            border-radius: 7px !important;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,.16) !important;
+            font-family: Manrope, system-ui, sans-serif !important;
+        }
+
+        body.gbm-interna :where(button, .btn, .btn-acao, .btn-voltar) {
+            border-radius: 7px !important;
+            font-family: Manrope, system-ui, sans-serif !important;
+            text-shadow: none !important;
+        }
+
+        body.gbm-interna :where(h1, h2, h3, .gbm-title, .titulo, .titulo-pagina, .card-titulo) {
+            font-family: Sora, Inter, sans-serif !important;
+            text-shadow: none !important;
+        }
+
+        body.gbm-interna :where(p, label, .texto-mutado, .card-subtitulo) {
+            color: var(--muted) !important;
+        }
+
+        body.gbm-interna :where(table) { border-collapse: separate; border-spacing: 0; }
+        body.gbm-interna :where(th) { color: var(--muted) !important; }
+        body.gbm-interna :where(td, th) { border-color: rgba(52,166,216,.1) !important; }
+    </style>
 </head>
 <body class="gbm-interna">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
