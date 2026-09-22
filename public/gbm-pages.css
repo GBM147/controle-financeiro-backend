@@ -614,6 +614,20 @@ body.gbm-interna table tbody tr:hover { background: rgba(85, 167, 255, .045); }
     .relatorio-grafico-wrapper { min-height: 270px; }
 }
 
+/* ===== LAYOUT FUNCIONAL DO DASHBOARD ===== */
+.dashboard-page .dashboard-filtros-card{margin-bottom:18px}
+.dashboard-page .dashboard-filtros{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.dashboard-page .dashboard-filtros select{width:auto;min-width:170px;min-height:40px;padding:8px 12px}
+.dashboard-page .dashboard-filtros #dia-fechamento{min-width:118px}
+.dashboard-page .dashboard-periodo{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;white-space:nowrap}
+.dashboard-page .dashboard-principal-grid,
+.dashboard-page .dashboard-secundario-grid,
+.dashboard-page .dashboard-lancamento-rapido,
+.dashboard-page .linha-paineis,
+.dashboard-page .painel-controles-grafico,
+.dashboard-page .chart-container,
+.dashboard-page #card-ofx{width:100%;margin-left:0;margin-right:0}
+
 /* ===== CABEÇALHO E MENU LATERAL GBM (compartilhado) ===== */
 .gbm-header {
   background: transparent;
