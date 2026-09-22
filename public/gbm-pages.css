@@ -1445,3 +1445,81 @@ body.gbm-interna.gbm-dashboard-padrao .btn-insights-ia{flex:0 0 auto;min-height:
 @media(max-width:700px){body.gbm-interna.gbm-dashboard-padrao .dashboard-topo,body.gbm-interna.gbm-dashboard-padrao .dashboard-principal-grid,body.gbm-interna.gbm-dashboard-padrao .dashboard-secundario-grid,body.gbm-interna.gbm-dashboard-padrao .dashboard-lancamento-rapido,body.gbm-interna.gbm-dashboard-padrao .linha-paineis,body.gbm-interna.gbm-dashboard-padrao .painel-controles-grafico,body.gbm-interna.gbm-dashboard-padrao .chart-container,body.gbm-interna.gbm-dashboard-padrao #card-ofx{width:min(100% - 24px,1320px)}body.gbm-interna.gbm-dashboard-padrao .dashboard-topo{padding:20px 0 14px;align-items:stretch;flex-direction:column}body.gbm-interna.gbm-dashboard-padrao .dashboard-filtros{justify-content:stretch;min-width:0}body.gbm-interna.gbm-dashboard-padrao .dashboard-filtros select,body.gbm-interna.gbm-dashboard-padrao .dashboard-periodo{flex:1 1 0;min-width:0}body.gbm-interna.gbm-dashboard-padrao .dashboard-principal-grid{grid-template-columns:1fr;gap:12px}body.gbm-interna.gbm-dashboard-padrao .coluna-fluxo{gap:12px}body.gbm-interna.gbm-dashboard-padrao .dashboard-secundario-grid{grid-template-columns:1fr;gap:12px;margin-top:12px}body.gbm-interna.gbm-dashboard-padrao .dashboard-lancamento-rapido{margin-top:12px!important;grid-template-columns:1fr;gap:14px}body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-form{grid-template-columns:1fr 1fr}body.gbm-interna.gbm-dashboard-padrao .linha-paineis{grid-template-columns:1fr;gap:12px}body.gbm-interna.gbm-dashboard-padrao .painel-controles-grafico{flex-direction:column;align-items:stretch}body.gbm-interna.gbm-dashboard-padrao .chart-container{min-height:360px;height:360px;flex-direction:column}body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard{padding:8px}body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard-dialog{max-height:calc(100vh - 16px)}body.gbm-interna.gbm-dashboard-padrao .modal-insights-dashboard-ia{align-items:stretch;flex-direction:column}body.gbm-interna.gbm-dashboard-padrao .btn-insights-ia{width:100%}}
 @media(max-width:430px){body.gbm-interna.gbm-dashboard-padrao .dashboard-filtros{display:grid;grid-template-columns:1fr 1fr}body.gbm-interna.gbm-dashboard-padrao .dashboard-periodo{grid-column:1/-1;justify-content:center}body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-form{grid-template-columns:1fr}}
 
+/* ===== PADRÃO VISUAL CANÔNICO — SUPERFÍCIES SEM MOLDURA =====
+   Mantém a estrutura própria de cada página e padroniza apenas a aparência. */
+body.gbm-interna {
+    --gbm-bg-canonico: #07111f;
+    --gbm-card-canonico: #132036;
+    --gbm-divisor-canonico: rgba(85, 167, 255, .16);
+    background: var(--gbm-bg-canonico) !important;
+    background-image:
+        radial-gradient(circle at 16% 5%, rgba(34,201,139,.055), transparent 28%),
+        radial-gradient(circle at 86% 20%, rgba(52,166,216,.05), transparent 24%) !important;
+}
+
+/* Todos os cards seguem o mesmo tratamento: superfície profunda, sem moldura
+   lateral, sem cantos destacados e com apenas uma divisória horizontal. */
+body.gbm-interna :is(
+    .card,
+    .cartao,
+    .zona-perigo,
+    .perfil-card,
+    .contato-card,
+    .painel-ajustes,
+    .chart-container,
+    .lancamento-rapido,
+    .insights-panel,
+    .categorias-panel,
+    .resumo-container,
+    .panel,
+    .painel,
+    .resumo-card,
+    .stat-card,
+    .conta-card,
+    .meta,
+    .form-card
+) {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: var(--gbm-card-canonico) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
+body.gbm-interna :is(
+    .card,
+    .cartao,
+    .zona-perigo,
+    .perfil-card,
+    .contato-card,
+    .painel-ajustes,
+    .chart-container,
+    .lancamento-rapido,
+    .insights-panel,
+    .categorias-panel,
+    .resumo-container,
+    .panel,
+    .painel,
+    .resumo-card,
+    .stat-card,
+    .conta-card,
+    .meta,
+    .form-card
+)::after {
+    content: "";
+    display: block;
+    height: 1px;
+    margin-top: 18px;
+    background: var(--gbm-divisor-canonico);
+    pointer-events: none;
+}
+
+body.gbm-interna :is(.card, .cartao, .zona-perigo, .perfil-card, .contato-card, .painel-ajustes, .chart-container, .lancamento-rapido, .insights-panel, .categorias-panel, .resumo-container, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .form-card):hover {
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+body.gbm-interna .zona-perigo::after {
+    background: rgba(255, 96, 112, .34);
+}
