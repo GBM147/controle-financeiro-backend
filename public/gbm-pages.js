@@ -98,11 +98,19 @@ function gbmAplicarTemaVisual() {
         }
 
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .modal-content, .plano-card, .form-card) {
-            background: linear-gradient(145deg, var(--gbm-surface), var(--gbm-surface-strong)) !important;
-            border-color: var(--gbm-line) !important;
-            border-radius: var(--gbm-radius) !important;
-            box-shadow: var(--gbm-shadow) !important;
-            backdrop-filter: blur(10px);
+            background: #132036 !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+        }
+        body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .modal-content, .plano-card, .form-card)::after {
+            content: '';
+            display: block;
+            height: 1px;
+            margin-top: 18px;
+            background: rgba(85, 167, 255, .16);
+            pointer-events: none;
         }
 
         body.gbm-interna :where(.page-wrapper, .container) {
@@ -133,8 +141,8 @@ function gbmAplicarTemaVisual() {
 
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card):hover {
             transform: none !important;
-            border-color: rgba(52, 166, 216, .34) !important;
-            box-shadow: 0 14px 32px rgba(0, 0, 0, .26) !important;
+            border: 0 !important;
+            box-shadow: none !important;
         }
 
         body.gbm-interna :where(input, select, textarea) {
