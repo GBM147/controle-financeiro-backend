@@ -2,12 +2,32 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Comparativo Mensal | GBM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="gbm-pages.css">
+    <style>
+        /* Layout funcional do comparativo; identidade visual herdada de gbm-pages.css. */
+        .filtros{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;align-items:end;gap:12px}
+        .campo-filtro{display:flex;flex-direction:column;gap:7px}
+        .campo-filtro label{font-size:.875rem;font-weight:700;color:var(--muted)}
+        .resumo-ano{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+        .resumo-item{padding:14px 16px;border:1px solid var(--border-soft);border-radius:14px;background:var(--card)}
+        .resumo-item strong{display:block;margin-top:5px;font-size:1.25rem;color:var(--text)}
+        .grafico-wrapper{position:relative;min-height:340px;padding:14px}
+        .grafico-wrapper canvas{max-width:100%}
+        .texto-vazio{text-align:center;color:var(--muted)}
+        .badge-mini{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;font-size:.65rem;font-weight:700}
+        .badge-melhor{background:rgba(57,217,138,.1);color:#7fffb7;border:1px solid rgba(57,217,138,.2)}
+        .badge-pior{background:rgba(255,93,108,.1);color:#ff9aa4;border:1px solid rgba(255,93,108,.2)}
+        tbody tr.linha-melhor-mes{background:rgba(57,217,138,.035)}
+        tbody tr.linha-pior-mes{background:rgba(255,93,108,.035)}
+        @media(max-width:850px){.filtros{grid-template-columns:1fr 1fr}.resumo-ano{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:560px){.filtros{grid-template-columns:1fr}.resumo-ano{grid-template-columns:1fr}}
+</style>
     <link rel="stylesheet" href="gbm-tutorial.css">
-</head><body class="gbm-interna">
+    <link rel="stylesheet" href="gbm-pages.css?v=20260922">
+</head>
+<body class="gbm-interna">
 <header class="gbm-header">
     <div class="gbm-logo-container">
         <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
@@ -138,6 +158,9 @@
         </div>
     </div>
 </main>
+
+
+
 <script src="auth.js"></script>
     <script>
         // Recupera o userId salvo
@@ -443,8 +466,8 @@
             </div>
         </div>
     </div>
-<script src="gbm-pages.js"></script>
 <script src="gbm-tutorial.js"></script>
-<script src="gbm-menu.js"></script>
+    <script src="gbm-menu.js"></script>
+    <script src="gbm-pages.js"></script>
 </body>
 </html>
