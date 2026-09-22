@@ -1386,7 +1386,7 @@ body.gbm-interna.gbm-dashboard-padrao .dashboard-lancamento-rapido{width:min(132
 body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-copy h3{margin:0 0 6px!important}
 body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-copy p{margin:0!important;line-height:1.45}
 body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-form{display:grid;grid-template-columns:1.05fr 1.3fr .72fr .8fr 1.1fr .9fr auto auto;gap:8px;align-items:center}
-body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-form:is(input,select){min-width:0;min-height:40px;padding:8px 10px}
+body.gbm-interna.gbm-dashboard-padrao .lancamento-rapido-form :is(input,select){min-width:0;min-height:40px;padding:8px 10px}
 body.gbm-interna.gbm-dashboard-padrao .btn-acao{min-height:40px;padding:9px 13px;cursor:pointer}
 body.gbm-interna.gbm-dashboard-padrao .btn-acao:hover{transform:translateY(-1px)!important;filter:brightness(1.06)}
 body.gbm-interna.gbm-dashboard-padrao .linha-paineis{width:min(1320px,calc(100% - 40px));margin:0 auto 18px!important;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
