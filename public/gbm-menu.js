@@ -4,7 +4,7 @@
     const paginasPublicas = new Set([
         'index.html', 'login.html', 'termos.html', 'privacidade.html',
         'politica-de-privacidade.html', 'sobre.html', 'fale-conosco.html',
-        'offline.html', 'pagamento.html', 'assinatura.html'
+        'educacao-financeira.html', 'offline.html', 'sw-reset.html'
     ]);
 
     const itensMenu = [
