@@ -1,37 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Controlador Financeiro</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow, noarchive">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <link rel="stylesheet" href="gbm-pages.css?v=20260922">
+    <link rel="stylesheet" href="gbm-pages.css">
     <link rel="stylesheet" href="gbm-tutorial.css">
-</head>
-<body class="gbm-interna">
-<!-- NOVO CABEÇALHO GBM COMPLETO -->
+</head><body class="gbm-interna">
 <header class="gbm-header">
     <div class="gbm-logo-container">
         <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
         <h1 class="gbm-title">Guardian Of Budget & Money</h1>
     </div>
-     <div class="gbm-header-actions">
+    <div class="gbm-header-actions">
         <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
             <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
             <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
         </a>
-
         <div class="gbm-menu-container">
             <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" style="position:relative;" aria-label="Abrir menu">
                 <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-                <span id="dot-alertas" style="display:none; position:absolute; top:2px; right:2px; width:9px; height:9px; background:#ef4444; border-radius:50%; box-shadow:0 0 4px #ef4444;"></span>
             </button>
         </div>
     </div>
-</header> <div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
+</header>
+<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
 
 <div id="sidebar-menu" class="sidebar-menu">
     <div class="sidebar-header">
@@ -44,19 +38,16 @@
         </div>
         <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
     </div>
-
     <nav class="sidebar-content" aria-label="Menu principal">
-        <div class="menu-grupo" aria-labelledby="menu-titulo-resumo">
-            <p id="menu-titulo-resumo" class="menu-grupo-titulo">Resumo</p>
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Resumo</p>
             <a href="dashboard.html" class="menu-item menu-item-ativo">
                 <span class="menu-item-icone" aria-hidden="true">⌂</span>
                 <span class="menu-item-conteudo">Visão geral</span>
-                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
             </a>
         </div>
-
-        <div class="menu-grupo" aria-labelledby="menu-titulo-movimentacoes">
-            <p id="menu-titulo-movimentacoes" class="menu-grupo-titulo">Movimentações</p>
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Movimentações</p>
             <a href="contas.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">▣</span>
                 <span class="menu-item-conteudo">Minhas contas</span>
@@ -64,11 +55,11 @@
             <a href="importacoes.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">↥</span>
                 <span class="menu-item-conteudo">Importações</span>
+                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
             </a>
         </div>
-
-        <div class="menu-grupo" aria-labelledby="menu-titulo-planejamento">
-            <p id="menu-titulo-planejamento" class="menu-grupo-titulo">Planejamento</p>
+        <div class="menu-grupo">
+            <p class="menu-grupo-titulo">Planejamento</p>
             <a href="calendario.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">□</span>
                 <span class="menu-item-conteudo">Calendário</span>
@@ -82,9 +73,8 @@
                 <span class="menu-item-conteudo">Objetivos de poupança</span>
             </a>
         </div>
-
-        <div class="menu-grupo menu-grupo-premium" aria-labelledby="menu-titulo-premium">
-            <p id="menu-titulo-premium" class="menu-grupo-titulo">Análises</p>
+        <div class="menu-grupo menu-grupo-premium">
+            <p class="menu-grupo-titulo">Análises</p>
             <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
                 <span class="menu-item-icone" aria-hidden="true">▥</span>
                 <span class="menu-item-conteudo">Relatório mensal</span>
@@ -95,17 +85,12 @@
                 <span class="menu-item-conteudo">Comparativo mensal</span>
                 <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
             </a>
-            <div id="aviso-recursos-premium" class="aviso-recursos-premium" role="status"></div>
         </div>
-
-        <div class="menu-grupo menu-grupo-conta" aria-labelledby="menu-titulo-conta">
-            <p id="menu-titulo-conta" class="menu-grupo-titulo">Conta</p>
-            <a href="notificacoes.html" id="item-notificacoes" class="menu-item menu-item-com-indicador">
+        <div class="menu-grupo menu-grupo-conta">
+            <p class="menu-grupo-titulo">Conta</p>
+            <a href="notificacoes.html" class="menu-item menu-item-com-indicador">
                 <span class="menu-item-icone" aria-hidden="true">♧</span>
                 <span class="menu-item-conteudo">Notificações</span>
-                <span class="menu-item-indicadores">
-                    <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.75rem; padding:2px 8px; margin-left:8px;">0</span>
-                </span>
             </a>
             <a href="configuracoes.html" class="menu-item">
                 <span class="menu-item-icone" aria-hidden="true">⚙</span>
@@ -123,23 +108,13 @@
     </nav>
 </div>
 
-<section class="dashboard-topo" aria-labelledby="titulo-visao-geral">
-    <div class="dashboard-heading">
-        <div class="dashboard-breadcrumb"><span>Tela 1 de 11</span><b>›</b><strong>Visão geral</strong></div>
-        <h2 id="titulo-visao-geral">Visão geral</h2>
+<main class="container dashboard-page">
+<div class="page-title">
+        <h1>Visão geral</h1>
         <p>Acompanhe o desempenho do período e tome decisões com mais clareza.</p>
     </div>
-    <div class="dashboard-filtros" aria-label="Filtros do período">
-        <select id="filtro-conta-dashboard" onchange="trocarContaDashboard()" aria-label="Conta">
-            <option value="">Todas as contas</option>
-        </select>
-        <select id="dia-fechamento" onchange="salvarDiaFechamento()" title="Dia em que o seu mês financeiro vira" aria-label="Fechamento do mês">
-        </select>
-        <span id="rotulo-periodo-ciclo" class="dashboard-periodo"></span>
-    </div>
-</section>
-
-<div class="dashboard-principal-grid">
+    <section class="card dashboard-filtros-card">
+        <div class="dashboard-filtros" aria-label="Filtros do período"><div class="dashboard-principal-grid">
     <div class="card card-resultado">
         <div class="card-resultado-topo">
             <h3>Resultado do período</h3>
@@ -359,6 +334,8 @@
 
     </form>
 </div>
+
+</main>
 <script src="auth.js"></script>
 <script>
 // Variável global para sabermos o status do cliente em qualquer lugar da tela
@@ -1602,7 +1579,8 @@ window.promessaVerificacaoAcesso.then(() => {
     </div>
 
 <script id="gbm-ai-ajuda-script" src="gbm-ai-ajuda.js"></script>
-    <script src="gbm-tutorial.js"></script>
     <script src="gbm-pages.js"></script>
+<script src="gbm-tutorial.js"></script>
+<script src="gbm-menu.js"></script>
 </body>
 </html>
