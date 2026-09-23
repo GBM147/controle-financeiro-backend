@@ -10,6 +10,7 @@ Disallow: /contas.html
 Disallow: /importacoes.html
 Disallow: /importar-pdf.html
 Disallow: /limite-de-gastos.html
+Disallow: /limite-gastos.html
 Disallow: /Limite-de-Gastos.html
 Disallow: /metas.html
 Disallow: /notificacoes.html
@@ -18,5 +19,7 @@ Disallow: /perfil.html
 Disallow: /privacidade.html
 Disallow: /relatorio.html
 Disallow: /relatorio-avancado.html
+Disallow: /sw-reset.html
+Disallow: /offline.html
 
 Sitemap: https://gbm-finance.com/sitemap.xml
