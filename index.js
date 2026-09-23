@@ -3051,7 +3051,7 @@ app.post('/cancelar-assinatura', exigirLogin, async (req, res) => {
 // --- ROTA: RECEBER FEEDBACK DA PÁGINA "FALE CONOSCO" ---
 app.post('/api/enviar-feedback', limitarFeedback, async (req, res) => {
     try {
-        const { assunto, mensagem } = req.body;
+        const { assunto, mensagem, nome, email } = req.body;
         const userId = req.session.userId;
         if (!mensagem || !assunto) {
             return res.status(400).json({ success: false, error: 'Assunto e mensagem são obrigatórios.' });
@@ -3074,6 +3074,8 @@ app.post('/api/enviar-feedback', limitarFeedback, async (req, res) => {
                 userNome = usuarioContato.nome;
             }
         }
+        if (!userEmail && email) userEmail = String(email).slice(0, 200);
+        if (!userNome && nome) userNome = escaparHtmlServidor(String(nome).slice(0, 120));
 
         const emailSuporte = process.env.EMAIL_SUPORTE || 'suporte@gbm-finance.com';
 
