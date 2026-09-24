@@ -409,6 +409,12 @@ const limitarFeedback = criarLimitador({
     maximo: 10,
     prefixo: 'feedback'
 });
+const limitarAssistente = criarLimitador({
+    janelaMs: 60 * 1000,
+    maximo: 10,
+    prefixo: 'assistente'
+});
+app.use('/assistente-ajuda', limitarAssistente);
 const limitarImportacao = criarLimitador({
     janelaMs: 15 * 60 * 1000,
     maximo: 20,
@@ -417,7 +423,9 @@ const limitarImportacao = criarLimitador({
 const PAGINAS_PRIVADAS_OU_DE_ACAO = new Set([
     'assinatura.html', 'comparativo.html', 'configuracoes.html', 'dashboard.html',
     'login.html', 'metas.html', 'notificacoes.html', 'pagamento.html', 'perfil.html',
-    'privacidade.html', 'relatorio-avancado.html'
+    'privacidade.html', 'relatorio-avancado.html',
+    'calendario.html', 'contas.html', 'importacoes.html', 'importar-pdf.html',
+    'limite-de-gastos.html', 'relatorio.html'
 ]);
 
 // Entrega os arquivos públicos. Tutorial e service worker nunca podem ficar
