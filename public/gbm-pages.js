@@ -75,7 +75,7 @@ function gbmAplicarTemaVisual() {
         html { color-scheme: dark; }
 
         body.gbm-interna {
-            background: var(--gbm-bg) !important;
+            background: #07111f !important;
             background-image: radial-gradient(circle at 16% 5%, rgba(34, 201, 139, .055), transparent 28%), radial-gradient(circle at 86% 20%, rgba(52, 166, 216, .05), transparent 24%) !important;
             font-family: 'Inter', system-ui, sans-serif !important;
             color: var(--gbm-text);
@@ -106,11 +106,11 @@ function gbmAplicarTemaVisual() {
         }
 
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .modal-content, .plano-card, .form-card) {
-            background: #132036 !important;
-            border: 0 !important;
-            border-radius: 0 !important;
-            box-shadow: inset 0 -1px 0 rgba(85, 167, 255, .16) !important;
-            backdrop-filter: none !important;
+            background: linear-gradient(145deg, var(--gbm-surface), var(--gbm-surface-strong)) !important;
+            border: 1px solid var(--gbm-line) !important;
+            border-radius: var(--gbm-radius) !important;
+            box-shadow: var(--gbm-shadow) !important;
+            backdrop-filter: blur(10px) !important;
         }
 
         body.gbm-interna :where(.page-wrapper, .container) {
@@ -147,8 +147,8 @@ function gbmAplicarTemaVisual() {
 
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card):hover {
             transform: none !important;
-            border: 0 !important;
-            box-shadow: none !important;
+            border-color: var(--gbm-line-focus) !important;
+            box-shadow: var(--gbm-shadow) !important;
         }
 
         body.gbm-interna :where(input, select, textarea) {
