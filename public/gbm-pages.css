@@ -630,7 +630,7 @@ body.gbm-interna.gbm-dashboard-padrao .dashboard-topo .dashboard-heading h2{
 body.gbm-interna.gbm-dashboard-padrao .dashboard-topo .dashboard-heading p{color:var(--gbm-muted) !important}
 body.gbm-interna.gbm-dashboard-padrao .dashboard-breadcrumb{color:var(--gbm-muted)}
 body.gbm-interna.gbm-dashboard-padrao :is(input,select,textarea){
-    font-family:'Manrope',system-ui,sans-serif !important;
+    font-family:'Inter',system-ui,sans-serif !important;
 }
 
 /* ===== CABEÇALHO E MENU LATERAL GBM (compartilhado) ===== */
@@ -844,7 +844,7 @@ body.gbm-interna.gbm-dashboard-padrao :is(input,select,textarea){
         }
 
 .sidebar-content .menu-item {
-            font-family: 'Inter', 'Montserrat', sans-serif;
+            font-family: 'Inter', 'Inter', sans-serif;
             font-weight: 600;
             font-size: 1rem;
             text-transform: none;
@@ -874,7 +874,7 @@ body.gbm-interna.gbm-dashboard-padrao :is(input,select,textarea){
             margin: 0;
             padding: 9px 28px 5px;
             color: #7f91a8;
-            font-family: 'Inter', 'Montserrat', sans-serif;
+            font-family: 'Inter', 'Inter', sans-serif;
             font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: .04em;
