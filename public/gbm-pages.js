@@ -29,8 +29,21 @@ function gbmAplicarTemaVisual() {
 
     const ativarTemaNaPagina = () => {
         if (!document.body) return;
+        const paginaAtual = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+        const paginasPublicas = new Set([
+            'index.html',
+            'login.html',
+            'termos.html',
+            'politica-de-privacidade.html',
+            'sobre.html',
+            'fale-conosco.html',
+            'educacao-financeira.html',
+            'offline.html',
+            'sw-reset.html'
+        ]);
+        if (paginasPublicas.has(paginaAtual)) return;
         document.body.classList.add('gbm-interna');
-        if ((window.location.pathname.split('/').pop() || '').toLowerCase() === 'dashboard.html') {
+        if (paginaAtual === 'dashboard.html') {
             document.body.classList.add('gbm-dashboard-padrao');
         }
     };
@@ -39,11 +52,6 @@ function gbmAplicarTemaVisual() {
     } else {
         document.addEventListener('DOMContentLoaded', ativarTemaNaPagina, { once: true });
     }
-
-    const fonte = document.createElement('link');
-    fonte.rel = 'stylesheet';
-    fonte.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap';
-    document.head.appendChild(fonte);
 
     const estilo = document.createElement('style');
     estilo.id = 'gbm-tema-visual';
@@ -69,7 +77,7 @@ function gbmAplicarTemaVisual() {
         body.gbm-interna {
             background: var(--gbm-bg) !important;
             background-image: radial-gradient(circle at 16% 5%, rgba(34, 201, 139, .055), transparent 28%), radial-gradient(circle at 86% 20%, rgba(52, 166, 216, .05), transparent 24%) !important;
-            font-family: 'Manrope', system-ui, sans-serif !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
             color: var(--gbm-text);
             letter-spacing: 0;
         }
@@ -150,7 +158,7 @@ function gbmAplicarTemaVisual() {
             border-color: var(--gbm-line) !important;
             border-radius: 7px !important;
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, .16) !important;
-            font-family: 'Manrope', system-ui, sans-serif !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
             transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
         }
 
@@ -163,7 +171,7 @@ function gbmAplicarTemaVisual() {
 
         body.gbm-interna :where(button, .btn, .btn-voltar) {
             border-radius: 7px !important;
-            font-family: 'Manrope', system-ui, sans-serif !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
             font-weight: 700;
             text-shadow: none !important;
             box-shadow: none;
@@ -468,9 +476,9 @@ async function carregarAtalhoPerfilCabecalho() {
     }
 }
 
-let _resolveConfirm = null;
+let _gbmResolveConfirm = null;
 
-const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
+const gbmEscaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 })[caractere]);
 
@@ -480,20 +488,20 @@ function gbmAlerta(mensagem, tipo = 'info') {
         : 'rgba(95,255,168,0.3)';
     document.getElementById('lista-notificacoes-modal').innerHTML = `
         <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-            ${escaparMensagemModal(mensagem)}
+            ${gbmEscaparMensagemModal(mensagem)}
         </div>`;
     document.getElementById('btn-confirmar-modal').style.display = 'none';
     document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
     document.getElementById('modal-notificacoes').style.display = 'flex';
-    _resolveConfirm = null;
+    _gbmResolveConfirm = null;
 }
 
 function gbmConfirmar(mensagem) {
     return new Promise(resolve => {
-        _resolveConfirm = resolve;
+        _gbmResolveConfirm = resolve;
         document.getElementById('lista-notificacoes-modal').innerHTML = `
             <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                ${escaparMensagemModal(mensagem)}
+                ${gbmEscaparMensagemModal(mensagem)}
             </div>`;
         document.getElementById('btn-confirmar-modal').style.display = 'block';
         document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
@@ -503,9 +511,9 @@ function gbmConfirmar(mensagem) {
 
 function fecharModalNotificacoes(confirmado = false) {
     document.getElementById('modal-notificacoes').style.display = 'none';
-    if (_resolveConfirm) {
-        _resolveConfirm(confirmado);
-        _resolveConfirm = null;
+    if (_gbmResolveConfirm) {
+        _gbmResolveConfirm(confirmado);
+        _gbmResolveConfirm = null;
     }
 }
 
@@ -588,7 +596,18 @@ function gbmRemoverCabecalhoPagina() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const paginaAtual = (window.location.pathname.split('/').pop() || '').toLowerCase();
-    if (paginaAtual === 'dashboard.html') return;
+    const paginasPublicas = [
+        'index.html',
+        'login.html',
+        'termos.html',
+        'politica-de-privacidade.html',
+        'sobre.html',
+        'fale-conosco.html',
+        'educacao-financeira.html',
+        'offline.html',
+        'sw-reset.html'
+    ];
+    if (paginaAtual === 'dashboard.html' || paginasPublicas.includes(paginaAtual)) return;
     gbmRemoverCabecalhoPagina();
 }, { once: true });
 
