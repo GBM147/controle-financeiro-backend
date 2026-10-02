@@ -2250,364 +2250,220 @@ body.gbm-dashboard-padrao #particles-canvas {
 </head>
 <body class="gbm-interna gbm-dashboard-padrao">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
-<!-- NOVO CABEÇALHO GBM COMPLETO -->
-<header class="gbm-header">
-    <div class="dashboard-header-search" role="search">
-        <span class="dashboard-search-icon" aria-hidden="true"></span>
+<header class="gbm-header dashboard-v3-header">
+    <div class="dashboard-v3-brand-mobile">
+        <img src="logo-transparente.jpg" alt="GBM">
+        <span>GBM</span>
+    </div>
+    <div class="dashboard-v3-search" role="search">
+        <span class="dashboard-v3-search-icon" aria-hidden="true"></span>
         <input type="search" placeholder="Buscar movimentações, categorias..." aria-label="Buscar movimentações e categorias">
     </div>
-    <div class="gbm-header-actions">
-        <a href="notificacoes.html" class="dashboard-notification-link" aria-label="Abrir notificações">
-            <span class="dashboard-notification-icon" aria-hidden="true"></span>
-            <span id="dot-alertas" class="dashboard-notification-dot" aria-hidden="true"></span>
+    <div class="dashboard-v3-header-actions">
+        <a href="notificacoes.html" class="dashboard-v3-bell" aria-label="Abrir notificações">
+            <span aria-hidden="true"></span>
+            <i id="dot-alertas"></i>
         </a>
-        <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
-            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
-            <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
+        <a href="perfil.html" class="dashboard-v3-user" aria-label="Abrir meu perfil">
+            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil">
+            <span id="nome-perfil-cabecalho">Giovanni</span>
+            <b aria-hidden="true">⌄</b>
         </a>
-        <div class="gbm-menu-container">
-            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" style="position:relative;" aria-label="Abrir menu">
-                <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-            </button>
-        </div>
+        <button id="menu-btn" class="gbm-menu-btn dashboard-v3-menu-btn" type="button" onclick="abrirMenuLateral(event)" aria-label="Abrir menu">
+            <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
     </div>
-</header> <div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
+</header>
 
-<div id="sidebar-menu" class="sidebar-menu">
-    <div class="sidebar-header">
-        <div class="sidebar-brand">
-            <img src="logo-transparente.jpg" alt="Logo GBM" class="sidebar-logo">
-            <div class="sidebar-brand-text">
-                <strong>GBM Finance</strong>
-                <span>Proteção financeira para você</span>
-            </div>
-        </div>
-        <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
+<aside id="sidebar-menu" class="sidebar-menu dashboard-v3-sidebar">
+    <div class="dashboard-v3-sidebar-brand">
+        <img src="logo-transparente.jpg" alt="GBM">
+        <div><strong>GBM</strong><span>Meu Controle Financeiro</span></div>
     </div>
-
-    <nav class="sidebar-content" aria-label="Menu principal">
-        <div class="menu-grupo" aria-labelledby="menu-titulo-resumo">
-            <p id="menu-titulo-resumo" class="menu-grupo-titulo">Resumo</p>
-            <a href="dashboard.html" class="menu-item menu-item-ativo">
-                <span class="menu-item-icone" aria-hidden="true">⌂</span>
-                <span class="menu-item-conteudo">Visão geral</span>
-                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
-            </a>
+    <button class="fechar-btn" type="button" onclick="fecharMenuLateral()" aria-label="Fechar menu">×</button>
+    <nav class="dashboard-v3-nav" aria-label="Navegação principal">
+        <div class="dashboard-v3-nav-group">
+            <span class="dashboard-v3-nav-label">VISÃO GERAL</span>
+            <a href="dashboard.html" class="dashboard-v3-nav-item menu-item-ativo" data-menu-page="dashboard.html"><span class="nav-ico">⌂</span>Dashboard</a>
         </div>
-
-        <div class="menu-grupo" aria-labelledby="menu-titulo-movimentacoes">
-            <p id="menu-titulo-movimentacoes" class="menu-grupo-titulo">Movimentações</p>
-            <a href="contas.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">▣</span>
-                <span class="menu-item-conteudo">Minhas contas</span>
-            </a>
-            <a href="importacoes.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">↥</span>
-                <span class="menu-item-conteudo">Importações</span>
-            </a>
+        <div class="dashboard-v3-nav-group">
+            <span class="dashboard-v3-nav-label">MOVIMENTAÇÕES</span>
+            <a href="contas.html" class="dashboard-v3-nav-item" data-menu-page="contas.html"><span class="nav-ico">▣</span>Contas</a>
+            <a href="importacoes.html" class="dashboard-v3-nav-item" data-menu-page="importacoes.html"><span class="nav-ico">↥</span>Importações</a>
+            <a href="importar-pdf.html" class="dashboard-v3-nav-item" data-menu-page="importar-pdf.html"><span class="nav-ico">▤</span>Importar PDF</a>
         </div>
-
-        <div class="menu-grupo" aria-labelledby="menu-titulo-planejamento">
-            <p id="menu-titulo-planejamento" class="menu-grupo-titulo">Planejamento</p>
-            <a href="calendario.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">□</span>
-                <span class="menu-item-conteudo">Calendário</span>
-            </a>
-            <a href="limite-de-gastos.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">◒</span>
-                <span class="menu-item-conteudo">Limite de gastos</span>
-            </a>
-            <a href="metas.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">◎</span>
-                <span class="menu-item-conteudo">Objetivos de poupança</span>
-            </a>
+        <div class="dashboard-v3-nav-group">
+            <span class="dashboard-v3-nav-label">PLANEJAMENTO</span>
+            <a href="calendario.html" class="dashboard-v3-nav-item" data-menu-page="calendario.html"><span class="nav-ico">□</span>Calendário</a>
+            <a href="limite-de-gastos.html" class="dashboard-v3-nav-item" data-menu-page="limite-de-gastos.html"><span class="nav-ico">◒</span>Limite de gastos</a>
+            <a href="metas.html" class="dashboard-v3-nav-item" data-menu-page="metas.html"><span class="nav-ico">◎</span>Metas financeiras</a>
         </div>
-
-        <div class="menu-grupo menu-grupo-premium" aria-labelledby="menu-titulo-premium">
-            <p id="menu-titulo-premium" class="menu-grupo-titulo">Análises</p>
-            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
-                <span class="menu-item-icone" aria-hidden="true">▥</span>
-                <span class="menu-item-conteudo">Relatório mensal</span>
-                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
-            </a>
-            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
-                <span class="menu-item-icone" aria-hidden="true">⇄</span>
-                <span class="menu-item-conteudo">Comparativo mensal</span>
-                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
-            </a>
+        <div class="dashboard-v3-nav-group">
+            <span class="dashboard-v3-nav-label">ANÁLISES</span>
+            <a href="#" id="item-relatorio-mensal" class="dashboard-v3-nav-item" onclick="acessarRotaPremium('relatorio-avancado.html','Relatório mensal');return false;"><span class="nav-ico">▥</span><span>Relatórios</span><em id="cadeado-relatorio" class="cadeado-premium">Premium</em></a>
+            <a href="#" id="item-comparativo-mensal" class="dashboard-v3-nav-item" onclick="acessarRotaPremium('comparativo.html','Comparativo mensal');return false;"><span class="nav-ico">⇄</span><span>Comparativo</span><em id="cadeado-comparativo" class="cadeado-premium">Premium</em></a>
             <div id="aviso-recursos-premium" class="aviso-recursos-premium" role="status"></div>
         </div>
-
-        <div class="menu-grupo menu-grupo-conta" aria-labelledby="menu-titulo-conta">
-            <p id="menu-titulo-conta" class="menu-grupo-titulo">Conta</p>
-            <a href="notificacoes.html" id="item-notificacoes" class="menu-item menu-item-com-indicador">
-                <span class="menu-item-icone" aria-hidden="true">♧</span>
-                <span class="menu-item-conteudo">Notificações</span>
-                <span class="menu-item-indicadores">
-                    <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.75rem; padding:2px 8px; margin-left:8px;">0</span>
-                </span>
-            </a>
-            <a href="configuracoes.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">⚙</span>
-                <span class="menu-item-conteudo">Configurações</span>
-            </a>
-            <a href="perfil.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">♙</span>
-                <span class="menu-item-conteudo">Perfil</span>
-            </a>
-            <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
-                <span class="menu-item-icone" aria-hidden="true">↪</span>
-                <span class="menu-item-conteudo">Sair</span>
-            </a>
+        <div class="dashboard-v3-nav-group dashboard-v3-nav-account">
+            <span class="dashboard-v3-nav-label">CONTA</span>
+            <a href="notificacoes.html" id="item-notificacoes" class="dashboard-v3-nav-item"><span class="nav-ico">♧</span><span>Notificações</span><b id="badge-alertas-menu" style="display:none">0</b></a>
+            <a href="configuracoes.html" class="dashboard-v3-nav-item"><span class="nav-ico">⚙</span>Configurações</a>
+            <a href="perfil.html" class="dashboard-v3-nav-item"><span class="nav-ico">♙</span>Meu perfil</a>
+            <button type="button" class="dashboard-v3-nav-item dashboard-v3-logout" onclick="fazerLogout()"><span class="nav-ico">↪</span>Sair</button>
         </div>
     </nav>
-</div>
+</aside>
+<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
 
-<section class="dashboard-topo" aria-labelledby="titulo-visao-geral">
-    <div class="dashboard-heading">
-        <div class="dashboard-breadcrumb"><span>Tela 1 de 11</span><b>›</b><strong>Visão geral</strong></div>
-        <h2 id="titulo-visao-geral">Visão geral</h2>
-        <p>Acompanhe o desempenho do período e tome decisões com mais clareza.</p>
-    </div>
-    <div class="dashboard-filtros" aria-label="Filtros do período">
-        <select id="filtro-conta-dashboard" onchange="trocarContaDashboard()" aria-label="Conta">
-            <option value="">Todas as contas</option>
-        </select>
-        <select id="dia-fechamento" onchange="salvarDiaFechamento()" title="Dia em que o seu mês financeiro vira" aria-label="Fechamento do mês">
-        </select>
-        <span id="rotulo-periodo-ciclo" class="dashboard-periodo"></span>
-    </div>
-</section>
-
-<div class="dashboard-principal-grid">
-    <div class="card card-resultado">
-        <div class="card-resultado-topo">
-            <h3>Resultado do período</h3>
+<main class="dashboard-v3-shell">
+    <section class="dashboard-v3-heading">
+        <div>
+            <span class="dashboard-v3-eyebrow">VISÃO GERAL</span>
+            <h1>Olá, <span id="dashboard-nome">Giovanni</span>!</h1>
+            <p>Aqui está um resumo da sua vida financeira.</p>
         </div>
-        <p id="saldo-liquido">R$ 0,00</p>
-        <div id="taxa-poupada-badge" class="badge-taxa-poupada" style="display:none;"></div>
-        <div id="detalhe-economia-resultado" class="badge-economia-resultado" style="display:none;"></div>
-        <div class="card-resultado-grafico"><canvas id="grafico-resultado-periodo"></canvas></div>
-    </div>
-
-    <div class="coluna-fluxo">
-        <div class="card card-fluxo card-fluxo-entrada">
-            <div class="card-fluxo-conteudo">
-                <div class="card-fluxo-topo"><span class="icone-fluxo icone-entrada">↑</span><h3>Entradas</h3></div>
-                <p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p>
-                <div id="comparativo-entradas" class="badge-comparativo-fluxo" style="display:none;"></div>
+        <div class="dashboard-v3-heading-right">
+            <div class="dashboard-v3-date"><span>◷</span><div><strong id="dashboard-data-atual">—</strong><small>período atual</small></div></div>
+            <div class="dashboard-filtros">
+                <select id="filtro-conta-dashboard" onchange="trocarContaDashboard()" aria-label="Conta"><option value="">Todas as contas</option></select>
+                <select id="dia-fechamento" onchange="salvarDiaFechamento()" title="Dia em que o mês financeiro vira" aria-label="Fechamento do mês"></select>
+                <span id="rotulo-periodo-ciclo" class="dashboard-periodo"></span>
             </div>
-            <svg class="fluxo-sparkline fluxo-sparkline-entrada" viewBox="0 0 88 34" preserveAspectRatio="none" aria-hidden="true"><path d="M2 28 C11 25 15 22 23 22 S33 23 40 18 S52 14 59 16 S70 15 76 10 S84 7 87 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
         </div>
-        <div class="card card-fluxo card-fluxo-saida">
-            <div class="card-fluxo-conteudo">
-                <div class="card-fluxo-topo"><span class="icone-fluxo icone-saida">↓</span><h3>Saídas</h3></div>
-                <p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p>
-                <div id="comparativo-saidas" class="badge-comparativo-fluxo" style="display:none;"></div>
+    </section>
+
+    <section class="dashboard-v3-metrics" aria-label="Resumo financeiro">
+        <article class="v3-metric v3-metric-total">
+            <div class="v3-metric-top"><span class="v3-icon">◈</span><span>Saldo total</span></div>
+            <strong id="saldo-total-dashboard">R$ 0,00</strong>
+            <small>Saldo disponível nas contas</small>
+        </article>
+        <article class="v3-metric v3-metric-income">
+            <div class="v3-metric-top"><span class="v3-icon">↓</span><span>Receitas</span></div>
+            <strong id="total-entradas">R$ 0,00</strong>
+            <small id="comparativo-entradas" style="display:none"></small>
+        </article>
+        <article class="v3-metric v3-metric-expense">
+            <div class="v3-metric-top"><span class="v3-icon">↑</span><span>Despesas</span></div>
+            <strong id="total-saidas">R$ 0,00</strong>
+            <small id="comparativo-saidas" style="display:none"></small>
+        </article>
+        <article class="v3-metric v3-metric-available">
+            <div class="v3-metric-top"><span class="v3-icon">✦</span><span>Disponível</span></div>
+            <strong id="saldo-liquido">R$ 0,00</strong>
+            <small>Resultado do período</small>
+            <span id="taxa-poupada-badge" class="metric-meta" style="display:none"></span>
+        </article>
+    </section>
+
+    <section class="dashboard-v3-feature">
+        <article class="dashboard-v3-surface dashboard-v3-chart">
+            <div class="dashboard-v3-card-head">
+                <div><span class="dashboard-v3-eyebrow">DESEMPENHO</span><h2>Evolução financeira</h2></div>
+                <span class="dashboard-v3-legend"><i></i>Resultado</span>
             </div>
-            <svg class="fluxo-sparkline fluxo-sparkline-saida" viewBox="0 0 88 34" preserveAspectRatio="none" aria-hidden="true"><path d="M2 7 C12 9 17 13 24 11 S37 14 44 17 S55 17 62 22 S75 22 87 29" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        </div>
-    </div>
-
-    <section class="card card-pulso" aria-labelledby="titulo-pulso-financeiro">
-        <h3 id="titulo-pulso-financeiro">Pulso financeiro</h3>
-        <p class="card-subtitulo">Como sua renda foi distribuída neste período</p>
-        <div class="pulso-barra" aria-hidden="true">
-            <div id="pulso-barra-preenchimento" class="pulso-barra-preenchimento"></div>
-            <span id="pulso-marcador-meta" class="pulso-marcador-meta"></span>
-        </div>
-        <div class="pulso-legenda">
-            <div><span>Gasto</span><strong id="pulso-gasto">0,0%</strong></div>
-            <div><span>Preservado</span><strong id="pulso-preservado">0,0%</strong></div>
-            <div><span>Meta</span><strong id="pulso-meta">15%</strong></div>
-        </div>
-        <div class="pulso-status">
-            <span class="pulso-status-icone">✓</span>
-            <div><strong id="pulso-status-titulo">Seu mês permanece positivo</strong><span id="pulso-status-texto">Registre dados para calcular sua taxa poupada.</span></div>
-        </div>
-    </section>
-</div>
-
-<div class="dashboard-secundario-grid">
-    <section class="insights-panel" aria-labelledby="titulo-insights">
-        <h2 id="titulo-insights">O que merece atenção</h2>
-        <p class="insights-subtitulo">Insights baseados no comportamento deste período</p>
-        <div id="insights-lista" class="insights-lista">
-            <div class="insight-item"><span>Analisando seu mês...</span></div>
-        </div>
+            <div class="dashboard-v3-chart-canvas"><canvas id="grafico-resultado-periodo"></canvas></div>
+        </article>
+        <article class="dashboard-v3-surface dashboard-v3-transactions">
+            <div class="dashboard-v3-card-head">
+                <div><span class="dashboard-v3-eyebrow">MOVIMENTAÇÕES</span><h2>Últimas movimentações</h2></div>
+                <a href="#" onclick="abrirModalTransacoes();return false;">Ver todas →</a>
+            </div>
+            <div id="ultimas-movimentacoes-lista" class="dashboard-v3-transactions-list"><div class="dashboard-v3-empty">Carregando movimentações...</div></div>
+        </article>
     </section>
 
-    <section class="card categorias-panel" aria-labelledby="titulo-categorias">
-        <h3 id="titulo-categorias">Principais categorias</h3>
-        <p class="card-subtitulo">Participação nas despesas do período</p>
-        <div id="principais-categorias-lista" class="principais-categorias-lista">
-            <div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div>
-        </div>
-        <a href="#" class="categorias-link" onclick="abrirModalTransacoes(); return false;">Ver relatório completo</a>
+    <section class="dashboard-v3-quad">
+        <article class="dashboard-v3-surface dashboard-v3-categories">
+            <div class="dashboard-v3-card-head">
+                <div><span class="dashboard-v3-eyebrow">DISTRIBUIÇÃO</span><h2>Gastos por categoria</h2></div>
+            </div>
+            <p class="dashboard-v3-subtitle">Participação nas despesas deste período</p>
+            <div id="principais-categorias-lista" class="principais-categorias-lista"><div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div></div>
+        </article>
+
+        <article class="dashboard-v3-surface dashboard-v3-goals">
+            <div class="dashboard-v3-card-head">
+                <div><span class="dashboard-v3-eyebrow">PLANEJAMENTO</span><h2>Metas financeiras</h2></div>
+                <a href="metas.html">Ver todas →</a>
+            </div>
+            <div id="objetivos-dashboard-lista" class="dashboard-v3-goals-list"><div class="dashboard-v3-empty">Carregando metas...</div></div>
+        </article>
+
+        <article class="dashboard-v3-surface dashboard-v3-promo">
+            <div>
+                <span class="v3-promo-icon">↗</span>
+                <h2>Organize suas finanças<br>com mais facilidade</h2>
+                <p>Adicione suas contas, importe seus extratos e tenha uma visão completa do seu dinheiro em um só lugar.</p>
+                <a href="contas.html" class="v3-promo-btn">Começar agora →</a>
+            </div>
+            <div class="v3-promo-lines" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        </article>
     </section>
-</div>
 
-<div class="lancamento-rapido dashboard-lancamento-rapido" style="margin: 0 20px 20px; padding: 20px 25px;">
-    <div class="lancamento-rapido-copy">
-        <h3>Lançamento rápido</h3>
-        <p>Registre uma movimentação sem sair<br>da visão geral.</p>
-    </div>
-    <div class="lancamento-rapido-form">
-        <select id="manual-conta" aria-label="Conta do lançamento"><option value="">Carregando contas...</option></select>
-        <input type="text" id="manual-desc" placeholder="Descrição">
-        <input type="number" id="manual-valor" placeholder="R$ 0,00" step="0.01">
-        <select id="manual-tipo" aria-label="Tipo"><option value="Despesa">Despesa</option><option value="Receita">Receita</option></select>
-        <select id="manual-cat" aria-label="Categoria">
-            <option value="Alimentação">Alimentação</option><option value="Habitação">Habitação</option><option value="Transporte">Transporte</option>
-            <option value="Eletricidade / Luz">Luz</option><option value="Telecomunicações / Internet">Internet</option><option value="Pagamento de Fatura">Fatura</option>
-            <option value="Pagamento de Boleto">Boleto</option><option value="Streaming de Vídeo">Streaming de Vídeo</option><option value="Streaming de Música">Streaming de Música</option>
-            <option value="Academia e Fitness">Academia e Fitness</option><option value="Saúde">Saúde</option><option value="Educação">Educação</option>
-            <option value="Supermercado">Supermercado</option><option value="Restaurantes">Restaurantes</option><option value="Salário">Salário</option><option value="Lazer">Lazer</option><option value="Outros">Outros</option>
-        </select>
-        <input type="date" id="manual-data" aria-label="Data do lançamento">
-        <button class="btn-acao" onclick="salvarLancamentoManual()">Adicionar lançamento</button>
-        <button id="btn-desfazer-lancamento" class="btn-acao dashboard-undo" onclick="desfazerUltimo()" title="Desfazer último lançamento" aria-label="Desfazer último lançamento">Desfazer</button>
-    </div>
-</div>
+    <section class="dashboard-v3-pulse-insight">
+        <article class="dashboard-v3-surface dashboard-v3-pulse">
+            <div class="dashboard-v3-card-head"><div><span class="dashboard-v3-eyebrow">LEITURA DO MÊS</span><h2>Pulso financeiro</h2></div></div>
+            <p class="dashboard-v3-subtitle">Como sua renda foi distribuída neste período</p>
+            <div class="pulso-barra"><div id="pulso-barra-preenchimento" class="pulso-barra-preenchimento"></div><span id="pulso-marcador-meta" class="pulso-marcador-meta"></span></div>
+            <div class="pulso-legenda"><div><span>Gasto</span><strong id="pulso-gasto">0,0%</strong></div><div><span>Preservado</span><strong id="pulso-preservado">0,0%</strong></div><div><span>Meta</span><strong id="pulso-meta">15%</strong></div></div>
+            <div class="pulso-status"><span class="pulso-status-icone">✓</span><div><strong id="pulso-status-titulo">Seu mês permanece positivo</strong><span id="pulso-status-texto">Registre dados para calcular sua taxa poupada.</span></div></div>
+        </article>
+        <article class="dashboard-v3-surface dashboard-v3-insights">
+            <div class="dashboard-v3-card-head"><div><span class="dashboard-v3-eyebrow">ASSISTENTE</span><h2>O que merece atenção</h2></div></div>
+            <p class="dashboard-v3-subtitle">Insights gerados a partir do comportamento deste período</p>
+            <div id="insights-lista" class="insights-lista"><div class="insight-item"><span>Analisando seu mês...</span></div></div>
+        </article>
+    </section>
 
-<div id="card-economia-legado" class="card" style="display:none;"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p><div id="detalhe-economia"></div></div>
+    <section class="dashboard-v3-surface dashboard-v3-quick">
+        <div class="dashboard-v3-quick-copy"><span class="dashboard-v3-eyebrow">AÇÃO RÁPIDA</span><h2>Lançamento rápido</h2><p>Registre uma movimentação sem sair da visão geral.</p></div>
+        <div class="lancamento-rapido-form">
+            <select id="manual-conta" aria-label="Conta do lançamento"><option value="">Carregando contas...</option></select>
+            <input type="text" id="manual-desc" placeholder="Descrição">
+            <input type="number" id="manual-valor" placeholder="R$ 0,00" step="0.01">
+            <select id="manual-tipo" aria-label="Tipo"><option value="Despesa">Despesa</option><option value="Receita">Receita</option></select>
+            <select id="manual-cat" aria-label="Categoria"><option value="Alimentação">Alimentação</option><option value="Habitação">Habitação</option><option value="Transporte">Transporte</option><option value="Eletricidade / Luz">Luz</option><option value="Telecomunicações / Internet">Internet</option><option value="Pagamento de Fatura">Fatura</option><option value="Pagamento de Boleto">Boleto</option><option value="Streaming de Vídeo">Streaming de Vídeo</option><option value="Streaming de Música">Streaming de Música</option><option value="Academia e Fitness">Academia e Fitness</option><option value="Saúde">Saúde</option><option value="Educação">Educação</option><option value="Supermercado">Supermercado</option><option value="Restaurantes">Restaurantes</option><option value="Salário">Salário</option><option value="Lazer">Lazer</option><option value="Outros">Outros</option></select>
+            <input type="date" id="manual-data" aria-label="Data do lançamento">
+            <button class="btn-acao" onclick="salvarLancamentoManual()">Adicionar lançamento</button>
+            <button id="btn-desfazer-lancamento" class="btn-acao dashboard-undo" onclick="desfazerUltimo()" title="Desfazer último lançamento">Desfazer</button>
+        </div>
+    </section>
 
-<div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
-    <div class="modal-gbm-dialogo">
-        <div class="modal-gbm-topo">
-            <h2 id="titulo-modal-transacoes" style="margin:0;">Categorias e objetivos das transações</h2>
-            <button type="button" class="modal-gbm-fechar" onclick="fecharModalTransacoes()" aria-label="Fechar transações">✕</button>
+    <details class="dashboard-v3-tools">
+        <summary>Ferramentas e análise detalhada</summary>
+        <div class="dashboard-v3-tools-content">
+            <div id="card-economia-legado" class="card" style="display:none"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p><div id="detalhe-economia"></div></div>
+            <div class="linha-paineis">
+                <div class="painel-ajustes" id="painel-limite"><div class="grupo-ajuste"><label>Limite de Gastos</label><div class="dashboard-tool-line"><select id="meta-categoria"><option value="" disabled selected>Categoria...</option></select><input type="number" id="meta-valor" placeholder="R$ 0,00" step="10"><button class="btn-acao" onclick="salvarMeta()">Gravar</button><button class="btn-acao" onclick="removerMeta()">Sem Limite</button></div></div></div>
+                <div class="painel-ajustes" id="painel-categoria"><div class="grupo-ajuste"><label>Criar Nova Categoria</label><div class="dashboard-tool-line"><input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..."><button class="btn-acao" onclick="criarNovaCategoria()">Criar categoria</button></div><p>Suas categorias personalizadas ficam disponíveis só na sua conta.</p><div id="lista-categorias-personalizadas" class="dashboard-chip-list"></div></div></div>
+                <div class="painel-ajustes" id="painel-meta"><div class="grupo-ajuste"><label>Novo objetivo de poupança</label><div class="dashboard-tool-line"><input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança..."><input type="number" id="objetivo-valor" placeholder="R$ 0,00" step="10"><button class="btn-acao" onclick="salvarObjetivo()">Adicionar objetivo</button></div></div></div>
+            </div>
+            <div class="painel-ajustes painel-controles-grafico" id="painel-exibicao">
+                <div class="grupo-ajuste"><label for="select-tipo">Exibição de dados</label><select id="select-tipo" onchange="renderizarVisualizacao()"><option value="table">Apenas tabela</option><option value="chart">Apenas gráfico</option><option value="both" selected>Tabela e gráfico</option></select></div>
+                <div class="grupo-ajuste"><label for="select-grafico-dashboard">Tipo de gráfico</label><select id="select-grafico-dashboard" onchange="renderizarVisualizacao()"><option value="bar">Barras</option><option value="doughnut">Rosca</option><option value="line">Linha</option></select></div>
+            </div>
+            <div class="chart-container" id="container-do-grafico"><div class="container-tabela" id="minhaTabelaContainer" style="display:none"><table><thead><tr><th>Categoria</th><th>Valor Movimentado</th></tr></thead><tbody id="corpo-tabela"></tbody></table></div><div class="grafico-wrapper" id="wrapper-do-grafico" style="display:none"><canvas id="meuGrafico"></canvas></div></div>
+            <div id="card-ofx" class="card"><span class="dashboard-v3-eyebrow">IMPORTAÇÕES</span><h3>Central de importações</h3><p>Revise extratos OFX ou PDF antes de confirmar os lançamentos.</p><button type="button" class="btn-acao" onclick="window.location.href='importacoes.html'">Abrir central</button><button type="button" id="btn-gerenciar-categorias" class="btn-acao" onclick="abrirModalTransacoes()">Gerenciar categorias</button></div>
         </div>
-        <p style="color:#a0a0a0; margin-bottom:20px; font-size:0.875rem;">
-            Corrija categorias, exclua uma movimentação ou destine-a a um objetivo de poupança. Salve todas as mudanças de categoria de uma só vez.
-        </p>
-        <div id="lista-transacoes-modal">Carregando...</div>
-    </div>
-</div>
-<div id="modal-vinculo-objetivo" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-vinculo-objetivo" aria-hidden="true">
-    <div class="modal-gbm-dialogo modal-gbm-dialogo-pequeno">
-        <div class="modal-gbm-topo">
-            <h2 id="titulo-vinculo-objetivo" style="margin:0;">Destinar ao objetivo</h2>
-            <button type="button" class="modal-gbm-fechar" onclick="fecharVinculoObjetivo()" aria-label="Cancelar vínculo">✕</button>
-        </div>
-        <p id="resumo-transacao-vinculo" style="color:#d1d5db;line-height:1.5"></p>
-        <div id="aviso-despesa-vinculo" class="aviso-vinculo" hidden></div>
-        <div class="campo-vinculo-objetivo">
-            <label for="objetivo-vinculo-select">Objetivo de poupança ativo</label>
-            <select id="objetivo-vinculo-select" required></select>
-        </div>
-        <p style="color:#9ca3af;font-size:0.8125rem;line-height:1.5">
-            A categoria, o tipo, o valor, a data e a descrição da transação permanecerão inalterados.
-        </p>
-        <div class="acoes-vinculo">
-            <button type="button" class="btn-objetivo-transacao secundario" onclick="fecharVinculoObjetivo()">Cancelar</button>
-            <button type="button" id="confirmar-vinculo-objetivo" class="btn-objetivo-transacao" onclick="confirmarVinculoObjetivo()">Confirmar vínculo</button>
-        </div>
-    </div>
-</div>
-<div class="linha-paineis">
+    </details>
 
-<div class="painel-ajustes" id="painel-limite">
-    <div class="grupo-ajuste">
-        <label>Limite de Gastos</label>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <select id="meta-categoria" style="width: 140px;">
-                <option value="" disabled selected>Categoria...</option>
-                <option value="Alimentação">Alimentação</option>
-                <option value="Habitação">Habitação</option>
-                <option value="Transporte">Transporte</option>
-                <option value="Eletricidade / Luz">Eletricidade / Luz</option>
-                <option value="Telecomunicações / Internet">Telecomunicações / Internet</option>
-                <option value="Pagamento de Fatura">Pagamento de Fatura</option>
-                <option value="Pagamento de Boleto">Pagamento de Boleto</option>
-                <option value="Streaming de Vídeo">Streaming de Vídeo</option>
-                <option value="Streaming de Música">Streaming de Música</option>
-                <option value="Academia e Fitness">Academia e Fitness</option>
-                <option value="Saúde">Saúde</option>
-                <option value="Educação">Educação</option>
-                <option value="Supermercado">Supermercado</option>
-                <option value="Restaurantes">Restaurantes</option>
-                <option value="Salário">Salário</option>
-                <option value="Lazer">Lazer</option>
-                <option value="Outros">Outros</option>
-            </select>
-            <input type="number" id="meta-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
-            <button class="btn-acao" onclick="salvarMeta()">Gravar</button>
-            <button class="btn-acao" onclick="removerMeta()"  title="Remover limite desta categoria">Sem Limite</button>
+    <div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
+        <div class="modal-gbm-dialogo">
+            <div class="modal-gbm-topo"><h2 id="titulo-modal-transacoes">Categorias e objetivos das transações</h2><button type="button" class="modal-gbm-fechar" onclick="fecharModalTransacoes()">✕</button></div>
+            <p>Corrija categorias, exclua uma movimentação ou destine-a a um objetivo de poupança. Salve todas as mudanças de categoria de uma só vez.</p>
+            <div id="lista-transacoes-modal">Carregando...</div>
         </div>
     </div>
-</div>
-
-<div class="painel-ajustes" id="painel-categoria">
-    <div class="grupo-ajuste">
-        <label>Criar Nova Categoria</label>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..." style="width: 160px;">
-            <button class="btn-acao" onclick="criarNovaCategoria()" >＋ Criar Categoria</button>
-        </div>
-        <p style="color: var(--texto-mutado); font-size: 0.75rem; margin: 6px 0 0 0;">
-            Suas categorias personalizadas ficam disponíveis só na sua conta.
-        </p>
-        <div id="lista-categorias-personalizadas" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;"></div>
-    </div>
-</div>
-
-<div class="painel-ajustes" id="painel-meta">
-    <div class="grupo-ajuste">
-        <label>Novo objetivo de poupança</label>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança..." style="width: 160px;">
-            <input type="number" id="objetivo-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
-            <button class="btn-acao" onclick="salvarObjetivo()" >Adicionar objetivo</button>
+    <div id="modal-vinculo-objetivo" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-vinculo-objetivo" aria-hidden="true">
+        <div class="modal-gbm-dialogo modal-gbm-dialogo-pequeno">
+            <div class="modal-gbm-topo"><h2 id="titulo-vinculo-objetivo">Destinar ao objetivo</h2><button type="button" class="modal-gbm-fechar" onclick="fecharVinculoObjetivo()">✕</button></div>
+            <p id="resumo-transacao-vinculo"></p><div id="aviso-despesa-vinculo" class="aviso-vinculo" hidden></div>
+            <div class="campo-vinculo-objetivo"><label for="objetivo-vinculo-select">Objetivo de poupança ativo</label><select id="objetivo-vinculo-select" required></select></div>
+            <div class="acoes-vinculo"><button type="button" class="btn-objetivo-transacao secundario" onclick="fecharVinculoObjetivo()">Cancelar</button><button type="button" id="confirmar-vinculo-objetivo" class="btn-objetivo-transacao" onclick="confirmarVinculoObjetivo()">Confirmar vínculo</button></div>
         </div>
     </div>
-</div>
-
-</div>
-<div class="painel-ajustes painel-controles-grafico" id="painel-exibicao">
-    <div class="grupo-ajuste">
-        <label for="select-tipo">Exibição de dados</label>
-        <select id="select-tipo" onchange="renderizarVisualizacao()">
-            <option value="table">Apenas tabela</option>
-            <option value="chart">Apenas gráfico</option>
-            <option value="both" selected>Tabela e gráfico</option>
-        </select>
-    </div>
-    <div class="grupo-ajuste">
-        <label for="select-grafico-dashboard">Tipo de gráfico</label>
-        <select id="select-grafico-dashboard" onchange="renderizarVisualizacao()">
-            <option value="bar">Barras</option>
-            <option value="doughnut">Rosca</option>
-            <option value="line">Linha</option>
-        </select>
-    </div>
-</div>
-    <div class="chart-container" id="container-do-grafico">
-        <div class="container-tabela" id="minhaTabelaContainer" style="display: none;">
-            <table>
-                <thead>
-                    <tr><th>Categoria</th><th>Valor Movimentado</th></tr>
-                </thead>
-                <tbody id="corpo-tabela"></tbody>
-            </table>
-        </div>
-        <div class="grafico-wrapper" id="wrapper-do-grafico" style="display: none;">
-            <canvas id="meuGrafico"></canvas>
-        </div>
-    </div>
-<div class="card" id="card-ofx" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; flex-wrap: wrap; gap: 12px;">
-    <div>
-        <h3 style="margin: 0; color: var(--texto-principal);">Importar Extrato</h3>
-        <p style="margin: 5px 0 0 0; color: var(--texto-mutated); font-size: 0.875rem;">Escolha a conta, revise o extrato OFX ou PDF e confirme antes de salvar.</p>
-    </div>
-    
-    <form id="form-upload-ofx" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
-        <button type="button" class="btn-acao"  onclick="window.location.href='importacoes.html'">Abrir Central de Importações</button>
-        <button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" >
-     Gerenciar Categorias
-</button>
-    </form>
-</div>
+</main>
 <script src="auth.js"></script>
 <script>
 // Variável global para sabermos o status do cliente em qualquer lugar da tela
