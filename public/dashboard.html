@@ -3087,7 +3087,7 @@ body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{backgrou
             if (!lista) return;
             try {
                 const { mes, ano } = cicloAtual();
-                const resposta = await fetchApi(\`/transacoes-individuais?mes=\${mes}&ano=\${ano}\${queryContaDashboard()}\`);
+                const resposta = await fetchApi(`/transacoes-individuais?mes=${mes}&ano=${ano}${queryContaDashboard()}`);
                 const dados = await resposta.json();
                 if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar as movimentações.');
                 const recentes = (Array.isArray(dados) ? [...dados] : [])
