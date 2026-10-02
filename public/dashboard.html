@@ -3634,7 +3634,7 @@ body.gbm-dashboard-padrao .btn-acao:after{display:none!important}
             if (!lista) return;
             try {
                 const { mes, ano } = cicloAtual();
-                const resposta = await fetchApi(\`/transacoes-individuais?mes=\${mes}&ano=\${ano}\${queryContaDashboard()}\`);
+                const resposta = await fetchApi(`/transacoes-individuais?mes=${mes}&ano=${ano}${queryContaDashboard()}`);
                 const dados = await resposta.json();
                 if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar as movimentações.');
 
@@ -3654,18 +3654,18 @@ body.gbm-dashboard-padrao .btn-acao:after{display:none!important}
                     const dataFmt = data ? data.split('-').reverse().join('/') : '—';
                     const descricao = item.descricao || item.categoria || 'Movimentação';
                     const categoria = item.categoria || item.tipo || 'Sem categoria';
-                    return \`
+                    return `
                         <div class="dashboard-transaction">
-                            <span class="dashboard-transaction-icon \${receita ? 'receita' : 'despesa'}">\${receita ? '↑' : '•'}</span>
+                            <span class="dashboard-transaction-icon ${receita ? 'receita' : 'despesa'}">${receita ? '↑' : '•'}</span>
                             <div class="dashboard-transaction-main">
-                                <strong>\${escaparHtmlDashboard(descricao)}</strong>
-                                <span>\${escaparHtmlDashboard(categoria)}</span>
+                                <strong>${escaparHtmlDashboard(descricao)}</strong>
+                                <span>${escaparHtmlDashboard(categoria)}</span>
                             </div>
-                            <div class="dashboard-transaction-value \${receita ? 'receita' : 'despesa'}">
-                                <strong>\${receita ? '+' : '-'} \${formatarMoedaDashboard(valor)}</strong>
-                                <span>\${dataFmt}</span>
+                            <div class="dashboard-transaction-value ${receita ? 'receita' : 'despesa'}">
+                                <strong>${receita ? '+' : '-'} ${formatarMoedaDashboard(valor)}</strong>
+                                <span>${dataFmt}</span>
                             </div>
-                        </div>\`;
+                        </div>`;
                 }).join('');
             } catch (erro) {
                 console.error('Erro ao carregar últimas movimentações:', erro);
@@ -3694,16 +3694,16 @@ body.gbm-dashboard-padrao .btn-acao:after{display:none!important}
                     const meta = Math.max(0, Number(objetivo.valor_meta) || 0);
                     const guardado = Math.max(0, Number(objetivo.valor_guardado) || 0);
                     const percentual = meta > 0 ? Math.min(100, (guardado / meta) * 100) : 0;
-                    return \`
+                    return `
                         <div class="dashboard-goal">
                             <span class="dashboard-goal-icon">◎</span>
                             <div class="dashboard-goal-main">
-                                <strong>\${escaparHtmlDashboard(objetivo.nome || 'Objetivo')}</strong>
-                                <span>\${formatarMoedaDashboard(guardado)} / \${formatarMoedaDashboard(meta)}</span>
-                                <div class="dashboard-goal-bar"><i style="width:\${percentual.toFixed(1)}%"></i></div>
+                                <strong>${escaparHtmlDashboard(objetivo.nome || 'Objetivo')}</strong>
+                                <span>${formatarMoedaDashboard(guardado)} / ${formatarMoedaDashboard(meta)}</span>
+                                <div class="dashboard-goal-bar"><i style="width:${percentual.toFixed(1)}%"></i></div>
                             </div>
-                            <span class="dashboard-goal-pct">\${percentual.toFixed(0)}%</span>
-                        </div>\`;
+                            <span class="dashboard-goal-pct">${percentual.toFixed(0)}%</span>
+                        </div>`;
                 }).join('');
             } catch (erro) {
                 console.error('Erro ao carregar metas do dashboard:', erro);
