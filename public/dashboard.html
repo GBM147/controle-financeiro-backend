@@ -2709,6 +2709,91 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
   }
 }
 </style>
+<style id="gbm-dashboard-workspace-final">
+body.gbm-dashboard-padrao .dashboard-v3-workspace{
+  margin:0 0 22px!important;
+  padding:0!important;
+  border-top:1px solid rgba(255,255,255,.055)!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-workspace-header{
+  display:flex!important;
+  align-items:flex-end!important;
+  padding:18px 0 11px!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-workspace-header h2{
+  margin:0!important;color:#e7eef5!important;
+  font:700 .92rem/1.25 'Inter',sans-serif!important;letter-spacing:-.02em!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-workspace-header p{
+  margin:5px 0 0!important;color:#687a90!important;
+  font:400 .63rem/1.45 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-workspace .dashboard-v3-quick{
+  margin:0 0 10px!important;
+  border-radius:12px!important;
+  border-color:rgba(57,217,138,.10)!important;
+  background:linear-gradient(180deg,#0e1926,#0b1420)!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools{
+  margin:0!important;
+  border:1px solid rgba(255,255,255,.06)!important;
+  border-radius:11px!important;
+  background:#0a131f!important;
+  overflow:hidden!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools>summary{
+  min-height:42px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  padding:0 14px!important;
+  cursor:pointer!important;
+  color:#8798aa!important;
+  font:700 .65rem 'Inter',sans-serif!important;
+  list-style:none!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools>summary::-webkit-details-marker{display:none!important}
+body.gbm-dashboard-padrao .dashboard-v3-tools>summary b{
+  color:#60758b!important;font-size:.72rem!important;font-weight:500!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools[open]>summary{
+  color:#b3c1ce!important;border-bottom:1px solid rgba(255,255,255,.045)!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools-content{
+  padding:12px!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools-content .linha-paineis{
+  margin:0!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools-content .painel-ajustes{
+  min-height:92px!important;
+  padding:13px!important;
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:10px!important;
+  background:#0d1724!important;
+  box-shadow:none!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools-content .painel-controles-grafico{
+  margin-top:10px!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools-content #container-do-grafico{
+  margin:10px 0 0!important;
+  max-width:none!important;
+  background:#0b1420!important;
+  border-color:rgba(255,255,255,.05)!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools-content #card-ofx{
+  margin:10px 0 0!important;
+  padding:13px!important;
+  background:#0d1724!important;
+  border-color:rgba(255,255,255,.05)!important;
+  box-shadow:none!important;
+}
+@media(max-width:768px){
+  body.gbm-dashboard-padrao .dashboard-v3-workspace-header{padding:16px 0 10px!important}
+  body.gbm-dashboard-padrao .dashboard-v3-tools-content{padding:10px!important}
+}
+</style>
 </head>
 <body class="gbm-interna gbm-dashboard-padrao">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
@@ -2882,7 +2967,16 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
         </article>
     </section>
 
-    <section class="dashboard-v3-surface dashboard-v3-quick">
+        <section class="dashboard-v3-workspace" aria-labelledby="titulo-ferramentas-dashboard">
+        <header class="dashboard-v3-workspace-header">
+            <div>
+                <span class="dashboard-v3-eyebrow">FERRAMENTAS</span>
+                <h2 id="titulo-ferramentas-dashboard">Ferramentas e análise detalhada</h2>
+                <p>Registre movimentações e ajuste sua gestão financeira sem sair do Dashboard.</p>
+            </div>
+        </header>
+
+        <section class="dashboard-v3-surface dashboard-v3-quick">
         <div class="dashboard-v3-quick-copy"><span class="dashboard-v3-eyebrow">AÇÃO RÁPIDA</span><h2>Lançamento rápido</h2><p>Registre uma movimentação sem sair da visão geral.</p></div>
         <div class="lancamento-rapido-form">
             <select id="manual-conta" aria-label="Conta do lançamento"><option value="">Carregando contas...</option></select>
@@ -2894,12 +2988,12 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
             <button class="btn-acao" onclick="salvarLancamentoManual()">Adicionar lançamento</button>
             <button id="btn-desfazer-lancamento" class="btn-acao dashboard-undo" onclick="desfazerUltimo()" title="Desfazer último lançamento">Desfazer</button>
         </div>
-    </section>
+        </section>
 
-    <details class="dashboard-v3-tools">
-        <summary>Ferramentas e análise detalhada</summary>
-        <div class="dashboard-v3-tools-content">
-            <div id="card-economia-legado" class="card" style="display:none"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p><div id="detalhe-economia"></div></div>
+        <details class="dashboard-v3-tools">
+            <summary><span>Configurações e análise detalhada</span><b aria-hidden="true">▾</b></summary>
+            <div class="dashboard-v3-tools-content">
+<div id="card-economia-legado" class="card" style="display:none"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p><div id="detalhe-economia"></div></div>
             <div class="linha-paineis">
                 <div class="painel-ajustes" id="painel-limite"><div class="grupo-ajuste"><label>Limite de Gastos</label><div class="dashboard-tool-line"><select id="meta-categoria"><option value="" disabled selected>Categoria...</option></select><input type="number" id="meta-valor" placeholder="R$ 0,00" step="10"><button class="btn-acao" onclick="salvarMeta()">Gravar</button><button class="btn-acao" onclick="removerMeta()">Sem Limite</button></div></div></div>
                 <div class="painel-ajustes" id="painel-categoria"><div class="grupo-ajuste"><label>Criar Nova Categoria</label><div class="dashboard-tool-line"><input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..."><button class="btn-acao" onclick="criarNovaCategoria()">Criar categoria</button></div><p>Suas categorias personalizadas ficam disponíveis só na sua conta.</p><div id="lista-categorias-personalizadas" class="dashboard-chip-list"></div></div></div>
@@ -2911,8 +3005,11 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
             </div>
             <div class="chart-container" id="container-do-grafico"><div class="container-tabela" id="minhaTabelaContainer" style="display:none"><table><thead><tr><th>Categoria</th><th>Valor Movimentado</th></tr></thead><tbody id="corpo-tabela"></tbody></table></div><div class="grafico-wrapper" id="wrapper-do-grafico" style="display:none"><canvas id="meuGrafico"></canvas></div></div>
             <div id="card-ofx" class="card"><span class="dashboard-v3-eyebrow">IMPORTAÇÕES</span><h3>Central de importações</h3><p>Revise extratos OFX ou PDF antes de confirmar os lançamentos.</p><button type="button" class="btn-acao" onclick="window.location.href='importacoes.html'">Abrir central</button><button type="button" id="btn-gerenciar-categorias" class="btn-acao" onclick="abrirModalTransacoes()">Gerenciar categorias</button></div>
-        </div>
-    </details>
+            </div>
+        </details>
+    </section>
+
+
 
     <div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
         <div class="modal-gbm-dialogo">
