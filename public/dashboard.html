@@ -2710,88 +2710,371 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
 }
 </style>
 <style id="gbm-dashboard-workspace-final">
+/* ===== WORKSPACE FINAL — tudo pertence ao mesmo bloco visual ===== */
 body.gbm-dashboard-padrao .dashboard-v3-workspace{
+  width:100%!important;
   margin:0 0 22px!important;
   padding:0!important;
-  border-top:1px solid rgba(255,255,255,.055)!important;
+  overflow:hidden!important;
+  border:1px solid rgba(255,255,255,.065)!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,#0d1724,#0a131f)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.16)!important;
 }
+
 body.gbm-dashboard-padrao .dashboard-v3-workspace-header{
   display:flex!important;
-  align-items:flex-end!important;
-  padding:18px 0 11px!important;
+  align-items:center!important;
+  min-height:70px!important;
+  padding:17px 18px 16px!important;
+  border-bottom:1px solid rgba(255,255,255,.055)!important;
+  background:rgba(13,23,36,.72)!important;
 }
+
 body.gbm-dashboard-padrao .dashboard-v3-workspace-header h2{
-  margin:0!important;color:#e7eef5!important;
-  font:700 .92rem/1.25 'Inter',sans-serif!important;letter-spacing:-.02em!important;
+  margin:0!important;
+  color:#edf4fa!important;
+  font:700 1rem/1.25 'Inter',sans-serif!important;
+  letter-spacing:-.025em!important;
 }
 body.gbm-dashboard-padrao .dashboard-v3-workspace-header p{
-  margin:5px 0 0!important;color:#687a90!important;
-  font:400 .63rem/1.45 'Inter',sans-serif!important;
+  margin:5px 0 0!important;
+  color:#73859a!important;
+  font:400 .67rem/1.45 'Inter',sans-serif!important;
 }
-body.gbm-dashboard-padrao .dashboard-v3-workspace .dashboard-v3-quick{
-  margin:0 0 10px!important;
-  border-radius:12px!important;
-  border-color:rgba(57,217,138,.10)!important;
-  background:linear-gradient(180deg,#0e1926,#0b1420)!important;
+
+body.gbm-dashboard-padrao .dashboard-v3-quick{
+  display:grid!important;
+  grid-template-columns:175px minmax(0,1fr)!important;
+  gap:18px!important;
+  align-items:center!important;
+  margin:0!important;
+  padding:16px 18px!important;
+  border:0!important;
+  border-bottom:1px solid rgba(255,255,255,.055)!important;
+  border-radius:0!important;
+  background:#0b1522!important;
+  box-shadow:none!important;
 }
+body.gbm-dashboard-padrao .dashboard-v3-quick-copy h3{
+  margin:0!important;
+  color:#edf4fa!important;
+  font:700 .88rem/1.2 'Inter',sans-serif!important;
+  letter-spacing:-.02em!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-quick-copy p{
+  margin:5px 0 0!important;
+  color:#708197!important;
+  font:400 .61rem/1.45 'Inter',sans-serif!important;
+}
+
+body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form{
+  display:grid!important;
+  grid-template-columns:minmax(90px,1.05fr) minmax(125px,1.4fr) minmax(85px,.82fr) minmax(92px,.9fr) minmax(108px,1.08fr) 118px minmax(118px,1.18fr) 76px!important;
+  gap:6px!important;
+  align-items:center!important;
+  min-width:0!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form :is(input,select){
+  width:100%!important;
+  min-width:0!important;
+  height:36px!important;
+  padding:0 9px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  border-radius:8px!important;
+  background:#08121e!important;
+  color:#dce6ef!important;
+  box-shadow:none!important;
+  font:500 .61rem 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form :is(input,select):focus{
+  border-color:rgba(85,167,255,.42)!important;
+  outline:0!important;
+  box-shadow:0 0 0 2px rgba(85,167,255,.08)!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form .btn-acao{
+  width:100%!important;
+  height:36px!important;
+  padding:0 9px!important;
+  border-radius:8px!important;
+  background:#218356!important;
+  border:1px solid rgba(57,217,138,.2)!important;
+  box-shadow:none!important;
+  font:700 .60rem 'Inter',sans-serif!important;
+  white-space:nowrap!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form .dashboard-undo,
+body.gbm-dashboard-padrao .dashboard-secondary-action{
+  background:#101a28!important;
+  border-color:rgba(255,255,255,.08)!important;
+  color:#a6b4c3!important;
+}
+
 body.gbm-dashboard-padrao .dashboard-v3-tools{
   margin:0!important;
-  border:1px solid rgba(255,255,255,.06)!important;
-  border-radius:11px!important;
-  background:#0a131f!important;
-  overflow:hidden!important;
+  padding:16px 18px 18px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:#0d1825!important;
+  box-shadow:none!important;
+  overflow:visible!important;
 }
-body.gbm-dashboard-padrao .dashboard-v3-tools>summary{
-  min-height:42px!important;
+body.gbm-dashboard-padrao .dashboard-v3-tools-header{
+  display:flex!important;
+  align-items:flex-start!important;
+  margin:0 0 13px!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools-header h3{
+  margin:0!important;
+  color:#dbe6ef!important;
+  font:700 .78rem/1.25 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-tools-header p{
+  margin:4px 0 0!important;
+  color:#65778d!important;
+  font:400 .61rem/1.45 'Inter',sans-serif!important;
+}
+
+body.gbm-dashboard-padrao .dashboard-v3-management-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin:0!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid .painel-ajustes{
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:13px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:10px!important;
+  background:#0a1420!important;
+  box-shadow:none!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid .grupo-ajuste{
+  min-width:0!important;
+  gap:7px!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid .grupo-ajuste label{
+  color:#8596a9!important;
+  font:700 .62rem 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid .dashboard-tool-line{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:6px!important;
+  min-width:0!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid #painel-limite .dashboard-tool-line{
+  grid-template-columns:minmax(0,1fr) 86px auto auto!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid #painel-meta .dashboard-tool-line{
+  grid-template-columns:minmax(0,1.05fr) 92px auto!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid .dashboard-tool-line :is(input,select){
+  width:100%!important;
+  min-width:0!important;
+  height:34px!important;
+  box-sizing:border-box!important;
+  padding:0 8px!important;
+  border-radius:8px!important;
+  background:#08121e!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  color:#d8e3ec!important;
+  font:500 .60rem 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid .dashboard-tool-line .btn-acao{
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 9px!important;
+  border-radius:8px!important;
+  white-space:nowrap!important;
+  font-size:.58rem!important;
+  box-shadow:none!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid #painel-categoria .dashboard-tool-line{
+  grid-template-columns:minmax(0,1fr) auto!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid #painel-categoria p{
+  margin:7px 0 0!important;
+  color:#64768a!important;
+  font:400 .57rem/1.4 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-management-grid .dashboard-chip-list{
+  margin-top:7px!important;
+}
+
+body.gbm-dashboard-padrao .dashboard-v3-analysis{
+  margin-top:10px!important;
+  padding-top:13px!important;
+  border-top:1px solid rgba(255,255,255,.05)!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-analysis-controls{
+  display:flex!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  padding:0!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-analysis-controls .grupo-ajuste{
+  min-width:170px!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-analysis-controls label{
+  color:#7f91a4!important;
+  font:700 .60rem 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-analysis-controls select{
+  width:100%!important;
+  height:34px!important;
+  margin-top:6px!important;
+  box-sizing:border-box!important;
+  padding:0 9px!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  border-radius:8px!important;
+  background:#08121e!important;
+  color:#d8e3ec!important;
+  box-shadow:none!important;
+  font:500 .61rem 'Inter',sans-serif!important;
+}
+
+body.gbm-dashboard-padrao .dashboard-v3-analysis #container-do-grafico{
+  width:100%!important;
+  max-width:none!important;
+  min-height:360px!important;
+  height:360px!important;
+  margin:10px 0 0!important;
+  padding:12px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:10px!important;
+  background:#09131f!important;
+  box-shadow:none!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-analysis .grafico-wrapper{
+  min-width:0!important;
+  min-height:0!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-analysis .container-tabela{
+  min-width:0!important;
+  border-color:rgba(255,255,255,.055)!important;
+  background:#08121e!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-analysis th{
+  background:#0d1724!important;
+  color:#7d8ea2!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-analysis td,
+body.gbm-dashboard-padrao .dashboard-v3-analysis th{
+  border-bottom-color:rgba(255,255,255,.045)!important;
+}
+
+body.gbm-dashboard-padrao .dashboard-v3-imports{
   display:flex!important;
   align-items:center!important;
   justify-content:space-between!important;
-  padding:0 14px!important;
-  cursor:pointer!important;
-  color:#8798aa!important;
-  font:700 .65rem 'Inter',sans-serif!important;
-  list-style:none!important;
-}
-body.gbm-dashboard-padrao .dashboard-v3-tools>summary::-webkit-details-marker{display:none!important}
-body.gbm-dashboard-padrao .dashboard-v3-tools>summary b{
-  color:#60758b!important;font-size:.72rem!important;font-weight:500!important;
-}
-body.gbm-dashboard-padrao .dashboard-v3-tools[open]>summary{
-  color:#b3c1ce!important;border-bottom:1px solid rgba(255,255,255,.045)!important;
-}
-body.gbm-dashboard-padrao .dashboard-v3-tools-content{
-  padding:12px!important;
-}
-body.gbm-dashboard-padrao .dashboard-v3-tools-content .linha-paineis{
-  margin:0!important;
-}
-body.gbm-dashboard-padrao .dashboard-v3-tools-content .painel-ajustes{
-  min-height:92px!important;
-  padding:13px!important;
+  gap:16px!important;
+  margin:10px 0 0!important;
+  padding:13px 14px!important;
   border:1px solid rgba(255,255,255,.055)!important;
   border-radius:10px!important;
-  background:#0d1724!important;
+  background:#0a1420!important;
   box-shadow:none!important;
 }
-body.gbm-dashboard-padrao .dashboard-v3-tools-content .painel-controles-grafico{
-  margin-top:10px!important;
+body.gbm-dashboard-padrao .dashboard-v3-imports h3{
+  margin:0!important;
+  color:#dce6ee!important;
+  font:700 .72rem/1.25 'Inter',sans-serif!important;
 }
-body.gbm-dashboard-padrao .dashboard-v3-tools-content #container-do-grafico{
-  margin:10px 0 0!important;
-  max-width:none!important;
-  background:#0b1420!important;
-  border-color:rgba(255,255,255,.05)!important;
+body.gbm-dashboard-padrao .dashboard-v3-imports p{
+  margin:4px 0 0!important;
+  color:#64768a!important;
+  font:400 .58rem/1.4 'Inter',sans-serif!important;
 }
-body.gbm-dashboard-padrao .dashboard-v3-tools-content #card-ofx{
-  margin:10px 0 0!important;
-  padding:13px!important;
-  background:#0d1724!important;
-  border-color:rgba(255,255,255,.05)!important;
+body.gbm-dashboard-padrao .dashboard-v3-import-actions{
+  display:flex!important;
+  gap:7px!important;
+  flex:0 0 auto!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 10px!important;
+  border-radius:8px!important;
+  font-size:.59rem!important;
   box-shadow:none!important;
+}
+
+@media(max-width:1120px) and (min-width:769px){
+  body.gbm-dashboard-padrao .dashboard-v3-quick{
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-management-grid{
+    grid-template-columns:1fr 1fr!important;
+  }
 }
 @media(max-width:768px){
-  body.gbm-dashboard-padrao .dashboard-v3-workspace-header{padding:16px 0 10px!important}
-  body.gbm-dashboard-padrao .dashboard-v3-tools-content{padding:10px!important}
+  body.gbm-dashboard-padrao .dashboard-v3-workspace{
+    border-radius:12px!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-workspace-header{
+    min-height:0!important;
+    padding:15px!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-quick{
+    grid-template-columns:1fr!important;
+    padding:14px 15px!important;
+    gap:11px!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form{
+    grid-template-columns:1fr 1fr!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form :is(input,select,.btn-acao){
+    height:42px!important;
+    font-size:.72rem!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-tools{
+    padding:14px 15px 15px!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-management-grid{
+    grid-template-columns:1fr!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-management-grid .dashboard-tool-line,
+  body.gbm-dashboard-padrao .dashboard-v3-management-grid #painel-limite .dashboard-tool-line,
+  body.gbm-dashboard-padrao .dashboard-v3-management-grid #painel-meta .dashboard-tool-line{
+    grid-template-columns:1fr!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-analysis-controls{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-analysis-controls .grupo-ajuste{
+    min-width:0!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-analysis #container-do-grafico{
+    min-height:320px!important;
+    height:320px!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-imports{
+    align-items:stretch!important;
+    flex-direction:column!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-import-actions{
+    width:100%!important;
+  }
+  body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
+    flex:1 1 0!important;
+  }
+}
+@media(max-width:420px){
+  body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form,
+  body.gbm-dashboard-padrao .dashboard-v3-analysis-controls{
+    grid-template-columns:1fr!important;
+  }
 }
 </style>
 </head>
@@ -2967,51 +3250,155 @@ body.gbm-dashboard-padrao .dashboard-v3-tools-content #card-ofx{
         </article>
     </section>
 
-        <section class="dashboard-v3-workspace" aria-labelledby="titulo-ferramentas-dashboard">
-        <header class="dashboard-v3-workspace-header">
-            <div>
-                <span class="dashboard-v3-eyebrow">FERRAMENTAS</span>
-                <h2 id="titulo-ferramentas-dashboard">Ferramentas e análise detalhada</h2>
-                <p>Registre movimentações e ajuste sua gestão financeira sem sair do Dashboard.</p>
-            </div>
-        </header>
+        <section class="dashboard-v3-workspace dashboard-v3-surface" aria-labelledby="titulo-ferramentas-dashboard">
+    <header class="dashboard-v3-workspace-header">
+        <div>
+            <span class="dashboard-v3-eyebrow">FERRAMENTAS</span>
+            <h2 id="titulo-ferramentas-dashboard">Ferramentas e análise detalhada</h2>
+            <p>Registre movimentações, ajuste sua gestão e analise os dados sem sair do Dashboard.</p>
+        </div>
+    </header>
 
-        <section class="dashboard-v3-surface dashboard-v3-quick">
-        <div class="dashboard-v3-quick-copy"><span class="dashboard-v3-eyebrow">AÇÃO RÁPIDA</span><h2>Lançamento rápido</h2><p>Registre uma movimentação sem sair da visão geral.</p></div>
+    <section class="dashboard-v3-quick" aria-labelledby="titulo-lancamento-rapido">
+        <div class="dashboard-v3-quick-copy">
+            <span class="dashboard-v3-eyebrow">AÇÃO RÁPIDA</span>
+            <h3 id="titulo-lancamento-rapido">Lançamento rápido</h3>
+            <p>Registre uma movimentação com os mesmos dados usados no restante do sistema.</p>
+        </div>
+
         <div class="lancamento-rapido-form">
             <select id="manual-conta" aria-label="Conta do lançamento"><option value="">Carregando contas...</option></select>
             <input type="text" id="manual-desc" placeholder="Descrição">
             <input type="number" id="manual-valor" placeholder="R$ 0,00" step="0.01">
-            <select id="manual-tipo" aria-label="Tipo"><option value="Despesa">Despesa</option><option value="Receita">Receita</option></select>
-            <select id="manual-cat" aria-label="Categoria"><option value="Alimentação">Alimentação</option><option value="Habitação">Habitação</option><option value="Transporte">Transporte</option><option value="Eletricidade / Luz">Luz</option><option value="Telecomunicações / Internet">Internet</option><option value="Pagamento de Fatura">Fatura</option><option value="Pagamento de Boleto">Boleto</option><option value="Streaming de Vídeo">Streaming de Vídeo</option><option value="Streaming de Música">Streaming de Música</option><option value="Academia e Fitness">Academia e Fitness</option><option value="Saúde">Saúde</option><option value="Educação">Educação</option><option value="Supermercado">Supermercado</option><option value="Restaurantes">Restaurantes</option><option value="Salário">Salário</option><option value="Lazer">Lazer</option><option value="Outros">Outros</option></select>
+            <select id="manual-tipo" aria-label="Tipo">
+                <option value="Despesa">Despesa</option>
+                <option value="Receita">Receita</option>
+            </select>
+            <select id="manual-cat" aria-label="Categoria">
+                <option value="Alimentação">Alimentação</option>
+                <option value="Habitação">Habitação</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Eletricidade / Luz">Luz</option>
+                <option value="Telecomunicações / Internet">Internet</option>
+                <option value="Pagamento de Fatura">Fatura</option>
+                <option value="Pagamento de Boleto">Boleto</option>
+                <option value="Streaming de Vídeo">Streaming de Vídeo</option>
+                <option value="Streaming de Música">Streaming de Música</option>
+                <option value="Academia e Fitness">Academia e Fitness</option>
+                <option value="Saúde">Saúde</option>
+                <option value="Educação">Educação</option>
+                <option value="Supermercado">Supermercado</option>
+                <option value="Restaurantes">Restaurantes</option>
+                <option value="Salário">Salário</option>
+                <option value="Lazer">Lazer</option>
+                <option value="Outros">Outros</option>
+            </select>
             <input type="date" id="manual-data" aria-label="Data do lançamento">
             <button class="btn-acao" onclick="salvarLancamentoManual()">Adicionar lançamento</button>
             <button id="btn-desfazer-lancamento" class="btn-acao dashboard-undo" onclick="desfazerUltimo()" title="Desfazer último lançamento">Desfazer</button>
         </div>
-        </section>
-
-        <details class="dashboard-v3-tools">
-            <summary><span>Configurações e análise detalhada</span><b aria-hidden="true">▾</b></summary>
-            <div class="dashboard-v3-tools-content">
-<div id="card-economia-legado" class="card" style="display:none"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p><div id="detalhe-economia"></div></div>
-            <div class="linha-paineis">
-                <div class="painel-ajustes" id="painel-limite"><div class="grupo-ajuste"><label>Limite de Gastos</label><div class="dashboard-tool-line"><select id="meta-categoria"><option value="" disabled selected>Categoria...</option></select><input type="number" id="meta-valor" placeholder="R$ 0,00" step="10"><button class="btn-acao" onclick="salvarMeta()">Gravar</button><button class="btn-acao" onclick="removerMeta()">Sem Limite</button></div></div></div>
-                <div class="painel-ajustes" id="painel-categoria"><div class="grupo-ajuste"><label>Criar Nova Categoria</label><div class="dashboard-tool-line"><input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..."><button class="btn-acao" onclick="criarNovaCategoria()">Criar categoria</button></div><p>Suas categorias personalizadas ficam disponíveis só na sua conta.</p><div id="lista-categorias-personalizadas" class="dashboard-chip-list"></div></div></div>
-                <div class="painel-ajustes" id="painel-meta"><div class="grupo-ajuste"><label>Novo objetivo de poupança</label><div class="dashboard-tool-line"><input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança..."><input type="number" id="objetivo-valor" placeholder="R$ 0,00" step="10"><button class="btn-acao" onclick="salvarObjetivo()">Adicionar objetivo</button></div></div></div>
-            </div>
-            <div class="painel-ajustes painel-controles-grafico" id="painel-exibicao">
-                <div class="grupo-ajuste"><label for="select-tipo">Exibição de dados</label><select id="select-tipo" onchange="renderizarVisualizacao()"><option value="table">Apenas tabela</option><option value="chart">Apenas gráfico</option><option value="both" selected>Tabela e gráfico</option></select></div>
-                <div class="grupo-ajuste"><label for="select-grafico-dashboard">Tipo de gráfico</label><select id="select-grafico-dashboard" onchange="renderizarVisualizacao()"><option value="bar">Barras</option><option value="doughnut">Rosca</option><option value="line">Linha</option></select></div>
-            </div>
-            <div class="chart-container" id="container-do-grafico"><div class="container-tabela" id="minhaTabelaContainer" style="display:none"><table><thead><tr><th>Categoria</th><th>Valor Movimentado</th></tr></thead><tbody id="corpo-tabela"></tbody></table></div><div class="grafico-wrapper" id="wrapper-do-grafico" style="display:none"><canvas id="meuGrafico"></canvas></div></div>
-            <div id="card-ofx" class="card"><span class="dashboard-v3-eyebrow">IMPORTAÇÕES</span><h3>Central de importações</h3><p>Revise extratos OFX ou PDF antes de confirmar os lançamentos.</p><button type="button" class="btn-acao" onclick="window.location.href='importacoes.html'">Abrir central</button><button type="button" id="btn-gerenciar-categorias" class="btn-acao" onclick="abrirModalTransacoes()">Gerenciar categorias</button></div>
-            </div>
-        </details>
     </section>
 
+    <div class="dashboard-v3-tools" aria-label="Configurações e análise detalhada">
+        <div class="dashboard-v3-tools-header">
+            <div>
+                <span class="dashboard-v3-eyebrow">GESTÃO E ANÁLISE</span>
+                <h3>Configurações e análise detalhada</h3>
+                <p>Defina limites, crie categorias, acompanhe objetivos e escolha como visualizar seus dados.</p>
+            </div>
+        </div>
 
+        <div class="dashboard-v3-management-grid">
+            <div id="card-economia-legado" class="card" style="display:none">
+                <h3>Economia vs. Mês Anterior</h3>
+                <p id="economia-mensal">R$ 0,00</p>
+                <div id="detalhe-economia"></div>
+            </div>
 
-    <div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
+            <div class="painel-ajustes" id="painel-limite">
+                <div class="grupo-ajuste">
+                    <label>Limite de gastos</label>
+                    <div class="dashboard-tool-line">
+                        <select id="meta-categoria"><option value="" disabled selected>Categoria...</option></select>
+                        <input type="number" id="meta-valor" placeholder="R$ 0,00" step="10">
+                        <button class="btn-acao" onclick="salvarMeta()">Gravar</button>
+                        <button class="btn-acao dashboard-secondary-action" onclick="removerMeta()">Sem limite</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="painel-ajustes" id="painel-categoria">
+                <div class="grupo-ajuste">
+                    <label>Criar nova categoria</label>
+                    <div class="dashboard-tool-line">
+                        <input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies...">
+                        <button class="btn-acao" onclick="criarNovaCategoria()">Criar categoria</button>
+                    </div>
+                    <p>Suas categorias personalizadas ficam disponíveis só na sua conta.</p>
+                    <div id="lista-categorias-personalizadas" class="dashboard-chip-list"></div>
+                </div>
+            </div>
+
+            <div class="painel-ajustes" id="painel-meta">
+                <div class="grupo-ajuste">
+                    <label>Novo objetivo de poupança</label>
+                    <div class="dashboard-tool-line">
+                        <input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança...">
+                        <input type="number" id="objetivo-valor" placeholder="R$ 0,00" step="10">
+                        <button class="btn-acao" onclick="salvarObjetivo()">Adicionar objetivo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-v3-analysis">
+            <div class="dashboard-v3-analysis-controls">
+                <div class="grupo-ajuste">
+                    <label for="select-tipo">Exibição de dados</label>
+                    <select id="select-tipo" onchange="renderizarVisualizacao()">
+                        <option value="table">Apenas tabela</option>
+                        <option value="chart">Apenas gráfico</option>
+                        <option value="both" selected>Tabela e gráfico</option>
+                    </select>
+                </div>
+                <div class="grupo-ajuste">
+                    <label for="select-grafico-dashboard">Tipo de gráfico</label>
+                    <select id="select-grafico-dashboard" onchange="renderizarVisualizacao()">
+                        <option value="bar">Barras</option>
+                        <option value="doughnut">Rosca</option>
+                        <option value="line">Linha</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="chart-container" id="container-do-grafico">
+                <div class="container-tabela" id="minhaTabelaContainer" style="display:none">
+                    <table>
+                        <thead><tr><th>Categoria</th><th>Valor Movimentado</th></tr></thead>
+                        <tbody id="corpo-tabela"></tbody>
+                    </table>
+                </div>
+                <div class="grafico-wrapper" id="wrapper-do-grafico" style="display:none">
+                    <canvas id="meuGrafico"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="card-ofx" class="card dashboard-v3-imports">
+            <div>
+                <span class="dashboard-v3-eyebrow">IMPORTAÇÕES</span>
+                <h3>Central de importações</h3>
+                <p>Revise extratos OFX ou PDF antes de confirmar os lançamentos.</p>
+            </div>
+            <div class="dashboard-v3-import-actions">
+                <button type="button" class="btn-acao" onclick="window.location.href='importacoes.html'">Abrir central</button>
+                <button type="button" id="btn-gerenciar-categorias" class="btn-acao dashboard-secondary-action" onclick="abrirModalTransacoes()">Gerenciar categorias</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
         <div class="modal-gbm-dialogo">
             <div class="modal-gbm-topo"><h2 id="titulo-modal-transacoes">Categorias e objetivos das transações</h2><button type="button" class="modal-gbm-fechar" onclick="fecharModalTransacoes()">✕</button></div>
             <p>Corrija categorias, exclua uma movimentação ou destine-a a um objetivo de poupança. Salve todas as mudanças de categoria de uma só vez.</p>
