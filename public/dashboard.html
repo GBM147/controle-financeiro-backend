@@ -2247,367 +2247,463 @@ body.gbm-dashboard-padrao #particles-canvas {
 }
 </style>
 
+
+<style id="gbm-dashboard-prototipo-v3">
+/* =========================================================
+   GBM Dashboard — referência visual do protótipo aprovado
+   ========================================================= */
+html,body.gbm-dashboard-padrao{background:#07111c!important}
+body.gbm-dashboard-padrao{
+  --v3-bg:#07111c;--v3-sidebar:#08111d;--v3-panel:#0d1825;--v3-panel-2:#101c2b;
+  --v3-input:#091522;--v3-line:rgba(148,163,184,.13);--v3-text:#edf5fb;--v3-muted:#8ca0b5;
+  --v3-green:#39d98a;--v3-blue:#55a7ff;--v3-red:#ff5d6c;--v3-purple:#8b6cff;
+  margin:0!important;padding:0!important;color:var(--v3-text)!important;overflow-x:hidden!important;
+  background:
+    radial-gradient(circle at 76% -10%,rgba(85,167,255,.045),transparent 24%),
+    radial-gradient(circle at 25% 0%,rgba(57,217,138,.035),transparent 26%),
+    var(--v3-bg)!important;
+}
+body.gbm-dashboard-padrao #particles-canvas{display:none!important}
+
+/* Sidebar fixa igual ao protótipo */
+body.gbm-dashboard-padrao .dashboard-v3-sidebar{
+  position:fixed!important;left:0!important;top:0!important;right:auto!important;bottom:0!important;
+  width:278px!important;height:100vh!important;max-height:100vh!important;
+  padding:0!important;margin:0!important;box-sizing:border-box!important;
+  border:0!important;border-right:1px solid var(--v3-line)!important;border-radius:0!important;
+  background:var(--v3-sidebar)!important;box-shadow:10px 0 32px rgba(0,0,0,.16)!important;
+  z-index:40000!important;overflow:hidden!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-sidebar .fechar-btn{display:none!important}
+.dashboard-v3-sidebar-brand{
+  height:91px;display:flex;align-items:center;gap:10px;padding:0 20px;
+  border-bottom:1px solid var(--v3-line);box-sizing:border-box;
+}
+.dashboard-v3-sidebar-brand img{width:29px;height:29px;border-radius:7px;object-fit:contain}
+.dashboard-v3-sidebar-brand div{display:flex;flex-direction:column;line-height:1.05}
+.dashboard-v3-sidebar-brand strong{color:#edf5fb;font:800 .88rem 'Inter',sans-serif;letter-spacing:.01em}
+.dashboard-v3-sidebar-brand span{margin-top:4px;color:#6d8095;font:500 .58rem 'Inter',sans-serif}
+.dashboard-v3-nav{padding:18px 12px 16px;display:flex;flex-direction:column;height:calc(100vh - 91px);box-sizing:border-box;overflow:auto}
+.dashboard-v3-nav-group{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}
+.dashboard-v3-nav-account{margin-top:auto;margin-bottom:0;padding-top:9px;border-top:1px solid var(--v3-line)}
+.dashboard-v3-nav-label{padding:8px 10px 6px;color:#61758b;font:800 .56rem 'Inter',sans-serif;letter-spacing:.105em}
+.dashboard-v3-nav-item{
+  width:100%;min-height:38px;display:flex;align-items:center;gap:9px;
+  padding:8px 10px;box-sizing:border-box;border:0;border-left:2px solid transparent;border-radius:8px;
+  background:transparent;color:#bdcbda;text-decoration:none;font:600 .74rem 'Inter',sans-serif;cursor:pointer;text-align:left;
+}
+.dashboard-v3-nav-item:hover{background:rgba(255,255,255,.035);color:#f2f7fb}
+.dashboard-v3-nav-item.menu-item-ativo{background:linear-gradient(90deg,rgba(57,217,138,.13),rgba(85,167,255,.035));border-left-color:var(--v3-green);color:#f2faf6}
+.dashboard-v3-nav-item .nav-ico{width:17px;flex:0 0 17px;text-align:center;color:#71859b;font-size:.88rem}
+.dashboard-v3-nav-item.menu-item-ativo .nav-ico{color:var(--v3-green)}
+.dashboard-v3-nav-item .cadeado-premium{margin-left:auto;display:inline-flex!important;min-height:18px;padding:2px 6px;border:1px solid rgba(85,167,255,.38);border-radius:999px;background:rgba(85,167,255,.09);color:#9fc8ef;font:.7rem 'Inter',sans-serif}
+#badge-alertas-menu{margin-left:auto!important;background:#ff5d6c!important;color:#fff!important;border-radius:9px!important;font:.56rem 'Inter',sans-serif!important;padding:2px 6px!important}
+.dashboard-v3-nav-item.dashboard-v3-logout{color:#ff7f8b}.dashboard-v3-nav-item.dashboard-v3-logout .nav-ico{color:#ff7f8b}
+
+/* Header */
+body.gbm-dashboard-padrao .dashboard-v3-header{
+  position:fixed!important;left:278px!important;top:0!important;width:calc(100% - 278px)!important;height:68px!important;min-height:68px!important;
+  padding:0 30px!important;margin:0!important;box-sizing:border-box!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  background:rgba(7,17,28,.94)!important;border-bottom:1px solid var(--v3-line)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.14)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;
+  z-index:39000!important;
+}
+.dashboard-v3-brand-mobile{display:none}
+.dashboard-v3-search{width:403px;height:38px;display:flex;align-items:center;padding:0 12px;box-sizing:border-box;border:1px solid var(--v3-line);border-radius:10px;background:#0d1825}
+.dashboard-v3-search-icon{width:14px;height:14px;position:relative;color:#83a0bd;flex:0 0 14px}
+.dashboard-v3-search-icon:before{content:"";position:absolute;left:0;top:0;width:9px;height:9px;border:1.5px solid currentColor;border-radius:50%}
+.dashboard-v3-search-icon:after{content:"";position:absolute;left:9px;top:10px;width:6px;height:1.5px;background:currentColor;transform:rotate(45deg);border-radius:2px}
+.dashboard-v3-search input{width:100%;height:100%;padding:0 0 0 10px!important;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:#dce7f2!important;font:400 .74rem 'Inter',sans-serif!important}
+.dashboard-v3-search input::placeholder{color:#718399}
+.dashboard-v3-header-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+.dashboard-v3-bell{position:relative;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;color:#8fa1b5;text-decoration:none}
+.dashboard-v3-bell:hover{background:rgba(255,255,255,.035);color:#edf4fa}
+.dashboard-v3-bell>span{width:12px;height:13px;border:1.5px solid currentColor;border-bottom:0;border-radius:8px 8px 4px 4px;position:relative}
+.dashboard-v3-bell>span:after{content:"";position:absolute;width:14px;height:1.5px;background:currentColor;left:-2px;bottom:-3px;border-radius:2px}
+.dashboard-v3-bell i{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:#ff5d6c;display:none}
+.dashboard-v3-bell i:not([style*="display: none"]){display:block}
+.dashboard-v3-user{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:2px 10px 2px 2px;box-sizing:border-box;border:1px solid var(--v3-line);border-radius:999px;background:#0d1825;color:#eef5fb;text-decoration:none}
+.dashboard-v3-user img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(85,167,255,.3)}
+.dashboard-v3-user span{max-width:125px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:650 .75rem 'Inter',sans-serif}
+.dashboard-v3-user b{font:500 .86rem 'Inter',sans-serif;color:#77899d}
+body.gbm-dashboard-padrao .dashboard-v3-menu-btn{display:none!important}
+
+/* Conteúdo */
+body.gbm-dashboard-padrao .dashboard-v3-shell{
+  margin:0 28px 0 306px!important;padding:88px 0 36px!important;box-sizing:border-box!important;
+}
+.dashboard-v3-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:18px}
+.dashboard-v3-eyebrow{display:block;margin-bottom:6px;color:#61758b;font:800 .56rem 'Inter',sans-serif;letter-spacing:.11em}
+.dashboard-v3-heading h1{margin:0;color:#f0f6fb;font:700 clamp(1.65rem,2.6vw,2.1rem)/1.12 'Inter',sans-serif;letter-spacing:-.045em}
+.dashboard-v3-heading p{margin:7px 0 0;color:#8191a4;font:400 .79rem/1.45 'Inter',sans-serif}
+.dashboard-v3-heading-right{display:flex;flex-direction:column;align-items:flex-end;gap:9px}
+.dashboard-v3-date{display:flex;align-items:center;gap:8px;color:#78899d}
+.dashboard-v3-date>span{font-size:16px}
+.dashboard-v3-date>div{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.dashboard-v3-date strong{color:#cbd6e2;font:600 .67rem 'Inter',sans-serif}
+.dashboard-v3-date small{color:#5f7086;font:400 .58rem 'Inter',sans-serif}
+.dashboard-v3-shell .dashboard-filtros{display:flex!important;gap:7px!important;align-items:center!important;justify-content:flex-end!important}
+.dashboard-v3-shell .dashboard-filtros select{height:34px!important;min-width:104px!important;padding:0 10px!important;border:1px solid var(--v3-line)!important;border-radius:8px!important;background:#0d1825!important;color:#cdd8e3!important;font:600 .64rem 'Inter',sans-serif!important;box-shadow:none!important}
+.dashboard-v3-shell .dashboard-periodo{color:#718197!important;font-size:.62rem!important}
+
+/* Métricas */
+.dashboard-v3-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.v3-metric{min-height:154px;padding:17px;box-sizing:border-box;border:1px solid var(--v3-line);border-radius:14px;background:linear-gradient(180deg,#0e1825,#0b1420);box-shadow:0 8px 28px rgba(0,0,0,.15);display:flex;flex-direction:column}
+.v3-metric-top{display:flex;align-items:center;gap:8px;color:#9aaabd;font:600 .71rem 'Inter',sans-serif}
+.v3-icon{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:#142132;color:#a3b3c4;font-size:.81rem}
+.v3-metric-income .v3-icon{color:var(--v3-green);background:rgba(57,217,138,.09)}
+.v3-metric-expense .v3-icon{color:var(--v3-red);background:rgba(255,93,108,.09)}
+.v3-metric-available .v3-icon{color:#9c8aff;background:rgba(139,108,255,.09)}
+.v3-metric>strong{margin-top:15px;color:#edf3f9;font:700 clamp(1.35rem,2vw,1.82rem)/1 'Inter',sans-serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.v3-metric-income>strong{color:#eafbf3}.v3-metric-expense>strong{color:#fff1f2}
+.v3-metric>small{margin-top:auto;color:#708095;font:400 .61rem/1.4 'Inter',sans-serif}
+.v3-metric-income>small{color:#5edda2}.v3-metric-expense>small{color:#f17d89}
+
+/* Gráfico + movimentos */
+.dashboard-v3-feature{display:grid;grid-template-columns:minmax(0,2fr) minmax(330px,.92fr);gap:12px;margin-bottom:14px}
+.dashboard-v3-surface{min-width:0;border:1px solid var(--v3-line);border-radius:14px;background:linear-gradient(180deg,#0e1825,#0b1420);box-shadow:0 8px 28px rgba(0,0,0,.15);box-sizing:border-box}
+.dashboard-v3-chart,.dashboard-v3-transactions{min-height:356px;padding:17px}
+.dashboard-v3-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.dashboard-v3-card-head h2{margin:0;color:#edf4fa;font:700 .96rem/1.2 'Inter',sans-serif;letter-spacing:-.02em}
+.dashboard-v3-card-head>a{color:#55dca1;text-decoration:none;font:650 .63rem 'Inter',sans-serif;white-space:nowrap}
+.dashboard-v3-card-head>a:hover{color:#8ff0c5}
+.dashboard-v3-legend{display:flex;align-items:center;gap:6px;color:#7f91a7;font:.61rem 'Inter',sans-serif}
+.dashboard-v3-legend i{width:7px;height:7px;border-radius:50%;background:var(--v3-green)}
+.dashboard-v3-chart-canvas{height:287px;margin-top:12px;position:relative}
+.dashboard-v3-chart-canvas canvas{width:100%!important;height:100%!important}
+.dashboard-v3-transactions-list{margin-top:8px}
+.dashboard-v3-transaction{display:grid;grid-template-columns:31px minmax(0,1fr) auto;align-items:center;gap:9px;min-height:56px;border-bottom:1px solid rgba(255,255,255,.045)}
+.dashboard-v3-transaction:last-child{border-bottom:0}
+.dashboard-v3-transaction-icon{width:31px;height:31px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#142032;color:#8da0b4;font-size:.78rem}
+.dashboard-v3-transaction-icon.receita{background:rgba(57,217,138,.08);color:var(--v3-green)}
+.dashboard-v3-transaction-main{min-width:0}
+.dashboard-v3-transaction-main strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dbe4ed;font:650 .7rem 'Inter',sans-serif}
+.dashboard-v3-transaction-main span{display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64758a;font:400 .58rem 'Inter',sans-serif}
+.dashboard-v3-transaction-value{text-align:right}
+.dashboard-v3-transaction-value strong{display:block;color:#f0f4f8;font:700 .69rem 'Inter',sans-serif;font-variant-numeric:tabular-nums}
+.dashboard-v3-transaction-value.receita strong{color:var(--v3-green)}
+.dashboard-v3-transaction-value.despesa strong{color:#ff8792}
+.dashboard-v3-transaction-value span{color:#607186;font:400 .55rem 'Inter',sans-serif}
+.dashboard-v3-empty{padding:30px 0;color:#6f8196;text-align:center;font-size:.67rem}
+
+/* Categorias + metas + card de promoção */
+.dashboard-v3-quad{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.dashboard-v3-quad>.dashboard-v3-surface{min-height:235px;padding:17px}
+.dashboard-v3-subtitle{margin:5px 0 0;color:#718196;font:400 .62rem/1.4 'Inter',sans-serif}
+.dashboard-v3-categories .principais-categorias-lista{margin-top:16px!important;gap:11px!important}
+.dashboard-v3-categories .categoria-participacao-nome{color:#d6e0ea!important;font-size:.66rem!important}
+.dashboard-v3-categories .categoria-participacao-pct{color:#73859a!important;font-size:.61rem!important}
+.dashboard-v3-categories .categoria-participacao-barra-fundo{height:5px!important;background:#1a2839!important}
+.dashboard-v3-promo{position:relative;overflow:hidden}
+.v3-promo-icon{display:inline-flex;width:35px;height:35px;align-items:center;justify-content:center;border-radius:50%;background:rgba(57,217,138,.09);color:var(--v3-green);font-size:1rem}
+.dashboard-v3-promo h2{margin:13px 0 0;color:#ecf3f8;font:700 1rem/1.22 'Inter',sans-serif;letter-spacing:-.02em}
+.dashboard-v3-promo p{max-width:260px;margin:12px 0 17px;color:#7c8fa4;font:400 .68rem/1.55 'Inter',sans-serif}
+.v3-promo-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:9px;background:#1f8a5a;border:1px solid rgba(57,217,138,.2);color:#fff;text-decoration:none;font:650 .65rem 'Inter',sans-serif}
+.v3-promo-btn:hover{background:#259f68}
+.v3-promo-lines{position:absolute;right:-2px;bottom:-7px;width:120px;height:95px;opacity:.28}
+.v3-promo-lines span{position:absolute;bottom:0;width:13px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,rgba(57,217,138,.8),rgba(57,217,138,.08))}
+.v3-promo-lines span:nth-child(1){left:6px;height:22px}.v3-promo-lines span:nth-child(2){left:29px;height:42px}.v3-promo-lines span:nth-child(3){left:52px;height:63px}.v3-promo-lines span:nth-child(4){left:75px;height:80px}
+
+/* Pulso + insights */
+.dashboard-v3-pulse-insight{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.dashboard-v3-pulse-insight>.dashboard-v3-surface{min-height:218px;padding:17px}
+.dashboard-v3-pulse .pulso-barra{height:9px!important;margin:19px 0 11px!important;background:#172638!important}
+.dashboard-v3-pulse .pulso-barra-preenchimento{background:linear-gradient(90deg,#2abb79,#39d98a)!important}
+.dashboard-v3-pulse .pulso-marcador-meta{width:3px!important;height:16px!important;background:#e7eef5!important;box-shadow:none!important}
+.dashboard-v3-pulse .pulso-legenda span{font-size:.6rem!important}
+.dashboard-v3-pulse .pulso-legenda strong{font-size:.64rem!important}
+.dashboard-v3-pulse .pulso-status{margin-top:13px!important;padding:10px!important;background:#0a131f!important;border:1px solid rgba(255,255,255,.05)!important;border-radius:9px!important}
+.dashboard-v3-insights .insights-lista{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:13px}
+.dashboard-v3-insights .insight-item{min-height:73px!important;padding:10px!important;background:#0a131f!important;border:1px solid rgba(255,255,255,.05)!important;border-radius:9px!important}
+.dashboard-v3-insights .insight-item:hover{background:#0c1622!important;border-color:rgba(255,255,255,.08)!important}
+
+/* Lançamento rápido */
+.dashboard-v3-quick{display:grid;grid-template-columns:185px minmax(0,1fr);gap:16px;align-items:center;margin-bottom:14px;padding:15px 17px}
+.dashboard-v3-quick-copy h2{margin:0;color:#edf4fa;font:700 .85rem 'Inter',sans-serif}
+.dashboard-v3-quick-copy p{margin:4px 0 0;color:#718196;font:.6rem/1.4 'Inter',sans-serif}
+.dashboard-v3-quick .lancamento-rapido-form{display:grid!important;grid-template-columns:1fr 1.25fr .85fr .85fr 1fr 128px 70px!important;gap:6px!important}
+.dashboard-v3-quick .lancamento-rapido-form :is(input,select){height:36px!important;min-width:0!important;padding:0 9px!important;border:1px solid rgba(255,255,255,.065)!important;border-radius:8px!important;background:#09121e!important;color:#dbe5ef!important;box-shadow:none!important;font-size:.61rem!important}
+.dashboard-v3-quick .lancamento-rapido-form .btn-acao{height:36px!important;padding:0 9px!important;border-radius:8px!important;background:#218356!important;border:1px solid rgba(57,217,138,.18)!important;box-shadow:none!important;font-size:.6rem!important;white-space:nowrap}
+.dashboard-v3-quick .lancamento-rapido-form .dashboard-undo{background:#101a28!important;border-color:rgba(255,255,255,.08)!important}
+
+/* Ferramentas secundárias ficam fora da primeira leitura */
+.dashboard-v3-tools{margin-bottom:28px;border:1px solid rgba(255,255,255,.06);border-radius:12px;background:#0a131f;overflow:hidden}
+.dashboard-v3-tools>summary{padding:13px 16px;cursor:pointer;color:#8da0b4;font:700 .66rem 'Inter',sans-serif;list-style:none}
+.dashboard-v3-tools>summary::-webkit-details-marker{display:none}
+.dashboard-v3-tools>summary:after{content:"＋";float:right;color:#607288}.dashboard-v3-tools[open]>summary:after{content:"−"}
+.dashboard-v3-tools-content{padding:0 14px 14px}
+.dashboard-v3-tools-content .linha-paineis{margin:0!important}
+.dashboard-v3-tools-content .painel-ajustes{background:#0d1724!important;border:1px solid rgba(255,255,255,.055)!important;box-shadow:none!important}
+.dashboard-v3-tools-content #container-do-grafico{margin:12px 0 0!important;max-width:none!important;background:#0b1420!important;border-color:rgba(255,255,255,.055)!important}
+.dashboard-v3-tools-content #card-ofx{margin:12px 0 0!important;padding:14px!important;background:#0d1724!important;border:1px solid rgba(255,255,255,.055)!important}
+.dashboard-v3-tools-content #card-ofx h3{color:#e8f0f6!important}
+.dashboard-v3-tools-content #card-ofx p{color:#718196!important}
+
+/* Pequenos ajustes de componentes já existentes */
+body.gbm-dashboard-padrao .dashboard-v3-shell .btn-acao:after{display:none!important}
+body.gbm-dashboard-padrao .dashboard-v3-shell :where(.card,.painel-ajustes,.chart-container,.lancamento-rapido,.resumo-container,.insights-panel){
+  box-shadow:none!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-shell .badge-taxa-poupada,
+body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{background:transparent!important;border:0!important;box-shadow:none!important}
+
+/* Responsivo */
+@media(max-width:1120px) and (min-width:769px){
+  body.gbm-dashboard-padrao .dashboard-v3-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.gbm-dashboard-padrao .dashboard-v3-feature{grid-template-columns:1fr}
+  body.gbm-dashboard-padrao .dashboard-v3-quad{grid-template-columns:1fr 1fr}
+  body.gbm-dashboard-padrao .dashboard-v3-promo{grid-column:1/-1}
+  body.gbm-dashboard-padrao .dashboard-v3-quick{grid-template-columns:1fr}
+  body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:768px){
+  body.gbm-dashboard-padrao .dashboard-v3-sidebar{left:auto!important;right:-320px!important;width:min(286px,88vw)!important;border-right:0!important;border-left:1px solid var(--v3-line)!important}
+  body.gbm-dashboard-padrao .dashboard-v3-sidebar.aberto{right:0!important}
+  body.gbm-dashboard-padrao .dashboard-v3-sidebar .fechar-btn{display:inline-flex!important}
+  body.gbm-dashboard-padrao .dashboard-v3-header{left:0!important;width:100%!important;height:62px!important;min-height:62px!important;padding:0 15px!important}
+  body.gbm-dashboard-padrao .dashboard-v3-brand-mobile{display:flex;align-items:center;gap:8px;color:#eef5fb;font:700 .84rem 'Inter',sans-serif}
+  body.gbm-dashboard-padrao .dashboard-v3-brand-mobile img{width:27px;height:27px;border-radius:7px}
+  body.gbm-dashboard-padrao .dashboard-v3-search{display:none!important}
+  body.gbm-dashboard-padrao .dashboard-v3-menu-btn{display:inline-flex!important}
+  body.gbm-dashboard-padrao .dashboard-v3-shell{margin:0!important;padding:78px 15px 28px!important}
+  body.gbm-dashboard-padrao .dashboard-v3-heading{flex-direction:column;align-items:stretch;margin-bottom:14px}
+  body.gbm-dashboard-padrao .dashboard-v3-heading-right{align-items:stretch}
+  body.gbm-dashboard-padrao .dashboard-v3-date{justify-content:flex-end}
+  body.gbm-dashboard-padrao .dashboard-v3-shell .dashboard-filtros{justify-content:stretch!important}
+  body.gbm-dashboard-padrao .dashboard-v3-shell .dashboard-filtros select{flex:1 1 0}
+  body.gbm-dashboard-padrao .dashboard-v3-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.gbm-dashboard-padrao .dashboard-v3-feature,.dashboard-v3-quad,.dashboard-v3-pulse-insight{grid-template-columns:1fr!important}
+  body.gbm-dashboard-padrao .dashboard-v3-chart,.dashboard-v3-transactions{min-height:325px}
+  body.gbm-dashboard-padrao .dashboard-v3-chart-canvas{height:250px}
+  body.gbm-dashboard-padrao .dashboard-v3-quick{grid-template-columns:1fr}
+  body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form{grid-template-columns:1fr!important}
+  body.gbm-dashboard-padrao .dashboard-v3-quick .lancamento-rapido-form :is(input,select,.btn-acao){height:43px!important;font-size:.76rem!important}
+  body.gbm-dashboard-padrao .dashboard-v3-insights .insights-lista{grid-template-columns:1fr!important}
+}
+@media(max-width:420px){
+  body.gbm-dashboard-padrao .dashboard-v3-metrics{grid-template-columns:1fr}
+}
+</style>
+
 </head>
 <body class="gbm-interna gbm-dashboard-padrao">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
-<!-- NOVO CABEÇALHO GBM COMPLETO -->
-<header class="gbm-header">
-    <div class="dashboard-header-search" role="search">
-        <span class="dashboard-search-icon" aria-hidden="true"></span>
+<header class="gbm-header dashboard-v3-header">
+    <div class="dashboard-v3-brand-mobile">
+        <img src="logo-transparente.jpg" alt="GBM">
+        <span>GBM</span>
+    </div>
+    <div class="dashboard-v3-search" role="search">
+        <span class="dashboard-v3-search-icon" aria-hidden="true"></span>
         <input type="search" placeholder="Buscar movimentações, categorias..." aria-label="Buscar movimentações e categorias">
     </div>
-    <div class="gbm-header-actions">
-        <a href="notificacoes.html" class="dashboard-notification-link" aria-label="Abrir notificações">
-            <span class="dashboard-notification-icon" aria-hidden="true"></span>
-            <span id="dot-alertas" class="dashboard-notification-dot" aria-hidden="true"></span>
+    <div class="dashboard-v3-header-actions">
+        <a href="notificacoes.html" class="dashboard-v3-bell" aria-label="Abrir notificações">
+            <span aria-hidden="true"></span>
+            <i id="dot-alertas"></i>
         </a>
-        <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
-            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
-            <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
+        <a href="perfil.html" class="dashboard-v3-user" aria-label="Abrir meu perfil">
+            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil">
+            <span id="nome-perfil-cabecalho">Giovanni</span>
+            <b aria-hidden="true">⌄</b>
         </a>
-        <div class="gbm-menu-container">
-            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" style="position:relative;" aria-label="Abrir menu">
-                <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-            </button>
-        </div>
+        <button id="menu-btn" class="gbm-menu-btn dashboard-v3-menu-btn" type="button" onclick="abrirMenuLateral(event)" aria-label="Abrir menu">
+            <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
     </div>
-</header> <div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
+</header>
 
-<div id="sidebar-menu" class="sidebar-menu">
-    <div class="sidebar-header">
-        <div class="sidebar-brand">
-            <img src="logo-transparente.jpg" alt="Logo GBM" class="sidebar-logo">
-            <div class="sidebar-brand-text">
-                <strong>GBM Finance</strong>
-                <span>Proteção financeira para você</span>
-            </div>
-        </div>
-        <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
+<aside id="sidebar-menu" class="sidebar-menu dashboard-v3-sidebar">
+    <div class="dashboard-v3-sidebar-brand">
+        <img src="logo-transparente.jpg" alt="GBM">
+        <div><strong>GBM</strong><span>Meu Controle Financeiro</span></div>
     </div>
-
-    <nav class="sidebar-content" aria-label="Menu principal">
-        <div class="menu-grupo" aria-labelledby="menu-titulo-resumo">
-            <p id="menu-titulo-resumo" class="menu-grupo-titulo">Resumo</p>
-            <a href="dashboard.html" class="menu-item menu-item-ativo">
-                <span class="menu-item-icone" aria-hidden="true">⌂</span>
-                <span class="menu-item-conteudo">Visão geral</span>
-                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
-            </a>
+    <button class="fechar-btn" type="button" onclick="fecharMenuLateral()" aria-label="Fechar menu">×</button>
+    <nav class="dashboard-v3-nav" aria-label="Navegação principal">
+        <div class="dashboard-v3-nav-group">
+            <span class="dashboard-v3-nav-label">VISÃO GERAL</span>
+            <a href="dashboard.html" class="dashboard-v3-nav-item menu-item-ativo" data-menu-page="dashboard.html"><span class="nav-ico">⌂</span>Dashboard</a>
         </div>
-
-        <div class="menu-grupo" aria-labelledby="menu-titulo-movimentacoes">
-            <p id="menu-titulo-movimentacoes" class="menu-grupo-titulo">Movimentações</p>
-            <a href="contas.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">▣</span>
-                <span class="menu-item-conteudo">Minhas contas</span>
-            </a>
-            <a href="importacoes.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">↥</span>
-                <span class="menu-item-conteudo">Importações</span>
-            </a>
+        <div class="dashboard-v3-nav-group">
+            <span class="dashboard-v3-nav-label">MOVIMENTAÇÕES</span>
+            <a href="contas.html" class="dashboard-v3-nav-item" data-menu-page="contas.html"><span class="nav-ico">▣</span>Contas</a>
+            <a href="importacoes.html" class="dashboard-v3-nav-item" data-menu-page="importacoes.html"><span class="nav-ico">↥</span>Importações</a>
+            <a href="importar-pdf.html" class="dashboard-v3-nav-item" data-menu-page="importar-pdf.html"><span class="nav-ico">▤</span>Importar PDF</a>
         </div>
-
-        <div class="menu-grupo" aria-labelledby="menu-titulo-planejamento">
-            <p id="menu-titulo-planejamento" class="menu-grupo-titulo">Planejamento</p>
-            <a href="calendario.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">□</span>
-                <span class="menu-item-conteudo">Calendário</span>
-            </a>
-            <a href="limite-de-gastos.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">◒</span>
-                <span class="menu-item-conteudo">Limite de gastos</span>
-            </a>
-            <a href="metas.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">◎</span>
-                <span class="menu-item-conteudo">Objetivos de poupança</span>
-            </a>
+        <div class="dashboard-v3-nav-group">
+            <span class="dashboard-v3-nav-label">PLANEJAMENTO</span>
+            <a href="calendario.html" class="dashboard-v3-nav-item" data-menu-page="calendario.html"><span class="nav-ico">□</span>Calendário</a>
+            <a href="limite-de-gastos.html" class="dashboard-v3-nav-item" data-menu-page="limite-de-gastos.html"><span class="nav-ico">◒</span>Limite de gastos</a>
+            <a href="metas.html" class="dashboard-v3-nav-item" data-menu-page="metas.html"><span class="nav-ico">◎</span>Metas financeiras</a>
         </div>
-
-        <div class="menu-grupo menu-grupo-premium" aria-labelledby="menu-titulo-premium">
-            <p id="menu-titulo-premium" class="menu-grupo-titulo">Análises</p>
-            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
-                <span class="menu-item-icone" aria-hidden="true">▥</span>
-                <span class="menu-item-conteudo">Relatório mensal</span>
-                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
-            </a>
-            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
-                <span class="menu-item-icone" aria-hidden="true">⇄</span>
-                <span class="menu-item-conteudo">Comparativo mensal</span>
-                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
-            </a>
+        <div class="dashboard-v3-nav-group">
+            <span class="dashboard-v3-nav-label">ANÁLISES</span>
+            <a href="#" id="item-relatorio-mensal" class="dashboard-v3-nav-item" onclick="acessarRotaPremium('relatorio-avancado.html','Relatório mensal');return false;"><span class="nav-ico">▥</span><span>Relatórios</span><em id="cadeado-relatorio" class="cadeado-premium">Premium</em></a>
+            <a href="#" id="item-comparativo-mensal" class="dashboard-v3-nav-item" onclick="acessarRotaPremium('comparativo.html','Comparativo mensal');return false;"><span class="nav-ico">⇄</span><span>Comparativo</span><em id="cadeado-comparativo" class="cadeado-premium">Premium</em></a>
             <div id="aviso-recursos-premium" class="aviso-recursos-premium" role="status"></div>
         </div>
-
-        <div class="menu-grupo menu-grupo-conta" aria-labelledby="menu-titulo-conta">
-            <p id="menu-titulo-conta" class="menu-grupo-titulo">Conta</p>
-            <a href="notificacoes.html" id="item-notificacoes" class="menu-item menu-item-com-indicador">
-                <span class="menu-item-icone" aria-hidden="true">♧</span>
-                <span class="menu-item-conteudo">Notificações</span>
-                <span class="menu-item-indicadores">
-                    <span id="badge-alertas-menu" style="display:none; background:#ef4444; color:#fff; border-radius:10px; font-size:0.75rem; padding:2px 8px; margin-left:8px;">0</span>
-                </span>
-            </a>
-            <a href="configuracoes.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">⚙</span>
-                <span class="menu-item-conteudo">Configurações</span>
-            </a>
-            <a href="perfil.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">♙</span>
-                <span class="menu-item-conteudo">Perfil</span>
-            </a>
-            <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
-                <span class="menu-item-icone" aria-hidden="true">↪</span>
-                <span class="menu-item-conteudo">Sair</span>
-            </a>
+        <div class="dashboard-v3-nav-group dashboard-v3-nav-account">
+            <span class="dashboard-v3-nav-label">CONTA</span>
+            <a href="notificacoes.html" id="item-notificacoes" class="dashboard-v3-nav-item"><span class="nav-ico">♧</span><span>Notificações</span><b id="badge-alertas-menu" style="display:none">0</b></a>
+            <a href="configuracoes.html" class="dashboard-v3-nav-item"><span class="nav-ico">⚙</span>Configurações</a>
+            <a href="perfil.html" class="dashboard-v3-nav-item"><span class="nav-ico">♙</span>Meu perfil</a>
+            <button type="button" class="dashboard-v3-nav-item dashboard-v3-logout" onclick="fazerLogout()"><span class="nav-ico">↪</span>Sair</button>
         </div>
     </nav>
-</div>
+</aside>
+<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
 
-<section class="dashboard-topo" aria-labelledby="titulo-visao-geral">
-    <div class="dashboard-heading">
-        <div class="dashboard-breadcrumb"><span>Tela 1 de 11</span><b>›</b><strong>Visão geral</strong></div>
-        <h2 id="titulo-visao-geral">Visão geral</h2>
-        <p>Acompanhe o desempenho do período e tome decisões com mais clareza.</p>
-    </div>
-    <div class="dashboard-filtros" aria-label="Filtros do período">
-        <select id="filtro-conta-dashboard" onchange="trocarContaDashboard()" aria-label="Conta">
-            <option value="">Todas as contas</option>
-        </select>
-        <select id="dia-fechamento" onchange="salvarDiaFechamento()" title="Dia em que o seu mês financeiro vira" aria-label="Fechamento do mês">
-        </select>
-        <span id="rotulo-periodo-ciclo" class="dashboard-periodo"></span>
-    </div>
-</section>
-
-<div class="dashboard-principal-grid">
-    <div class="card card-resultado">
-        <div class="card-resultado-topo">
-            <h3>Resultado do período</h3>
+<div id="dropdownMenu" hidden></div><span id="detalhe-economia-resultado" hidden></span>
+<main class="dashboard-v3-shell">
+    <section class="dashboard-v3-heading">
+        <div>
+            <span class="dashboard-v3-eyebrow">VISÃO GERAL</span>
+            <h1>Olá, <span id="dashboard-nome">Giovanni</span>!</h1>
+            <p>Aqui está um resumo da sua vida financeira.</p>
         </div>
-        <p id="saldo-liquido">R$ 0,00</p>
-        <div id="taxa-poupada-badge" class="badge-taxa-poupada" style="display:none;"></div>
-        <div id="detalhe-economia-resultado" class="badge-economia-resultado" style="display:none;"></div>
-        <div class="card-resultado-grafico"><canvas id="grafico-resultado-periodo"></canvas></div>
-    </div>
-
-    <div class="coluna-fluxo">
-        <div class="card card-fluxo card-fluxo-entrada">
-            <div class="card-fluxo-conteudo">
-                <div class="card-fluxo-topo"><span class="icone-fluxo icone-entrada">↑</span><h3>Entradas</h3></div>
-                <p id="total-entradas" style="color: var(--cor-receita);">R$ 0,00</p>
-                <div id="comparativo-entradas" class="badge-comparativo-fluxo" style="display:none;"></div>
+        <div class="dashboard-v3-heading-right">
+            <div class="dashboard-v3-date"><span>◷</span><div><strong id="dashboard-data-atual">—</strong><small>período atual</small></div></div>
+            <div class="dashboard-filtros">
+                <select id="filtro-conta-dashboard" onchange="trocarContaDashboard()" aria-label="Conta"><option value="">Todas as contas</option></select>
+                <select id="dia-fechamento" onchange="salvarDiaFechamento()" title="Dia em que o mês financeiro vira" aria-label="Fechamento do mês"></select>
+                <span id="rotulo-periodo-ciclo" class="dashboard-periodo"></span>
             </div>
-            <svg class="fluxo-sparkline fluxo-sparkline-entrada" viewBox="0 0 88 34" preserveAspectRatio="none" aria-hidden="true"><path d="M2 28 C11 25 15 22 23 22 S33 23 40 18 S52 14 59 16 S70 15 76 10 S84 7 87 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
         </div>
-        <div class="card card-fluxo card-fluxo-saida">
-            <div class="card-fluxo-conteudo">
-                <div class="card-fluxo-topo"><span class="icone-fluxo icone-saida">↓</span><h3>Saídas</h3></div>
-                <p id="total-saidas" style="color: var(--cor-despesa);">R$ 0,00</p>
-                <div id="comparativo-saidas" class="badge-comparativo-fluxo" style="display:none;"></div>
+    </section>
+
+    <section class="dashboard-v3-metrics" aria-label="Resumo financeiro">
+        <article class="v3-metric v3-metric-total">
+            <div class="v3-metric-top"><span class="v3-icon">◈</span><span>Saldo total</span></div>
+            <strong id="saldo-total-dashboard">R$ 0,00</strong>
+            <small>Saldo disponível nas contas</small>
+        </article>
+        <article class="v3-metric v3-metric-income">
+            <div class="v3-metric-top"><span class="v3-icon">↓</span><span>Receitas</span></div>
+            <strong id="total-entradas">R$ 0,00</strong>
+            <small id="comparativo-entradas" style="display:none"></small>
+        </article>
+        <article class="v3-metric v3-metric-expense">
+            <div class="v3-metric-top"><span class="v3-icon">↑</span><span>Despesas</span></div>
+            <strong id="total-saidas">R$ 0,00</strong>
+            <small id="comparativo-saidas" style="display:none"></small>
+        </article>
+        <article class="v3-metric v3-metric-available">
+            <div class="v3-metric-top"><span class="v3-icon">✦</span><span>Disponível</span></div>
+            <strong id="saldo-liquido">R$ 0,00</strong>
+            <small>Resultado do período</small>
+            <span id="taxa-poupada-badge" class="metric-meta" style="display:none"></span>
+        </article>
+    </section>
+
+    <section class="dashboard-v3-feature">
+        <article class="dashboard-v3-surface dashboard-v3-chart">
+            <div class="dashboard-v3-card-head">
+                <div><span class="dashboard-v3-eyebrow">DESEMPENHO</span><h2>Evolução financeira</h2></div>
+                <span class="dashboard-v3-legend"><i></i>Resultado</span>
             </div>
-            <svg class="fluxo-sparkline fluxo-sparkline-saida" viewBox="0 0 88 34" preserveAspectRatio="none" aria-hidden="true"><path d="M2 7 C12 9 17 13 24 11 S37 14 44 17 S55 17 62 22 S75 22 87 29" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        </div>
-    </div>
-
-    <section class="card card-pulso" aria-labelledby="titulo-pulso-financeiro">
-        <h3 id="titulo-pulso-financeiro">Pulso financeiro</h3>
-        <p class="card-subtitulo">Como sua renda foi distribuída neste período</p>
-        <div class="pulso-barra" aria-hidden="true">
-            <div id="pulso-barra-preenchimento" class="pulso-barra-preenchimento"></div>
-            <span id="pulso-marcador-meta" class="pulso-marcador-meta"></span>
-        </div>
-        <div class="pulso-legenda">
-            <div><span>Gasto</span><strong id="pulso-gasto">0,0%</strong></div>
-            <div><span>Preservado</span><strong id="pulso-preservado">0,0%</strong></div>
-            <div><span>Meta</span><strong id="pulso-meta">15%</strong></div>
-        </div>
-        <div class="pulso-status">
-            <span class="pulso-status-icone">✓</span>
-            <div><strong id="pulso-status-titulo">Seu mês permanece positivo</strong><span id="pulso-status-texto">Registre dados para calcular sua taxa poupada.</span></div>
-        </div>
-    </section>
-</div>
-
-<div class="dashboard-secundario-grid">
-    <section class="insights-panel" aria-labelledby="titulo-insights">
-        <h2 id="titulo-insights">O que merece atenção</h2>
-        <p class="insights-subtitulo">Insights baseados no comportamento deste período</p>
-        <div id="insights-lista" class="insights-lista">
-            <div class="insight-item"><span>Analisando seu mês...</span></div>
-        </div>
+            <div class="dashboard-v3-chart-canvas"><canvas id="grafico-resultado-periodo"></canvas></div>
+        </article>
+        <article class="dashboard-v3-surface dashboard-v3-transactions">
+            <div class="dashboard-v3-card-head">
+                <div><span class="dashboard-v3-eyebrow">MOVIMENTAÇÕES</span><h2>Últimas movimentações</h2></div>
+                <a href="#" onclick="abrirModalTransacoes();return false;">Ver todas →</a>
+            </div>
+            <div id="ultimas-movimentacoes-lista" class="dashboard-v3-transactions-list"><div class="dashboard-v3-empty">Carregando movimentações...</div></div>
+        </article>
     </section>
 
-    <section class="card categorias-panel" aria-labelledby="titulo-categorias">
-        <h3 id="titulo-categorias">Principais categorias</h3>
-        <p class="card-subtitulo">Participação nas despesas do período</p>
-        <div id="principais-categorias-lista" class="principais-categorias-lista">
-            <div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div>
-        </div>
-        <a href="#" class="categorias-link" onclick="abrirModalTransacoes(); return false;">Ver relatório completo</a>
+    <section class="dashboard-v3-quad">
+        <article class="dashboard-v3-surface dashboard-v3-categories">
+            <div class="dashboard-v3-card-head">
+                <div><span class="dashboard-v3-eyebrow">DISTRIBUIÇÃO</span><h2>Gastos por categoria</h2></div>
+            </div>
+            <p class="dashboard-v3-subtitle">Participação nas despesas deste período</p>
+            <div id="principais-categorias-lista" class="principais-categorias-lista"><div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div></div>
+        </article>
+
+        <article class="dashboard-v3-surface dashboard-v3-goals">
+            <div class="dashboard-v3-card-head">
+                <div><span class="dashboard-v3-eyebrow">PLANEJAMENTO</span><h2>Metas financeiras</h2></div>
+                <a href="metas.html">Ver todas →</a>
+            </div>
+            <div id="objetivos-dashboard-lista" class="dashboard-v3-goals-list"><div class="dashboard-v3-empty">Carregando metas...</div></div>
+        </article>
+
+        <article class="dashboard-v3-surface dashboard-v3-promo">
+            <div>
+                <span class="v3-promo-icon">↗</span>
+                <h2>Organize suas finanças<br>com mais facilidade</h2>
+                <p>Adicione suas contas, importe seus extratos e tenha uma visão completa do seu dinheiro em um só lugar.</p>
+                <a href="contas.html" class="v3-promo-btn">Começar agora →</a>
+            </div>
+            <div class="v3-promo-lines" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        </article>
     </section>
-</div>
 
-<div class="lancamento-rapido dashboard-lancamento-rapido" style="margin: 0 20px 20px; padding: 20px 25px;">
-    <div class="lancamento-rapido-copy">
-        <h3>Lançamento rápido</h3>
-        <p>Registre uma movimentação sem sair<br>da visão geral.</p>
-    </div>
-    <div class="lancamento-rapido-form">
-        <select id="manual-conta" aria-label="Conta do lançamento"><option value="">Carregando contas...</option></select>
-        <input type="text" id="manual-desc" placeholder="Descrição">
-        <input type="number" id="manual-valor" placeholder="R$ 0,00" step="0.01">
-        <select id="manual-tipo" aria-label="Tipo"><option value="Despesa">Despesa</option><option value="Receita">Receita</option></select>
-        <select id="manual-cat" aria-label="Categoria">
-            <option value="Alimentação">Alimentação</option><option value="Habitação">Habitação</option><option value="Transporte">Transporte</option>
-            <option value="Eletricidade / Luz">Luz</option><option value="Telecomunicações / Internet">Internet</option><option value="Pagamento de Fatura">Fatura</option>
-            <option value="Pagamento de Boleto">Boleto</option><option value="Streaming de Vídeo">Streaming de Vídeo</option><option value="Streaming de Música">Streaming de Música</option>
-            <option value="Academia e Fitness">Academia e Fitness</option><option value="Saúde">Saúde</option><option value="Educação">Educação</option>
-            <option value="Supermercado">Supermercado</option><option value="Restaurantes">Restaurantes</option><option value="Salário">Salário</option><option value="Lazer">Lazer</option><option value="Outros">Outros</option>
-        </select>
-        <input type="date" id="manual-data" aria-label="Data do lançamento">
-        <button class="btn-acao" onclick="salvarLancamentoManual()">Adicionar lançamento</button>
-        <button id="btn-desfazer-lancamento" class="btn-acao dashboard-undo" onclick="desfazerUltimo()" title="Desfazer último lançamento" aria-label="Desfazer último lançamento">Desfazer</button>
-    </div>
-</div>
+    <section class="dashboard-v3-pulse-insight">
+        <article class="dashboard-v3-surface dashboard-v3-pulse">
+            <div class="dashboard-v3-card-head"><div><span class="dashboard-v3-eyebrow">LEITURA DO MÊS</span><h2>Pulso financeiro</h2></div></div>
+            <p class="dashboard-v3-subtitle">Como sua renda foi distribuída neste período</p>
+            <div class="pulso-barra"><div id="pulso-barra-preenchimento" class="pulso-barra-preenchimento"></div><span id="pulso-marcador-meta" class="pulso-marcador-meta"></span></div>
+            <div class="pulso-legenda"><div><span>Gasto</span><strong id="pulso-gasto">0,0%</strong></div><div><span>Preservado</span><strong id="pulso-preservado">0,0%</strong></div><div><span>Meta</span><strong id="pulso-meta">15%</strong></div></div>
+            <div class="pulso-status"><span class="pulso-status-icone">✓</span><div><strong id="pulso-status-titulo">Seu mês permanece positivo</strong><span id="pulso-status-texto">Registre dados para calcular sua taxa poupada.</span></div></div>
+        </article>
+        <article class="dashboard-v3-surface dashboard-v3-insights">
+            <div class="dashboard-v3-card-head"><div><span class="dashboard-v3-eyebrow">ASSISTENTE</span><h2>O que merece atenção</h2></div></div>
+            <p class="dashboard-v3-subtitle">Insights gerados a partir do comportamento deste período</p>
+            <div id="insights-lista" class="insights-lista"><div class="insight-item"><span>Analisando seu mês...</span></div></div>
+        </article>
+    </section>
 
-<div id="card-economia-legado" class="card" style="display:none;"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p><div id="detalhe-economia"></div></div>
+    <section class="dashboard-v3-surface dashboard-v3-quick">
+        <div class="dashboard-v3-quick-copy"><span class="dashboard-v3-eyebrow">AÇÃO RÁPIDA</span><h2>Lançamento rápido</h2><p>Registre uma movimentação sem sair da visão geral.</p></div>
+        <div class="lancamento-rapido-form">
+            <select id="manual-conta" aria-label="Conta do lançamento"><option value="">Carregando contas...</option></select>
+            <input type="text" id="manual-desc" placeholder="Descrição">
+            <input type="number" id="manual-valor" placeholder="R$ 0,00" step="0.01">
+            <select id="manual-tipo" aria-label="Tipo"><option value="Despesa">Despesa</option><option value="Receita">Receita</option></select>
+            <select id="manual-cat" aria-label="Categoria"><option value="Alimentação">Alimentação</option><option value="Habitação">Habitação</option><option value="Transporte">Transporte</option><option value="Eletricidade / Luz">Luz</option><option value="Telecomunicações / Internet">Internet</option><option value="Pagamento de Fatura">Fatura</option><option value="Pagamento de Boleto">Boleto</option><option value="Streaming de Vídeo">Streaming de Vídeo</option><option value="Streaming de Música">Streaming de Música</option><option value="Academia e Fitness">Academia e Fitness</option><option value="Saúde">Saúde</option><option value="Educação">Educação</option><option value="Supermercado">Supermercado</option><option value="Restaurantes">Restaurantes</option><option value="Salário">Salário</option><option value="Lazer">Lazer</option><option value="Outros">Outros</option></select>
+            <input type="date" id="manual-data" aria-label="Data do lançamento">
+            <button class="btn-acao" onclick="salvarLancamentoManual()">Adicionar lançamento</button>
+            <button id="btn-desfazer-lancamento" class="btn-acao dashboard-undo" onclick="desfazerUltimo()" title="Desfazer último lançamento">Desfazer</button>
+        </div>
+    </section>
 
-<div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
-    <div class="modal-gbm-dialogo">
-        <div class="modal-gbm-topo">
-            <h2 id="titulo-modal-transacoes" style="margin:0;">Categorias e objetivos das transações</h2>
-            <button type="button" class="modal-gbm-fechar" onclick="fecharModalTransacoes()" aria-label="Fechar transações">✕</button>
+    <details class="dashboard-v3-tools">
+        <summary>Ferramentas e análise detalhada</summary>
+        <div class="dashboard-v3-tools-content">
+            <div id="card-economia-legado" class="card" style="display:none"><h3>Economia vs. Mês Anterior</h3><p id="economia-mensal">R$ 0,00</p><div id="detalhe-economia"></div></div>
+            <div class="linha-paineis">
+                <div class="painel-ajustes" id="painel-limite"><div class="grupo-ajuste"><label>Limite de Gastos</label><div class="dashboard-tool-line"><select id="meta-categoria"><option value="" disabled selected>Categoria...</option></select><input type="number" id="meta-valor" placeholder="R$ 0,00" step="10"><button class="btn-acao" onclick="salvarMeta()">Gravar</button><button class="btn-acao" onclick="removerMeta()">Sem Limite</button></div></div></div>
+                <div class="painel-ajustes" id="painel-categoria"><div class="grupo-ajuste"><label>Criar Nova Categoria</label><div class="dashboard-tool-line"><input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..."><button class="btn-acao" onclick="criarNovaCategoria()">Criar categoria</button></div><p>Suas categorias personalizadas ficam disponíveis só na sua conta.</p><div id="lista-categorias-personalizadas" class="dashboard-chip-list"></div></div></div>
+                <div class="painel-ajustes" id="painel-meta"><div class="grupo-ajuste"><label>Novo objetivo de poupança</label><div class="dashboard-tool-line"><input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança..."><input type="number" id="objetivo-valor" placeholder="R$ 0,00" step="10"><button class="btn-acao" onclick="salvarObjetivo()">Adicionar objetivo</button></div></div></div>
+            </div>
+            <div class="painel-ajustes painel-controles-grafico" id="painel-exibicao">
+                <div class="grupo-ajuste"><label for="select-tipo">Exibição de dados</label><select id="select-tipo" onchange="renderizarVisualizacao()"><option value="table">Apenas tabela</option><option value="chart">Apenas gráfico</option><option value="both" selected>Tabela e gráfico</option></select></div>
+                <div class="grupo-ajuste"><label for="select-grafico-dashboard">Tipo de gráfico</label><select id="select-grafico-dashboard" onchange="renderizarVisualizacao()"><option value="bar">Barras</option><option value="doughnut">Rosca</option><option value="line">Linha</option></select></div>
+            </div>
+            <div class="chart-container" id="container-do-grafico"><div class="container-tabela" id="minhaTabelaContainer" style="display:none"><table><thead><tr><th>Categoria</th><th>Valor Movimentado</th></tr></thead><tbody id="corpo-tabela"></tbody></table></div><div class="grafico-wrapper" id="wrapper-do-grafico" style="display:none"><canvas id="meuGrafico"></canvas></div></div>
+            <div id="card-ofx" class="card"><span class="dashboard-v3-eyebrow">IMPORTAÇÕES</span><h3>Central de importações</h3><p>Revise extratos OFX ou PDF antes de confirmar os lançamentos.</p><button type="button" class="btn-acao" onclick="window.location.href='importacoes.html'">Abrir central</button><button type="button" id="btn-gerenciar-categorias" class="btn-acao" onclick="abrirModalTransacoes()">Gerenciar categorias</button></div>
         </div>
-        <p style="color:#a0a0a0; margin-bottom:20px; font-size:0.875rem;">
-            Corrija categorias, exclua uma movimentação ou destine-a a um objetivo de poupança. Salve todas as mudanças de categoria de uma só vez.
-        </p>
-        <div id="lista-transacoes-modal">Carregando...</div>
-    </div>
-</div>
-<div id="modal-vinculo-objetivo" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-vinculo-objetivo" aria-hidden="true">
-    <div class="modal-gbm-dialogo modal-gbm-dialogo-pequeno">
-        <div class="modal-gbm-topo">
-            <h2 id="titulo-vinculo-objetivo" style="margin:0;">Destinar ao objetivo</h2>
-            <button type="button" class="modal-gbm-fechar" onclick="fecharVinculoObjetivo()" aria-label="Cancelar vínculo">✕</button>
-        </div>
-        <p id="resumo-transacao-vinculo" style="color:#d1d5db;line-height:1.5"></p>
-        <div id="aviso-despesa-vinculo" class="aviso-vinculo" hidden></div>
-        <div class="campo-vinculo-objetivo">
-            <label for="objetivo-vinculo-select">Objetivo de poupança ativo</label>
-            <select id="objetivo-vinculo-select" required></select>
-        </div>
-        <p style="color:#9ca3af;font-size:0.8125rem;line-height:1.5">
-            A categoria, o tipo, o valor, a data e a descrição da transação permanecerão inalterados.
-        </p>
-        <div class="acoes-vinculo">
-            <button type="button" class="btn-objetivo-transacao secundario" onclick="fecharVinculoObjetivo()">Cancelar</button>
-            <button type="button" id="confirmar-vinculo-objetivo" class="btn-objetivo-transacao" onclick="confirmarVinculoObjetivo()">Confirmar vínculo</button>
-        </div>
-    </div>
-</div>
-<div class="linha-paineis">
+    </details>
 
-<div class="painel-ajustes" id="painel-limite">
-    <div class="grupo-ajuste">
-        <label>Limite de Gastos</label>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <select id="meta-categoria" style="width: 140px;">
-                <option value="" disabled selected>Categoria...</option>
-                <option value="Alimentação">Alimentação</option>
-                <option value="Habitação">Habitação</option>
-                <option value="Transporte">Transporte</option>
-                <option value="Eletricidade / Luz">Eletricidade / Luz</option>
-                <option value="Telecomunicações / Internet">Telecomunicações / Internet</option>
-                <option value="Pagamento de Fatura">Pagamento de Fatura</option>
-                <option value="Pagamento de Boleto">Pagamento de Boleto</option>
-                <option value="Streaming de Vídeo">Streaming de Vídeo</option>
-                <option value="Streaming de Música">Streaming de Música</option>
-                <option value="Academia e Fitness">Academia e Fitness</option>
-                <option value="Saúde">Saúde</option>
-                <option value="Educação">Educação</option>
-                <option value="Supermercado">Supermercado</option>
-                <option value="Restaurantes">Restaurantes</option>
-                <option value="Salário">Salário</option>
-                <option value="Lazer">Lazer</option>
-                <option value="Outros">Outros</option>
-            </select>
-            <input type="number" id="meta-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
-            <button class="btn-acao" onclick="salvarMeta()">Gravar</button>
-            <button class="btn-acao" onclick="removerMeta()"  title="Remover limite desta categoria">Sem Limite</button>
+    <div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
+        <div class="modal-gbm-dialogo">
+            <div class="modal-gbm-topo"><h2 id="titulo-modal-transacoes">Categorias e objetivos das transações</h2><button type="button" class="modal-gbm-fechar" onclick="fecharModalTransacoes()">✕</button></div>
+            <p>Corrija categorias, exclua uma movimentação ou destine-a a um objetivo de poupança. Salve todas as mudanças de categoria de uma só vez.</p>
+            <div id="lista-transacoes-modal">Carregando...</div>
         </div>
     </div>
-</div>
-
-<div class="painel-ajustes" id="painel-categoria">
-    <div class="grupo-ajuste">
-        <label>Criar Nova Categoria</label>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies..." style="width: 160px;">
-            <button class="btn-acao" onclick="criarNovaCategoria()" >＋ Criar Categoria</button>
-        </div>
-        <p style="color: var(--texto-mutado); font-size: 0.75rem; margin: 6px 0 0 0;">
-            Suas categorias personalizadas ficam disponíveis só na sua conta.
-        </p>
-        <div id="lista-categorias-personalizadas" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;"></div>
-    </div>
-</div>
-
-<div class="painel-ajustes" id="painel-meta">
-    <div class="grupo-ajuste">
-        <label>Novo objetivo de poupança</label>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança..." style="width: 160px;">
-            <input type="number" id="objetivo-valor" placeholder="R$ 0,00" style="width: 90px;" step="10">
-            <button class="btn-acao" onclick="salvarObjetivo()" >Adicionar objetivo</button>
+    <div id="modal-vinculo-objetivo" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-vinculo-objetivo" aria-hidden="true">
+        <div class="modal-gbm-dialogo modal-gbm-dialogo-pequeno">
+            <div class="modal-gbm-topo"><h2 id="titulo-vinculo-objetivo">Destinar ao objetivo</h2><button type="button" class="modal-gbm-fechar" onclick="fecharVinculoObjetivo()">✕</button></div>
+            <p id="resumo-transacao-vinculo"></p><div id="aviso-despesa-vinculo" class="aviso-vinculo" hidden></div>
+            <div class="campo-vinculo-objetivo"><label for="objetivo-vinculo-select">Objetivo de poupança ativo</label><select id="objetivo-vinculo-select" required></select></div>
+            <div class="acoes-vinculo"><button type="button" class="btn-objetivo-transacao secundario" onclick="fecharVinculoObjetivo()">Cancelar</button><button type="button" id="confirmar-vinculo-objetivo" class="btn-objetivo-transacao" onclick="confirmarVinculoObjetivo()">Confirmar vínculo</button></div>
         </div>
     </div>
-</div>
-
-</div>
-<div class="painel-ajustes painel-controles-grafico" id="painel-exibicao">
-    <div class="grupo-ajuste">
-        <label for="select-tipo">Exibição de dados</label>
-        <select id="select-tipo" onchange="renderizarVisualizacao()">
-            <option value="table">Apenas tabela</option>
-            <option value="chart">Apenas gráfico</option>
-            <option value="both" selected>Tabela e gráfico</option>
-        </select>
-    </div>
-    <div class="grupo-ajuste">
-        <label for="select-grafico-dashboard">Tipo de gráfico</label>
-        <select id="select-grafico-dashboard" onchange="renderizarVisualizacao()">
-            <option value="bar">Barras</option>
-            <option value="doughnut">Rosca</option>
-            <option value="line">Linha</option>
-        </select>
-    </div>
-</div>
-    <div class="chart-container" id="container-do-grafico">
-        <div class="container-tabela" id="minhaTabelaContainer" style="display: none;">
-            <table>
-                <thead>
-                    <tr><th>Categoria</th><th>Valor Movimentado</th></tr>
-                </thead>
-                <tbody id="corpo-tabela"></tbody>
-            </table>
-        </div>
-        <div class="grafico-wrapper" id="wrapper-do-grafico" style="display: none;">
-            <canvas id="meuGrafico"></canvas>
-        </div>
-    </div>
-<div class="card" id="card-ofx" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; flex-wrap: wrap; gap: 12px;">
-    <div>
-        <h3 style="margin: 0; color: var(--texto-principal);">Importar Extrato</h3>
-        <p style="margin: 5px 0 0 0; color: var(--texto-mutated); font-size: 0.875rem;">Escolha a conta, revise o extrato OFX ou PDF e confirme antes de salvar.</p>
-    </div>
-    
-    <form id="form-upload-ofx" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
-        <button type="button" class="btn-acao"  onclick="window.location.href='importacoes.html'">Abrir Central de Importações</button>
-        <button type="button" id="btn-gerenciar-categorias" onclick="abrirModalTransacoes()" class="btn-acao" >
-     Gerenciar Categorias
-</button>
-    </form>
-</div>
+</main>
 <script src="auth.js"></script>
 <script>
 // Variável global para sabermos o status do cliente em qualquer lugar da tela
@@ -2879,6 +2975,9 @@ body.gbm-dashboard-padrao #particles-canvas {
                 renderizarVisualizacao();
                 atualizarPulsoFinanceiro();
                 atualizarPrincipaisCategorias();
+                carregarUltimasMovimentacoes();
+                carregarObjetivosDashboard();
+                atualizarIdentidadeDashboard();
             } catch (err) { 
                 console.error("Erro ao carregar dados:", err); 
             }
@@ -2895,44 +2994,157 @@ body.gbm-dashboard-padrao #particles-canvas {
                     const [, m, d] = p.data.split('-');
                     return `${d}/${m}`;
                 });
-                const valores = serie.map((p) => p.resultado_acumulado);
-
+                const valores = serie.map((p) => Number(p.resultado_acumulado) || 0);
                 const ctx = document.getElementById('grafico-resultado-periodo')?.getContext('2d');
-                if (!ctx) return;
+                if (!ctx || typeof Chart === 'undefined') return;
                 if (graficoResultado) graficoResultado.destroy();
 
-                const ultimoValor = valores.length ? Number(valores[valores.length - 1]) : 0;
-                const resultadoEhNegativo = ultimoValor < 0;
-                const corLinhaResultado = resultadoEhNegativo ? '#ff5d6c' : '#39d98a';
-                const corPreenchimentoResultado = resultadoEhNegativo
-                    ? 'rgba(255,93,108,.28)'
-                    : 'rgba(57,217,138,.14)';
+                const ultimoValor = valores.length ? valores[valores.length - 1] : 0;
+                const linha = ultimoValor < 0 ? '#ff5d6c' : '#39d98a';
+                const area = ultimoValor < 0 ? 'rgba(255,93,108,.14)' : 'rgba(57,217,138,.10)';
 
                 graficoResultado = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels,
                         datasets: [{
+                            label: 'Resultado',
                             data: valores,
-                            borderColor: corLinhaResultado,
-                            backgroundColor: corPreenchimentoResultado,
-                            borderWidth: 2,
+                            borderColor: linha,
+                            backgroundColor: area,
+                            borderWidth: 2.2,
                             fill: true,
-                            tension: .35,
-                            pointRadius: 0
+                            tension: .38,
+                            pointRadius: 0,
+                            pointHoverRadius: 3,
+                            pointHoverBackgroundColor: linha,
+                            pointHoverBorderColor: '#07111c',
+                            pointHoverBorderWidth: 2
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        scales: { x: { display: false }, y: { display: false } },
-                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                displayColors: false,
+                                backgroundColor: '#101c2b',
+                                borderColor: 'rgba(255,255,255,.10)',
+                                borderWidth: 1,
+                                titleColor: '#edf5fb',
+                                bodyColor: '#b8c6d5',
+                                padding: 10,
+                                callbacks: {
+                                    label: (contexto) => ' ' + Number(contexto.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(148,163,184,.055)' },
+                                border: { display: false },
+                                ticks: { color: '#65768b', maxTicksLimit: 7, font: { family: 'Inter', size: 10 } }
+                            },
+                            y: {
+                                grid: { color: 'rgba(148,163,184,.065)' },
+                                border: { display: false },
+                                ticks: {
+                                    color: '#65768b',
+                                    font: { family: 'Inter', size: 10 },
+                                    callback: (valor) => Number(valor).toLocaleString('pt-BR', { notation: 'compact', maximumFractionDigits: 1 })
+                                }
+                            }
+                        }
                     }
                 });
             } catch (erro) {
                 console.error('Erro ao carregar o gráfico do período:', erro);
             }
         }
+
+
+        async function atualizarIdentidadeDashboard() {
+            const nomeEl = document.getElementById('dashboard-nome');
+            const dataEl = document.getElementById('dashboard-data-atual');
+            if (dataEl) {
+                dataEl.textContent = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
+            }
+            if (!nomeEl) return;
+            try {
+                const resposta = await fetchApi('/perfil');
+                const dados = await resposta.json();
+                const perfil = dados.perfil || dados;
+                nomeEl.textContent = perfil.nome_exibicao || perfil.nome || 'Giovanni';
+            } catch {
+                nomeEl.textContent = 'Giovanni';
+            }
+        }
+
+        async function carregarUltimasMovimentacoes() {
+            const lista = document.getElementById('ultimas-movimentacoes-lista');
+            if (!lista) return;
+            try {
+                const { mes, ano } = cicloAtual();
+                const resposta = await fetchApi(`/transacoes-individuais?mes=${mes}&ano=${ano}${queryContaDashboard()}`);
+                const dados = await resposta.json();
+                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar as movimentações.');
+                const recentes = (Array.isArray(dados) ? [...dados] : [])
+                    .sort((a, b) => String(b.data_transacao || '').localeCompare(String(a.data_transacao || '')))
+                    .slice(0, 5);
+                if (!recentes.length) {
+                    lista.innerHTML = '<div class="dashboard-v3-empty">Nenhuma movimentação no período.</div>';
+                    return;
+                }
+                lista.innerHTML = recentes.map((item) => {
+                    const receita = item.tipo === 'Receita';
+                    const valor = Math.abs(Number(String(item.total_movimentado || item.valor || 0).replace(',', '.')) || 0);
+                    const data = String(item.data_transacao || '').slice(0, 10);
+                    const dataFmt = data ? data.split('-').reverse().join('/') : '—';
+                    const descricao = item.descricao || item.categoria || 'Movimentação';
+                    const categoria = item.categoria || item.tipo || 'Sem categoria';
+                    return '<div class="dashboard-v3-transaction">' +
+                        '<span class="dashboard-v3-transaction-icon ' + (receita ? 'receita' : 'despesa') + '">' + (receita ? '↑' : '•') + '</span>' +
+                        '<div class="dashboard-v3-transaction-main"><strong>' + escaparHtmlDashboard(descricao) + '</strong><span>' + escaparHtmlDashboard(categoria) + '</span></div>' +
+                        '<div class="dashboard-v3-transaction-value ' + (receita ? 'receita' : 'despesa') + '"><strong>' + (receita ? '+' : '-') + ' ' + formatarMoedaDashboard(valor) + '</strong><span>' + dataFmt + '</span></div>' +
+                    '</div>';
+                }).join('');
+            } catch (erro) {
+                console.error('Erro ao carregar últimas movimentações:', erro);
+                lista.innerHTML = '<div class="dashboard-v3-empty">Não foi possível carregar as movimentações.</div>';
+            }
+        }
+
+        async function carregarObjetivosDashboard() {
+            const lista = document.getElementById('objetivos-dashboard-lista');
+            if (!lista) return;
+            try {
+                const resposta = await fetchApi('/objetivos');
+                const dados = await resposta.json();
+                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar os objetivos.');
+                const objetivos = (Array.isArray(dados) ? dados : []).filter((objetivo) => objetivo.status === 'ativo').slice(0, 4);
+                if (!objetivos.length) {
+                    lista.innerHTML = '<div class="dashboard-v3-empty">Você ainda não tem metas ativas.</div>';
+                    return;
+                }
+                lista.innerHTML = objetivos.map((objetivo) => {
+                    const meta = Math.max(0, Number(objetivo.valor_meta) || 0);
+                    const guardado = Math.max(0, Number(objetivo.valor_guardado) || 0);
+                    const percentual = meta > 0 ? Math.min(100, (guardado / meta) * 100) : 0;
+                    return '<div class="dashboard-v3-goal">' +
+                        '<span class="dashboard-v3-goal-icon">◎</span>' +
+                        '<div class="dashboard-v3-goal-main"><strong>' + escaparHtmlDashboard(objetivo.nome || 'Objetivo') + '</strong><span>' + formatarMoedaDashboard(guardado) + ' / ' + formatarMoedaDashboard(meta) + '</span><div class="dashboard-v3-goal-bar"><i style="width:' + percentual.toFixed(1) + '%"></i></div></div>' +
+                        '<span class="dashboard-v3-goal-pct">' + percentual.toFixed(0) + '%</span>' +
+                    '</div>';
+                }).join('');
+            } catch (erro) {
+                console.error('Erro ao carregar metas do dashboard:', erro);
+                lista.innerHTML = '<div class="dashboard-v3-empty">Não foi possível carregar suas metas.</div>';
+            }
+        }
+
         function atualizarDropdownCategorias() {
     const selectMeta = document.getElementById('meta-categoria');
     if (!selectMeta) return;
@@ -2965,6 +3177,8 @@ body.gbm-dashboard-padrao #particles-canvas {
     });
     document.getElementById('total-entradas').innerText = formatarMoedaDashboard(ent);
     document.getElementById('total-saidas').innerText = formatarMoedaDashboard(sai);
+    const saldoTotalDashboard = document.getElementById('saldo-total-dashboard');
+    if (saldoTotalDashboard) saldoTotalDashboard.innerText = formatarMoedaDashboard(saldoBancoReal);
 
     // Card 3: resultado do período (as contas batem: Entradas - Saídas)
     const periodo = ent - sai;
