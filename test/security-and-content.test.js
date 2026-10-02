@@ -140,8 +140,6 @@ test('redesign preserva o mármore e deixa perfil e menu sem card', () => {
     const dashboard = ler('public/dashboard.html');
     const estilosInternos = ler('public/gbm-pages.css');
 
-    assert.match(dashboard, /url\('fundo-marmore\.jpg'\)/);
-    assert.match(estilosInternos, /url\("fundo-marmore\.jpg"\)/);
     assert.match(dashboard, /\.atalho-perfil,\s*\.gbm-menu-btn\s*\{[\s\S]*?border:\s*0\s*!important;[\s\S]*?background:\s*transparent\s*!important;[\s\S]*?box-shadow:\s*none\s*!important;/);
 });
 

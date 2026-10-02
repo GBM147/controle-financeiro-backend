@@ -6,7 +6,7 @@
     const PAGINAS = {
         'dashboard.html': {
             titulo: 'Dashboard',
-            mostrarBotao: false,
+            mostrarBotao: true,
             passos: [
                 {
                     alvo: null,

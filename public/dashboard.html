@@ -3,12 +3,12 @@
 <head>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>Controlador Financeiro</title>
+    <title>Dashboard | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
     <style>
 
         /* === GBM design tokens (regua visual unica) === */
@@ -33,11 +33,11 @@
         }
 
         body {
-            font-family: 'Inter', 'Montserrat', sans-serif;
+            font-family: 'Inter', 'Inter', sans-serif;
             margin: 0;
             padding: 0;
             /* Fundo Mármore com película escura */
-            background-image: linear-gradient(rgba(9, 16, 28, 0.93), rgba(9, 16, 28, 0.96)), url('fundo-marmore.jpg') !important;
+            background-image: linear-gradient(rgba(9, 16, 28, 0.93), rgba(9, 16, 28, 0.96)), url('') !important;
             background-size: cover !important;
             background-position: center !important;
             background-attachment: fixed !important;
@@ -255,7 +255,7 @@
         }
 
         .sidebar-content .menu-item {
-            font-family: 'Inter', 'Montserrat', sans-serif;
+            font-family: 'Inter', 'Inter', sans-serif;
             font-weight: 600;
             font-size: 1rem;
             text-transform: none;
@@ -285,7 +285,7 @@
             margin: 0;
             padding: 9px 28px 5px;
             color: #7f91a8;
-            font-family: 'Inter', 'Montserrat', sans-serif;
+            font-family: 'Inter', 'Inter', sans-serif;
             font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: .04em;
@@ -362,7 +362,7 @@
             border-radius: 10px;
             background: rgba(85, 167, 255, 0.08);
             color: #b7d8f6;
-            font-family: 'Inter', 'Montserrat', sans-serif;
+            font-family: 'Inter', 'Inter', sans-serif;
             font-size: 0.75rem;
             font-weight: 500;
             line-height: 1.4;
@@ -390,7 +390,7 @@
         .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px; }
         .card h3 { color: var(--texto-mutado) !important; font-size: 0.875rem; margin: 0 0 10px 0; }
         .card p { font-size: 1.5rem; font-weight: bold; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        /* --- CARDS MODERNOS (fundo sólido + borda neon + fonte Rajdhani) --- */
+        /* --- CARDS MODERNOS (fundo sólido + borda neon + fonte Sora) --- */
 .card {
   background: #0f1a2b !important;
   background-image: none !important;       /* remove o espelhado/mármore */
@@ -865,9 +865,10 @@
             min-height: 74px;
             height: 74px;
             padding: 0 34px;
-            background: rgba(7,17,31,.3);
+            background: rgba(7,17,31,.94);
             border-bottom-color: rgba(255,255,255,.12);
-            backdrop-filter: blur(9px);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
         }
         .atalho-perfil,
         .gbm-menu-btn {
@@ -1207,8 +1208,74 @@
 </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
     <link rel="stylesheet" href="gbm-pages.css">
+
+    <style id="gbm-padrao-visual-local">
+        /* ===== RÉGUA VISUAL CANÔNICA =====
+           A estrutura desta página permanece própria da MAIN.
+           Este bloco normaliza somente a aparência para a mesma régua visual
+           usada pelas demais páginas internas. */
+        body.gbm-interna {
+            --cor-destaque: var(--green);
+            --cor-destaque-hover: var(--green-dark);
+            --texto-principal: var(--text);
+            --texto-mutado: var(--muted);
+            --borda: var(--border-soft);
+            --sombra: var(--shadow);
+            --cor-receita: var(--green);
+            --cor-despesa: var(--red);
+            color: var(--text) !important;
+            background: var(--bg) !important;
+            background-image: radial-gradient(circle at 16% 5%, rgba(34,201,139,.055), transparent 28%), radial-gradient(circle at 86% 20%, rgba(52,166,216,.05), transparent 24%) !important;
+            background-position: center !important;
+            background-size: cover !important;
+            background-attachment: fixed !important;
+            font-family: Inter, "Segoe UI", sans-serif !important;
+        }
+
+        body.gbm-interna :where(.card, .painel-ajustes, .chart-container, .lancamento-rapido, .insights-panel, .categorias-panel, .resumo-container, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .form-card) {
+            background: linear-gradient(145deg, rgba(16,32,40,.96), rgba(11,26,34,.96)) !important;
+            border-color: rgba(52,166,216,.2) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 10px 26px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.025) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        body.gbm-interna :where(.filtros) {
+            background: rgba(7,20,27,.76) !important;
+            border-color: rgba(52,166,216,.14) !important;
+            border-radius: 8px !important;
+        }
+
+        body.gbm-interna :where(input, select, textarea) {
+            color: #f1f7f5 !important;
+            background-color: rgba(7,20,27,.9) !important;
+            border-color: rgba(52,166,216,.2) !important;
+            border-radius: 7px !important;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,.16) !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
+        }
+
+        body.gbm-interna :where(button, .btn, .btn-acao, .btn-voltar) {
+            border-radius: 7px !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
+            text-shadow: none !important;
+        }
+
+        body.gbm-interna :where(h1, h2, h3, .gbm-title, .titulo, .titulo-pagina, .card-titulo) {
+            font-family: Sora, Inter, sans-serif !important;
+            text-shadow: none !important;
+        }
+
+        body.gbm-interna :where(p, label, .texto-mutado, .card-subtitulo) {
+            color: var(--muted) !important;
+        }
+
+        body.gbm-interna :where(table) { border-collapse: separate; border-spacing: 0; }
+        body.gbm-interna :where(th) { color: var(--muted) !important; }
+        body.gbm-interna :where(td, th) { border-color: rgba(52,166,216,.1) !important; }
+    </style>
 </head>
-<body>
+<body class="gbm-interna gbm-dashboard-padrao">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
 <!-- NOVO CABEÇALHO GBM COMPLETO -->
 <header class="gbm-header">
@@ -2674,7 +2741,7 @@ async function abrirModalTransacoes() {
             html += `
                 <tr id="transacao-${Number(t.id)}" style="border-bottom:1px solid rgba(255,255,255,0.05);">
                     <td style="padding:10px; font-size:0.8125rem; color:#a0a0a0; white-space:nowrap;">${data}</td>
-                    <td style="padding:10px; font-size:0.8125rem; max-width:250px;">${escaparHtmlDashboard(t.descricao)}</td>
+                    <td style="padding:10px; font-size:0.8125rem; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escaparHtmlDashboard(t.descricao)}</td>
                     <td style="padding:10px; font-weight:bold; color:${cor}; white-space:nowrap;">${sinal} R$ ${Number(t.valor).toFixed(2)}</td>
                     <td style="padding:10px;">${etiquetaBanco(t.banco)}</td>
                     <td style="padding:10px;">
@@ -3097,6 +3164,7 @@ window.promessaVerificacaoAcesso.then(() => {
     })();
 </script>
     <script src="gbm-tutorial.js"></script>
+    <script src="gbm-ai-ajuda.js"></script>
     <script src="gbm-pages.js"></script>
 </body>
 </html>

@@ -27,17 +27,31 @@ function gbmEscapar(valor) {
 function gbmAplicarTemaVisual() {
     if (document.getElementById('gbm-tema-visual')) return;
 
-    const ativarTemaNaPagina = () => document.body?.classList.add('gbm-interna');
+    const ativarTemaNaPagina = () => {
+        if (!document.body) return;
+        const paginaAtual = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+        const paginasPublicas = new Set([
+            'index.html',
+            'login.html',
+            'termos.html',
+            'politica-de-privacidade.html',
+            'sobre.html',
+            'fale-conosco.html',
+            'educacao-financeira.html',
+            'offline.html',
+            'sw-reset.html'
+        ]);
+        if (paginasPublicas.has(paginaAtual)) return;
+        document.body.classList.add('gbm-interna');
+        if (paginaAtual === 'dashboard.html') {
+            document.body.classList.add('gbm-dashboard-padrao');
+        }
+    };
     if (document.body) {
         ativarTemaNaPagina();
     } else {
         document.addEventListener('DOMContentLoaded', ativarTemaNaPagina, { once: true });
     }
-
-    const fonte = document.createElement('link');
-    fonte.rel = 'stylesheet';
-    fonte.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap';
-    document.head.appendChild(fonte);
 
     const estilo = document.createElement('style');
     estilo.id = 'gbm-tema-visual';
@@ -61,9 +75,9 @@ function gbmAplicarTemaVisual() {
         html { color-scheme: dark; }
 
         body.gbm-interna {
-            background: var(--gbm-bg) !important;
+            background: #07111f !important;
             background-image: radial-gradient(circle at 16% 5%, rgba(34, 201, 139, .055), transparent 28%), radial-gradient(circle at 86% 20%, rgba(52, 166, 216, .05), transparent 24%) !important;
-            font-family: 'Manrope', system-ui, sans-serif !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
             color: var(--gbm-text);
             letter-spacing: 0;
         }
@@ -93,10 +107,38 @@ function gbmAplicarTemaVisual() {
 
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .modal-content, .plano-card, .form-card) {
             background: linear-gradient(145deg, var(--gbm-surface), var(--gbm-surface-strong)) !important;
-            border-color: var(--gbm-line) !important;
+            border: 1px solid var(--gbm-line) !important;
             border-radius: var(--gbm-radius) !important;
             box-shadow: var(--gbm-shadow) !important;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px) !important;
+        }
+
+        body.gbm-interna :where(.page-wrapper, .container) {
+            width: min(1180px, calc(100% - 40px));
+            margin-inline: auto;
+        }
+
+        body.gbm-interna :where(.page-wrapper > .card, .container > .card) {
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: inset 0 -1px 0 rgba(85, 167, 255, .16) !important;
+        }
+        body.gbm-interna :where(#card-resultado, .filtros-card, .grafico-wrapper, .resumo-item) {
+            background: #132036 !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: inset 0 -1px 0 rgba(85, 167, 255, .16) !important;
+        }
+
+        body.gbm-interna :where(.filtros) {
+            background: rgba(7, 20, 27, .76) !important;
+            border: 1px solid rgba(52, 166, 216, .14) !important;
+            border-radius: var(--gbm-radius) !important;
+        }
+
+        body.gbm-interna :where(.resumo-ano, .resumo-rapido) {
+            gap: 10px !important;
         }
 
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card) {
@@ -105,8 +147,8 @@ function gbmAplicarTemaVisual() {
 
         body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card):hover {
             transform: none !important;
-            border-color: rgba(52, 166, 216, .34) !important;
-            box-shadow: 0 14px 32px rgba(0, 0, 0, .26) !important;
+            border-color: var(--gbm-line-focus) !important;
+            box-shadow: var(--gbm-shadow) !important;
         }
 
         body.gbm-interna :where(input, select, textarea) {
@@ -116,7 +158,7 @@ function gbmAplicarTemaVisual() {
             border-color: var(--gbm-line) !important;
             border-radius: 7px !important;
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, .16) !important;
-            font-family: 'Manrope', system-ui, sans-serif !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
             transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
         }
 
@@ -129,7 +171,7 @@ function gbmAplicarTemaVisual() {
 
         body.gbm-interna :where(button, .btn, .btn-voltar) {
             border-radius: 7px !important;
-            font-family: 'Manrope', system-ui, sans-serif !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
             font-weight: 700;
             text-shadow: none !important;
             box-shadow: none;
@@ -167,6 +209,12 @@ function gbmAplicarTemaVisual() {
             backdrop-filter: blur(14px);
         }
 
+        @media (max-width: 700px) {
+            body.gbm-interna :where(.page-wrapper, .container) {
+                width: min(100% - 24px, 1180px);
+            }
+        }
+
         #particles-canvas { opacity: .2 !important; }
 
         @media (prefers-reduced-motion: reduce) {
@@ -181,8 +229,10 @@ function gbmAplicarTemaVisual() {
 }
 
 
+const gbmPaginaVisualAtual = (window.location.pathname.split('/').pop() || '').toLowerCase();
+
 /* ===== MENU INTERNO GLOBAL =====
-   Todas as telas autenticadas usam o mesmo cabeçalho e menu lateral.
+   Todas as telas internas usam o mesmo cabeçalho e menu lateral.
    Páginas públicas continuam com sua navegação própria.
 */
 function gbmGarantirMenuInterno() {
@@ -213,6 +263,24 @@ function gbmGarantirMenuInterno() {
 
 gbmAplicarTemaVisual();
 gbmGarantirMenuInterno();
+
+
+/* Mantém somente o cabeçalho compartilhado quando páginas antigas ainda
+   carregam uma cópia própria ou algum script legado tenta recriá-la. */
+function gbmGarantirCabecalhoUnico() {
+    const cabecalhos = [...document.querySelectorAll('body > .gbm-header')];
+    if (cabecalhos.length < 2) return;
+    cabecalhos.slice(0, -1).forEach((cabecalho) => cabecalho.remove());
+}
+
+function gbmObservarCabecalho() {
+    gbmGarantirCabecalhoUnico();
+    const observador = new MutationObserver(gbmGarantirCabecalhoUnico);
+    observador.observe(document.body, { childList: true });
+}
+
+if (document.body) gbmObservarCabecalho();
+else document.addEventListener('DOMContentLoaded', gbmObservarCabecalho, { once: true });
 
 function gbmToast(mensagem, tipo = 'sucesso') {
     document.querySelector('.toast')?.remove();
@@ -408,9 +476,9 @@ async function carregarAtalhoPerfilCabecalho() {
     }
 }
 
-let _resolveConfirm = null;
+let _gbmResolveConfirm = null;
 
-const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
+const gbmEscaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 })[caractere]);
 
@@ -420,20 +488,20 @@ function gbmAlerta(mensagem, tipo = 'info') {
         : 'rgba(95,255,168,0.3)';
     document.getElementById('lista-notificacoes-modal').innerHTML = `
         <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-            ${escaparMensagemModal(mensagem)}
+            ${gbmEscaparMensagemModal(mensagem)}
         </div>`;
     document.getElementById('btn-confirmar-modal').style.display = 'none';
     document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
     document.getElementById('modal-notificacoes').style.display = 'flex';
-    _resolveConfirm = null;
+    _gbmResolveConfirm = null;
 }
 
 function gbmConfirmar(mensagem) {
     return new Promise(resolve => {
-        _resolveConfirm = resolve;
+        _gbmResolveConfirm = resolve;
         document.getElementById('lista-notificacoes-modal').innerHTML = `
             <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                ${escaparMensagemModal(mensagem)}
+                ${gbmEscaparMensagemModal(mensagem)}
             </div>`;
         document.getElementById('btn-confirmar-modal').style.display = 'block';
         document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
@@ -443,9 +511,9 @@ function gbmConfirmar(mensagem) {
 
 function fecharModalNotificacoes(confirmado = false) {
     document.getElementById('modal-notificacoes').style.display = 'none';
-    if (_resolveConfirm) {
-        _resolveConfirm(confirmado);
-        _resolveConfirm = null;
+    if (_gbmResolveConfirm) {
+        _gbmResolveConfirm(confirmado);
+        _gbmResolveConfirm = null;
     }
 }
 
@@ -526,7 +594,22 @@ function gbmRemoverCabecalhoPagina() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', gbmRemoverCabecalhoPagina, { once: true });
+document.addEventListener('DOMContentLoaded', () => {
+    const paginaAtual = (window.location.pathname.split('/').pop() || '').toLowerCase();
+    const paginasPublicas = [
+        'index.html',
+        'login.html',
+        'termos.html',
+        'politica-de-privacidade.html',
+        'sobre.html',
+        'fale-conosco.html',
+        'educacao-financeira.html',
+        'offline.html',
+        'sw-reset.html'
+    ];
+    if (paginaAtual === 'dashboard.html' || paginasPublicas.includes(paginaAtual)) return;
+    gbmRemoverCabecalhoPagina();
+}, { once: true });
 
 /* ===== ASSISTENTE IA "COMO USAR ESTA PÁGINA" ===== */
 (function carregarAssistenteGbm() {

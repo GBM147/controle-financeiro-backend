@@ -1,121 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fale Conosco | GBM</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fale conosco | GBM Finance</title>
+    <meta name="description" content="Canal de contato do GBM Finance para suporte, dúvidas sobre assinatura, privacidade e sugestões editoriais.">
+    <meta name="google-adsense-account" content="ca-pub-2735805392775741">
+    <link rel="canonical" href="https://gbm-finance.com/fale-conosco.html">
+    <link rel="stylesheet" href="guias.css">
     <link rel="stylesheet" href="gbm-pages.css">
-    <style>
-        body {
-            margin: 0;
-            color: #fff;
-            font-family: Inter, 'Segoe UI', sans-serif;
-        }
-        body.gbm-interna .contato-card {
-            width: min(520px, calc(100% - 40px));
-            max-width: 520px;
-            margin: 40px auto 64px;
-            padding: 32px;
-            border-radius: 14px;
-        }
-        h2 { margin: 0 0 5px 0; color: #fff; text-align: center; }
-        p.subtitle { text-align: center; color: #b0bec5; font-size: 0.9rem; margin-bottom: 25px; }
-        
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: #d1d9e0; font-size: 0.9rem; font-weight: 500; }
-        input, textarea, select { 
-            width: 100%; padding: 12px; background: rgba(0,0,0,0.2); 
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; 
-            color: #fff; font-family: 'Inter', sans-serif; box-sizing: border-box; 
-            transition: all 0.3s ease;
-        }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: #2E8B57; background: rgba(0,0,0,0.4); }
-        
-        .btn-enviar { 
-            width: 100%; padding: 14px; background: #2E8B57; color: #fff; 
-            border: none; border-radius: 8px; font-weight: 600; cursor: pointer; 
-            transition: 0.3s; margin-top: 10px; font-size: 1rem;
-        }
-        .btn-enviar:hover { background: #3cb371; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4); }
-
-        #mensagem-status { 
-            display: none; text-align: center; margin-top: 15px; padding: 12px; 
-            border-radius: 8px; font-size: 0.9rem; font-weight: 500;
-        }
-        .sucesso { color: #3cb371; background: rgba(46, 139, 87, 0.1); border: 1px solid rgba(46, 139, 87, 0.3); }
-        .erro { color: #ff4d4d; background: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3); }
-        @media (max-width: 600px) {
-            body.gbm-interna .contato-card {
-                width: calc(100% - 24px);
-                margin: 24px auto 40px;
-                padding: 20px 16px;
-            }
-        }
-    </style>
-    <link rel="stylesheet" href="gbm-tutorial.css">
 </head>
-<body class="gbm-interna">
-    <header class="topbar">
-        <a class="brand" href="dashboard.html" aria-label="Ir para o Dashboard">
-            <img src="logo-transparente.jpg" alt="Logo GBM">
-            <span>Guardian of Budget &amp; Money</span>
-        </a>
-        <div class="top-actions">
-            <a class="btn-voltar" href="configuracoes.html" aria-label="Voltar às Configurações">Voltar</a>
-        </div>
+<body>
+    <header class="site-header">
+        <a class="brand" href="index.html">GBM <span>Finance</span></a>
+        <nav class="site-nav" aria-label="Navegação principal">
+            <a href="educacao-financeira.html">Guias</a>
+            <a href="sobre.html">Sobre</a>
+            <a href="fale-conosco.html">Contato</a>
+            <a href="login.html">Entrar</a>
+        </nav>
     </header>
+    <main>
+        <section class="hero">
+            <p class="eyebrow">Suporte</p>
+            <h1>Fale conosco</h1>
+            <p class="lead">Dúvidas sobre o sistema, sugestões de conteúdo, problemas técnicos ou questões de assinatura e privacidade — use o formulário abaixo. Respondemos por e-mail em até 2 dias úteis.</p>
+        </section>
 
-    <main class="container contato-card">
-        <h2>Fale Conosco</h2>
-        <p class="subtitle">Envie seu feedback, dúvida ou sugestão.</p>
+        <div class="article-layout">
+            <article>
+                <h2>Antes de enviar</h2>
+                <p>Se a dúvida for sobre um dos guias da <a href="educacao-financeira.html">biblioteca de educação financeira</a>, cite o título do artigo na mensagem — isso agiliza a resposta. Para questões de conta, login ou assinatura, é necessário estar autenticado; acesse pela área <a href="login.html">Entrar</a> e use o suporte dentro do painel para respostas mais rápidas com seu histórico.</p>
 
-        <form id="formFeedback">
-            <div class="form-group">
-                <label for="assunto">Assunto</label>
-                <select id="assunto" required>
-                    <option value="" disabled selected>Selecione uma opção...</option>
-                    <option value="Duvida">Dúvida sobre o sistema</option>
-                    <option value="Feedback">Feedback / Sugestão</option>
-                    <option value="Problema">Relatar um Problema</option>
-                    <option value="Assinatura">Dúvida sobre Assinatura</option>
-                </select>
-            </div>
+                <h2>O que podemos responder por aqui</h2>
+                <ul class="checklist">
+                    <li><strong>Dúvidas sobre o sistema:</strong> como funciona a importação de extratos, limites de gastos e metas.</li>
+                    <li><strong>Feedback e sugestões:</strong> ideias de guias, melhorias de usabilidade, erros de conteúdo.</li>
+                    <li><strong>Problemas técnicos:</strong> falhas ao importar arquivos, exibição incorreta de dados.</li>
+                    <li><strong>Assinatura e cobrança:</strong> dúvidas sobre o plano Premium e pagamentos via Mercado Pago.</li>
+                </ul>
 
-            <div class="form-group">
-                <label for="mensagem">Sua Mensagem</label>
-                <textarea id="mensagem" rows="5" placeholder="Descreva sua solicitação com detalhes..." required></textarea>
-            </div>
-
-            <button type="submit" class="btn-enviar" id="btnSubmit">Enviar Mensagem</button>
-        </form>
-
-        <div id="mensagem-status"></div>
+                <h2>Formulário</h2>
+                <form id="formFeedback">
+                    <div class="form-group">
+                        <label for="nome">Nome</label>
+                        <input type="text" id="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail para resposta</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="assunto">Assunto</label>
+                        <select id="assunto" required>
+                            <option value="" disabled selected>Selecione uma opção...</option>
+                            <option value="Duvida">Dúvida sobre o sistema</option>
+                            <option value="Feedback">Feedback / Sugestão</option>
+                            <option value="Problema">Relatar um problema</option>
+                            <option value="Assinatura">Dúvida sobre assinatura</option>
+                            <option value="Privacidade">Privacidade e dados</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="mensagem">Sua mensagem</label>
+                        <textarea id="mensagem" rows="5" placeholder="Descreva sua solicitação com detalhes..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-enviar" id="btnSubmit">Enviar mensagem</button>
+                </form>
+                <div id="mensagem-status"></div>
+            </article>
+            <aside><strong>Navegue</strong><a href="educacao-financeira.html">Biblioteca de guias</a><a href="sobre.html">Sobre o GBM Finance</a><a href="politica-de-privacidade.html">Política de privacidade</a></aside>
+        </div>
     </main>
-
+    <footer class="site-footer">
+        <nav><a href="educacao-financeira.html">Guias</a><a href="termos.html">Termos</a><a href="politica-de-privacidade.html">Privacidade</a></nav>
+        <small>© 2026 GBM Finance.</small>
+    </footer>
     <script>
-        document.getElementById('formFeedback').addEventListener('submit', async function(e) {
-            e.preventDefault(); // Impede a página de recarregar
-            
+        document.getElementById('formFeedback').addEventListener('submit', async function (e) {
+            e.preventDefault();
             const btnSubmit = document.getElementById('btnSubmit');
             const statusDiv = document.getElementById('mensagem-status');
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
             const assunto = document.getElementById('assunto').value;
             const mensagem = document.getElementById('mensagem').value;
-            
-            // Pega o ID do usuário salvo (mesmo padrão usado no resto do app)
-            function pegarUserId() {
-                return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
-            }
-            const userId = pegarUserId();
 
             btnSubmit.innerText = 'Enviando...';
             btnSubmit.disabled = true;
 
             try {
-                // Rota do seu backend que fará o disparo do e-mail
                 const response = await fetch('/api/enviar-feedback', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, assunto, mensagem })
+                    body: JSON.stringify({ nome, email, assunto, mensagem })
                 });
 
                 if (response.ok) {
@@ -133,12 +111,11 @@
                 statusDiv.innerText = 'Erro ao enviar mensagem: ' + (error.message || 'tente novamente mais tarde.');
                 statusDiv.style.display = 'block';
             } finally {
-                btnSubmit.innerText = 'Enviar Mensagem';
+                btnSubmit.innerText = 'Enviar mensagem';
                 btnSubmit.disabled = false;
             }
         });
     </script>
     <script src="gbm-pages.js"></script>
-    <script src="gbm-tutorial.js"></script>
 </body>
 </html>

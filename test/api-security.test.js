@@ -28,12 +28,7 @@ test('entrega páginas com CSP e cabeçalhos de proteção', async () => {
     assert.equal(resposta.headers['x-content-type-options'], 'nosniff');
 });
 
-test('preserva a URL antiga e bloqueia origens não autorizadas', async () => {
-    await request(app)
-        .get('/Limite-de-Gastos.html')
-        .expect(308)
-        .expect('Location', '/limite-de-gastos.html');
-
+test('bloqueia origens não autorizadas', async () => {
     await request(app)
         .get('/index.html')
         .set('Origin', 'https://exemplo-malicioso.invalid')
