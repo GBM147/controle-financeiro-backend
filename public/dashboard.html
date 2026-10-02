@@ -2974,6 +2974,9 @@ body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{backgrou
                 renderizarVisualizacao();
                 atualizarPulsoFinanceiro();
                 atualizarPrincipaisCategorias();
+                carregarUltimasMovimentacoes();
+                carregarObjetivosDashboard();
+                atualizarIdentidadeDashboard();
             } catch (err) { 
                 console.error("Erro ao carregar dados:", err); 
             }
@@ -2983,51 +2986,164 @@ body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{backgrou
         async function carregarGraficoResultado() {
             try {
                 const { mes, ano } = cicloAtual();
-                const res = await fetchApi(`/resumo-diario?mes=${mes}&ano=${ano}${queryContaDashboard()}`);
+                const res = await fetchApi(\`/resumo-diario?mes=\${mes}&ano=\${ano}\${queryContaDashboard()}\`);
                 const dados = await res.json();
                 const serie = dados.serie || [];
                 const labels = serie.map((p) => {
                     const [, m, d] = p.data.split('-');
-                    return `${d}/${m}`;
+                    return \`\${d}/\${m}\`;
                 });
-                const valores = serie.map((p) => p.resultado_acumulado);
-
+                const valores = serie.map((p) => Number(p.resultado_acumulado) || 0);
                 const ctx = document.getElementById('grafico-resultado-periodo')?.getContext('2d');
-                if (!ctx) return;
+                if (!ctx || typeof Chart === 'undefined') return;
                 if (graficoResultado) graficoResultado.destroy();
 
-                const ultimoValor = valores.length ? Number(valores[valores.length - 1]) : 0;
-                const resultadoEhNegativo = ultimoValor < 0;
-                const corLinhaResultado = resultadoEhNegativo ? '#ff5d6c' : '#39d98a';
-                const corPreenchimentoResultado = resultadoEhNegativo
-                    ? 'rgba(255,93,108,.28)'
-                    : 'rgba(57,217,138,.14)';
+                const ultimoValor = valores.length ? valores[valores.length - 1] : 0;
+                const linha = ultimoValor < 0 ? '#ff5d6c' : '#39d98a';
+                const area = ultimoValor < 0 ? 'rgba(255,93,108,.14)' : 'rgba(57,217,138,.10)';
 
                 graficoResultado = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels,
                         datasets: [{
+                            label: 'Resultado',
                             data: valores,
-                            borderColor: corLinhaResultado,
-                            backgroundColor: corPreenchimentoResultado,
-                            borderWidth: 2,
+                            borderColor: linha,
+                            backgroundColor: area,
+                            borderWidth: 2.2,
                             fill: true,
-                            tension: .35,
-                            pointRadius: 0
+                            tension: .38,
+                            pointRadius: 0,
+                            pointHoverRadius: 3,
+                            pointHoverBackgroundColor: linha,
+                            pointHoverBorderColor: '#07111c',
+                            pointHoverBorderWidth: 2
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        scales: { x: { display: false }, y: { display: false } },
-                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                displayColors: false,
+                                backgroundColor: '#101c2b',
+                                borderColor: 'rgba(255,255,255,.10)',
+                                borderWidth: 1,
+                                titleColor: '#edf5fb',
+                                bodyColor: '#b8c6d5',
+                                padding: 10,
+                                callbacks: {
+                                    label: (contexto) => ' ' + Number(contexto.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(148,163,184,.055)' },
+                                border: { display: false },
+                                ticks: { color: '#65768b', maxTicksLimit: 7, font: { family: 'Inter', size: 10 } }
+                            },
+                            y: {
+                                grid: { color: 'rgba(148,163,184,.065)' },
+                                border: { display: false },
+                                ticks: {
+                                    color: '#65768b',
+                                    font: { family: 'Inter', size: 10 },
+                                    callback: (valor) => Number(valor).toLocaleString('pt-BR', { notation: 'compact', maximumFractionDigits: 1 })
+                                }
+                            }
+                        }
                     }
                 });
             } catch (erro) {
                 console.error('Erro ao carregar o gráfico do período:', erro);
             }
         }
+
+
+        async function atualizarIdentidadeDashboard() {
+            const nomeEl = document.getElementById('dashboard-nome');
+            const dataEl = document.getElementById('dashboard-data-atual');
+            if (dataEl) {
+                dataEl.textContent = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
+            }
+            if (!nomeEl) return;
+            try {
+                const resposta = await fetchApi('/perfil');
+                const dados = await resposta.json();
+                const perfil = dados.perfil || dados;
+                nomeEl.textContent = perfil.nome_exibicao || perfil.nome || 'Giovanni';
+            } catch {
+                nomeEl.textContent = 'Giovanni';
+            }
+        }
+
+        async function carregarUltimasMovimentacoes() {
+            const lista = document.getElementById('ultimas-movimentacoes-lista');
+            if (!lista) return;
+            try {
+                const { mes, ano } = cicloAtual();
+                const resposta = await fetchApi(\`/transacoes-individuais?mes=\${mes}&ano=\${ano}\${queryContaDashboard()}\`);
+                const dados = await resposta.json();
+                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar as movimentações.');
+                const recentes = (Array.isArray(dados) ? [...dados] : [])
+                    .sort((a, b) => String(b.data_transacao || '').localeCompare(String(a.data_transacao || '')))
+                    .slice(0, 5);
+                if (!recentes.length) {
+                    lista.innerHTML = '<div class="dashboard-v3-empty">Nenhuma movimentação no período.</div>';
+                    return;
+                }
+                lista.innerHTML = recentes.map((item) => {
+                    const receita = item.tipo === 'Receita';
+                    const valor = Math.abs(Number(String(item.total_movimentado || item.valor || 0).replace(',', '.')) || 0);
+                    const data = String(item.data_transacao || '').slice(0, 10);
+                    const dataFmt = data ? data.split('-').reverse().join('/') : '—';
+                    const descricao = item.descricao || item.categoria || 'Movimentação';
+                    const categoria = item.categoria || item.tipo || 'Sem categoria';
+                    return '<div class="dashboard-v3-transaction">' +
+                        '<span class="dashboard-v3-transaction-icon ' + (receita ? 'receita' : 'despesa') + '">' + (receita ? '↑' : '•') + '</span>' +
+                        '<div class="dashboard-v3-transaction-main"><strong>' + escaparHtmlDashboard(descricao) + '</strong><span>' + escaparHtmlDashboard(categoria) + '</span></div>' +
+                        '<div class="dashboard-v3-transaction-value ' + (receita ? 'receita' : 'despesa') + '"><strong>' + (receita ? '+' : '-') + ' ' + formatarMoedaDashboard(valor) + '</strong><span>' + dataFmt + '</span></div>' +
+                    '</div>';
+                }).join('');
+            } catch (erro) {
+                console.error('Erro ao carregar últimas movimentações:', erro);
+                lista.innerHTML = '<div class="dashboard-v3-empty">Não foi possível carregar as movimentações.</div>';
+            }
+        }
+
+        async function carregarObjetivosDashboard() {
+            const lista = document.getElementById('objetivos-dashboard-lista');
+            if (!lista) return;
+            try {
+                const resposta = await fetchApi('/objetivos');
+                const dados = await resposta.json();
+                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar os objetivos.');
+                const objetivos = (Array.isArray(dados) ? dados : []).filter((objetivo) => objetivo.status === 'ativo').slice(0, 4);
+                if (!objetivos.length) {
+                    lista.innerHTML = '<div class="dashboard-v3-empty">Você ainda não tem metas ativas.</div>';
+                    return;
+                }
+                lista.innerHTML = objetivos.map((objetivo) => {
+                    const meta = Math.max(0, Number(objetivo.valor_meta) || 0);
+                    const guardado = Math.max(0, Number(objetivo.valor_guardado) || 0);
+                    const percentual = meta > 0 ? Math.min(100, (guardado / meta) * 100) : 0;
+                    return '<div class="dashboard-v3-goal">' +
+                        '<span class="dashboard-v3-goal-icon">◎</span>' +
+                        '<div class="dashboard-v3-goal-main"><strong>' + escaparHtmlDashboard(objetivo.nome || 'Objetivo') + '</strong><span>' + formatarMoedaDashboard(guardado) + ' / ' + formatarMoedaDashboard(meta) + '</span><div class="dashboard-v3-goal-bar"><i style="width:' + percentual.toFixed(1) + '%"></i></div></div>' +
+                        '<span class="dashboard-v3-goal-pct">' + percentual.toFixed(0) + '%</span>' +
+                    '</div>';
+                }).join('');
+            } catch (erro) {
+                console.error('Erro ao carregar metas do dashboard:', erro);
+                lista.innerHTML = '<div class="dashboard-v3-empty">Não foi possível carregar suas metas.</div>';
+            }
+        }
+
         function atualizarDropdownCategorias() {
     const selectMeta = document.getElementById('meta-categoria');
     if (!selectMeta) return;
@@ -3060,6 +3176,8 @@ body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{backgrou
     });
     document.getElementById('total-entradas').innerText = formatarMoedaDashboard(ent);
     document.getElementById('total-saidas').innerText = formatarMoedaDashboard(sai);
+    const saldoTotalDashboard = document.getElementById('saldo-total-dashboard');
+    if (saldoTotalDashboard) saldoTotalDashboard.innerText = formatarMoedaDashboard(saldoBancoReal);
 
     // Card 3: resultado do período (as contas batem: Entradas - Saídas)
     const periodo = ent - sai;
