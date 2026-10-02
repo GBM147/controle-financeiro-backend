@@ -2486,6 +2486,229 @@ body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{backgrou
 }
 </style>
 
+<style id="gbm-dashboard-gastos-ajuste">
+body.gbm-dashboard-padrao .dashboard-v3-categories-content{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 230px!important;
+  gap:18px!important;
+  align-items:center!important;
+  margin-top:12px!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-categories .principais-categorias-lista{
+  margin-top:0!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-expense-chart-wrap{
+  position:relative;
+  height:180px!important;
+  width:100%!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-expense-chart-wrap canvas{
+  width:100%!important;
+  height:100%!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-empty-chart{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#65768b;font-size:.62rem;text-align:center;
+}
+@media(max-width:1120px){
+  body.gbm-dashboard-padrao .dashboard-v3-categories-content{grid-template-columns:minmax(0,1fr) 190px!important}
+}
+@media(max-width:768px){
+  body.gbm-dashboard-padrao .dashboard-v3-categories-content{grid-template-columns:1fr!important}
+  body.gbm-dashboard-padrao .dashboard-v3-expense-chart-wrap{height:200px!important}
+}
+</style><style id="gbm-dashboard-modal-ajuste">
+body.gbm-dashboard-padrao .modal-gbm{padding:14px!important;box-sizing:border-box!important}
+body.gbm-dashboard-padrao .modal-gbm-dialogo{
+  width:min(900px,calc(100vw - 28px))!important;
+  max-height:calc(100vh - 28px)!important;
+  margin:auto!important;
+  padding:17px!important;
+  border-radius:13px!important;
+  background:#0d1825!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  box-shadow:0 18px 50px rgba(0,0,0,.38)!important;
+  overflow:hidden!important;
+}
+body.gbm-dashboard-padrao .modal-gbm-topo{
+  margin-bottom:10px!important;
+  gap:10px!important;
+}
+body.gbm-dashboard-padrao #titulo-modal-transacoes{
+  margin:0!important;
+  font:700 .96rem/1.25 'Inter',sans-serif!important;
+  letter-spacing:-.02em!important;
+  color:#edf3fa!important;
+}
+body.gbm-dashboard-padrao .modal-gbm-dialogo>p{
+  margin:0 0 11px!important;
+  color:#7e90a4!important;
+  font:400 .66rem/1.45 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .modal-gbm-fechar{
+  min-width:34px!important;
+  min-height:34px!important;
+  width:34px!important;height:34px!important;
+  border-radius:8px!important;
+  font-size:1rem!important;
+  flex:0 0 34px!important;
+  background:#101c2a!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+}
+body.gbm-dashboard-padrao .acoes-categorias-transacoes{
+  gap:7px!important;
+  margin-bottom:8px!important;
+}
+body.gbm-dashboard-padrao .acoes-categorias-transacoes button,
+body.gbm-dashboard-padrao .btn-objetivo-transacao{
+  min-height:34px!important;
+  padding:7px 10px!important;
+  border-radius:8px!important;
+  font-size:.62rem!important;
+}
+body.gbm-dashboard-padrao #lista-transacoes-modal{
+  max-height:calc(100vh - 155px)!important;
+  overflow:auto!important;
+  padding-right:2px!important;
+}
+body.gbm-dashboard-padrao .transacoes-scroll{
+  max-height:calc(100vh - 225px)!important;
+  overflow:auto!important;
+}
+body.gbm-dashboard-padrao #lista-transacoes-modal table{
+  min-width:0!important;
+  width:100%!important;
+  table-layout:auto!important;
+  font-size:.62rem!important;
+}
+body.gbm-dashboard-padrao #lista-transacoes-modal th,
+body.gbm-dashboard-padrao #lista-transacoes-modal td{
+  padding:6px 7px!important;
+  line-height:1.3!important;
+  white-space:normal!important;
+}
+body.gbm-dashboard-padrao #lista-transacoes-modal th:nth-child(1){width:70px}
+body.gbm-dashboard-padrao #lista-transacoes-modal th:nth-child(3){width:100px}
+body.gbm-dashboard-padrao #lista-transacoes-modal th:nth-child(7){width:54px}
+body.gbm-dashboard-padrao #lista-transacoes-modal select{
+  min-height:30px!important;
+  padding:4px 7px!important;
+  font-size:.61rem!important;
+  max-width:150px!important;
+}
+@media(max-width:760px){
+  body.gbm-dashboard-padrao .modal-gbm-dialogo{
+    width:calc(100vw - 20px)!important;
+    max-height:calc(100vh - 20px)!important;
+    padding:12px!important;
+  }
+  body.gbm-dashboard-padrao #lista-transacoes-modal{
+    max-height:calc(100vh - 110px)!important;
+  }
+  body.gbm-dashboard-padrao .transacoes-scroll{
+    max-height:calc(100vh - 170px)!important;
+  }
+  body.gbm-dashboard-padrao #lista-transacoes-modal table{
+    min-width:680px!important;
+  }
+}
+</style>
+<style id="gbm-dashboard-modal-ajuste">
+body.gbm-dashboard-padrao .modal-gbm{padding:14px!important;box-sizing:border-box!important}
+body.gbm-dashboard-padrao .modal-gbm-dialogo{
+  width:min(900px,calc(100vw - 28px))!important;
+  max-height:calc(100vh - 28px)!important;
+  margin:auto!important;
+  padding:17px!important;
+  border-radius:13px!important;
+  background:#0d1825!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  box-shadow:0 18px 50px rgba(0,0,0,.38)!important;
+  overflow:hidden!important;
+}
+body.gbm-dashboard-padrao .modal-gbm-topo{
+  margin-bottom:10px!important;
+  gap:10px!important;
+}
+body.gbm-dashboard-padrao #titulo-modal-transacoes{
+  margin:0!important;
+  font:700 .96rem/1.25 'Inter',sans-serif!important;
+  letter-spacing:-.02em!important;
+  color:#edf3fa!important;
+}
+body.gbm-dashboard-padrao .modal-gbm-dialogo>p{
+  margin:0 0 11px!important;
+  color:#7e90a4!important;
+  font:400 .66rem/1.45 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .modal-gbm-fechar{
+  min-width:34px!important;
+  min-height:34px!important;
+  width:34px!important;height:34px!important;
+  border-radius:8px!important;
+  font-size:1rem!important;
+  flex:0 0 34px!important;
+  background:#101c2a!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+}
+body.gbm-dashboard-padrao .acoes-categorias-transacoes{
+  gap:7px!important;
+  margin-bottom:8px!important;
+}
+body.gbm-dashboard-padrao .acoes-categorias-transacoes button,
+body.gbm-dashboard-padrao .btn-objetivo-transacao{
+  min-height:34px!important;
+  padding:7px 10px!important;
+  border-radius:8px!important;
+  font-size:.62rem!important;
+}
+body.gbm-dashboard-padrao #lista-transacoes-modal{
+  max-height:calc(100vh - 155px)!important;
+  overflow:auto!important;
+  padding-right:2px!important;
+}
+body.gbm-dashboard-padrao .transacoes-scroll{
+  max-height:calc(100vh - 225px)!important;
+  overflow:auto!important;
+}
+body.gbm-dashboard-padrao #lista-transacoes-modal table{
+  min-width:0!important;
+  width:100%!important;
+  table-layout:auto!important;
+  font-size:.62rem!important;
+}
+body.gbm-dashboard-padrao #lista-transacoes-modal th,
+body.gbm-dashboard-padrao #lista-transacoes-modal td{
+  padding:6px 7px!important;
+  line-height:1.3!important;
+  white-space:normal!important;
+}
+body.gbm-dashboard-padrao #lista-transacoes-modal th:nth-child(1){width:70px}
+body.gbm-dashboard-padrao #lista-transacoes-modal th:nth-child(3){width:100px}
+body.gbm-dashboard-padrao #lista-transacoes-modal th:nth-child(7){width:54px}
+body.gbm-dashboard-padrao #lista-transacoes-modal select{
+  min-height:30px!important;
+  padding:4px 7px!important;
+  font-size:.61rem!important;
+  max-width:150px!important;
+}
+@media(max-width:760px){
+  body.gbm-dashboard-padrao .modal-gbm-dialogo{
+    width:calc(100vw - 20px)!important;
+    max-height:calc(100vh - 20px)!important;
+    padding:12px!important;
+  }
+  body.gbm-dashboard-padrao #lista-transacoes-modal{
+    max-height:calc(100vh - 110px)!important;
+  }
+  body.gbm-dashboard-padrao .transacoes-scroll{
+    max-height:calc(100vh - 170px)!important;
+  }
+  body.gbm-dashboard-padrao #lista-transacoes-modal table{
+    min-width:680px!important;
+  }
+}
+</style>
 </head>
 <body class="gbm-interna gbm-dashboard-padrao">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
@@ -2619,7 +2842,10 @@ body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{backgrou
                 <div><span class="dashboard-v3-eyebrow">DISTRIBUIÇÃO</span><h2>Gastos por categoria</h2></div>
             </div>
             <p class="dashboard-v3-subtitle">Participação nas despesas deste período</p>
-            <div id="principais-categorias-lista" class="principais-categorias-lista"><div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div></div>
+            <div class="dashboard-v3-categories-content">
+                <div id="principais-categorias-lista" class="principais-categorias-lista"><div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div></div>
+                <div class="dashboard-v3-expense-chart-wrap"><canvas id="grafico-gastos-categorias" aria-label="Gráfico dos gastos por categoria"></canvas><div id="grafico-gastos-categorias-vazio" class="dashboard-v3-empty-chart" hidden>Sem despesas no período.</div></div>
+            </div>
         </article>
 
         <article class="dashboard-v3-surface dashboard-v3-goals">
@@ -2975,6 +3201,7 @@ body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{backgrou
                 renderizarVisualizacao();
                 atualizarPulsoFinanceiro();
                 atualizarPrincipaisCategorias();
+                atualizarGraficoGastosCategorias();
                 carregarUltimasMovimentacoes();
                 carregarObjetivosDashboard();
                 atualizarIdentidadeDashboard();
@@ -3248,6 +3475,84 @@ body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{backgrou
                         : 'Registre entradas para calcular sua taxa poupada.';
                 }
             }
+        }
+
+
+        let graficoGastosCategorias = null;
+
+        function atualizarGraficoGastosCategorias() {
+            const canvas = document.getElementById('grafico-gastos-categorias');
+            const vazio = document.getElementById('grafico-gastos-categorias-vazio');
+            if (!canvas || typeof Chart === 'undefined') return;
+
+            const porCategoria = new Map();
+            dadosAPI.forEach((item) => {
+                if (item.tipo !== 'Despesa') return;
+                const valor = Math.abs(parseFloat(String(item.total_movimentado || item.valor || 0).replace(',', '.'))) || 0;
+                const categoria = item.categoria || 'Outros';
+                porCategoria.set(categoria, (porCategoria.get(categoria) || 0) + valor);
+            });
+
+            const ordenadas = [...porCategoria.entries()]
+                .filter(([, valor]) => valor > 0)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6);
+
+            const temDados = ordenadas.length > 0;
+            canvas.hidden = !temDados;
+            if (vazio) vazio.hidden = temDados;
+
+            if (graficoGastosCategorias) {
+                graficoGastosCategorias.destroy();
+                graficoGastosCategorias = null;
+            }
+            if (!temDados) return;
+
+            const cores = ['#55a7ff','#39d98a','#8b6cff','#6f91b6','#3a6d93','#8aa2b8'];
+            graficoGastosCategorias = new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ordenadas.map(([categoria]) => categoria),
+                    datasets: [{
+                        data: ordenadas.map(([, valor]) => valor),
+                        backgroundColor: cores,
+                        borderColor: '#0d1825',
+                        borderWidth: 3,
+                        hoverOffset: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#8191a4',
+                                boxWidth: 8,
+                                boxHeight: 8,
+                                padding: 10,
+                                font: { family: 'Inter', size: 9 }
+                            }
+                        },
+                        tooltip: {
+                            displayColors: false,
+                            backgroundColor: '#101c2b',
+                            borderColor: 'rgba(255,255,255,.10)',
+                            borderWidth: 1,
+                            titleColor: '#edf5fb',
+                            bodyColor: '#b8c6d5',
+                            callbacks: {
+                                label: (contexto) => {
+                                    const valor = Number(contexto.raw || 0);
+                                    return ' ' + valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // --- CARD: PRINCIPAIS CATEGORIAS (participação das despesas no período) ---
