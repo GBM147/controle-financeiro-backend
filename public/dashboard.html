@@ -3201,6 +3201,7 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
                 renderizarVisualizacao();
                 atualizarPulsoFinanceiro();
                 atualizarPrincipaisCategorias();
+                atualizarGraficoGastosCategorias();
                 carregarUltimasMovimentacoes();
                 carregarObjetivosDashboard();
                 atualizarIdentidadeDashboard();
@@ -3474,6 +3475,84 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
                         : 'Registre entradas para calcular sua taxa poupada.';
                 }
             }
+        }
+
+
+        let graficoGastosCategorias = null;
+
+        function atualizarGraficoGastosCategorias() {
+            const canvas = document.getElementById('grafico-gastos-categorias');
+            const vazio = document.getElementById('grafico-gastos-categorias-vazio');
+            if (!canvas || typeof Chart === 'undefined') return;
+
+            const porCategoria = new Map();
+            dadosAPI.forEach((item) => {
+                if (item.tipo !== 'Despesa') return;
+                const valor = Math.abs(parseFloat(String(item.total_movimentado || item.valor || 0).replace(',', '.'))) || 0;
+                const categoria = item.categoria || 'Outros';
+                porCategoria.set(categoria, (porCategoria.get(categoria) || 0) + valor);
+            });
+
+            const ordenadas = [...porCategoria.entries()]
+                .filter(([, valor]) => valor > 0)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6);
+
+            const temDados = ordenadas.length > 0;
+            canvas.hidden = !temDados;
+            if (vazio) vazio.hidden = temDados;
+
+            if (graficoGastosCategorias) {
+                graficoGastosCategorias.destroy();
+                graficoGastosCategorias = null;
+            }
+            if (!temDados) return;
+
+            const cores = ['#55a7ff','#39d98a','#8b6cff','#6f91b6','#3a6d93','#8aa2b8'];
+            graficoGastosCategorias = new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ordenadas.map(([categoria]) => categoria),
+                    datasets: [{
+                        data: ordenadas.map(([, valor]) => valor),
+                        backgroundColor: cores,
+                        borderColor: '#0d1825',
+                        borderWidth: 3,
+                        hoverOffset: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#8191a4',
+                                boxWidth: 8,
+                                boxHeight: 8,
+                                padding: 10,
+                                font: { family: 'Inter', size: 9 }
+                            }
+                        },
+                        tooltip: {
+                            displayColors: false,
+                            backgroundColor: '#101c2b',
+                            borderColor: 'rgba(255,255,255,.10)',
+                            borderWidth: 1,
+                            titleColor: '#edf5fb',
+                            bodyColor: '#b8c6d5',
+                            callbacks: {
+                                label: (contexto) => {
+                                    const valor = Number(contexto.raw || 0);
+                                    return ' ' + valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // --- CARD: PRINCIPAIS CATEGORIAS (participação das despesas no período) ---
