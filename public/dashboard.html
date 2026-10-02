@@ -3598,8 +3598,116 @@ body.gbm-dashboard-padrao .btn-acao:after{display:none!important}
                 renderizarVisualizacao();
                 atualizarPulsoFinanceiro();
                 atualizarPrincipaisCategorias();
+                carregarUltimasMovimentacoes();
+                carregarObjetivosDashboard();
+                atualizarIdentidadeDashboard();
             } catch (err) { 
                 console.error("Erro ao carregar dados:", err); 
+            }
+        }
+
+
+        async function atualizarIdentidadeDashboard() {
+            const nomeEl = document.getElementById('dashboard-nome');
+            const dataEl = document.getElementById('dashboard-data-atual');
+            if (dataEl) {
+                const agora = new Date();
+                dataEl.textContent = agora.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }).replace('.', '');
+            }
+            if (!nomeEl) return;
+            try {
+                const resposta = await fetchApi('/perfil');
+                const dados = await resposta.json();
+                const perfil = dados.perfil || dados;
+                nomeEl.textContent = perfil.nome_exibicao || perfil.nome || 'Giovanni';
+            } catch {
+                nomeEl.textContent = 'Giovanni';
+            }
+        }
+
+        async function carregarUltimasMovimentacoes() {
+            const lista = document.getElementById('ultimas-movimentacoes-lista');
+            if (!lista) return;
+            try {
+                const { mes, ano } = cicloAtual();
+                const resposta = await fetchApi(\`/transacoes-individuais?mes=\${mes}&ano=\${ano}\${queryContaDashboard()}\`);
+                const dados = await resposta.json();
+                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar as movimentações.');
+
+                const transacoes = Array.isArray(dados) ? [...dados] : [];
+                transacoes.sort((a, b) => String(b.data_transacao || '').localeCompare(String(a.data_transacao || '')));
+                const recentes = transacoes.slice(0, 5);
+
+                if (!recentes.length) {
+                    lista.innerHTML = '<div class="dashboard-empty-row">Nenhuma movimentação no período.</div>';
+                    return;
+                }
+
+                lista.innerHTML = recentes.map((item) => {
+                    const receita = item.tipo === 'Receita';
+                    const valor = Math.abs(Number(String(item.total_movimentado || item.valor || 0).replace(',', '.')) || 0);
+                    const data = String(item.data_transacao || '').slice(0, 10);
+                    const dataFmt = data ? data.split('-').reverse().join('/') : '—';
+                    const descricao = item.descricao || item.categoria || 'Movimentação';
+                    const categoria = item.categoria || item.tipo || 'Sem categoria';
+                    return \`
+                        <div class="dashboard-transaction">
+                            <span class="dashboard-transaction-icon \${receita ? 'receita' : 'despesa'}">\${receita ? '↑' : '•'}</span>
+                            <div class="dashboard-transaction-main">
+                                <strong>\${escaparHtmlDashboard(descricao)}</strong>
+                                <span>\${escaparHtmlDashboard(categoria)}</span>
+                            </div>
+                            <div class="dashboard-transaction-value \${receita ? 'receita' : 'despesa'}">
+                                <strong>\${receita ? '+' : '-'} \${formatarMoedaDashboard(valor)}</strong>
+                                <span>\${dataFmt}</span>
+                            </div>
+                        </div>\`;
+                }).join('');
+            } catch (erro) {
+                console.error('Erro ao carregar últimas movimentações:', erro);
+                lista.innerHTML = '<div class="dashboard-empty-row">Não foi possível carregar as movimentações.</div>';
+            }
+        }
+
+        async function carregarObjetivosDashboard() {
+            const lista = document.getElementById('objetivos-dashboard-lista');
+            if (!lista) return;
+            try {
+                const resposta = await fetchApi('/objetivos');
+                const dados = await resposta.json();
+                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar os objetivos.');
+
+                const objetivos = (Array.isArray(dados) ? dados : [])
+                    .filter((objetivo) => objetivo.status === 'ativo')
+                    .slice(0, 4);
+
+                if (!objetivos.length) {
+                    lista.innerHTML = '<div class="dashboard-empty-row">Você ainda não tem metas ativas.</div>';
+                    return;
+                }
+
+                lista.innerHTML = objetivos.map((objetivo) => {
+                    const meta = Math.max(0, Number(objetivo.valor_meta) || 0);
+                    const guardado = Math.max(0, Number(objetivo.valor_guardado) || 0);
+                    const percentual = meta > 0 ? Math.min(100, (guardado / meta) * 100) : 0;
+                    return \`
+                        <div class="dashboard-goal">
+                            <span class="dashboard-goal-icon">◎</span>
+                            <div class="dashboard-goal-main">
+                                <strong>\${escaparHtmlDashboard(objetivo.nome || 'Objetivo')}</strong>
+                                <span>\${formatarMoedaDashboard(guardado)} / \${formatarMoedaDashboard(meta)}</span>
+                                <div class="dashboard-goal-bar"><i style="width:\${percentual.toFixed(1)}%"></i></div>
+                            </div>
+                            <span class="dashboard-goal-pct">\${percentual.toFixed(0)}%</span>
+                        </div>\`;
+                }).join('');
+            } catch (erro) {
+                console.error('Erro ao carregar metas do dashboard:', erro);
+                lista.innerHTML = '<div class="dashboard-empty-row">Não foi possível carregar suas metas.</div>';
             }
         }
 
