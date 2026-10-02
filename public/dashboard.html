@@ -2986,12 +2986,12 @@ body.gbm-dashboard-padrao .dashboard-v3-shell .badge-economia-resultado{backgrou
         async function carregarGraficoResultado() {
             try {
                 const { mes, ano } = cicloAtual();
-                const res = await fetchApi(\`/resumo-diario?mes=\${mes}&ano=\${ano}\${queryContaDashboard()}\`);
+                const res = await fetchApi(`/resumo-diario?mes=${mes}&ano=${ano}${queryContaDashboard()}`);
                 const dados = await res.json();
                 const serie = dados.serie || [];
                 const labels = serie.map((p) => {
                     const [, m, d] = p.data.split('-');
-                    return \`\${d}/\${m}\`;
+                    return `${d}/${m}`;
                 });
                 const valores = serie.map((p) => Number(p.resultado_acumulado) || 0);
                 const ctx = document.getElementById('grafico-resultado-periodo')?.getContext('2d');
