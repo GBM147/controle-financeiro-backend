@@ -1898,25 +1898,376 @@ body.gbm-dashboard-padrao .modal-gbm {
         body.gbm-interna :where(th) { color: var(--muted) !important; }
         body.gbm-interna :where(td, th) { border-color: rgba(52,166,216,.1) !important; }
     </style>
+<style id="gbm-dashboard-visual-2-correction">
+/* Correção do layout final do Dashboard 2.0 — referência: protótipo aprovado. */
+@media (min-width:769px) {
+    body.gbm-dashboard-padrao {
+        padding-left:0 !important;
+    }
+
+    body.gbm-dashboard-padrao > .gbm-header,
+    body.gbm-dashboard-padrao .gbm-header {
+        position:sticky !important;
+        top:0 !important;
+        left:278px !important;
+        width:calc(100% - 278px) !important;
+        margin-left:278px !important;
+        padding:0 28px !important;
+        box-sizing:border-box !important;
+        z-index:30000 !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu {
+        left:0 !important;
+        right:auto !important;
+        top:0 !important;
+        width:278px !important;
+        height:100vh !important;
+        z-index:31000 !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-topo,
+    body.gbm-dashboard-padrao .dashboard-principal-grid,
+    body.gbm-dashboard-padrao .dashboard-secundario-grid,
+    body.gbm-dashboard-padrao .dashboard-lancamento-rapido,
+    body.gbm-dashboard-padrao .linha-paineis,
+    body.gbm-dashboard-padrao #painel-exibicao,
+    body.gbm-dashboard-padrao #container-do-grafico,
+    body.gbm-dashboard-padrao #card-ofx {
+        margin-left:306px !important;
+        margin-right:28px !important;
+        width:auto !important;
+        box-sizing:border-box !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-topo {
+        padding-top:28px !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-header-search {
+        display:flex;
+        align-items:center;
+        width:min(402px,44vw);
+        height:38px;
+        border:1px solid rgba(255,255,255,.07);
+        border-radius:10px;
+        background:#0d1623;
+        color:#94a3b8;
+        padding:0 12px;
+        box-sizing:border-box;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-header-search input {
+        width:100%;
+        height:100%;
+        padding:0 0 0 10px;
+        border:0 !important;
+        outline:0 !important;
+        background:transparent !important;
+        box-shadow:none !important;
+        color:#dbe6f1 !important;
+        font-size:.75rem;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-header-search input::placeholder {
+        color:#718097;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-search-icon,
+    body.gbm-dashboard-padrao .dashboard-notification-icon {
+        position:relative;
+        display:block;
+        flex:0 0 auto;
+        width:15px;
+        height:15px;
+        color:#8da0b5;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-search-icon::before {
+        content:"";
+        position:absolute;
+        width:9px;
+        height:9px;
+        left:0;
+        top:0;
+        border:1.6px solid currentColor;
+        border-radius:50%;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-search-icon::after {
+        content:"";
+        position:absolute;
+        width:6px;
+        height:1.6px;
+        left:9px;
+        top:10px;
+        background:currentColor;
+        transform:rotate(45deg);
+        transform-origin:left center;
+        border-radius:2px;
+    }
+
+    body.gbm-dashboard-padrao .gbm-header-actions {
+        display:flex !important;
+        align-items:center !important;
+        gap:12px !important;
+        margin-left:auto !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-notification-link {
+        position:relative;
+        width:38px;
+        height:38px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:10px;
+        color:#92a0b1;
+        text-decoration:none;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-notification-link:hover {
+        background:rgba(255,255,255,.035);
+        color:#e8f0f7;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-notification-icon::before {
+        content:"";
+        position:absolute;
+        left:3px;
+        top:2px;
+        width:9px;
+        height:10px;
+        border:1.5px solid currentColor;
+        border-bottom:0;
+        border-radius:8px 8px 4px 4px;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-notification-icon::after {
+        content:"";
+        position:absolute;
+        left:1px;
+        bottom:0;
+        width:13px;
+        height:1.5px;
+        background:currentColor;
+        border-radius:2px;
+        box-shadow:5px 2px 0 -4px currentColor;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-notification-dot {
+        position:absolute;
+        top:8px;
+        right:8px;
+        width:7px;
+        height:7px;
+        border-radius:50%;
+        background:#ff5d6c;
+        display:none;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-notification-dot:not([style*="display: none"]) {
+        display:block;
+    }
+
+    body.gbm-dashboard-padrao .atalho-perfil {
+        border-color:rgba(255,255,255,.065) !important;
+        background:#0d1623 !important;
+    }
+
+    body.gbm-dashboard-padrao .nome-perfil-cabecalho {
+        max-width:140px !important;
+    }
+}
+
+@media (max-width:768px) {
+    body.gbm-dashboard-padrao {
+        padding-left:0 !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-header-search {
+        display:none !important;
+    }
+
+    body.gbm-dashboard-padrao > .gbm-header,
+    body.gbm-dashboard-padrao .gbm-header {
+        margin-left:0 !important;
+        width:100% !important;
+        left:0 !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-topo,
+    body.gbm-dashboard-padrao .dashboard-principal-grid,
+    body.gbm-dashboard-padrao .dashboard-secundario-grid,
+    body.gbm-dashboard-padrao .dashboard-lancamento-rapido,
+    body.gbm-dashboard-padrao .linha-paineis,
+    body.gbm-dashboard-padrao #painel-exibicao,
+    body.gbm-dashboard-padrao #container-do-grafico,
+    body.gbm-dashboard-padrao #card-ofx {
+        margin-left:15px !important;
+        margin-right:15px !important;
+        width:auto !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-notification-link {
+        display:inline-flex !important;
+    }
+}
+
+/* Evita qualquer conflito com o canvas decorativo legado. */
+body.gbm-dashboard-padrao > #particles-canvas,
+body.gbm-dashboard-padrao #particles-canvas {
+    display:none !important;
+}
+</style>
+
+<style id="gbm-dashboard-visual-2-final">
+/* Ajustes finais — alinhamento e proporção do protótipo aprovado. */
+@media (min-width:769px){
+  body.gbm-dashboard-padrao{
+    padding-left:0!important;
+    overflow-x:hidden!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-topo,
+  body.gbm-dashboard-padrao .dashboard-principal-grid,
+  body.gbm-dashboard-padrao .dashboard-secundario-grid,
+  body.gbm-dashboard-padrao .dashboard-lancamento-rapido,
+  body.gbm-dashboard-padrao .linha-paineis,
+  body.gbm-dashboard-padrao #painel-exibicao,
+  body.gbm-dashboard-padrao #container-do-grafico,
+  body.gbm-dashboard-padrao #card-ofx{
+    margin-left:306px!important;
+    margin-right:28px!important;
+    width:auto!important;
+    max-width:none!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-topo{
+    padding-top:28px!important;
+    margin-top:0!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-principal-grid{
+    width:auto!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-header-search{
+    display:flex!important;
+    flex:0 1 402px!important;
+    width:min(402px,42vw)!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-header-search input{
+    font-family:Inter,system-ui,sans-serif!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-notification-link{
+    display:inline-flex!important;
+  }
+
+  body.gbm-dashboard-padrao .card p{
+    font-size:.78rem!important;
+    line-height:1.45!important;
+    font-weight:400!important;
+    margin-top:6px!important;
+    text-shadow:none!important;
+  }
+
+  body.gbm-dashboard-padrao #saldo-liquido,
+  body.gbm-dashboard-padrao #total-entradas,
+  body.gbm-dashboard-padrao #total-saidas{
+    font-size:clamp(1.45rem,2.1vw,1.95rem)!important;
+    line-height:1.1!important;
+    font-weight:700!important;
+    margin-top:10px!important;
+  }
+
+  body.gbm-dashboard-padrao .card-resultado-grafico{
+    flex:1 1 auto!important;
+    min-height:58px!important;
+  }
+
+  body.gbm-dashboard-padrao .card-pulso .card-subtitulo,
+  body.gbm-dashboard-padrao .categorias-panel .card-subtitulo{
+    display:block!important;
+    font-size:.75rem!important;
+    font-weight:400!important;
+    line-height:1.4!important;
+    color:#8493a6!important;
+    margin:5px 0 0!important;
+  }
+
+  body.gbm-dashboard-padrao .card-pulso h3,
+  body.gbm-dashboard-padrao .categorias-panel h3{
+    line-height:1.25!important;
+  }
+
+  body.gbm-dashboard-padrao .pulso-status strong,
+  body.gbm-dashboard-padrao .pulso-status span{
+    font-size:.72rem!important;
+    line-height:1.35!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-secundario-grid .insight-item{
+    font-size:.76rem!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-secundario-grid .insight-item strong{
+    font-size:.76rem!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-secundario-grid .insight-item span{
+    font-size:.73rem!important;
+  }
+
+  body.gbm-dashboard-padrao .categorias-participacao-item,
+  body.gbm-dashboard-padrao .categoria-participacao-item{
+    font-size:.76rem!important;
+  }
+
+  body.gbm-dashboard-padrao #card-ofx,
+  body.gbm-dashboard-padrao #painel-exibicao{
+    font-size:.78rem!important;
+  }
+}
+
+@media(max-width:768px){
+  body.gbm-dashboard-padrao .card p{
+    font-size:.82rem!important;
+    line-height:1.45!important;
+  }
+  body.gbm-dashboard-padrao #saldo-liquido,
+  body.gbm-dashboard-padrao #total-entradas,
+  body.gbm-dashboard-padrao #total-saidas{
+    font-size:1.55rem!important;
+    line-height:1.1!important;
+  }
+}
+</style>
+
 </head>
 <body class="gbm-interna gbm-dashboard-padrao">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
 <!-- NOVO CABEÇALHO GBM COMPLETO -->
 <header class="gbm-header">
-    <div class="gbm-logo-container">
-        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
-        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
+    <div class="dashboard-header-search" role="search">
+        <span class="dashboard-search-icon" aria-hidden="true"></span>
+        <input type="search" placeholder="Buscar movimentações, categorias..." aria-label="Buscar movimentações e categorias">
     </div>
-     <div class="gbm-header-actions">
+    <div class="gbm-header-actions">
+        <a href="notificacoes.html" class="dashboard-notification-link" aria-label="Abrir notificações">
+            <span class="dashboard-notification-icon" aria-hidden="true"></span>
+            <span id="dot-alertas" class="dashboard-notification-dot" aria-hidden="true"></span>
+        </a>
         <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
             <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
             <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
         </a>
-
         <div class="gbm-menu-container">
             <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" style="position:relative;" aria-label="Abrir menu">
                 <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-                <span id="dot-alertas" style="display:none; position:absolute; top:2px; right:2px; width:9px; height:9px; background:#ef4444; border-radius:50%; box-shadow:0 0 4px #ef4444;"></span>
             </button>
         </div>
     </div>
