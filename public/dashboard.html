@@ -1205,6 +1205,630 @@
             box-shadow: var(--shadow-2);
         }
         .card { padding: var(--space-5) var(--space-5); }
+<style id="gbm-dashboard-visual-2">
+/* =========================================================
+   GBM Dashboard Visual 2.0
+   Camada exclusivamente visual. A lógica existente permanece.
+   ========================================================= */
+
+body.gbm-dashboard-padrao {
+    --gbm2-bg: #070c13;
+    --gbm2-panel: #0d1521;
+    --gbm2-panel-2: #101a28;
+    --gbm2-line: rgba(255,255,255,.075);
+    --gbm2-text: #edf3fa;
+    --gbm2-muted: #91a0b3;
+    --gbm2-green: #39d98a;
+    --gbm2-red: #ff5d6c;
+    --gbm2-blue: #55a7ff;
+    --gbm2-purple: #8b6cff;
+    padding-left: 258px !important;
+    background: var(--gbm2-bg) !important;
+    background-image:
+        radial-gradient(circle at 18% 0%, rgba(57,217,138,.045), transparent 25%),
+        radial-gradient(circle at 92% 10%, rgba(85,167,255,.035), transparent 23%) !important;
+    color: var(--gbm2-text) !important;
+}
+
+body.gbm-dashboard-padrao #particles-canvas {
+    display: none !important;
+}
+
+/* Cabeçalho */
+body.gbm-dashboard-padrao > .gbm-header,
+body.gbm-dashboard-padrao .gbm-header {
+    height: 66px !important;
+    min-height: 66px !important;
+    padding: 0 28px !important;
+    margin: 0 !important;
+    background: rgba(7,12,19,.88) !important;
+    border-bottom: 1px solid var(--gbm2-line) !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,.14) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+}
+
+body.gbm-dashboard-padrao .gbm-header .gbm-logo-container {
+    display: none !important;
+}
+
+body.gbm-dashboard-padrao .gbm-header .gbm-header-actions {
+    margin-left: auto !important;
+}
+
+body.gbm-dashboard-padrao .gbm-header .atalho-perfil {
+    min-height: 42px !important;
+    padding: 2px 10px 2px 2px !important;
+    border: 1px solid var(--gbm2-line) !important;
+    background: rgba(13,21,33,.72) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+body.gbm-dashboard-padrao .gbm-header .atalho-perfil:hover {
+    border-color: rgba(85,167,255,.28) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+body.gbm-dashboard-padrao .gbm-header .avatar-perfil-cabecalho {
+    width: 36px !important;
+    height: 36px !important;
+    border: 1px solid rgba(85,167,255,.35) !important;
+}
+
+body.gbm-dashboard-padrao .gbm-header .nome-perfil-cabecalho {
+    color: #e9f0f8 !important;
+    font-size: .8rem !important;
+}
+
+body.gbm-dashboard-padrao .gbm-header .gbm-menu-btn {
+    display: none !important;
+}
+
+/* Sidebar fixo no desktop */
+@media (min-width: 769px) {
+    body.gbm-dashboard-padrao #sidebar-menu {
+        left: 0 !important;
+        right: auto !important;
+        top: 0 !important;
+        width: 258px !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border-left: 0 !important;
+        border-right: 1px solid var(--gbm2-line) !important;
+        border-radius: 0 !important;
+        background: #08111d !important;
+        box-shadow: 12px 0 36px rgba(0,0,0,.16) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        overflow: hidden !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .sidebar-header {
+        min-height: 82px !important;
+        padding: 16px 18px !important;
+        border-bottom: 1px solid var(--gbm2-line) !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .fechar-btn {
+        display: none !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .sidebar-content {
+        padding: 18px 12px 16px !important;
+    }
+
+    body.gbm-dashboard-padrao #menu-overlay {
+        display: none !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .sidebar-brand {
+        cursor: default !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .sidebar-brand-text strong {
+        font-size: .9rem !important;
+        color: #eef5fb !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .sidebar-brand-text span {
+        color: #708095 !important;
+        font-size: .58rem !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .menu-grupo-titulo {
+        padding: 12px 10px 7px !important;
+        color: #647488 !important;
+        font-size: .56rem !important;
+        letter-spacing: .09em !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .menu-item {
+        min-height: 38px !important;
+        padding: 8px 10px !important;
+        border-left: 2px solid transparent !important;
+        border-radius: 8px !important;
+        color: #b9c7d7 !important;
+        font-size: .75rem !important;
+        box-shadow: none !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .menu-item:hover {
+        background: rgba(255,255,255,.035) !important;
+        border-left-color: rgba(85,167,255,.32) !important;
+        color: #eff6fc !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .menu-item-ativo,
+    body.gbm-dashboard-padrao #sidebar-menu .menu-item[data-menu-page="dashboard.html"] {
+        background: linear-gradient(90deg, rgba(57,217,138,.13), rgba(85,167,255,.045)) !important;
+        border-left-color: var(--gbm2-green) !important;
+        color: #f3fbf7 !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .menu-item-icone {
+        color: #71859c !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .menu-item-ativo .menu-item-icone,
+    body.gbm-dashboard-padrao #sidebar-menu .menu-item[data-menu-page="dashboard.html"] .menu-item-icone {
+        color: var(--gbm2-green) !important;
+    }
+}
+
+/* Área principal */
+body.gbm-dashboard-padrao .dashboard-topo {
+    margin: 0 28px 18px !important;
+    padding-top: 28px !important;
+    align-items: end !important;
+}
+
+body.gbm-dashboard-padrao .dashboard-breadcrumb {
+    display: none !important;
+}
+
+body.gbm-dashboard-padrao .dashboard-heading h2 {
+    color: var(--gbm2-text) !important;
+    font-size: clamp(1.65rem, 2.5vw, 2.15rem) !important;
+    letter-spacing: -.035em !important;
+}
+
+body.gbm-dashboard-padrao .dashboard-heading p {
+    margin-top: 5px !important;
+    color: var(--gbm2-muted) !important;
+    font-size: .8rem !important;
+}
+
+body.gbm-dashboard-padrao .dashboard-filtros {
+    gap: 8px !important;
+}
+
+body.gbm-dashboard-padrao .dashboard-filtros select,
+body.gbm-dashboard-padrao .dashboard-filtros .dashboard-periodo {
+    min-height: 36px !important;
+    border: 1px solid var(--gbm2-line) !important;
+    border-radius: 9px !important;
+    background: #0d1623 !important;
+    color: #cbd7e4 !important;
+    box-shadow: none !important;
+}
+
+body.gbm-dashboard-padrao .dashboard-periodo {
+    padding-inline: 11px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+/* Cards: superfície discreta, sem neon */
+body.gbm-dashboard-padrao :where(
+    .dashboard-principal-grid .card,
+    .dashboard-secundario-grid > *,
+    .dashboard-lancamento-rapido,
+    .linha-paineis .painel-ajustes,
+    #painel-exibicao,
+    #container-do-grafico,
+    #card-ofx
+) {
+    background: linear-gradient(180deg, #0e1724, #0b131f) !important;
+    border: 1px solid var(--gbm2-line) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,.16) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.gbm-dashboard-padrao :where(
+    .dashboard-principal-grid .card:hover,
+    .dashboard-secundario-grid > *:hover,
+    .dashboard-lancamento-rapido:hover,
+    .linha-paineis .painel-ajustes:hover,
+    #painel-exibicao:hover,
+    #container-do-grafico:hover,
+    #card-ofx:hover
+) {
+    border-color: rgba(255,255,255,.11) !important;
+    box-shadow: 0 12px 34px rgba(0,0,0,.2) !important;
+    transform: none !important;
+}
+
+/* Indicadores */
+@media (min-width: 769px) {
+    body.gbm-dashboard-padrao .dashboard-principal-grid {
+        grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+        gap: 12px !important;
+        margin: 0 28px 14px !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-principal-grid .card-resultado {
+        grid-column: span 1 !important;
+        min-height: 190px !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-principal-grid .coluna-fluxo {
+        display: contents !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-principal-grid .card-fluxo {
+        min-height: 190px !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-principal-grid .card-pulso {
+        min-height: 190px !important;
+    }
+}
+
+body.gbm-dashboard-padrao .dashboard-principal-grid .card-resultado,
+body.gbm-dashboard-padrao .dashboard-principal-grid .card-fluxo,
+body.gbm-dashboard-padrao .dashboard-principal-grid .card-pulso {
+    padding: 18px !important;
+}
+
+body.gbm-dashboard-padrao .card-resultado-topo h3,
+body.gbm-dashboard-padrao .card-fluxo-topo h3,
+body.gbm-dashboard-padrao #titulo-pulso-financeiro {
+    color: #b9c7d7 !important;
+    font-size: .78rem !important;
+    font-weight: 650 !important;
+}
+
+body.gbm-dashboard-padrao #saldo-liquido,
+body.gbm-dashboard-padrao #total-entradas,
+body.gbm-dashboard-padrao #total-saidas {
+    margin-top: 10px !important;
+    color: #f3f7fb !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: clamp(1.45rem, 2.1vw, 1.95rem) !important;
+    letter-spacing: -.03em !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+body.gbm-dashboard-padrao #total-entradas { color: var(--gbm2-green) !important; }
+body.gbm-dashboard-padrao #total-saidas { color: var(--gbm2-red) !important; }
+
+body.gbm-dashboard-padrao .badge-comparativo-fluxo,
+body.gbm-dashboard-padrao .badge-taxa-poupada,
+body.gbm-dashboard-padrao .badge-economia-resultado {
+    border: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    font-size: .7rem !important;
+}
+
+body.gbm-dashboard-padrao .icone-fluxo {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+}
+
+body.gbm-dashboard-padrao .icone-entrada {
+    background: rgba(57,217,138,.12) !important;
+    color: var(--gbm2-green) !important;
+}
+
+body.gbm-dashboard-padrao .icone-saida {
+    background: rgba(255,93,108,.11) !important;
+    color: var(--gbm2-red) !important;
+}
+
+body.gbm-dashboard-padrao .fluxo-sparkline {
+    opacity: .65 !important;
+}
+
+body.gbm-dashboard-padrao .card-resultado-grafico {
+    margin-top: auto !important;
+    height: 52px !important;
+}
+
+body.gbm-dashboard-padrao .pulso-barra {
+    background: #162334 !important;
+    margin-top: 22px !important;
+}
+
+body.gbm-dashboard-padrao .pulso-barra-preenchimento {
+    background: linear-gradient(90deg, #2bbf7c, #39d98a) !important;
+}
+
+body.gbm-dashboard-padrao .pulso-marcador-meta {
+    background: #e7eef6 !important;
+    box-shadow: none !important;
+}
+
+body.gbm-dashboard-padrao .pulso-status {
+    margin-top: auto !important;
+    background: #0b1420 !important;
+    border: 1px solid rgba(255,255,255,.055) !important;
+}
+
+body.gbm-dashboard-padrao .pulso-status-icone {
+    background: rgba(57,217,138,.11) !important;
+    color: var(--gbm2-green) !important;
+}
+
+/* Insights e categorias */
+body.gbm-dashboard-padrao .dashboard-secundario-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, .95fr) !important;
+    gap: 12px !important;
+    margin: 0 28px 14px !important;
+}
+
+body.gbm-dashboard-padrao .dashboard-secundario-grid .insights-panel,
+body.gbm-dashboard-padrao .dashboard-secundario-grid .categorias-panel {
+    min-height: 190px !important;
+    padding: 18px !important;
+}
+
+body.gbm-dashboard-padrao #titulo-insights,
+body.gbm-dashboard-padrao #titulo-categorias {
+    color: #eef4fa !important;
+    font-size: .95rem !important;
+    font-weight: 700 !important;
+}
+
+body.gbm-dashboard-padrao .insight-item {
+    background: #0b1420 !important;
+    border: 1px solid rgba(255,255,255,.06) !important;
+    border-radius: 10px !important;
+}
+
+body.gbm-dashboard-padrao .insight-item:hover {
+    background: #0d1724 !important;
+    border-color: rgba(255,255,255,.09) !important;
+}
+
+body.gbm-dashboard-padrao .categoria-participacao-item {
+    border-bottom-color: rgba(255,255,255,.055) !important;
+}
+
+/* Lançamento rápido */
+body.gbm-dashboard-padrao .dashboard-lancamento-rapido {
+    margin: 0 28px 14px !important;
+    padding: 16px 18px !important;
+    grid-template-columns: 175px minmax(0,1fr) !important;
+    gap: 18px !important;
+}
+
+body.gbm-dashboard-padrao .lancamento-rapido-copy h3 {
+    color: #eef4fa !important;
+    font-size: .86rem !important;
+}
+
+body.gbm-dashboard-padrao .lancamento-rapido-copy p {
+    color: #748397 !important;
+}
+
+body.gbm-dashboard-padrao .lancamento-rapido-form :is(input,select) {
+    height: 38px !important;
+    border: 1px solid rgba(255,255,255,.075) !important;
+    border-radius: 9px !important;
+    background: #09121e !important;
+    box-shadow: none !important;
+}
+
+body.gbm-dashboard-padrao .lancamento-rapido-form .btn-acao {
+    height: 38px !important;
+    border: 1px solid rgba(57,217,138,.22) !important;
+    border-radius: 9px !important;
+    background: #1f8556 !important;
+    box-shadow: none !important;
+    font-size: .72rem !important;
+}
+
+body.gbm-dashboard-padrao .btn-acao::after {
+    display: none !important;
+}
+
+/* Controles e gráfico */
+body.gbm-dashboard-padrao .linha-paineis {
+    gap: 12px !important;
+    margin: 0 28px 14px !important;
+}
+
+body.gbm-dashboard-padrao .linha-paineis .painel-ajustes {
+    margin: 0 !important;
+    padding: 15px 16px !important;
+}
+
+body.gbm-dashboard-padrao #painel-exibicao {
+    margin: 0 28px 12px !important;
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+}
+
+body.gbm-dashboard-padrao #painel-exibicao .grupo-ajuste label {
+    color: #8292a6 !important;
+    font-size: .68rem !important;
+}
+
+body.gbm-dashboard-padrao #painel-exibicao :is(select,input) {
+    border-radius: 9px !important;
+    background: #09121e !important;
+    border-color: rgba(255,255,255,.075) !important;
+    box-shadow: none !important;
+}
+
+body.gbm-dashboard-padrao #container-do-grafico {
+    margin: 0 28px 18px !important;
+    max-width: none !important;
+    min-height: 420px !important;
+    padding: 16px !important;
+}
+
+body.gbm-dashboard-padrao .grafico-wrapper {
+    min-height: 360px !important;
+}
+
+body.gbm-dashboard-padrao .container-tabela {
+    border-color: rgba(255,255,255,.06) !important;
+    background: #09121e !important;
+}
+
+body.gbm-dashboard-padrao th {
+    background: #0d1724 !important;
+    color: #7e8ea3 !important;
+}
+
+body.gbm-dashboard-padrao td,
+body.gbm-dashboard-padrao th {
+    border-bottom-color: rgba(255,255,255,.055) !important;
+}
+
+body.gbm-dashboard-padrao tr:hover {
+    background: rgba(255,255,255,.025) !important;
+}
+
+/* Importações */
+body.gbm-dashboard-padrao #card-ofx {
+    margin: 0 28px 28px !important;
+    padding: 16px 18px !important;
+}
+
+body.gbm-dashboard-padrao #card-ofx h3 {
+    color: #edf3f9 !important;
+}
+
+body.gbm-dashboard-padrao #card-ofx p {
+    color: #78889b !important;
+}
+
+/* Modais continuam com aparência própria */
+body.gbm-dashboard-padrao .modal-gbm {
+    z-index: 20000 !important;
+}
+
+/* Tablet */
+@media (max-width: 1020px) and (min-width: 769px) {
+    body.gbm-dashboard-padrao .dashboard-principal-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-principal-grid .coluna-fluxo {
+        display: grid !important;
+        grid-template-rows: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-secundario-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-lancamento-rapido {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Celular: volta ao menu móvel e elimina a coluna lateral */
+@media (max-width: 768px) {
+    body.gbm-dashboard-padrao {
+        padding-left: 0 !important;
+    }
+
+    body.gbm-dashboard-padrao > .gbm-header,
+    body.gbm-dashboard-padrao .gbm-header {
+        padding: 0 15px !important;
+        height: 62px !important;
+        min-height: 62px !important;
+    }
+
+    body.gbm-dashboard-padrao .gbm-header .gbm-logo-container {
+        display: flex !important;
+        min-width: 0 !important;
+    }
+
+    body.gbm-dashboard-padrao .gbm-header .gbm-title {
+        display: none !important;
+    }
+
+    body.gbm-dashboard-padrao .gbm-header .gbm-menu-btn {
+        display: inline-flex !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu {
+        left: auto !important;
+        right: -320px !important;
+        width: min(286px,88vw) !important;
+        border-right: 0 !important;
+        border-left: 1px solid rgba(85,167,255,.18) !important;
+        border-radius: 0 !important;
+        background: rgba(7,17,31,.98) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu.aberto {
+        right: 0 !important;
+    }
+
+    body.gbm-dashboard-padrao #sidebar-menu .fechar-btn {
+        display: inline-flex !important;
+    }
+
+    body.gbm-dashboard-padrao #menu-overlay.aberto {
+        display: block !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-topo,
+    body.gbm-dashboard-padrao .dashboard-secundario-grid,
+    body.gbm-dashboard-padrao .dashboard-principal-grid,
+    body.gbm-dashboard-padrao .dashboard-lancamento-rapido,
+    body.gbm-dashboard-padrao .linha-paineis,
+    body.gbm-dashboard-padrao #painel-exibicao,
+    body.gbm-dashboard-padrao #container-do-grafico,
+    body.gbm-dashboard-padrao #card-ofx {
+        margin-left: 15px !important;
+        margin-right: 15px !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-principal-grid {
+        grid-template-columns: minmax(0,1fr) !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-principal-grid .coluna-fluxo {
+        display: grid !important;
+        grid-template-rows: 1fr 1fr !important;
+        gap: 12px !important;
+        min-height: 204px !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-secundario-grid {
+        grid-template-columns: minmax(0,1fr) !important;
+    }
+
+    body.gbm-dashboard-padrao .dashboard-lancamento-rapido {
+        grid-template-columns: minmax(0,1fr) !important;
+    }
+
+    body.gbm-dashboard-padrao #container-do-grafico {
+        padding: 10px !important;
+        min-height: 380px !important;
+    }
+
+    body.gbm-dashboard-padrao .grafico-wrapper {
+        min-height: 320px !important;
+    }
+}
+</style>
 </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
     <link rel="stylesheet" href="gbm-pages.css">
