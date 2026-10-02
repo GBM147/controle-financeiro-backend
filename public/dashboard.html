@@ -2120,6 +2120,133 @@ body.gbm-dashboard-padrao #particles-canvas {
     display:none !important;
 }
 </style>
+
+<style id="gbm-dashboard-visual-2-final">
+/* Ajustes finais — alinhamento e proporção do protótipo aprovado. */
+@media (min-width:769px){
+  body.gbm-dashboard-padrao{
+    padding-left:0!important;
+    overflow-x:hidden!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-topo,
+  body.gbm-dashboard-padrao .dashboard-principal-grid,
+  body.gbm-dashboard-padrao .dashboard-secundario-grid,
+  body.gbm-dashboard-padrao .dashboard-lancamento-rapido,
+  body.gbm-dashboard-padrao .linha-paineis,
+  body.gbm-dashboard-padrao #painel-exibicao,
+  body.gbm-dashboard-padrao #container-do-grafico,
+  body.gbm-dashboard-padrao #card-ofx{
+    margin-left:306px!important;
+    margin-right:28px!important;
+    width:auto!important;
+    max-width:none!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-topo{
+    padding-top:28px!important;
+    margin-top:0!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-principal-grid{
+    width:auto!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-header-search{
+    display:flex!important;
+    flex:0 1 402px!important;
+    width:min(402px,42vw)!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-header-search input{
+    font-family:Inter,system-ui,sans-serif!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-notification-link{
+    display:inline-flex!important;
+  }
+
+  body.gbm-dashboard-padrao .card p{
+    font-size:.78rem!important;
+    line-height:1.45!important;
+    font-weight:400!important;
+    margin-top:6px!important;
+    text-shadow:none!important;
+  }
+
+  body.gbm-dashboard-padrao #saldo-liquido,
+  body.gbm-dashboard-padrao #total-entradas,
+  body.gbm-dashboard-padrao #total-saidas{
+    font-size:clamp(1.45rem,2.1vw,1.95rem)!important;
+    line-height:1.1!important;
+    font-weight:700!important;
+    margin-top:10px!important;
+  }
+
+  body.gbm-dashboard-padrao .card-resultado-grafico{
+    flex:1 1 auto!important;
+    min-height:58px!important;
+  }
+
+  body.gbm-dashboard-padrao .card-pulso .card-subtitulo,
+  body.gbm-dashboard-padrao .categorias-panel .card-subtitulo{
+    display:block!important;
+    font-size:.75rem!important;
+    font-weight:400!important;
+    line-height:1.4!important;
+    color:#8493a6!important;
+    margin:5px 0 0!important;
+  }
+
+  body.gbm-dashboard-padrao .card-pulso h3,
+  body.gbm-dashboard-padrao .categorias-panel h3{
+    line-height:1.25!important;
+  }
+
+  body.gbm-dashboard-padrao .pulso-status strong,
+  body.gbm-dashboard-padrao .pulso-status span{
+    font-size:.72rem!important;
+    line-height:1.35!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-secundario-grid .insight-item{
+    font-size:.76rem!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-secundario-grid .insight-item strong{
+    font-size:.76rem!important;
+  }
+
+  body.gbm-dashboard-padrao .dashboard-secundario-grid .insight-item span{
+    font-size:.73rem!important;
+  }
+
+  body.gbm-dashboard-padrao .categorias-participacao-item,
+  body.gbm-dashboard-padrao .categoria-participacao-item{
+    font-size:.76rem!important;
+  }
+
+  body.gbm-dashboard-padrao #card-ofx,
+  body.gbm-dashboard-padrao #painel-exibicao{
+    font-size:.78rem!important;
+  }
+}
+
+@media(max-width:768px){
+  body.gbm-dashboard-padrao .card p{
+    font-size:.82rem!important;
+    line-height:1.45!important;
+  }
+  body.gbm-dashboard-padrao #saldo-liquido,
+  body.gbm-dashboard-padrao #total-entradas,
+  body.gbm-dashboard-padrao #total-saidas{
+    font-size:1.55rem!important;
+    line-height:1.1!important;
+  }
+}
+</style>
+
 </head>
 <body class="gbm-interna gbm-dashboard-padrao">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
