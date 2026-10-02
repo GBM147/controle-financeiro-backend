@@ -2709,6 +2709,25 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
   }
 }
 </style>
+<style id="gbm-gastos-grafico-selector">
+body.gbm-dashboard-padrao .dashboard-v3-category-head{align-items:center!important}
+body.gbm-dashboard-padrao .dashboard-v3-chart-select{
+  width:92px!important;height:31px!important;min-width:92px!important;
+  padding:0 8px!important;border:1px solid rgba(255,255,255,.075)!important;
+  border-radius:8px!important;background:#0a1420!important;color:#aebdcb!important;
+  box-shadow:none!important;font:600 .6rem 'Inter',sans-serif!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-categories-content{
+  grid-template-columns:minmax(0,1fr) 245px!important;
+  gap:14px!important;
+  align-items:center!important;
+}
+body.gbm-dashboard-padrao .dashboard-v3-expense-chart-wrap{height:185px!important}
+@media(max-width:768px){
+  body.gbm-dashboard-padrao .dashboard-v3-categories-content{grid-template-columns:1fr!important}
+  body.gbm-dashboard-padrao .dashboard-v3-expense-chart-wrap{height:210px!important}
+}
+</style>
 </head>
 <body class="gbm-interna gbm-dashboard-padrao">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
@@ -2838,8 +2857,13 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
 
     <section class="dashboard-v3-quad">
         <article class="dashboard-v3-surface dashboard-v3-categories">
-            <div class="dashboard-v3-card-head">
+            <div class="dashboard-v3-card-head dashboard-v3-category-head">
                 <div><span class="dashboard-v3-eyebrow">DISTRIBUIÇÃO</span><h2>Gastos por categoria</h2></div>
+                <select id="tipo-grafico-gastos-categorias" class="dashboard-v3-chart-select" aria-label="Tipo de gráfico de gastos" onchange="atualizarGraficoGastosCategorias()">
+                    <option value="doughnut">Rosca</option>
+                    <option value="bar">Barras</option>
+                    <option value="line">Linhas</option>
+                </select>
             </div>
             <p class="dashboard-v3-subtitle">Participação nas despesas deste período</p>
             <div class="dashboard-v3-categories-content">
@@ -3483,6 +3507,7 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
         function atualizarGraficoGastosCategorias() {
             const canvas = document.getElementById('grafico-gastos-categorias');
             const vazio = document.getElementById('grafico-gastos-categorias-vazio');
+            const seletor = document.getElementById('tipo-grafico-gastos-categorias');
             if (!canvas || typeof Chart === 'undefined') return;
 
             const porCategoria = new Map();
@@ -3508,52 +3533,165 @@ body.gbm-dashboard-padrao #lista-transacoes-modal select{
             }
             if (!temDados) return;
 
+            const tipo = seletor?.value || localStorage.getItem('gbmTipoGraficoGastos') || 'doughnut';
+            if (seletor && !seletor.value) seletor.value = tipo;
+            try {
+                localStorage.setItem('gbmTipoGraficoGastos', tipo);
+            } catch {}
+
             const cores = ['#55a7ff','#39d98a','#8b6cff','#6f91b6','#3a6d93','#8aa2b8'];
-            graficoGastosCategorias = new Chart(canvas.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ordenadas.map(([categoria]) => categoria),
-                    datasets: [{
-                        data: ordenadas.map(([, valor]) => valor),
-                        backgroundColor: cores,
-                        borderColor: '#0d1825',
-                        borderWidth: 3,
-                        hoverOffset: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#8191a4',
-                                boxWidth: 8,
-                                boxHeight: 8,
-                                padding: 10,
-                                font: { family: 'Inter', size: 9 }
+            let config;
+
+            if (tipo === 'bar') {
+                config = {
+                    type: 'bar',
+                    data: {
+                        labels: ordenadas.map(([categoria]) => categoria),
+                        datasets: [{
+                            label: 'Gastos',
+                            data: ordenadas.map(([, valor]) => valor),
+                            backgroundColor: cores,
+                            borderRadius: 5,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                displayColors: false,
+                                backgroundColor: '#101c2b',
+                                borderColor: 'rgba(255,255,255,.10)',
+                                borderWidth: 1,
+                                titleColor: '#edf5fb',
+                                bodyColor: '#b8c6d5',
+                                callbacks: {
+                                    label: (ctx) => ' ' + Number(ctx.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                }
                             }
                         },
-                        tooltip: {
-                            displayColors: false,
-                            backgroundColor: '#101c2b',
-                            borderColor: 'rgba(255,255,255,.10)',
-                            borderWidth: 1,
-                            titleColor: '#edf5fb',
-                            bodyColor: '#b8c6d5',
-                            callbacks: {
-                                label: (contexto) => {
-                                    const valor = Number(contexto.raw || 0);
-                                    return ' ' + valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                border: { display: false },
+                                ticks: { color: '#718196', font: { family: 'Inter', size: 8 } }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(148,163,184,.06)' },
+                                border: { display: false },
+                                ticks: {
+                                    color: '#718196',
+                                    font: { family: 'Inter', size: 8 },
+                                    callback: (value) => Number(value).toLocaleString('pt-BR', { notation: 'compact', maximumFractionDigits: 1 })
                                 }
                             }
                         }
                     }
-                }
-            });
+                };
+            } else if (tipo === 'line') {
+                config = {
+                    type: 'line',
+                    data: {
+                        labels: ordenadas.map(([categoria]) => categoria),
+                        datasets: [{
+                            label: 'Gastos',
+                            data: ordenadas.map(([, valor]) => valor),
+                            borderColor: '#55a7ff',
+                            backgroundColor: 'rgba(85,167,255,.10)',
+                            pointBackgroundColor: cores,
+                            pointBorderColor: '#0d1825',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            tension: .32,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                displayColors: false,
+                                backgroundColor: '#101c2b',
+                                borderColor: 'rgba(255,255,255,.10)',
+                                borderWidth: 1,
+                                titleColor: '#edf5fb',
+                                bodyColor: '#b8c6d5',
+                                callbacks: {
+                                    label: (ctx) => ' ' + Number(ctx.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                border: { display: false },
+                                ticks: { color: '#718196', font: { family: 'Inter', size: 8 }, maxRotation: 45, minRotation: 0 }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(148,163,184,.06)' },
+                                border: { display: false },
+                                ticks: {
+                                    color: '#718196',
+                                    font: { family: 'Inter', size: 8 },
+                                    callback: (value) => Number(value).toLocaleString('pt-BR', { notation: 'compact', maximumFractionDigits: 1 })
+                                }
+                            }
+                        }
+                    }
+                };
+            } else {
+                config = {
+                    type: 'doughnut',
+                    data: {
+                        labels: ordenadas.map(([categoria]) => categoria),
+                        datasets: [{
+                            data: ordenadas.map(([, valor]) => valor),
+                            backgroundColor: cores,
+                            borderColor: '#0d1825',
+                            borderWidth: 3,
+                            hoverOffset: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#8191a4',
+                                    boxWidth: 8,
+                                    boxHeight: 8,
+                                    padding: 10,
+                                    font: { family: 'Inter', size: 8 }
+                                }
+                            },
+                            tooltip: {
+                                displayColors: false,
+                                backgroundColor: '#101c2b',
+                                borderColor: 'rgba(255,255,255,.10)',
+                                borderWidth: 1,
+                                titleColor: '#edf5fb',
+                                bodyColor: '#b8c6d5',
+                                callbacks: {
+                                    label: (ctx) => ' ' + Number(ctx.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+
+            graficoGastosCategorias = new Chart(canvas.getContext('2d'), config);
         }
+
 
         // --- CARD: PRINCIPAIS CATEGORIAS (participação das despesas no período) ---
         function atualizarPrincipaisCategorias() {
