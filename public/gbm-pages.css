@@ -1541,3 +1541,219 @@ body.gbm-interna :is(
     box-shadow: inset 0 -1px 0 rgba(85,167,255,.16) !important;
     transform: none !important;
 }
+
+
+/* =========================================================
+   GBM Visual 2.0 — base compartilhada
+   Menos decoração, mais hierarquia e dados.
+   ========================================================= */
+:root{
+  --gbm2-bg:#070c13;
+  --gbm2-panel:#0d1521;
+  --gbm2-panel-2:#101a28;
+  --gbm2-line:rgba(255,255,255,.075);
+  --gbm2-line-strong:rgba(255,255,255,.12);
+  --gbm2-text:#edf3fa;
+  --gbm2-muted:#91a0b3;
+  --gbm2-green:#39d98a;
+  --gbm2-red:#ff5d6c;
+  --gbm2-blue:#55a7ff;
+}
+
+body.gbm-interna{
+  background:#070c13!important;
+  background-image:
+    radial-gradient(circle at 18% 0%,rgba(57,217,138,.04),transparent 25%),
+    radial-gradient(circle at 92% 10%,rgba(85,167,255,.03),transparent 23%)!important;
+  color:var(--gbm2-text)!important;
+}
+
+body.gbm-interna .topbar,
+body.gbm-interna .gbm-header,
+body.gbm-interna header{
+  background:rgba(7,12,19,.90)!important;
+  border-bottom:1px solid var(--gbm2-line)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.14)!important;
+  backdrop-filter:blur(18px)!important;
+  -webkit-backdrop-filter:blur(18px)!important;
+}
+
+body.gbm-interna .topbar .brand span,
+body.gbm-interna .gbm-title{
+  background:none!important;
+  -webkit-text-fill-color:#eef5fb!important;
+  color:#eef5fb!important;
+  animation:none!important;
+  text-shadow:none!important;
+}
+
+body.gbm-interna .brand:hover span,
+body.gbm-interna .gbm-title:hover{
+  letter-spacing:inherit!important;
+  transform:none!important;
+}
+
+body.gbm-interna .card,
+body.gbm-interna .panel,
+body.gbm-interna .painel,
+body.gbm-interna .form-card,
+body.gbm-interna .stat-card,
+body.gbm-interna .conta-card,
+body.gbm-interna .meta,
+body.gbm-interna .filtros-card,
+body.gbm-interna .exportar-card,
+body.gbm-interna .resumo-rapido,
+body.gbm-interna .resumo-ano{
+  background:linear-gradient(180deg,#0e1724,#0b131f)!important;
+  border:1px solid var(--gbm2-line)!important;
+  border-radius:14px!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.16)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+body.gbm-interna .card:hover,
+body.gbm-interna .panel:hover,
+body.gbm-interna .conta-card:hover,
+body.gbm-interna .meta:hover{
+  border-color:var(--gbm2-line-strong)!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.20)!important;
+  transform:none!important;
+}
+
+body.gbm-interna :where(button,.btn,.btn-acao,.btn-primary,.btn-voltar){
+  border-radius:9px!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  transition:background-color .18s ease,border-color .18s ease,color .18s ease,filter .18s ease,transform .18s ease!important;
+}
+
+body.gbm-interna :where(button,.btn,.btn-acao,.btn-primary,.btn-voltar):hover{
+  filter:brightness(1.06)!important;
+  transform:none!important;
+}
+
+body.gbm-interna :where(button,.btn,.btn-acao)::after{
+  display:none!important;
+}
+
+body.gbm-interna :where(input,select,textarea){
+  background:#09121e!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  border-radius:9px!important;
+  box-shadow:none!important;
+  color:#e8eff7!important;
+}
+
+body.gbm-interna :where(input,select,textarea):focus{
+  border-color:rgba(85,167,255,.36)!important;
+  box-shadow:0 0 0 3px rgba(85,167,255,.08)!important;
+}
+
+body.gbm-interna .page-title h1,
+body.gbm-interna main h1{
+  color:var(--gbm2-text)!important;
+  font-family:Sora,Inter,sans-serif!important;
+  letter-spacing:-.03em!important;
+  text-shadow:none!important;
+}
+
+body.gbm-interna .page-title p,
+body.gbm-interna .card-subtitulo,
+body.gbm-interna .texto-vazio{
+  color:var(--gbm2-muted)!important;
+}
+
+/* Relatórios */
+body.gbm-interna .filtros,
+body.gbm-interna .campo-filtro{
+  background:#0b1420!important;
+  border:1px solid var(--gbm2-line)!important;
+  border-radius:11px!important;
+}
+
+body.gbm-interna .resumo-item{
+  background:#0b1420!important;
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+}
+
+body.gbm-interna .resumo-item strong{
+  font-variant-numeric:tabular-nums;
+  color:#f2f7fb;
+}
+
+body.gbm-interna .resultado-header{
+  border-bottom-color:rgba(255,255,255,.06)!important;
+}
+
+body.gbm-interna .grafico-wrapper,
+body.gbm-interna .relatorio-grafico-wrapper{
+  background:#09121e!important;
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+}
+
+body.gbm-interna .table-wrap{
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:12px!important;
+  background:#09121e!important;
+  overflow:auto!important;
+}
+
+body.gbm-interna table{
+  background:transparent!important;
+}
+
+body.gbm-interna th{
+  background:#0d1724!important;
+  color:#7f8ea2!important;
+}
+
+body.gbm-interna td,
+body.gbm-interna th{
+  border-bottom-color:rgba(255,255,255,.055)!important;
+}
+
+body.gbm-interna tr:hover{
+  background:rgba(255,255,255,.022)!important;
+}
+
+body.gbm-interna .stat{
+  background:linear-gradient(180deg,#0f1926,#0b131f)!important;
+}
+
+body.gbm-interna .actions{
+  gap:8px!important;
+}
+
+/* Importações */
+body.gbm-interna .dropzone{
+  border-color:rgba(85,167,255,.22)!important;
+  background:rgba(85,167,255,.03)!important;
+}
+
+/* Notificações */
+body.gbm-interna .notificacao{
+  background:#0b1420!important;
+  border-color:rgba(255,255,255,.055)!important;
+}
+
+body.gbm-interna .notificacao.nao-lida{
+  background:rgba(57,217,138,.045)!important;
+  border-color:rgba(57,217,138,.22)!important;
+}
+
+@media(max-width:768px){
+  body.gbm-interna .container{
+    width:min(100% - 30px,1180px)!important;
+    padding-top:20px!important;
+  }
+  body.gbm-interna .page-title{margin-bottom:16px!important}
+  body.gbm-interna .grid-2,
+  body.gbm-interna .grid-3{
+    grid-template-columns:1fr!important;
+  }
+}
