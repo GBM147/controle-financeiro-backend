@@ -3806,8 +3806,12 @@ body.gbm-dashboard-padrao .btn-acao:after{display:none!important}
             const taxa = (periodo / ent) * 100;
             badgeTaxa.style.display = 'inline-flex';
             badgeTaxa.innerHTML = `Taxa poupada <strong>${taxa.toFixed(1)}%</strong>`;
+            const taxaDashboard = document.getElementById('taxa-poupada-dashboard');
+            if (taxaDashboard) taxaDashboard.textContent = `${taxa.toFixed(1)}%`;
         } else {
             badgeTaxa.style.display = 'none';
+            const taxaDashboard = document.getElementById('taxa-poupada-dashboard');
+            if (taxaDashboard) taxaDashboard.textContent = '0,0%';
         }
     }
 
