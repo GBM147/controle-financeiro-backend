@@ -22,7 +22,7 @@ function criarConfiguracaoMysql(env = process.env) {
         throw new Error('DB_SSL=false só é permitido para MySQL local fora de produção.');
     }
     if (!semTls && env.DB_SSL_REJECT_UNAUTHORIZED === 'false') {
-        throw new Error('Mantenha DB_SSL_REJECT_UNAUTHORIZED=true. Configure DB_SSL_CA_FILE com a CA confiável do provedor, se necessário.');
+        console.warn('DB_SSL_REJECT_UNAUTHORIZED=false é uma configuração legada e será ignorada. A conexão continua exigindo certificado e hostname verificados. Configure DB_SSL_CA_FILE com a CA confiável do provedor, se necessário.');
     }
 
     const ssl = semTls ? undefined : { rejectUnauthorized: true, verifyIdentity: true };

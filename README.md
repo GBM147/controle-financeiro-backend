@@ -26,7 +26,9 @@ não inclui um script de criação desse esquema.
 
 Conexões remotas ao MySQL, incluindo o armazenamento de sessões, usam TLS com
 verificação do certificado e do hostname. Mantenha
-`DB_SSL_REJECT_UNAUTHORIZED=true`. Se o provedor utiliza uma CA privada, configure
+`DB_SSL_REJECT_UNAUTHORIZED=true`. O valor legado `false` emite um aviso e é
+ignorado; não interrompe a configuração nem desativa a verificação TLS.
+Se o provedor utiliza uma CA privada, configure
 `DB_SSL_CA_FILE` com o caminho do certificado PEM confiável fornecido por ele.
 `DB_SSL=false` é permitido somente fora de produção com `DB_HOST=localhost`,
 `127.0.0.1` ou `::1`.

@@ -12,9 +12,18 @@ test('MySQL remoto exige TLS com certificado e identidade verificados', () => {
     const configuracao = criarConfiguracaoMysql({ DB_HOST: 'mysql.exemplo.invalid' });
     assert.equal(configuracao.ssl.rejectUnauthorized, true);
     assert.equal(configuracao.ssl.verifyIdentity, true);
-    assert.throws(() => criarConfiguracaoMysql({
-        DB_HOST: 'mysql.exemplo.invalid', DB_SSL_REJECT_UNAUTHORIZED: 'false'
-    }), /DB_SSL_REJECT_UNAUTHORIZED=true/);
+});
+
+test('flag legada false não aborta a configuração nem desativa a validação TLS', (t) => {
+    const aviso = t.mock.method(console, 'warn', () => {});
+    const configuracao = criarConfiguracaoMysql({
+        NODE_ENV: 'production', DB_HOST: 'mysql.exemplo.invalid',
+        DB_SSL_REJECT_UNAUTHORIZED: 'false'
+    });
+    assert.equal(configuracao.ssl.rejectUnauthorized, true);
+    assert.equal(configuracao.ssl.verifyIdentity, true);
+    assert.equal(aviso.mock.calls.length, 1);
+    assert.match(aviso.mock.calls[0].arguments[0], /legada.*ignorada/);
 });
 
 test('MySQL sem TLS exige host de loopback explícito fora de produção', () => {
@@ -98,9 +107,13 @@ async function iniciarMysqlLocal(t, dadosSessao) {
     return { consultas, port: servidor._server.address().port };
 }
 
-test('acesso real do store recusa servidor MySQL que não suporta TLS', { timeout: 5000 }, async (t) => {
+test('flag legada false não permite que o store conecte a MySQL sem TLS', { timeout: 5000 }, async (t) => {
     const servidor = await iniciarMysqlLocal(t, {});
-    const configuracao = criarConfiguracaoMysql({ DB_HOST: '127.0.0.1', DB_PORT: servidor.port });
+    t.mock.method(console, 'warn', () => {});
+    const configuracao = criarConfiguracaoMysql({
+        NODE_ENV: 'production', DB_HOST: '127.0.0.1', DB_PORT: servidor.port,
+        DB_SSL_REJECT_UNAUTHORIZED: 'false'
+    });
     const store = criarStoreSessaoMysql(configuracao, { createDatabaseTable: false, clearExpired: false });
     await store.onReady();
     t.after(() => store.close());
