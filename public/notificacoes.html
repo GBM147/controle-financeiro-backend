@@ -13,8 +13,10 @@
         .switch-row input { width:20px;height:20px;min-height:auto; }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
+    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
 </head>
-<body class="gbm-interna">
+<body class="gbm-interna gbm-polished">
     <header class="topbar">
         <a class="brand" href="dashboard.html"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a>
         <a class="btn-voltar" href="dashboard.html" aria-label="Voltar ao Dashboard">Voltar</a>
@@ -28,12 +30,12 @@
             <section class="card" style="grid-column:span 2">
                 <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
                     <div class="actions">
-                        <select id="filtro-status" style="width:auto">
+                        <select id="filtro-status" aria-label="Status das notificações" style="width:auto">
                             <option value="todas">Todas</option>
                             <option value="nao_lidas">Não lidas</option>
                             <option value="lidas">Lidas</option>
                         </select>
-                        <select id="filtro-tipo" style="width:auto">
+                        <select id="filtro-tipo" aria-label="Tipo de notificação" style="width:auto">
                             <option value="todos">Todos os tipos</option>
                             <option value="limite">Limites</option>
                             <option value="sistema">Sistema</option>
@@ -49,8 +51,8 @@
                 <label class="switch-row"><span>Avisos no site</span><input id="pref-site" type="checkbox"></label>
                 <label class="switch-row"><span>Avisos por e-mail</span><input id="pref-email" type="checkbox"></label>
                 <div class="divider"></div>
-                <div class="field"><label>Silenciar a partir de</label><input id="pref-inicio" type="time"></div>
-                <div class="field" style="margin-top:10px"><label>Até</label><input id="pref-fim" type="time"></div>
+                <div class="field"><label for="pref-inicio">Silenciar a partir de</label><input id="pref-inicio" type="time"></div>
+                <div class="field" style="margin-top:10px"><label for="pref-fim">Até</label><input id="pref-fim" type="time"></div>
                 <button id="salvar-preferencias" class="btn btn-primary" style="width:100%;margin-top:16px">Salvar preferências</button>
             </aside>
         </div>

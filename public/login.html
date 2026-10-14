@@ -312,8 +312,10 @@
         .card { padding: var(--space-5) var(--space-5); }
 </style>
     <link rel="stylesheet" href="gbm-pages.css">
+    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
 </head>
-<body>
+<body class="gbm-polished">
 
     <canvas id="particles-canvas"></canvas>
 
@@ -331,12 +333,12 @@
 
             <div class="input-group">
                 <input type="email" id="login-identificacao" placeholder=" " required>
-                <label>E-mail</label>
+                <label for="login-identificacao">E-mail</label>
             </div>
 
             <div class="input-group">
                 <input type="password" id="login-senha" placeholder=" " required>
-                <label>Senha</label>
+                <label for="login-senha">Senha</label>
             </div>
 
             <div class="form-options">
@@ -361,27 +363,27 @@
             <div style="display: flex; gap: 10px;">
                 <div class="input-group" style="flex: 1;">
                     <input type="text" id="cad-nome" placeholder=" ">
-                    <label>Nome</label>
+                    <label for="cad-nome">Nome</label>
                 </div>
                 <div class="input-group" style="flex: 1;">
                     <input type="text" id="cad-sobrenome" placeholder=" ">
-                    <label>Sobrenome</label>
+                    <label for="cad-sobrenome">Sobrenome</label>
                 </div>
             </div>
 
             <div class="input-group">
                 <input type="email" id="cad-email" placeholder=" ">
-                <label>E-mail</label>
+                <label for="cad-email">E-mail</label>
             </div>
 
             <div class="input-group">
                 <input type="text" id="cad-telefone" placeholder=" " maxlength="15" oninput="mascaraTelefone(this)">
-                <label>Telefone</label>
+                <label for="cad-telefone">Telefone</label>
             </div>
 
             <div class="input-group" style="margin-bottom: 10px;">
                 <input type="password" id="cad-senha" placeholder=" ">
-                <label>Senha</label>
+                <label for="cad-senha">Senha</label>
             </div>
             <div style="text-align: left; margin-bottom: 25px;">
                 <small style="color: #8a9ba8; font-size: 0.75rem;">Deve conter letras maiúsculas, minúsculas e números.</small>
@@ -425,8 +427,8 @@
             <p class="subtitle">Insira os 6 dígitos que recebeu:</p>
             
             <div class="input-group">
-                <input type="text" id="codigo-input" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 12px; font-size: 1.5rem; font-weight: bold; padding-left: 24px;">
-                <label style="left: 50%; transform: translate(-50%, -50%);">000000</label>
+                <input type="text" id="codigo-input" aria-label="Código de verificação de 6 dígitos" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 12px; font-size: 1.5rem; font-weight: bold; padding-left: 24px;">
+                <label for="codigo-input" style="left: 50%; transform: translate(-50%, -50%);">000000</label>
             </div>
             
             <button class="btn-login" onclick="verificarCodigo()">Validar Agora</button>
@@ -444,7 +446,7 @@
             
             <div class="input-group">
                 <input type="email" id="recuperar-email" placeholder=" ">
-                <label>E-mail</label>
+                <label for="recuperar-email">E-mail</label>
             </div>
             
             <button class="btn-login" onclick="solicitarRecuperacao()">Enviar Código</button>
@@ -463,12 +465,12 @@
             
             <div class="input-group">
                 <input type="text" id="redefinir-codigo" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.25rem; font-weight: bold;">
-                <label>Código de 6 dígitos</label>
+                <label for="redefinir-codigo">Código de 6 dígitos</label>
             </div>
             
             <div class="input-group">
                 <input type="password" id="redefinir-senha-nova" placeholder=" ">
-                <label>Nova Senha</label>
+                <label for="redefinir-senha-nova">Nova Senha</label>
             </div>
             
             <button class="btn-login" onclick="redefinirSenha()">Salvar Nova Senha</button>

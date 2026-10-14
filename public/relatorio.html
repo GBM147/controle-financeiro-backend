@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <title>Relatório Mensal | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -365,8 +362,10 @@
         body.gbm-interna :where(th) { color: var(--muted) !important; }
         body.gbm-interna :where(td, th) { border-color: rgba(52,166,216,.1) !important; }
     </style>
+    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
 </head>
-<body class="gbm-interna">
+<body class="gbm-interna gbm-polished">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
 <header class="gbm-header">
     <div class="gbm-logo-container">
@@ -380,7 +379,7 @@
 
     <div class="card">
         <div class="filtros">
-            <select id="mes-ref">
+            <select id="mes-ref" aria-label="Mês do relatório">
                 <option value="1">Janeiro</option>
                 <option value="2">Fevereiro</option>
                 <option value="3">Março</option>
@@ -394,8 +393,8 @@
                 <option value="11">Novembro</option>
                 <option value="12">Dezembro</option>
             </select>
-            <input type="number" id="ano-ref" value="2026">
-            <select id="banco-ref">
+            <input type="number" id="ano-ref" aria-label="Ano do relatório" value="2026">
+            <select id="banco-ref" aria-label="Banco do relatório">
                 <option value="todos">Todos os bancos</option>
             </select>
             <button class="btn-acao btn-gerar" onclick="gerarRelatorio()">Gerar Relatório</button>

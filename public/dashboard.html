@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <title>Dashboard | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3077,8 +3074,10 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
   }
 }
 </style>
+    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
 </head>
-<body class="gbm-interna gbm-dashboard-padrao">
+<body class="gbm-interna gbm-dashboard-padrao gbm-polished">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
 <header class="gbm-header dashboard-v3-header">
     <div class="dashboard-v3-brand-mobile">
@@ -3268,8 +3267,8 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
 
         <div class="lancamento-rapido-form">
             <select id="manual-conta" aria-label="Conta do lançamento"><option value="">Carregando contas...</option></select>
-            <input type="text" id="manual-desc" placeholder="Descrição">
-            <input type="number" id="manual-valor" placeholder="R$ 0,00" step="0.01">
+            <input type="text" id="manual-desc" aria-label="Descrição do lançamento" placeholder="Descrição">
+            <input type="number" id="manual-valor" aria-label="Valor do lançamento em reais" placeholder="R$ 0,00" step="0.01">
             <select id="manual-tipo" aria-label="Tipo">
                 <option value="Despesa">Despesa</option>
                 <option value="Receita">Receita</option>
@@ -3317,9 +3316,9 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
 
             <div class="painel-ajustes" id="painel-limite">
                 <div class="grupo-ajuste">
-                    <label>Limite de gastos</label>
+                    <label for="meta-valor">Limite de gastos</label>
                     <div class="dashboard-tool-line">
-                        <select id="meta-categoria"><option value="" disabled selected>Categoria...</option></select>
+                        <select id="meta-categoria" aria-label="Categoria do limite de gastos"><option value="" disabled selected>Categoria...</option></select>
                         <input type="number" id="meta-valor" placeholder="R$ 0,00" step="10">
                         <button class="btn-acao" onclick="salvarMeta()">Gravar</button>
                         <button class="btn-acao dashboard-secondary-action" onclick="removerMeta()">Sem limite</button>
@@ -3329,7 +3328,7 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
 
             <div class="painel-ajustes" id="painel-categoria">
                 <div class="grupo-ajuste">
-                    <label>Criar nova categoria</label>
+                    <label for="nova-categoria-nome">Criar nova categoria</label>
                     <div class="dashboard-tool-line">
                         <input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies...">
                         <button class="btn-acao" onclick="criarNovaCategoria()">Criar categoria</button>
@@ -3341,10 +3340,10 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
 
             <div class="painel-ajustes" id="painel-meta">
                 <div class="grupo-ajuste">
-                    <label>Novo objetivo de poupança</label>
+                    <label for="objetivo-nome">Novo objetivo de poupança</label>
                     <div class="dashboard-tool-line">
                         <input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança...">
-                        <input type="number" id="objetivo-valor" placeholder="R$ 0,00" step="10">
+                        <input type="number" id="objetivo-valor" aria-label="Valor do objetivo de poupança em reais" placeholder="R$ 0,00" step="10">
                         <button class="btn-acao" onclick="salvarObjetivo()">Adicionar objetivo</button>
                     </div>
                 </div>
@@ -3372,7 +3371,7 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
             </div>
 
             <div class="chart-container" id="container-do-grafico">
-                <div class="container-tabela" id="minhaTabelaContainer" style="display:none">
+                <div class="container-tabela" id="minhaTabelaContainer" tabindex="0" role="region" aria-label="Tabela de movimentações do painel" style="display:none">
                     <table>
                         <thead><tr><th>Categoria</th><th>Valor Movimentado</th></tr></thead>
                         <tbody id="corpo-tabela"></tbody>
@@ -5030,13 +5029,12 @@ async function carregarAlertas() {
         const dot = document.getElementById('dot-alertas');
         const badgeMenu = document.getElementById('badge-alertas-menu');
 
-        if (naoLidos.length > 0) {
-            dot.style.display = 'block';
-            badgeMenu.style.display = 'inline-block';
-            badgeMenu.innerText = naoLidos.length;
-        } else {
-            dot.style.display = 'none';
-            badgeMenu.style.display = 'none';
+        if (dot) {
+            dot.style.display = naoLidos.length > 0 ? 'block' : 'none';
+        }
+        if (badgeMenu) {
+            badgeMenu.style.display = naoLidos.length > 0 ? 'inline-block' : 'none';
+            if (naoLidos.length > 0) badgeMenu.innerText = naoLidos.length;
         }
         window._alertasCache = alertas;
     } catch (e) {

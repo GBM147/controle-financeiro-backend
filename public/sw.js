@@ -1,5 +1,5 @@
 const VERSAO_TUTORIAL = '1.1.48';
-const CACHE_GBM = 'gbm-estatico-v32';
+const CACHE_GBM = 'gbm-estatico-v33';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -10,7 +10,11 @@ const ARQUIVOS_ESTATICOS = [
     '/sobre.html',
     '/offline.html',
     '/guias.css',
-    '/public-site.css?v=20261014',
+    '/public-site.css?v=20261014-polish1',
+    '/gbm-typography.css?v=20261014-polish1',
+    '/gbm-app-polish.css?v=20261014-polish1',
+    '/fonts/manrope-latin.woff2',
+    '/fonts/manrope-latin-ext.woff2',
     '/public-calculators.js',
     '/ferramentas.html',
     '/auth.js',

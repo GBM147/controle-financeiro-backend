@@ -25,8 +25,10 @@
         }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
+    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
 </head>
-<body class="gbm-interna">
+<body class="gbm-interna gbm-polished">
 <header class="gbm-header">
     <div class="gbm-logo-container">
         <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
@@ -131,11 +133,11 @@
         <div class="page-title"><h1>Relatório avançado</h1><p>Escolha qualquer período, conta, categoria ou tipo e exporte o resultado.</p></div>
         <section class="card filtros-card">
             <form id="form-filtros" class="form-grid">
-                <div class="field"><label>Data inicial</label><input id="data-inicio" type="date" required></div>
-                <div class="field"><label>Data final</label><input id="data-fim" type="date" required></div>
-                <div class="field"><label>Conta</label><select id="filtro-conta"><option value="todas">Todas as contas</option></select></div>
-                <div class="field"><label>Categoria</label><select id="filtro-categoria"><option value="todas">Todas as categorias</option></select></div>
-                <div class="field"><label>Tipo</label><select id="filtro-tipo"><option value="todos">Receitas e despesas</option><option>Receita</option><option>Despesa</option></select></div>
+                <div class="field"><label for="data-inicio">Data inicial</label><input id="data-inicio" type="date" required></div>
+                <div class="field"><label for="data-fim">Data final</label><input id="data-fim" type="date" required></div>
+                <div class="field"><label for="filtro-conta">Conta</label><select id="filtro-conta"><option value="todas">Todas as contas</option></select></div>
+                <div class="field"><label for="filtro-categoria">Categoria</label><select id="filtro-categoria"><option value="todas">Todas as categorias</option></select></div>
+                <div class="field"><label for="filtro-tipo">Tipo</label><select id="filtro-tipo"><option value="todos">Receitas e despesas</option><option>Receita</option><option>Despesa</option></select></div>
                 <div class="field" style="justify-content:end"><div class="actions end"><button class="btn btn-primary">Gerar relatório</button></div></div>
             </form>
         </section>
@@ -165,7 +167,7 @@
                 </section>
                 <section class="card exportar-card"><h2>Exportar</h2><p style="color:var(--muted)">O Excel preserva o relatório formatado; use o CSV quando precisar apenas dos dados simples.</p><div class="actions"><button id="baixar-excel" class="btn btn-primary" type="button">Baixar Excel</button><button id="baixar-csv" class="btn" type="button">Baixar CSV</button><button id="baixar-pdf" class="btn" type="button">Baixar PDF</button></div></section>
             </div>
-            <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap"></div></section>
+            <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap" tabindex="0" role="region" aria-label="Transações do relatório avançado"></div></section>
         </section>
     </main>
     <script src="auth.js"></script><script src="gbm-pages.js"></script>

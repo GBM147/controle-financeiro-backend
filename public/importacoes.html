@@ -23,8 +23,10 @@
         .import-stats .stat-card strong { font-size:1.5rem; font-weight:800; }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
+    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
 </head>
-<body class="gbm-interna">
+<body class="gbm-interna gbm-polished">
 
 <header class="gbm-header">
     <div class="gbm-logo-container">
@@ -153,7 +155,7 @@
                 <div class="dropzone">
                     <strong>Selecione o extrato</strong>
                     <p style="color:var(--muted);margin:7px 0">Nenhum lançamento será salvo antes da sua confirmação. Máximo 10 MB.</p>
-                    <input id="arquivo-extrato" type="file" accept=".ofx,.pdf,application/pdf">
+                    <input id="arquivo-extrato" type="file" aria-label="Selecione o extrato OFX ou PDF" accept=".ofx,.pdf,application/pdf">
                 </div>
             </div>
             <div class="field full">
