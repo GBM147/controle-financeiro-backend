@@ -20,6 +20,21 @@ npm start
 
 O servidor usa a porta definida em `PORT` e publica os arquivos da pasta `public/`.
 
+Use um banco dedicado ao desenvolvimento. A inicialização executa migrações
+automáticas aditivas e pressupõe que o esquema base já existe; este repositório
+não inclui um script de criação desse esquema.
+
+Conexões remotas ao MySQL, incluindo o armazenamento de sessões, usam TLS com
+verificação do certificado e do hostname. Mantenha
+`DB_SSL_REJECT_UNAUTHORIZED=true`. Se o provedor utiliza uma CA privada, configure
+`DB_SSL_CA_FILE` com o caminho do certificado PEM confiável fornecido por ele.
+`DB_SSL=false` é permitido somente fora de produção com `DB_HOST=localhost`,
+`127.0.0.1` ou `::1`.
+
+Para verificar a execução, confirme que `/health` responde `200` com
+`database: "ok"` e que as migrações concluíram sem erros. Os testes em
+`NODE_ENV=test` usam sessão em memória e não validam a conexão com um MySQL real.
+
 ## Variáveis obrigatórias em produção
 
 Configure banco, `SESSION_SECRET`, chaves de proteção de dados, origem pública, Resend, Cloudinary, Mercado Pago e Gemini conforme `.env.example`. `ALLOWED_ORIGINS` deve conter apenas origens confiáveis. A validação TLS do MySQL permanece ativa por padrão.

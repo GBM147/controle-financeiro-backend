@@ -5,6 +5,7 @@ const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKE
 const crypto = require('crypto');
 const express = require('express');
 const mysql = require('mysql2');
+const { criarConfiguracaoMysql, criarStoreSessaoMysql } = require('./mysql-config');
 const cors = require('cors');
 const helmet = require('helmet');
 const { rateLimit } = require('express-rate-limit');
@@ -458,23 +459,17 @@ app.use(express.static('public', {
 
 // --- SESSÃO DE SERVIDOR (corrige o IDOR: userId deixa de vir do cliente) ---
 const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
-
-const configuracaoSslMysql = process.env.DB_SSL === 'false' ? undefined : {
-    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
-};
-const configuracaoConexaoMysql = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-    ssl: configuracaoSslMysql
-};
+const configuracaoConexaoMysql = criarConfiguracaoMysql();
 
 const sessionStore = process.env.NODE_ENV === 'test'
     ? new session.MemoryStore()
-    : new MySQLStore(configuracaoConexaoMysql);
+    : criarStoreSessaoMysql(configuracaoConexaoMysql);
+
+if (process.env.NODE_ENV !== 'test') {
+    sessionStore.onReady().catch((erro) => {
+        console.error('Não foi possível inicializar o banco de sessões:', erro.code || 'ERRO_MYSQL');
+    });
+}
 
 app.use(session({
     // "name" é a opção reconhecida pelo express-session para o nome do cookie.
