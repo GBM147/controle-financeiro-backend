@@ -45,7 +45,13 @@ test('configuração evita regressões de segurança conhecidas', () => {
     assert.match(servidor, /token_finalidade = 'verificacao_conta'/);
     assert.equal(pacote.dependencies.nodemailer, undefined);
     assert.equal(pacote.dependencies['node-ofx-parser'], undefined);
-    assert.match(pacote.dependencies.multer, /^\^2\.[12]\./);
+    const versaoMulter = pacote.dependencies.multer.match(/^\^(\d+)\.(\d+)\.(\d+)$/);
+    assert.ok(versaoMulter, 'Multer deve declarar uma versão estável com limite mínimo explícito');
+    const [, majorMulter, minorMulter] = versaoMulter.map(Number);
+    assert.ok(
+        majorMulter > 2 || (majorMulter === 2 && minorMulter >= 4),
+        'Multer precisa manter a versão mínima segura 2.4.0'
+    );
     assert.match(pacote.dependencies.helmet, /^\^8\./);
     assert.match(pacote.dependencies['express-rate-limit'], /^\^8\./);
     assert.match(servidor, /contentSecurityPolicy/);
@@ -109,14 +115,41 @@ test('interface não contém emojis e o menu usa capitalização comum sem brilh
     }
 
     const dashboard = ler('public/dashboard.html');
-    const regraMenu = dashboard.match(/\.sidebar-content \.menu-item \{([\s\S]*?)\}/)?.[1] || '';
-    assert.match(regraMenu, /text-transform:\s*none/);
-    assert.match(regraMenu, /text-shadow:\s*none/);
-    assert.doesNotMatch(regraMenu, /#5fffa8|rgba\(95,\s*255,\s*168/i);
-    assert.match(dashboard, /class="menu-item-conteudo"[^>]*>\s*Minhas contas\s*<\/span>/);
-    assert.match(dashboard, /class="menu-item-conteudo"[^>]*>\s*Limite de gastos\s*<\/span>/);
-    assert.match(dashboard, /class="menu-item-conteudo"[^>]*>\s*Relatório mensal\s*<\/span>/);
-    assert.match(dashboard, /class="menu-item-conteudo"[^>]*>\s*Comparativo mensal\s*<\/span>/);
+    const estilos = [...dashboard.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)]
+        .map(([, css]) => css).join('\n');
+    assert.match(estilos, /\.dashboard-v3-nav-item\s*\{/);
+    const regrasMenu = [...estilos.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+        .filter(([, seletor]) => seletor.includes('.dashboard-v3-nav-item'));
+    for (const [, seletor, regra] of regrasMenu) {
+        // A navegação v3 usa os valores padrão (none) para estas propriedades.
+        // Verifica também estados ativos/hover, em vez do CSS legado sem uso.
+        for (const [, propriedade, valor] of regra.matchAll(/\b(text-transform|text-shadow|box-shadow)\s*:\s*([^;}]+)/g)) {
+            assert.equal(valor.replace(/\s*!important\s*$/, '').trim(), 'none', `${seletor}: ${propriedade}`);
+        }
+    }
+
+    const menu = dashboard.match(/<nav\b[^>]*class="dashboard-v3-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+    assert.ok(menu, 'Navegação principal atual precisa estar presente');
+    const links = [...menu.matchAll(/<a\b([^>]+)>([\s\S]*?)<\/a>/g)]
+        .map(([, atributos, conteudo]) => ({
+            atributos,
+            rotulo: conteudo
+                .replace(/<span\b[^>]*class="nav-ico"[^>]*>[\s\S]*?<\/span>/g, '')
+                .replace(/<(em|b)\b[^>]*>[\s\S]*?<\/\1>/g, '')
+                .replace(/<[^>]+>/g, '').trim()
+        }));
+    for (const [rotulo, destino, acao] of [
+        ['Contas', 'contas.html'],
+        ['Limite de gastos', 'limite-de-gastos.html'],
+        ['Relatórios', '#', /acessarRotaPremium\('relatorio-avancado\.html','Relatório mensal'\);return false;/],
+        ['Comparativo', '#', /acessarRotaPremium\('comparativo\.html','Comparativo mensal'\);return false;/]
+    ]) {
+        const link = links.find((item) => item.rotulo === rotulo);
+        assert.ok(link, `Item do menu ausente: ${rotulo}`);
+        assert.match(link.atributos, /class="[^"]*\bdashboard-v3-nav-item\b/);
+        assert.ok(link.atributos.includes(`href="${destino}"`), `Destino incorreto: ${rotulo}`);
+        if (acao) assert.match(link.atributos, acao);
+    }
 });
 
 test('análises oferecem tipos de gráfico e o dashboard permite exibir somente o gráfico', () => {
