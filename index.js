@@ -3080,7 +3080,7 @@ app.post('/api/enviar-feedback', limitarFeedback, async (req, res) => {
         if (!userEmail && email) userEmail = String(email).slice(0, 200);
         if (!userNome && nome) userNome = escaparHtmlServidor(String(nome).slice(0, 120));
 
-        const emailSuporte = process.env.EMAIL_SUPORTE || 'suporte@gbm-finance.com';
+        const emailSuporte = process.env.EMAIL_SUPORTE || 'guardianofbudgetmoney@gmail.com';
 
         const { data, error: resendError } = await resend.emails.send({
     from: 'GBM Financeiro <naoresponder@gbm-finance.com>',

@@ -1,5 +1,5 @@
 const VERSAO_TUTORIAL = '1.1.48';
-const CACHE_GBM = 'gbm-estatico-v31';
+const CACHE_GBM = 'gbm-estatico-v32';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -10,6 +10,9 @@ const ARQUIVOS_ESTATICOS = [
     '/sobre.html',
     '/offline.html',
     '/guias.css',
+    '/public-site.css?v=20261014',
+    '/public-calculators.js',
+    '/ferramentas.html',
     '/auth.js',
     '/gbm-pages.css',
     '/gbm-pages.js',

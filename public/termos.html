@@ -5,100 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Termos de Uso do Guardian of Budget & Money (GBM).">
     <title>Termos de Uso | GBM</title>
-    <link rel="stylesheet" href="gbm-pages.css">
-    <style>
-        .legal-layout {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 260px;
-            gap: 22px;
-            align-items: start;
-        }
-        .legal-document { padding: clamp(20px, 4vw, 38px); }
-        .legal-document section {
-            padding: 8px 0 20px;
-            border-bottom: 1px solid rgba(255,255,255,.09);
-            scroll-margin-top: 98px;
-        }
-        .legal-document section:last-child { border-bottom: 0; }
-        .legal-document h2 {
-            margin: 14px 0 10px;
-            color: var(--text);
-            font-size: clamp(1.18rem, 2vw, 1.45rem);
-        }
-        .legal-document p, .legal-document li {
-            color: var(--muted);
-            line-height: 1.72;
-        }
-        .legal-document ul { padding-left: 22px; }
-        .legal-document a { color: #8bffc1; }
-        .legal-summary {
-            padding: 16px 18px;
-            border: 1px solid rgba(57,217,138,.36);
-            border-radius: 12px;
-            background: rgba(57,217,138,.07);
-        }
-        .legal-summary p { margin: 0; color: #c9f8df; }
-        .legal-nav {
-            position: sticky;
-            top: 98px;
-            padding: 18px;
-        }
-        .legal-nav strong { display: block; margin-bottom: 10px; }
-        .legal-nav a {
-            display: block;
-            padding: 7px 0;
-            color: var(--muted);
-            text-decoration: none;
-            font-size: .84rem;
-        }
-        .legal-nav a:hover { color: var(--green); }
-        .provider-pending {
-            padding: 13px 15px;
-            border: 1px solid rgba(245,185,66,.5);
-            border-radius: 10px;
-            background: rgba(245,185,66,.08);
-            color: #ffe09b !important;
-        }
-        .acceptance-card { margin-bottom: 22px; }
-        .acceptance-card h2 { margin-top: 0; }
-        #termos-status { color: var(--muted); line-height: 1.55; }
-        #aceitar-termos[hidden],
-        #cartao-aceite[hidden] { display: none !important; }
-        .meta-line {
-            display: flex;
-            gap: 9px;
-            flex-wrap: wrap;
-            margin-top: 13px;
-        }
-        @media (max-width: 860px) {
-            .legal-layout { grid-template-columns: 1fr; }
-            .legal-nav { display: none; }
-        }
-        @media (max-width: 520px) {
-            .top-actions .btn:first-child { display: none; }
-            .legal-document { padding: 18px; }
-        }
-    </style>
+    <link rel="stylesheet" href="public-site.css?v=20261014">
+    <link rel="canonical" href="https://gbm-finance.com/termos.html">
 </head>
-<body>
-    <header class="topbar">
-        <a class="brand" href="index.html">
-            <img src="logo-transparente.jpg" alt="GBM">
-            <span>Guardian of Budget &amp; Money</span>
-        </a>
-        <div class="top-actions">
-            <a class="btn btn-small" data-link-legal href="politica-de-privacidade.html">Privacidade</a>
-            <a id="botao-retorno" class="btn btn-small" href="index.html">← Voltar</a>
-        </div>
+<body class="gbm-public">
+    <a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+    <header class="site-header">
+        <a class="brand" href="index.html"><img src="logo-transparente.png" alt="" width="34" height="34">GBM <span>Finance</span></a>
+        <nav class="site-nav" aria-label="Navegação principal"><a href="educacao-financeira.html">Guias</a><a href="ferramentas.html">Ferramentas</a><a href="sobre.html">Sobre</a><a href="fale-conosco.html">Contato</a><a data-link-legal href="politica-de-privacidade.html">Privacidade</a></nav>
+        <a id="botao-retorno" class="btn btn-small" href="index.html">Voltar</a>
     </header>
 
-    <main class="container">
-        <div class="page-title">
+    <main id="conteudo-principal">
+        <div class="hero">
             <h1>Termos de Uso</h1>
             <p>Regras para utilização do Guardian of Budget &amp; Money.</p>
             <div class="meta-line">
                 <span class="pill green">Versão 2026.07</span>
-                <span class="pill">Atualizado em 24 de julho de 2026</span>
+                <span class="pill">Atualizado em 14 de outubro de 2026</span>
             </div>
         </div>
 
@@ -125,8 +49,8 @@
                 <section id="fornecedor">
                     <h2>2. Identificação e contato do serviço</h2>
                     <p><strong>Nome do serviço:</strong> GBM — Guardian of Budget &amp; Money.<br>
-                    <strong>Canal eletrônico de atendimento:</strong> suporte@gbm-finance.com.</p>
-                    <p class="provider-pending"><strong>Atenção do responsável pelo GBM:</strong> antes da comercialização pública, substitua este aviso pela razão social ou nome completo do fornecedor, CPF ou CNPJ e endereço de atendimento. Essas informações não existem nos arquivos atuais e não podem ser inventadas.</p>
+                    <strong>Canal eletrônico de atendimento:</strong> guardianofbudgetmoney@gmail.com.</p>
+                    <p><strong>Responsável pelo serviço:</strong> Giovanni Barbosa de Moraes. Para dúvidas sobre contratação, cobrança ou identificação do fornecedor, entre em contato pelo <a href="mailto:guardianofbudgetmoney@gmail.com">e-mail de atendimento</a>.</p>
                 </section>
 
                 <section id="conta">
@@ -235,6 +159,7 @@
             </nav>
         </div>
     </main>
+    <footer class="site-footer"><nav aria-label="Links institucionais"><a href="educacao-financeira.html">Guias</a><a href="ferramentas.html">Ferramentas</a><a href="sobre.html">Sobre e critérios editoriais</a><a href="fale-conosco.html">Contato</a><a href="termos.html">Termos</a><a href="politica-de-privacidade.html">Privacidade</a></nav><small>© 2026 GBM Finance. Conteúdo educativo e exemplos ilustrativos.</small></footer>
 
     <script>
         const TERMOS_VERSAO = '2026.07';
@@ -324,6 +249,5 @@
             carregarAceite();
         }
     </script>
-    <script src="gbm-pages.js"></script>
 </body>
 </html>

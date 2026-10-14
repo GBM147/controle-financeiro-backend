@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calculadora de reserva de emergência: meta e prazo | GBM Finance</title>
+    <meta name="description" content="Simule uma meta de reserva com suas despesas essenciais, saldo atual e aporte mensal. Cálculo local sem cadastro, com fórmula e limites explicados.">
+    <link rel="canonical" href="https://gbm-finance.com/calculadoras/reserva-de-emergencia.html">
+    <link rel="stylesheet" href="../public-site.css">
+    <script src="../public-calculators.js" defer></script>
+</head>
+<body class="gbm-public">
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+    <header class="site-header">
+        <a class="brand" href="../index.html" aria-label="GBM Finance — início"><img src="../logo-transparente.png" alt="" width="34" height="34">GBM <span>Finance</span></a>
+        <nav class="site-nav" aria-label="Navegação principal"><a href="../index.html">Início</a><a href="../educacao-financeira.html">Guias</a><a href="../ferramentas.html">Ferramentas</a></nav>
+        <a class="btn btn-small" href="../login.html">Entrar</a>
+    </header>
+    <main id="conteudo" class="container">
+        <section class="hero" aria-labelledby="titulo">
+            <p class="eyebrow">Calculadora gratuita · Sem cadastro</p>
+            <h1 id="titulo">Uma reserva com meta e próximo passo.</h1>
+            <p>Veja quanto um cenário de proteção exige e quanto tempo seus aportes levariam para completar a meta. Compare possibilidades sem promessa de rendimento.</p>
+        </section>
+
+        <div class="calculator-layout">
+            <div class="grid">
+            <section class="card" aria-labelledby="formulario-titulo">
+                <h2 id="formulario-titulo">Monte seu cenário</h2>
+                <p id="formato-valores">Valores em reais. Use <strong>1500,50</strong> ou <strong>1.500,50</strong>. Informe zero quando não houver valor.</p>
+                <form data-calculator="reserve" data-result="resultado-reserva" novalidate>
+                    <div class="field">
+                        <label for="essential">Despesas essenciais mensais (R$)</label>
+                        <input id="essential" type="text" inputmode="decimal" min="0" maxlength="20" placeholder="Ex.: 1.800,00" data-money required aria-describedby="essential-help essential-error formato-valores">
+                        <small id="essential-help">Quanto precisa para moradia, alimentação, saúde, transporte e obrigações básicas em um mês.</small>
+                        <p id="essential-error" class="field-error" hidden></p>
+                    </div>
+                    <div class="field">
+                        <label for="horizon">Meses de despesas que deseja simular</label>
+                        <select id="horizon" aria-describedby="horizon-help">
+                            <option value="3">3 meses</option><option value="6" selected>6 meses</option><option value="9">9 meses</option><option value="12">12 meses</option>
+                        </select>
+                        <small id="horizon-help">São cenários para comparação, não uma recomendação automática. Seis meses é apenas o exemplo inicial.</small>
+                    </div>
+                    <div class="field">
+                        <label for="saved">Valor já guardado para a reserva (R$)</label>
+                        <input id="saved" type="text" inputmode="decimal" min="0" maxlength="20" value="0" data-money required aria-describedby="saved-help saved-error">
+                        <small id="saved-help">Inclua apenas o dinheiro disponível para emergências, sem contar valores de outras metas.</small>
+                        <p id="saved-error" class="field-error" hidden></p>
+                    </div>
+                    <div class="field">
+                        <label for="contribution">Aporte mensal possível (R$)</label>
+                        <input id="contribution" type="text" inputmode="decimal" min="0" maxlength="20" value="0" data-money required aria-describedby="contribution-help contribution-error">
+                        <small id="contribution-help">Quanto pretende acrescentar ao fim de cada mês, sem comprometer contas essenciais.</small>
+                        <p id="contribution-error" class="field-error" hidden></p>
+                    </div>
+                    <div class="form-actions"><button class="btn btn-primary" type="submit" disabled>Calcular reserva</button><button class="btn" type="reset">Limpar</button></div>
+                    <p data-form-status role="status" aria-live="polite"></p>
+                </form>
+                <noscript><p>Ative o JavaScript para usar a calculadora. Você também pode fazer a conta com a fórmula explicada abaixo.</p></noscript>
+            </section>
+        <section id="resultado-reserva" class="card calculator-result" aria-live="polite" aria-atomic="true" hidden>
+            <h2>Seu cenário de reserva</h2>
+            <div class="grid grid-2">
+                <p><strong>Meta simulada</strong><br><span class="result-value" data-result="target"></span></p>
+                <p><strong>Quanto ainda falta</strong><br><span class="result-value" data-result="remaining"></span></p>
+            </div>
+            <p><strong>Prazo com o aporte informado</strong><br><span class="result-value" data-result="months"></span></p>
+            <p data-result="description"></p>
+            <p>Estimativa em meses completos, sem rendimentos, inflação, impostos, taxas ou uso da reserva.</p>
+        </section>
+            </div>
+            <aside class="card" aria-labelledby="escolher-cenario">
+                <h2 id="escolher-cenario">O horizonte depende da sua vida</h2>
+                <p>Antes de escolher um cenário, considere a estabilidade da renda, dependentes, gastos de saúde e o tempo possível para recompor uma fonte de renda.</p>
+                <p>Compare mais de um horizonte. Uma pessoa com renda variável pode precisar pensar em uma margem diferente da de uma casa com várias fontes de renda, mas a calculadora não decide essa margem por você.</p>
+                <p>Se o valor parecer distante, uma primeira etapa menor pode ajudar a começar. A meta pode ser revisada conforme sua rotina muda.</p>
+                <p>O cálculo acontece no navegador. Não enviamos os valores à API nem os gravamos pelo aplicativo. O navegador pode restaurar os campos ao voltar à página. Use “Limpar” para remover os valores antes de compartilhar o dispositivo.</p>
+                <p><a href="../guias/reserva-de-emergencia.html">Leia o guia de reserva de emergência →</a></p>
+            </aside>
+        </div>
+
+
+
+        <article class="card article-body" aria-labelledby="entender-reserva">
+            <h2 id="entender-reserva">Entenda a meta antes de perseguir o número</h2>
+            <p>Uma reserva é uma proteção para despesas imprevistas ou redução de renda. O ponto de partida desta calculadora é o custo mensal do que não pode simplesmente esperar. Isso costuma incluir moradia, alimentação básica, saúde e transporte necessário. Avalie também obrigações de contrato que continuariam existindo durante uma dificuldade.</p>
+            <p>Se você já guarda para férias, troca de celular ou uma compra prevista, separe esses valores da reserva. A finalidade é diferente. Misturar metas faz parecer que há uma proteção maior do que o dinheiro realmente disponível para um imprevisto.</p>
+
+            <h3>Exemplo resolvido: despesas de R$ 1.800</h3>
+            <p>Para comparar um cenário de seis meses, multiplique <strong>R$ 1.800 × 6 = R$ 10.800</strong>. Se já houver R$ 2.800 reservados, faltam <strong>R$ 8.000</strong>. Com aportes de R$ 500 por mês, a diferença será preenchida em <strong>16 meses</strong>, sem considerar rendimentos.</p>
+            <p>Se o aporte cair para R$ 300, a divisão resulta em 26,67 meses. Como o aporte entra ao fim de cada mês, o prazo mostrado será <strong>27 meses</strong>. Essa mudança não reduz a meta; ela altera o ritmo de construção. Antes de aumentar o aporte, confira se ele cabe no <a href="orcamento-mensal.html">orçamento mensal</a>.</p>
+
+            <h3>Metodologia e arredondamento</h3>
+            <p><strong>Meta = despesas essenciais mensais × meses escolhidos.</strong> Depois, <strong>falta = meta − valor já guardado</strong>, com mínimo de zero. O prazo é a falta dividida pelo aporte mensal, arredondada para cima até o próximo mês inteiro.</p>
+            <p>As operações de dinheiro usam centavos inteiros. Se o valor guardado já cobrir a meta, o prazo será zero e a ferramenta indicará que a meta foi alcançada. Se ainda faltar dinheiro e o aporte for zero, não existe prazo calculável. Com despesas iguais a zero, a meta também será zero; confira se essa entrada representa mesmo sua realidade.</p>
+
+            <h3>Limites da simulação</h3>
+            <p>O cálculo mantém as despesas e o aporte constantes e não prevê emergências durante a formação da reserva. Inflação, retiradas e mudanças de renda podem alterar a meta ou o prazo. Não são considerados juros, rendimentos, impostos nem taxas. Por isso o resultado não deve ser interpretado como previsão de retorno ou garantia de prazo.</p>
+            <p>A ferramenta também não escolhe onde guardar dinheiro. Segurança, liquidez, riscos, custos e condições de resgate precisam ser entendidos antes de contratar um produto. Confira as regras atuais com a instituição e não dependa apenas de uma simulação para tomar essa decisão.</p>
+
+            <h3>Perguntas frequentes</h3>
+            <h4>Seis meses é obrigatório?</h4>
+            <p>Não. É o cenário inicial da página para facilitar a comparação. Três, seis, nove e doze meses são hipóteses disponíveis; a escolha depende das suas condições e pode exigir um planejamento individual.</p>
+            <h4>Posso contar o limite do cartão como reserva?</h4>
+            <p>Não nesta conta. Limite de crédito não é dinheiro guardado e seu uso cria uma obrigação que pode ter juros. Informe somente valores efetivamente destinados à reserva.</p>
+            <h4>Devo guardar antes de pagar uma dívida?</h4>
+            <p>Esta simulação não resolve essa prioridade. Compare os custos e as condições da dívida com a necessidade de cobrir despesas essenciais e imprevistos. O guia de <a href="../guias/dividas-e-juros.html">dívidas e juros</a> ajuda a reunir as informações para avaliar o plano.</p>
+            <h4>E se eu precisar usar parte da reserva?</h4>
+            <p>Ela existe para ser usada quando necessário. Atualize o valor guardado e refaça o cenário. Se as despesas mensais também mudaram, ajuste essa entrada antes de calcular um novo prazo.</p>
+            <p>Continue com o guia de <a href="../guias/metas-financeiras.html">metas financeiras</a> para transformar o cenário em uma rotina de revisão.</p>
+        </article>
+    </main>
+    <footer class="site-footer">
+        <p><strong>GBM Finance</strong> · Organização financeira com clareza.</p>
+        <nav aria-label="Links institucionais"><a href="../sobre.html">Sobre</a><a href="../termos.html">Termos</a><a href="../politica-de-privacidade.html">Privacidade</a><a href="../fale-conosco.html">Contato</a></nav>
+        <small>© 2026 GBM Finance. Conteúdo educativo.</small>
+    </footer>
+</body>
+</html>

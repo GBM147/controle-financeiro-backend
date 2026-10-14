@@ -7,30 +7,28 @@
     <meta name="description" content="Canal de contato do GBM Finance para suporte, dúvidas sobre assinatura, privacidade e sugestões editoriais.">
     <meta name="google-adsense-account" content="ca-pub-2735805392775741">
     <link rel="canonical" href="https://gbm-finance.com/fale-conosco.html">
-    <link rel="stylesheet" href="guias.css">
-    <link rel="stylesheet" href="gbm-pages.css">
+    <link rel="stylesheet" href="public-site.css?v=20261014">
 </head>
-<body>
+<body class="gbm-public">
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
     <header class="site-header">
-        <a class="brand" href="index.html">GBM <span>Finance</span></a>
-        <nav class="site-nav" aria-label="Navegação principal">
-            <a href="educacao-financeira.html">Guias</a>
-            <a href="sobre.html">Sobre</a>
-            <a href="fale-conosco.html">Contato</a>
-            <a href="login.html">Entrar</a>
-        </nav>
+        <a class="brand" href="index.html"><img src="logo-transparente.png" alt="" width="34" height="34">GBM <span>Finance</span></a>
+        <nav class="site-nav" aria-label="Navegação principal"><a href="educacao-financeira.html">Guias</a><a href="ferramentas.html">Ferramentas</a><a href="sobre.html">Sobre</a><a href="fale-conosco.html">Contato</a></nav>
+        <a class="btn btn-small" href="login.html">Entrar</a>
     </header>
-    <main>
+    <main id="conteudo">
         <section class="hero">
             <p class="eyebrow">Suporte</p>
             <h1>Fale conosco</h1>
-            <p class="lead">Dúvidas sobre o sistema, sugestões de conteúdo, problemas técnicos ou questões de assinatura e privacidade — use o formulário abaixo. Respondemos por e-mail em até 2 dias úteis.</p>
+            <p class="lead">Dúvidas sobre o sistema, sugestões de conteúdo, problemas técnicos ou questões de assinatura e privacidade — use o formulário abaixo. O canal público de atendimento é <a href="mailto:guardianofbudgetmoney@gmail.com">guardianofbudgetmoney@gmail.com</a>.</p>
         </section>
 
         <div class="article-layout">
             <article>
+                <h2>Quem recebe sua mensagem</h2>
+                <p><strong>Giovanni Barbosa de Moraes</strong> é o responsável pelo GBM Finance e pelo canal de atendimento. Use o formulário ou o e-mail público para suporte, correções editoriais e pedidos sobre privacidade.</p>
                 <h2>Antes de enviar</h2>
-                <p>Se a dúvida for sobre um dos guias da <a href="educacao-financeira.html">biblioteca de educação financeira</a>, cite o título do artigo na mensagem — isso agiliza a resposta. Para questões de conta, login ou assinatura, é necessário estar autenticado; acesse pela área <a href="login.html">Entrar</a> e use o suporte dentro do painel para respostas mais rápidas com seu histórico.</p>
+                <p>Se a dúvida for sobre um dos guias da <a href="educacao-financeira.html">biblioteca de educação financeira</a>, cite o título do artigo na mensagem — isso agiliza a resposta. Você pode solicitar ajuda sem estar autenticado. Não inclua senhas, códigos de acesso ou extratos na mensagem. Quando necessário, o atendimento poderá pedir uma confirmação de identidade para proteger seus dados.</p>
 
                 <h2>O que podemos responder por aqui</h2>
                 <ul class="checklist">
@@ -44,11 +42,11 @@
                 <form id="formFeedback">
                     <div class="form-group">
                         <label for="nome">Nome</label>
-                        <input type="text" id="nome" required>
+                        <input type="text" id="nome" autocomplete="name" maxlength="120" required>
                     </div>
                     <div class="form-group">
                         <label for="email">E-mail para resposta</label>
-                        <input type="email" id="email" required>
+                        <input type="email" id="email" autocomplete="email" maxlength="200" required>
                     </div>
                     <div class="form-group">
                         <label for="assunto">Assunto</label>
@@ -63,19 +61,16 @@
                     </div>
                     <div class="form-group">
                         <label for="mensagem">Sua mensagem</label>
-                        <textarea id="mensagem" rows="5" placeholder="Descreva sua solicitação com detalhes..." required></textarea>
+                        <textarea id="mensagem" rows="5" maxlength="5000" placeholder="Descreva sua solicitação com detalhes..." required></textarea>
                     </div>
                     <button type="submit" class="btn-enviar" id="btnSubmit">Enviar mensagem</button>
                 </form>
-                <div id="mensagem-status"></div>
+                <div id="mensagem-status" role="status" aria-live="polite"></div>
             </article>
             <aside><strong>Navegue</strong><a href="educacao-financeira.html">Biblioteca de guias</a><a href="sobre.html">Sobre o GBM Finance</a><a href="politica-de-privacidade.html">Política de privacidade</a></aside>
         </div>
     </main>
-    <footer class="site-footer">
-        <nav><a href="educacao-financeira.html">Guias</a><a href="termos.html">Termos</a><a href="politica-de-privacidade.html">Privacidade</a></nav>
-        <small>© 2026 GBM Finance.</small>
-    </footer>
+    <footer class="site-footer"><nav aria-label="Links institucionais"><a href="educacao-financeira.html">Guias</a><a href="ferramentas.html">Ferramentas</a><a href="sobre.html">Sobre e critérios editoriais</a><a href="fale-conosco.html">Contato</a><a href="termos.html">Termos</a><a href="politica-de-privacidade.html">Privacidade</a></nav><small>© 2026 GBM Finance. Conteúdo educativo e exemplos ilustrativos.</small></footer>
     <script>
         document.getElementById('formFeedback').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -116,6 +111,5 @@
             }
         });
     </script>
-    <script src="gbm-pages.js"></script>
 </body>
 </html>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calculadora de orçamento mensal: sobra ou falta? | GBM Finance</title>
+    <meta name="description" content="Compare renda líquida, despesas, dívidas e aportes para calcular o saldo do mês. Sem cadastro, com percentuais, fórmula e exemplo de orçamento.">
+    <link rel="canonical" href="https://gbm-finance.com/calculadoras/orcamento-mensal.html">
+    <link rel="stylesheet" href="../public-site.css">
+    <script src="../public-calculators.js" defer></script>
+</head>
+<body class="gbm-public">
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+    <header class="site-header">
+        <a class="brand" href="../index.html" aria-label="GBM Finance — início"><img src="../logo-transparente.png" alt="" width="34" height="34">GBM <span>Finance</span></a>
+        <nav class="site-nav" aria-label="Navegação principal">
+            <a href="../index.html">Início</a><a href="../educacao-financeira.html">Guias</a><a href="../ferramentas.html">Ferramentas</a>
+        </nav>
+        <a class="btn btn-small" href="../login.html">Entrar</a>
+    </header>
+    <main id="conteudo" class="container">
+        <section class="hero" aria-labelledby="titulo">
+            <p class="eyebrow">Calculadora gratuita · Sem cadastro</p>
+            <h1 id="titulo">Seu orçamento cabe no mês?</h1>
+            <p>Compare o que entra com o que você pretende gastar e guardar. O saldo ajuda a decidir o próximo ajuste, sem impor uma regra de percentuais à sua vida.</p>
+        </section>
+
+        <div class="calculator-layout">
+            <div class="grid">
+            <section class="card" aria-labelledby="formulario-titulo">
+                <h2 id="formulario-titulo">Informe os valores de um mês</h2>
+                <p id="formato-valores">Valores em reais. Use <strong>1500,50</strong> ou <strong>1.500,50</strong>. Informe zero quando não houver valor.</p>
+                <form data-calculator="budget" data-result="resultado-orcamento" novalidate>
+                    <div class="field">
+                        <label for="income">Renda líquida do mês (R$)</label>
+                        <input id="income" type="text" inputmode="decimal" min="0" maxlength="20" placeholder="Ex.: 3.500,00" data-money required aria-describedby="income-help income-error formato-valores">
+                        <small id="income-help">Quanto fica disponível depois dos descontos. Inclua outras rendas recebidas no mês.</small>
+                        <p id="income-error" class="field-error" hidden></p>
+                    </div>
+                    <div class="field">
+                        <label for="essential">Despesas essenciais (R$)</label>
+                        <input id="essential" type="text" inputmode="decimal" min="0" maxlength="20" placeholder="Ex.: 1.800,00" data-money required aria-describedby="essential-help essential-error">
+                        <small id="essential-help">Moradia, alimentação básica, saúde, transporte necessário e contas obrigatórias.</small>
+                        <p id="essential-error" class="field-error" hidden></p>
+                    </div>
+                    <div class="field">
+                        <label for="other">Outras despesas (R$)</label>
+                        <input id="other" type="text" inputmode="decimal" min="0" maxlength="20" value="0" data-money required aria-describedby="other-help other-error">
+                        <small id="other-help">Lazer, assinaturas, compras e a parte mensal de despesas anuais ainda não incluídas.</small>
+                        <p id="other-error" class="field-error" hidden></p>
+                    </div>
+                    <div class="field">
+                        <label for="debt">Parcelas de dívidas no mês (R$)</label>
+                        <input id="debt" type="text" inputmode="decimal" min="0" maxlength="20" value="0" data-money required aria-describedby="debt-help debt-error">
+                        <small id="debt-help">Pagamentos de empréstimos e dívidas. Não repita uma conta já incluída nas despesas.</small>
+                        <p id="debt-error" class="field-error" hidden></p>
+                    </div>
+                    <div class="field">
+                        <label for="saving">Aportes planejados (R$)</label>
+                        <input id="saving" type="text" inputmode="decimal" min="0" maxlength="20" value="0" data-money required aria-describedby="saving-help saving-error">
+                        <small id="saving-help">O que pretende guardar para reserva e metas neste mês. Aqui entra como valor já comprometido.</small>
+                        <p id="saving-error" class="field-error" hidden></p>
+                    </div>
+                    <div class="form-actions"><button class="btn btn-primary" type="submit" disabled>Calcular orçamento</button><button class="btn" type="reset">Limpar</button></div>
+                    <p data-form-status role="status" aria-live="polite"></p>
+                </form>
+                <noscript><p>Ative o JavaScript para usar a calculadora. Você também pode fazer a conta com a fórmula explicada abaixo.</p></noscript>
+            </section>
+        <section id="resultado-orcamento" class="card calculator-result" aria-live="polite" aria-atomic="true" hidden>
+            <h2 data-result="headline">Resultado do orçamento</h2>
+            <p class="result-value" data-result="balance"></p>
+            <p data-result="description"></p>
+            <div class="grid grid-2">
+                <p><strong>Renda líquida</strong><br><span data-result="income"></span></p>
+                <p><strong>Total comprometido</strong><br><span data-result="allocated"></span></p>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <caption>Participação de cada grupo na renda líquida</caption>
+                    <thead><tr><th scope="col">Grupo</th><th scope="col">Valor</th><th scope="col">Da renda</th></tr></thead>
+                    <tbody>
+                        <tr><th scope="row">Essenciais</th><td data-result="essential-value"></td><td data-result="essential-share"></td></tr>
+                        <tr><th scope="row">Outras despesas</th><td data-result="other-value"></td><td data-result="other-share"></td></tr>
+                        <tr><th scope="row">Dívidas</th><td data-result="debt-value"></td><td data-result="debt-share"></td></tr>
+                        <tr><th scope="row">Aportes</th><td data-result="saving-value"></td><td data-result="saving-share"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p data-result="share-note"></p>
+        </section>
+            </div>
+            <aside class="card" aria-labelledby="antes-de-calcular">
+                <h2 id="antes-de-calcular">Uma conta que respeita sua realidade</h2>
+                <p>Comece pelos valores conhecidos. Revise extratos e faturas para encontrar despesas pequenas que costumam ficar de fora.</p>
+                <ul>
+                    <li><strong>Renda variável:</strong> compare um mês real e um cenário mais conservador. Uma média não garante a próxima entrada.</li>
+                    <li><strong>Cartão de crédito:</strong> escolha uma forma de organizar os gastos. Não some as compras e a fatura inteira ao mesmo tempo.</li>
+                    <li><strong>Gastos anuais:</strong> divida uma estimativa por 12 para planejar a provisão mensal. Registre o pagamento no seu controle sem duplicar essa provisão.</li>
+                </ul>
+                <p>O cálculo acontece no navegador. Não enviamos os valores à API nem os gravamos pelo aplicativo. O navegador pode restaurar os campos ao voltar à página. Use “Limpar” para remover os valores antes de compartilhar o dispositivo.</p>
+                <p><a href="../guias/orcamento-pessoal.html">Aprenda a montar um orçamento pessoal →</a></p>
+            </aside>
+        </div>
+
+
+
+        <article class="card article-body" aria-labelledby="entender-resultado">
+            <h2 id="entender-resultado">Como ler o resultado</h2>
+            <p>Uma sobra positiva é a parte da renda que ainda não foi comprometida nos campos acima. Ela não representa automaticamente dinheiro livre na conta: confira se o mês já terminou, se há vencimentos futuros e se algum gasto ficou de fora. Uma falta indica que o plano usa mais dinheiro do que a renda informada. Não é um julgamento; é um sinal para reorganizar o mês antes de depender de crédito.</p>
+            <p>Os percentuais mostram o peso de cada grupo, não uma nota de desempenho. Moradia e transporte variam conforme a cidade, a composição da família e as condições de trabalho. Use os percentuais para comparar seus próprios meses, em vez de tratar uma divisão fixa como obrigação.</p>
+
+            <h3>Exemplo: renda de R$ 3.500</h3>
+            <p>Considere despesas essenciais de R$ 1.800, outras despesas de R$ 500, parcelas de R$ 400 e aportes de R$ 300. O total comprometido é <strong>R$ 3.000</strong>, portanto sobram <strong>R$ 500</strong>. As despesas essenciais representam aproximadamente 51,4% da renda; as outras despesas, 14,3%; as dívidas, 11,4%; e os aportes, 8,6%.</p>
+            <p>Se aparecer uma conta extra de R$ 600 ainda não considerada, o mesmo plano passa a ter uma falta de R$ 100. Esse contraste mostra por que conferir as contas costuma ser mais útil do que buscar um percentual “ideal”.</p>
+
+            <h3>Metodologia</h3>
+            <p><strong>Saldo = renda líquida − despesas essenciais − outras despesas − parcelas de dívidas − aportes.</strong> Cada entrada é convertida em centavos antes das somas. A participação é o valor do grupo dividido pela renda líquida e multiplicado por 100; só a apresentação desse percentual é arredondada para uma casa decimal.</p>
+            <p>Se a renda for zero, o saldo ainda pode ser calculado, mas os percentuais aparecem como não calculáveis. Valores negativos, texto inválido e mais de duas casas decimais são recusados. A ferramenta não lê extratos, não identifica despesas automaticamente e não calcula juros de dívidas.</p>
+
+            <h3>O que fazer se faltar dinheiro?</h3>
+            <p>Primeiro, confirme se não há duplicidade. Depois, separe contas essenciais, gastos ajustáveis e contratos que exigem negociação. Evite considerar uma nova dívida como renda recorrente. Se reduzir um aporte temporariamente for necessário, registre a escolha e uma data para rever o plano. O guia de <a href="../guias/dividas-e-juros.html">dívidas e juros</a> explica como reunir informações antes de negociar.</p>
+
+            <h3>Perguntas frequentes</h3>
+            <h4>Uso o salário bruto ou o líquido?</h4>
+            <p>Use a renda que fica disponível depois dos descontos. Se compartilhar contas com outra pessoa, escolha entre simular a sua parte ou toda a casa e mantenha esse critério em todos os campos.</p>
+            <h4>Onde entra a fatura do cartão?</h4>
+            <p>Distribua as compras entre despesas essenciais e outras despesas, ou use um total organizado por você. Empréstimos e acordos de dívidas entram em parcelas. A mesma compra não deve aparecer em dois grupos.</p>
+            <h4>Guardar dinheiro também é despesa?</h4>
+            <p>Não é consumo, mas compromete o saldo disponível deste mês. Por isso o aporte tem um grupo separado. A calculadora informa o que ainda resta depois de cumprir esse planejamento.</p>
+            <h4>Este resultado é uma recomendação financeira?</h4>
+            <p>É uma conta educativa sobre os valores que você informou. Ela não avalia contratos, impostos, renda futura ou necessidades individuais. Para decisões envolvendo produtos, riscos ou acordos, confirme as condições com a instituição responsável.</p>
+            <p>Próximo passo: <a href="reserva-de-emergencia.html">simule uma reserva de emergência</a> ou veja uma <a href="../guias/controle-de-gastos.html">rotina simples de controle de gastos</a>.</p>
+        </article>
+    </main>
+    <footer class="site-footer">
+        <p><strong>GBM Finance</strong> · Organização financeira com clareza.</p>
+        <nav aria-label="Links institucionais"><a href="../sobre.html">Sobre</a><a href="../termos.html">Termos</a><a href="../politica-de-privacidade.html">Privacidade</a><a href="../fale-conosco.html">Contato</a></nav>
+        <small>© 2026 GBM Finance. Conteúdo educativo.</small>
+    </footer>
+</body>
+</html>
