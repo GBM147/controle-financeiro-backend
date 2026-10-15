@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script src="gbm-session.js?v=20261015-session1"></script>
     <meta charset="UTF-8">
     <title>Dashboard | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3415,7 +3416,7 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
         </div>
     </div>
 </main>
-<script src="auth.js"></script>
+<script src="auth.js?v=20261015-session1"></script>
 <script>
 // Variável global para sabermos o status do cliente em qualquer lugar da tela
         window.usuarioPremium = true; 
@@ -3469,8 +3470,8 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
         // --- GUARDA DE AUTENTICAÇÃO (FREEMIUM) ---
         window.promessaVerificacaoAcesso = (async function verificarAcesso() {
             try {
-                const res = await fetchApi('/login-status');
-                const data = await res.json();
+                const data = await window.gbmSessaoPronta;
+                if (!data) return null;
                 sincronizarIdentidadeLocal(data);
 
                 let isPremium = false;
@@ -3497,8 +3498,8 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
                 atualizarEstadoRecursosPremium(data.statusPagamento, data.trialExpira);
                 return data;
             } catch (e) {
-                window.location.href = 'index.html';
-                throw e;
+                console.warn('Não foi possível verificar o acesso agora.', e);
+                return null;
             }
         })();
 
@@ -3518,13 +3519,13 @@ body.gbm-dashboard-padrao .dashboard-v3-import-actions .btn-acao{
             }
         }
         // --- 1. TEMA ESCURO (Lembrar escolha) ---
-        if (localStorage.getItem('tema') === 'dark') {
-            document.body.classList.add('dark-theme');
-        }
+        try {
+            if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-theme');
+        } catch { /* O tema padrão também funciona com storage bloqueado. */ }
         let meuChart = null;
         // Recupera o userId salvo (permanente com "Manter conectado", ou só da aba atual)
         function pegarUserId() {
-            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+            return window.GBMSession.getUserId();
         }
 
         function fazerLogout() {
@@ -5062,7 +5063,8 @@ function abrirPainelAlertas() {
     fecharMenuLateral(); // fecha o menu depois de abrir o painel
 }
 
-window.promessaVerificacaoAcesso.then(() => {
+window.promessaVerificacaoAcesso.then((sessao) => {
+    if (!sessao) return;
     carregarAtalhoPerfil();
     carregarAlertas();
     window.intervaloAlertas = setInterval(carregarAlertas, 60000);
@@ -5143,6 +5145,6 @@ window.promessaVerificacaoAcesso.then(() => {
 </script>
     <script src="gbm-tutorial.js"></script>
     <script src="gbm-ai-ajuda.js"></script>
-    <script src="gbm-pages.js"></script>
+    <script src="gbm-pages.js?v=20261015-shell1"></script>
 </body>
 </html>

@@ -4,8 +4,7 @@ const { MercadoPagoConfig, PreApproval, Payment } = require('mercadopago');
 const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 const crypto = require('crypto');
 const express = require('express');
-const mysql = require('mysql2');
-const { criarConfiguracaoMysql, criarStoreSessaoMysql } = require('./mysql-config');
+const { criarConfiguracaoMysql, criarStoreSessaoMysql, criarConexaoMysqlRecuperavel } = require('./mysql-config');
 const cors = require('cors');
 const helmet = require('helmet');
 const { rateLimit } = require('express-rate-limit');
@@ -461,6 +460,14 @@ app.use(express.static('public', {
 const session = require('express-session');
 const configuracaoConexaoMysql = criarConfiguracaoMysql();
 
+// Respostas de autenticação nunca devem ser reutilizadas pelo navegador ou
+// por proxies: cada consulta precisa refletir o cookie e a sessão atuais.
+app.use(['/login', '/login-status', '/logout', '/verificar-conta', '/validar-codigo'], (req, res, next) => {
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('Pragma', 'no-cache');
+    next();
+});
+
 const sessionStore = process.env.NODE_ENV === 'test'
     ? new session.MemoryStore()
     : criarStoreSessaoMysql(configuracaoConexaoMysql);
@@ -504,6 +511,15 @@ function salvarSessao(req) {
     });
 }
 
+function servicoTemporariamenteIndisponivel(erro) {
+    return new Set([
+        'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN', 'ENOTFOUND',
+        'PROTOCOL_CONNECTION_LOST', 'PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR',
+        'PROTOCOL_ENQUEUE_AFTER_QUIT', 'ER_CON_COUNT_ERROR', 'ER_SERVER_SHUTDOWN',
+        'HANDSHAKE_SSL_ERROR', 'HANDSHAKE_NO_SSL_SUPPORT'
+    ]).has(erro?.code);
+}
+
 async function exigirLogin(req, res, next) {
     if (!req.session.userId) {
         return res.status(401).json({ success: false, error: 'Sessão expirada. Faça login novamente.' });
@@ -537,8 +553,13 @@ async function exigirLogin(req, res, next) {
 
         return next();
     } catch (erro) {
-        console.error('Erro ao validar sessão:', erro);
-        return res.status(500).json({ success: false, error: 'Não foi possível validar a sessão.' });
+        console.error('Erro ao validar sessão:', erro.code || erro.name || 'ERRO_SESSAO');
+        const indisponivel = servicoTemporariamenteIndisponivel(erro);
+        if (indisponivel) res.setHeader('Retry-After', '10');
+        return res.status(indisponivel ? 503 : 500).json({
+            success: false,
+            error: 'Não foi possível validar a sessão. Tente novamente em instantes.'
+        });
     }
 }
 
@@ -706,7 +727,7 @@ const db = process.env.NODE_ENV === 'test'
             throw new Error('Banco indisponível em testes sem integração MySQL.');
         }
     }
-    : mysql.createConnection(configuracaoConexaoMysql);
+    : criarConexaoMysqlRecuperavel(configuracaoConexaoMysql);
 
 let promessaEstruturaAlertasMultiplos = null;
 
@@ -1921,8 +1942,14 @@ app.get('/login-status', exigirLogin, async (req, res) => {
             statusPagamento: rows[0].status_pagamento,
             trialExpira: rows[0].trial_expira
         });
-    } catch (e) {
-        res.status(500).json({ success: false });
+    } catch (erro) {
+        console.error('Erro ao consultar estado do login:', erro.code || erro.name || 'ERRO_SESSAO');
+        const indisponivel = servicoTemporariamenteIndisponivel(erro);
+        if (indisponivel) res.setHeader('Retry-After', '10');
+        res.status(indisponivel ? 503 : 500).json({
+            success: false,
+            message: 'Não foi possível consultar sua sessão. Tente novamente em instantes.'
+        });
     }
 });
 
@@ -2324,76 +2351,69 @@ app.post('/atualizar-meta-alerta', exigirLogin, async (req, res) => {
 });
 // --- ROTA DE LOGIN CORRIGIDA (PULA VERIFICAÇÃO SE JÁ VERIFICADO) ---
 app.post('/login', limitarAutenticacao, async (req, res) => {
-    const { identificacao, senha } = req.body;
-    const manterConectado = normalizarManterConectado(req.body.manterConectado);
-    if (!identificacao || typeof senha !== 'string' || !senha) {
+    const { identificacao, senha } = req.body || {};
+    const manterConectado = normalizarManterConectado(req.body?.manterConectado);
+    if (typeof identificacao !== 'string' || !identificacao.trim() || typeof senha !== 'string' || !senha) {
         return res.status(400).json({ success: false, message: 'Informe e-mail e senha.' });
     }
+
     try {
         await garantirEstruturaProduto();
-    } catch (erroEstrutura) {
-        console.error('Erro ao preparar login:', erroEstrutura);
-        return res.status(500).json({ success: false, message: 'Não foi possível preparar o login.' });
-    }
-    const emailNormalizado = normalizarEmail(identificacao);
-    const sql = `SELECT *
-                 FROM usuarios
-                 WHERE email_hash = ?
-                    OR (email_hash IS NULL AND LOWER(email) = ?)
-                 LIMIT 1`;
-    db.query(sql, [gerarHashEmail(emailNormalizado), emailNormalizado], async (err, results) => {
-        if (err || results.length === 0) {
-            return res.status(401).json({ success: false, message: 'Usuário não encontrado.' });
-        }
-        const usuario = results[0];
-        const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
-        if (!senhaValida) {
-            return res.status(401).json({ success: false, message: 'Senha incorreta.' });
+        const emailNormalizado = normalizarEmail(identificacao);
+        const [usuarios] = await db.promise().query(
+            `SELECT *
+             FROM usuarios
+             WHERE email_hash = ?
+                OR (email_hash IS NULL AND LOWER(email) = ?)
+             LIMIT 1`,
+            [gerarHashEmail(emailNormalizado), emailNormalizado]
+        );
+        const usuario = usuarios[0];
+        if (!usuario || typeof usuario.senha_hash !== 'string'
+            || !await bcrypt.compare(senha, usuario.senha_hash)) {
+            return res.status(401).json({ success: false, message: 'E-mail ou senha incorretos.' });
         }
         const verificado = usuario.verificado == 1 || usuario.verificado === true;
 
-        // Cria um novo identificador de sessão em cada login. Isso impede que
-        // uma sessão anterior seja reutilizada por outro usuário.
-        req.session.regenerate((erroSessao) => {
-            if (erroSessao) {
-                console.error('Erro ao renovar sessão no login:', erroSessao);
-                return res.status(500).json({ success: false, message: 'Não foi possível iniciar uma nova sessão.' });
-            }
-
-            if (verificado) {
-                req.session.userId = usuario.id;
-                delete req.session.pendingVerificationUserId;
-            } else {
-                req.session.pendingVerificationUserId = usuario.id;
-                delete req.session.userId;
-            }
-            configurarPersistenciaSessao(req.session, manterConectado);
-
-            req.session.save(async (erroSalvar) => {
-                if (erroSalvar) {
-                    console.error('Erro ao salvar sessão no login:', erroSalvar);
-                    return res.status(500).json({ success: false, message: 'Não foi possível salvar a sessão.' });
-                }
-
-                await registrarAuditoria(
-                    req,
-                    verificado ? 'LOGIN_REALIZADO' : 'LOGIN_AGUARDANDO_VERIFICACAO',
-                    null,
-                    usuario.id
-                );
-
-                return res.json({
-                    success: true,
-                    verificado,
-                    statusPagamento: usuario.status_pagamento,
-                    trialExpira: usuario.trial_expira,
-                    userId: usuario.id,
-                    manterConectado,
-                    message: verificado ? 'Login efetuado com sucesso!' : 'Conta não verificada. Insira o código.'
-                });
-            });
+        // Aguarda a criação e a gravação da sessão antes de liberar o dashboard.
+        // Toda falha assíncrona permanece no mesmo tratamento de erros da rota.
+        await new Promise((resolve, reject) => {
+            req.session.regenerate((erro) => erro ? reject(erro) : resolve());
         });
-    });
+        if (verificado) {
+            req.session.userId = usuario.id;
+        } else {
+            req.session.pendingVerificationUserId = usuario.id;
+        }
+        configurarPersistenciaSessao(req.session, manterConectado);
+        await salvarSessao(req);
+        await registrarAuditoria(
+            req,
+            verificado ? 'LOGIN_REALIZADO' : 'LOGIN_AGUARDANDO_VERIFICACAO',
+            null,
+            usuario.id
+        );
+
+        return res.json({
+            success: true,
+            verificado,
+            statusPagamento: usuario.status_pagamento,
+            trialExpira: usuario.trial_expira,
+            userId: usuario.id,
+            manterConectado,
+            message: verificado ? 'Login efetuado com sucesso!' : 'Conta não verificada. Insira o código.'
+        });
+    } catch (erro) {
+        console.error('Erro ao realizar login:', erro.code || erro.name || 'ERRO_LOGIN');
+        const indisponivel = servicoTemporariamenteIndisponivel(erro);
+        if (indisponivel) res.setHeader('Retry-After', '10');
+        return res.status(indisponivel ? 503 : 500).json({
+            success: false,
+            message: indisponivel
+                ? 'O serviço de acesso está temporariamente indisponível. Aguarde alguns instantes e tente novamente.'
+                : 'Não foi possível entrar na sua conta. Tente novamente em instantes.'
+        });
+    }
 });
 // A identidade da conta a verificar fica vinculada à sessão criada no cadastro
 // ou no login. O navegador nunca escolhe qual userId será ativado.
@@ -5371,14 +5391,18 @@ app.use((erro, req, res, next) => {
     if (res.headersSent) return next(erro);
 
     const corpoExcessivo = erro?.type === 'entity.too.large';
-    const status = corpoExcessivo ? 413 : Number(erro?.statusHttp) || 500;
+    const indisponivel = servicoTemporariamenteIndisponivel(erro);
+    const status = corpoExcessivo ? 413 : indisponivel ? 503 : Number(erro?.statusHttp) || 500;
     const mensagem = status === 413
         ? 'O conteúdo enviado excede o limite permitido.'
+        : status === 503
+            ? 'O serviço está temporariamente indisponível. Aguarde alguns instantes e tente novamente.'
         : status >= 500
             ? 'Ocorreu um erro interno no servidor.'
             : erro.message || 'Não foi possível concluir a solicitação.';
 
     if (status >= 500) console.error('[SERVER ERROR]', erro);
+    if (indisponivel) res.setHeader('Retry-After', '10');
     return res.status(status).json({ success: false, error: mensagem, message: mensagem });
 });
 

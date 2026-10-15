@@ -9,23 +9,18 @@
 let redirecionandoParaLogin = false;
 
 function limparIdentidadeLocal() {
-    localStorage.removeItem('userIdAtual');
-    sessionStorage.removeItem('userIdAtual');
+    window.GBMSession.clearIdentity();
 }
 
 function sincronizarIdentidadeLocal(sessao) {
-    if (!sessao || sessao.userId == null) return;
-    const userId = String(sessao.userId);
-
-    if (sessao.manterConectado === true) {
-        localStorage.setItem('userIdAtual', userId);
-        sessionStorage.removeItem('userIdAtual');
-        return;
-    }
-
-    sessionStorage.setItem('userIdAtual', userId);
-    localStorage.removeItem('userIdAtual');
+    window.GBMSession.syncIdentity(sessao);
 }
+
+// Não confundir um storage vazio ou uma falha temporária com sessão expirada.
+window.gbmSessaoPronta = window.GBMSession.ready.then((sessao) => {
+    if (!sessao && window.GBMSession.status === 401) window.GBMSession.redirectToLogin();
+    return sessao;
+});
 
 async function encerrarSessao() {
     redirecionandoParaLogin = true;
@@ -40,6 +35,7 @@ async function encerrarSessao() {
 }
 
 async function fetchApi(url, opcoes = {}) {
+    await window.gbmSessaoPronta;
     // Garante que o cookie de sessão seja sempre enviado (mesmo cross-origin)
     const opcoesComCredenciais = { credentials: 'include', ...opcoes };
     const resposta = await fetch(url, opcoesComCredenciais);
@@ -47,8 +43,7 @@ async function fetchApi(url, opcoes = {}) {
         limparIdentidadeLocal();
         if (!redirecionandoParaLogin) {
             redirecionandoParaLogin = true;
-            alert('Sua sessão expirou. Faça login novamente.');
-            window.location.replace('index.html');
+            window.GBMSession.redirectToLogin();
         }
         return new Promise(() => {}); // nunca resolve: página já está navegando
     }
@@ -60,7 +55,7 @@ async function fetchApi(url, opcoes = {}) {
 // e fornece fallback offline quando necessário.
 function atualizarServiceWorkerGbm() {
     if (!('serviceWorker' in navigator)) return;
-    navigator.serviceWorker.register('/sw.js?v=1.1.49', {
+    navigator.serviceWorker.register('/sw.js?v=20261015-session1', {
         updateViaCache: 'none'
     }).then((registro) => {
         registro.update().catch(() => undefined);
@@ -221,22 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // O Dashboard passa a utilizar exatamente o mesmo menu global das demais páginas.
-    // Removemos somente os elementos de cabeçalho/menu próprios dele antes de
-    // carregar o gbm-menu.js, evitando a coexistência de duas versões do menu.
-    const paginaAtual = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    if (paginaAtual === 'dashboard.html') {
-        document.querySelectorAll(
-            'body > .gbm-header, body > .topbar, body > .sidebar-menu, body > #sidebar-menu, body > #menu-overlay'
-        ).forEach((elemento) => elemento.remove());
-
-        if (!document.querySelector('script[data-gbm-dashboard-menu]')) {
-            const scriptMenu = document.createElement('script');
-            scriptMenu.src = 'gbm-menu.js';
-            scriptMenu.dataset.gbmDashboardMenu = 'true';
-            document.body.appendChild(scriptMenu);
-        }
-    }
+    // O menu e o cabeçalho são montados uma única vez pelo gbm-menu.js.
 
     // O nome canônico desta página é /limite-de-gastos.html.
     // Não converta essa URL para limite-gastos.html, pois isso cria

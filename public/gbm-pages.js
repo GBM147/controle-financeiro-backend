@@ -237,26 +237,20 @@ const gbmPaginaVisualAtual = (window.location.pathname.split('/').pop() || '').t
 */
 function gbmGarantirMenuInterno() {
     const nomePagina = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    const paginasPublicas = new Set([
-        'index.html',
-        'login.html',
-        'termos.html',
-        'privacidade.html',
-        'politica-de-privacidade.html',
-        'sobre.html',
-        'fale-conosco.html',
-        'educacao-financeira.html',
-        'offline.html',
-        'sw-reset.html'
+    const paginasDaConta = new Set([
+        'dashboard.html', 'contas.html', 'importacoes.html', 'importar-pdf.html',
+        'calendario.html', 'limite-de-gastos.html', 'metas.html', 'relatorio.html',
+        'relatorio-avancado.html', 'comparativo.html', 'notificacoes.html',
+        'configuracoes.html', 'perfil.html', 'privacidade.html', 'assinatura.html', 'pagamento.html'
     ]);
-
-    if (paginasPublicas.has(nomePagina)) return;
-    if (document.querySelector('script[src$="gbm-menu.js"]')) return;
+    if (!paginasDaConta.has(nomePagina)) return;
+    if (window.GBMAppShell) { window.GBMAppShell.iniciar(); return; }
+    if ([...document.scripts].some((script) => /(?:^|\/)gbm-menu\.js(?:\?|$)/.test(script.getAttribute('src') || ''))) return;
     if (document.getElementById('gbm-menu-bootstrap')) return;
 
     const script = document.createElement('script');
     script.id = 'gbm-menu-bootstrap';
-    script.src = 'gbm-menu.js';
+    script.src = 'gbm-menu.js?v=20261015-shell1';
     script.async = false;
     (document.head || document.documentElement).appendChild(script);
 }
@@ -419,6 +413,7 @@ if (document.readyState === 'loading') {
 
 /* ===== MENU LATERAL, PERFIL NO CABEÇALHO E MODAL GBM (compartilhado) ===== */
 function abrirMenuLateral(event) {
+    if (window.GBMAppShell) { window.GBMAppShell.abrir(event); return; }
     if (event) event.stopPropagation();
     const sidebar = document.getElementById('sidebar-menu');
     const overlay = document.getElementById('menu-overlay');
@@ -430,6 +425,7 @@ function abrirMenuLateral(event) {
 }
 
 function fecharMenuLateral() {
+    if (window.GBMAppShell) { window.GBMAppShell.fechar(); return; }
     const sidebar = document.getElementById('sidebar-menu');
     if (!sidebar) return;
     sidebar.classList.remove('aberto');
@@ -578,38 +574,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.progress > span[data-width], .barra div[data-width]').forEach(el => observadorBarras.observe(el));
 });
 
-/* ===== CABEÇALHOS DAS PÁGINAS =====
-   Remove somente o bloco de identificação/descrição no topo das páginas.
-   No Dashboard, mantém os filtros do período e da conta, removendo apenas a identificação.
-*/
-function gbmRemoverCabecalhoPagina() {
-    const seletores = [
-        '.dashboard-heading',
-        '.page-title',
-        '.titulo-pagina'
-    ];
-
-    document.querySelectorAll(seletores.join(',')).forEach((elemento) => {
-        elemento.remove();
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const paginaAtual = (window.location.pathname.split('/').pop() || '').toLowerCase();
-    const paginasPublicas = [
-        'index.html',
-        'login.html',
-        'termos.html',
-        'politica-de-privacidade.html',
-        'sobre.html',
-        'fale-conosco.html',
-        'educacao-financeira.html',
-        'offline.html',
-        'sw-reset.html'
-    ];
-    if (paginaAtual === 'dashboard.html' || paginasPublicas.includes(paginaAtual)) return;
-    gbmRemoverCabecalhoPagina();
-}, { once: true });
+/* Os títulos e descrições permanecem no conteúdo, como no dashboard.
+   O menu compartilhado identifica a seção e não remove informações da página. */
 
 /* ===== ASSISTENTE IA "COMO USAR ESTA PÁGINA" ===== */
 (function carregarAssistenteGbm() {

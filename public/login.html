@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script src="gbm-session.js?v=20261015-session1"></script>
     <meta charset="UTF-8">
     <title>Acesso - GBM Finance</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -546,47 +547,14 @@
         // --- 2. SCRIPT ORIGINAL DO SEU BACKEND ---
 
         function limparIdentidadeLocal() {
-            localStorage.removeItem('userIdAtual');
-            sessionStorage.removeItem('userIdAtual');
+            window.GBMSession.clearIdentity();
         }
 
         function sincronizarIdentidadeLocal(sessao) {
-            if (!sessao || sessao.userId == null) return;
-            const userId = String(sessao.userId);
-
-            if (sessao.manterConectado === true) {
-                localStorage.setItem('userIdAtual', userId);
-                sessionStorage.removeItem('userIdAtual');
-                return;
-            }
-
-            sessionStorage.setItem('userIdAtual', userId);
-            localStorage.removeItem('userIdAtual');
+            window.GBMSession.syncIdentity(sessao);
         }
 
-        // O cookie seguro do servidor é a fonte de verdade. O storage serve apenas
-        // para manter compatibilidade com as páginas antigas que ainda leem o userId.
-        (async function verificarSessaoExistente() {
-            try {
-                const res = await fetch('/login-status', {
-                    credentials: 'include',
-                    cache: 'no-store'
-                });
-                if (res.status === 401) {
-                    limparIdentidadeLocal();
-                    return;
-                }
-                if (!res.ok) return;
-                const data = await res.json();
-                if (data.success) {
-                    sincronizarIdentidadeLocal(data);
-                    // Todos os usuários (Premium e Gratuitos) entram direto no sistema
-                    window.location.href = 'dashboard.html';
-                }
-            } catch (e) {
-                console.error('Erro ao verificar sessão existente:', e);
-            }
-        })();
+        // gbm-session.js restaura a sessão diretamente, inclusive sem storage.
 
         function mascaraTelefone(input) {
             let v = input.value.replace(/\D/g, "");
@@ -601,7 +569,7 @@
             document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
         }
 
-        function fazerLogin() {
+        async function fazerLogin() {
             const emailCpf = document.getElementById('login-identificacao').value;
             const senha = document.getElementById('login-senha').value;
             const manterConectado = document.getElementById('login-manter-conectado').checked;
@@ -611,6 +579,7 @@
                 return;
             }
 
+            await window.GBMSession.ready;
             fetch('/login', {
                 method: 'POST',
                 credentials: 'include',
@@ -633,7 +602,7 @@
 
                 if (data.verificado) {
                     // Todos os usuários (Premium e Gratuitos) entram direto no sistema
-                    window.location.href = 'dashboard.html';
+                    window.location.replace(window.GBMSession.destination());
                 } else {
                     document.getElementById('form-login').style.display = 'none';
                     document.getElementById('form-escolha-validacao').style.display = 'block';
@@ -1028,6 +997,6 @@
         }
     }
 </script>
-    <script src="gbm-pages.js"></script>
+    <script src="gbm-pages.js?v=20261015-shell1"></script>
 </body>
 </html>

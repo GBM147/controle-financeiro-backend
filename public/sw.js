@@ -1,5 +1,5 @@
 const VERSAO_TUTORIAL = '1.1.48';
-const CACHE_GBM = 'gbm-estatico-v34';
+const CACHE_GBM = 'gbm-estatico-v35';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -19,9 +19,12 @@ const ARQUIVOS_ESTATICOS = [
     '/fonts/manrope-latin-ext.woff2',
     '/public-calculators.js',
     '/ferramentas.html',
-    '/auth.js',
+    '/gbm-session.js?v=20261015-session1',
+    '/auth.js?v=20261015-session1',
     '/gbm-pages.css',
-    '/gbm-pages.js',
+    '/gbm-pages.js?v=20261015-shell1',
+    '/gbm-menu.js?v=20261015-shell1',
+    '/gbm-shell.css?v=20261015-shell1',
     `/gbm-tutorial.css?v=${VERSAO_TUTORIAL}`,
     `/gbm-tutorial.js?v=${VERSAO_TUTORIAL}`,
     '/logo-transparente.png',

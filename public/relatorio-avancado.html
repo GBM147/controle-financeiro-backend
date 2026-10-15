@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script src="gbm-session.js?v=20261015-session1"></script>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Relatório Avançado | GBM</title><link rel="stylesheet" href="gbm-pages.css?v=20260921">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
@@ -172,7 +173,7 @@
             <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap" tabindex="0" role="region" aria-label="Transações do relatório avançado"></div></section>
         </section>
     </main>
-    <script src="auth.js"></script><script src="gbm-pages.js"></script>
+    <script src="auth.js?v=20261015-session1"></script><script src="gbm-pages.js?v=20261015-shell1"></script>
     <script>
         let relatorioAtual=null;
         let graficoRelatorio=null;
@@ -748,6 +749,6 @@
         carregarFiltros().then(gerar).catch(e=>gbmToast(e.message,'erro'));
     </script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js"></script>
+    <script src="gbm-menu.js?v=20261015-shell1"></script>
 </body>
 </html>

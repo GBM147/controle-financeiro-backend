@@ -5,8 +5,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { rootCertificates } = require('node:tls');
 const mysql = require('mysql2');
-const { criarConfiguracaoMysql, criarStoreSessaoMysql } = require('../mysql-config');
+const { criarConfiguracaoMysql, criarStoreSessaoMysql, criarConexaoMysqlRecuperavel } = require('../mysql-config');
 
 test('MySQL remoto exige TLS com certificado e identidade verificados', () => {
     const configuracao = criarConfiguracaoMysql({ DB_HOST: 'mysql.exemplo.invalid' });
@@ -46,7 +47,7 @@ test('CA do provedor é carregada sem desativar a verificação TLS', (t) => {
     const diretorio = fs.mkdtempSync(path.join(os.tmpdir(), 'gbm-mysql-ca-'));
     t.after(() => fs.rmSync(diretorio, { recursive: true, force: true }));
     const arquivo = path.join(diretorio, 'ca.pem');
-    const conteudo = 'CA pública de teste';
+    const conteudo = rootCertificates[0];
     fs.writeFileSync(arquivo, conteudo);
     const configuracao = criarConfiguracaoMysql({ DB_SSL_CA_FILE: arquivo });
     assert.equal(configuracao.ssl.ca, conteudo);
@@ -55,6 +56,28 @@ test('CA do provedor é carregada sem desativar a verificação TLS', (t) => {
     assert.throws(() => criarConfiguracaoMysql({
         DB_SSL_CA_FILE: path.join(diretorio, 'inexistente.pem')
     }), { code: 'ENOENT' });
+});
+
+test('CA pública também pode ser configurada por PEM direto, escapado ou base64', () => {
+    const ca = rootCertificates[0];
+    for (const env of [
+        { DB_SSL_CA: ca },
+        { DB_SSL_CA: ca.replace(/\n/g, '\\n') },
+        { DB_SSL_CA_BASE64: Buffer.from(ca).toString('base64') }
+    ]) {
+        const config = criarConfiguracaoMysql(env);
+        assert.equal(config.ssl.ca, ca);
+        assert.equal(config.ssl.rejectUnauthorized, true);
+        assert.equal(config.ssl.verifyIdentity, true);
+    }
+    for (const env of [
+        { DB_SSL_CA: 'não é um certificado' },
+        { DB_SSL_CA: '-----BEGIN PRIVATE KEY-----\nprivada\n-----END PRIVATE KEY-----' },
+        { DB_SSL_CA_BASE64: '*inválido*' },
+        { DB_SSL_CA_BASE64: Buffer.from('texto sem certificado').toString('base64') }
+    ]) {
+        assert.throws(() => criarConfiguracaoMysql(env), /certificado|CA/);
+    }
 });
 
 // Servidor de protocolo MySQL isolado, sem dados ou credenciais reais. Não
@@ -104,8 +127,32 @@ async function iniciarMysqlLocal(t, dadosSessao) {
         for (const socket of sockets) socket.destroy();
         await new Promise((resolve) => servidor.close(resolve));
     });
-    return { consultas, port: servidor._server.address().port };
+    return {
+        consultas,
+        port: servidor._server.address().port,
+        derrubarConexoes() { for (const socket of sockets) socket.destroy(); }
+    };
 }
+
+test('aplicação reconecta após queda sem repetir consultas nem transações anteriores', { timeout: 5000 }, async (t) => {
+    const servidor = await iniciarMysqlLocal(t, {});
+    t.mock.method(console, 'error', () => {});
+    const db = criarConexaoMysqlRecuperavel(criarConfiguracaoMysql({
+        DB_HOST: '127.0.0.1', DB_PORT: servidor.port, DB_SSL: 'false', NODE_ENV: 'test'
+    }));
+    t.after(() => new Promise((resolve) => db.end(resolve)));
+    const conexaoAnterior = db.promise();
+    await conexaoAnterior.query('SELECT primeira');
+    servidor.derrubarConexoes();
+    await assert.rejects(conexaoAnterior.query('SELECT interrompida'));
+    // O cliente antigo falha; a operação seguinte pode estabelecer outra conexão.
+    await new Promise((resolve) => setImmediate(resolve));
+    await db.promise().query('SELECT nova');
+    assert.equal(servidor.consultas.filter((sql) => sql === 'SELECT primeira').length, 1);
+    assert.equal(servidor.consultas.filter((sql) => sql === 'SELECT nova').length, 1);
+    await assert.rejects(conexaoAnterior.query('SELECT transacao_anterior'));
+    assert.ok(!servidor.consultas.includes('SELECT transacao_anterior'));
+});
 
 test('flag legada false não permite que o store conecte a MySQL sem TLS', { timeout: 5000 }, async (t) => {
     const servidor = await iniciarMysqlLocal(t, {});

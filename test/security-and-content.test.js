@@ -81,7 +81,8 @@ test('login temporário usa a sessão do servidor sem depender do storage', () =
     assert.match(login, /JSON\.stringify\([\s\S]*manterConectado/);
     assert.match(servidor, /configurarPersistenciaSessao\(req\.session, manterConectado\)/);
     assert.match(servidor, /app\.post\('\/logout'/);
-    assert.match(dashboard, /fetchApi\('\/login-status'\)/);
+    assert.match(dashboard, /const data = await window\.gbmSessaoPronta/);
+    assert.match(dashboard, /gbm-session\.js/);
     assert.doesNotMatch(dashboard, /if \(!pegarUserId\(\)\)\s*\{\s*window\.location\.href/);
     assert.match(autenticacao, /fetch\('\/logout', \{ method: 'POST', credentials: 'include' \}\)/);
 });

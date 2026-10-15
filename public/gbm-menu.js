@@ -1,18 +1,24 @@
 (function () {
     'use strict';
 
-    const paginasPublicas = new Set([
-        'index.html', 'login.html', 'termos.html', 'privacidade.html',
-        'politica-de-privacidade.html', 'sobre.html', 'fale-conosco.html',
-        'educacao-financeira.html', 'offline.html', 'sw-reset.html'
+    const paginasDaConta = new Set([
+        'dashboard.html', 'contas.html', 'importacoes.html', 'importar-pdf.html',
+        'calendario.html', 'limite-de-gastos.html', 'metas.html', 'relatorio.html',
+        'relatorio-avancado.html', 'comparativo.html', 'notificacoes.html',
+        'configuracoes.html', 'perfil.html', 'privacidade.html', 'assinatura.html', 'pagamento.html'
     ]);
+
+    if (window.GBMAppShell) {
+        window.GBMAppShell.iniciar();
+        return;
+    }
 
     const itensMenu = [
         { grupo:'Resumo', itens:[{href:'dashboard.html',pagina:'dashboard.html',texto:'Visão geral',icone:'dashboard'}] },
         { grupo:'Movimentações', itens:[{href:'contas.html',pagina:'contas.html',texto:'Minhas contas',icone:'wallet'},{href:'importacoes.html',pagina:'importacoes.html',texto:'Importações',icone:'upload'}] },
         { grupo:'Planejamento', itens:[{href:'calendario.html',pagina:'calendario.html',texto:'Calendário',icone:'calendar'},{href:'limite-de-gastos.html',pagina:'limite-de-gastos.html',texto:'Limite de gastos',icone:'limit'},{href:'metas.html',pagina:'metas.html',texto:'Objetivos de poupança',icone:'goal'}] },
         { grupo:'Análises', itens:[{href:'relatorio.html',pagina:'relatorio.html',texto:'Relatórios',icone:'report'},{href:'relatorio-avancado.html',pagina:'relatorio-avancado.html',texto:'Relatório avançado',icone:'advanced',premium:true},{href:'comparativo.html',pagina:'comparativo.html',texto:'Comparativo mensal',icone:'compare',premium:true}] },
-        { grupo:'Conta', classe:'menu-grupo-conta', itens:[{href:'notificacoes.html',pagina:'notificacoes.html',texto:'Notificações',icone:'bell'},{href:'configuracoes.html',pagina:'configuracoes.html',texto:'Configurações',icone:'settings'},{href:'perfil.html',pagina:'perfil.html',texto:'Meu perfil',icone:'profile'},{href:'educacao-financeira.html',pagina:'educacao-financeira.html',texto:'Educação financeira',icone:'book'},{href:'#sair',pagina:'#sair',texto:'Sair',icone:'logout',sair:true}] }
+        { grupo:'Conta', classe:'menu-grupo-conta', itens:[{href:'notificacoes.html',pagina:'notificacoes.html',texto:'Notificações',icone:'bell'},{href:'configuracoes.html',pagina:'configuracoes.html',texto:'Configurações',icone:'settings'},{href:'perfil.html',pagina:'perfil.html',texto:'Meu perfil',icone:'profile'},{href:'privacidade.html',pagina:'privacidade.html',texto:'Privacidade e dados',icone:'settings'},{href:'assinatura.html',pagina:'assinatura.html',texto:'Minha assinatura',icone:'advanced'},{href:'educacao-financeira.html',pagina:'educacao-financeira.html',texto:'Educação financeira',icone:'book'},{href:'#sair',pagina:'#sair',texto:'Sair',icone:'logout',sair:true}] }
     ];
 
     const paths = {
@@ -35,45 +41,199 @@
     function paginaAtual(){const n=(window.location.pathname.split('/').pop()||'index.html').toLowerCase();return n==='limite-gastos.html'?'limite-de-gastos.html':n;}
     function svg(nome){return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(paths[nome]||paths.dashboard)+'</svg>';}
 
-    function css(){
-        if(document.getElementById('gbm-menu-style')) return;
-        const s=document.createElement('style');s.id='gbm-menu-style';s.textContent=`
-            .gbm-header{position:sticky!important;top:0;z-index:10000;height:74px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 34px;box-sizing:border-box;background:rgba(7,17,31,.94)!important;border-bottom:1px solid rgba(255,255,255,.12)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important}
-            .gbm-logo-container{display:flex;align-items:center;gap:15px;min-width:0}.gbm-logo-container>a{display:flex;align-items:center;text-decoration:none!important}.gbm-logo-img{height:70px!important;width:auto!important;border-radius:8px;object-fit:contain}.gbm-title{margin:0;cursor:default;font:700 26px/1 'Rajdhani',sans-serif;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(90deg,#2E8B57 0%,#5fffa8 25%,#3d28ff 50%,#655aff 75%,#2E8B57 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:gbm-menu-shine 4s linear infinite}@keyframes gbm-menu-shine{from{background-position:0 center}to{background-position:200% center}}
-            .gbm-header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}.atalho-perfil{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:4px 10px 4px 4px;border:1px solid rgba(95,255,168,.35);border-radius:999px;background:rgba(15,26,43,.78);color:#fff!important;text-decoration:none!important;box-sizing:border-box}.avatar-perfil-cabecalho{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid #39d98a;background:#101b2c}.nome-perfil-cabecalho{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.86rem;font-weight:700}.gbm-menu-btn{display:inline-flex!important;align-items:center;justify-content:center;width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;border:0!important;border-radius:8px!important;background:transparent!important;box-shadow:none!important;color:#dce6f0!important;cursor:pointer}.gbm-menu-btn:hover{color:#5fffa8!important;transform:scale(1.04)}.hamburger-icon{display:inline-flex;width:27px;flex-direction:column;gap:5px}.hamburger-icon span{display:block;width:100%;height:2px;border-radius:2px;background:linear-gradient(90deg,#5fffa8,#55a7ff);transition:transform .22s ease,opacity .18s ease}.gbm-menu-btn[aria-expanded="true"] .hamburger-icon span:nth-child(1){transform:translateY(7px) rotate(45deg)}.gbm-menu-btn[aria-expanded="true"] .hamburger-icon span:nth-child(2){opacity:0}.gbm-menu-btn[aria-expanded="true"] .hamburger-icon span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-            .menu-overlay{display:none!important;position:fixed!important;inset:0!important;z-index:9998!important;background:rgba(0,0,0,.28)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}.menu-overlay.aberto{display:block!important}
-            .sidebar-menu{position:fixed;top:0;right:-320px;width:300px;height:100dvh;max-height:100dvh;box-sizing:border-box;background:rgba(7,17,31,.97)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;border-left:1px solid rgba(85,167,255,.22)!important;box-shadow:-16px 0 36px rgba(0,0,0,.72)!important;z-index:9999;transition:right .38s cubic-bezier(.22,.75,.25,1);display:flex;flex-direction:column;overflow:hidden}.sidebar-menu.aberto{right:0!important}.sidebar-header{display:flex;align-items:center;justify-content:space-between;min-height:78px;padding:15px 14px 14px 16px;border-bottom:1px solid rgba(255,255,255,.08);box-sizing:border-box}.sidebar-brand{display:flex;align-items:center;gap:9px;min-width:0;text-decoration:none!important;color:inherit!important;cursor:default}.sidebar-logo{width:28px;height:28px;object-fit:contain;border-radius:7px}.sidebar-brand-text{display:flex;flex-direction:column;min-width:0;line-height:1.05}.sidebar-brand-text strong{color:#eef6ff!important;background:none!important;-webkit-text-fill-color:#eef6ff!important;font:700 .79rem 'Inter',sans-serif;letter-spacing:0}.sidebar-brand-text span{margin-top:3px;color:#718198!important;font:500 .56rem 'Inter',sans-serif}.fechar-btn{width:30px;height:30px;padding:0!important;border:0!important;background:transparent!important;color:#d9e7f5!important;font-size:25px!important;cursor:pointer}
-            .sidebar-content{padding:12px 10px 15px;display:flex;flex-direction:column;gap:0;flex:1;overflow-y:auto}.sidebar-content::-webkit-scrollbar{width:6px}.sidebar-content::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:10px}.menu-grupo{display:flex;flex-direction:column;gap:2px;padding:0 0 8px;margin:0!important}.menu-grupo+.menu-grupo{margin-top:2px!important}.menu-grupo-titulo{padding:9px 9px 5px;margin:0;color:#58708b!important;font:800 .5rem 'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase}.menu-grupo-conta{margin-top:auto!important;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}.menu-item{position:relative;display:flex!important;align-items:center;gap:9px;min-height:34px;box-sizing:border-box;padding:7px 9px!important;border-left:2px solid transparent!important;border-radius:7px;color:#dce6f0!important;background:transparent!important;font:600 .68rem 'Inter',sans-serif;text-decoration:none!important;cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease}.menu-item:hover{background:rgba(85,167,255,.07)!important;border-left-color:rgba(85,167,255,.45)!important;color:#f5f9ff!important}.menu-item-icone{width:15px!important;flex:0 0 15px;color:#7d9abd;display:inline-flex!important;align-items:center;justify-content:center}.menu-item-icone svg{width:15px;height:15px}.menu-item-conteudo{min-width:0;flex:1}.menu-item-indicadores{display:inline-flex;align-items:center;margin-left:auto}.menu-item-ativo{background:linear-gradient(90deg,rgba(46,139,87,.23),rgba(85,167,255,.08))!important;border-left-color:#39d98a!important;color:#effcff!important}.cadeado-premium{display:inline-flex;align-items:center;justify-content:center;min-height:18px;padding:2px 6px;border:1px solid rgba(85,167,255,.5);border-radius:999px;background:rgba(85,167,255,.12);color:#9dcbff;font-size:.48rem;font-weight:700}.menu-item-sair{color:#ff7d8a!important}.menu-item-sair .menu-item-icone{color:#ff7d8a}.menu-item-sair:hover{background:rgba(255,93,108,.08)!important;border-left-color:#ff5d6c!important}body.gbm-menu-aberto{overflow:hidden}
-            @media(max-width:768px){.gbm-header{height:62px!important;padding:0 15px}.gbm-logo-img{height:40px!important}.gbm-title{font-size:18px;letter-spacing:1px}.nome-perfil-cabecalho{display:none}.atalho-perfil{min-height:40px;padding:1px;border:0;background:transparent}.avatar-perfil-cabecalho{width:37px;height:37px}.sidebar-menu{width:min(286px,88vw);right:calc(-1 * min(306px,92vw))}}
-        `;document.head.appendChild(s);
+    const mobile = window.matchMedia('(max-width: 768px)');
+    let iniciado = false;
+    let focoAnterior = null;
+    let elementosInertes = [];
+    let overflowAnterior = null;
+
+    function css() {
+        if (document.getElementById('gbm-shell-style')) return;
+        const estilo = document.createElement('link');
+        estilo.id = 'gbm-shell-style';
+        estilo.rel = 'stylesheet';
+        estilo.href = 'gbm-shell.css?v=20261015-shell1';
+        document.head.appendChild(estilo);
     }
 
-    function removerAntigos(){
-        document.querySelectorAll('body > .topbar,.gbm-header,.sidebar-menu,#sidebar-menu,#menu-overlay').forEach((el)=>el.remove());
-        if(paginaAtual()==='educacao-financeira.html') document.querySelectorAll('.site-header').forEach((el)=>el.remove());
+    function prepararConteudo() {
+        const conteudo = document.querySelector('body > main, body > .page-wrapper, body > .container');
+        if (!conteudo) return;
+        conteudo.classList.add('gbm-shell-content');
+        if (!conteudo.id) conteudo.id = 'gbm-main-content';
+        conteudo.setAttribute('tabindex', '-1');
+
+        // Move os controles em vez de copiá-los: preserva os eventos já ligados.
+        const acoes = document.querySelectorAll('body > .topbar .top-actions > *, body > .gbm-header > .btn-voltar');
+        if (acoes.length) {
+            const grupo = document.createElement('div');
+            grupo.className = 'gbm-shell-page-actions';
+            acoes.forEach((acao) => grupo.appendChild(acao));
+            conteudo.prepend(grupo);
+        }
+        const atalho = document.createElement('a');
+        atalho.className = 'gbm-shell-skip';
+        atalho.href = '#' + conteudo.id;
+        atalho.textContent = 'Pular para o conteúdo';
+        document.body.prepend(atalho);
+    }
+
+    function removerAntigos() {
+        document.querySelectorAll('body > .topbar, body > .gbm-header, body > .sidebar-menu, body > #sidebar-menu, body > #menu-overlay').forEach((el) => el.remove());
     }
 
     function itens(){return itensMenu.map((grupo)=>'<div class="menu-grupo '+(grupo.classe||'')+'"><p class="menu-grupo-titulo">'+grupo.grupo+'</p>'+grupo.itens.map((item)=>{const classes=['menu-item',item.premium?'menu-item-premium':'',item.sair?'menu-item-sair':''].filter(Boolean).join(' ');const premium=item.premium?'<span class="menu-item-indicadores"><span class="cadeado-premium">Premium</span></span>':'';if(item.sair)return '<button type="button" class="'+classes+'" data-menu-sair="true"><span class="menu-item-icone">'+svg(item.icone)+'</span><span class="menu-item-conteudo">'+item.texto+'</span></button>';return '<a href="'+item.href+'" data-menu-page="'+item.pagina+'" class="'+classes+'"><span class="menu-item-icone">'+svg(item.icone)+'</span><span class="menu-item-conteudo">'+item.texto+'</span>'+premium+'</a>';}).join('')+'</div>').join('');}
 
-    function montar(){
+    function montar() {
+        prepararConteudo();
         removerAntigos();
-        const header=document.createElement('header');
-        header.className='gbm-header';
-        const ehDashboard=paginaAtual()==='dashboard.html';
-        const busca=ehDashboard ? '<div class="dashboard-header-search" role="search"><span class="dashboard-search-icon" aria-hidden="true"></span><input type="search" placeholder="Buscar movimentações, categorias..." aria-label="Buscar movimentações e categorias"></div>' : '';
-        const notificacoes=ehDashboard ? '<a href="notificacoes.html" class="dashboard-notification-link" aria-label="Abrir notificações"><span class="dashboard-notification-icon" aria-hidden="true"></span><span id="dot-alertas" class="dashboard-notification-dot" aria-hidden="true"></span></a>' : '';
-        header.innerHTML='<div class="gbm-logo-container"><a href="dashboard.html" aria-label="Ir para o Dashboard"><img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img"></a><h1 class="gbm-title">Guardian Of Budget &amp; Money</h1></div>'+busca+'<div class="gbm-header-actions">'+notificacoes+'<a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil"><img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho"><span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span></a><button id="menu-btn" class="gbm-menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false"><span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span></button></div>';
+        const header = document.createElement('header');
+        header.className = 'gbm-header gbm-shell-header';
+        header.dataset.gbmSharedShell = 'true';
+        const ehDashboard = paginaAtual() === 'dashboard.html';
+        const itemAtual = itensMenu.flatMap((grupo) => grupo.itens).find((item) => item.pagina === paginaAtual());
+        const nomePagina = itemAtual?.texto || (paginaAtual() === 'pagamento.html' ? 'Ativar Premium' : 'Minha conta');
+        const busca = ehDashboard
+            ? '<div class="dashboard-header-search" role="search"><span class="dashboard-search-icon" aria-hidden="true"></span><input type="search" placeholder="Buscar movimentações, categorias..." aria-label="Buscar movimentações e categorias"></div>'
+            : '<span class="gbm-shell-page-name"></span>';
+        header.innerHTML = '<div class="gbm-logo-container"><a href="dashboard.html" aria-label="Ir para o Dashboard"><img src="logo-transparente.jpg" alt="" class="gbm-logo-img"><span>GBM</span></a></div>' + busca + '<div class="gbm-header-actions"><a href="notificacoes.html" class="dashboard-notification-link" aria-label="Abrir notificações">' + svg('bell') + '<span id="dot-alertas" class="dashboard-notification-dot" aria-hidden="true" style="display:none"></span></a><a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil"><img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="" class="avatar-perfil-cabecalho"><span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span></a><button id="menu-btn" class="gbm-menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar-menu"><span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span></button></div>';
+        const titulo = header.querySelector('.gbm-shell-page-name');
+        if (titulo) titulo.textContent = nomePagina;
         document.body.prepend(header);
-        const overlay=document.createElement('div');overlay.id='menu-overlay';overlay.className='menu-overlay';document.body.appendChild(overlay);
-        const sidebar=document.createElement('aside');sidebar.id='sidebar-menu';sidebar.className='sidebar-menu';sidebar.innerHTML='<div class="sidebar-header"><div class="sidebar-brand"><img class="sidebar-logo" src="logo-transparente.jpg" alt="Logo GBM"><span class="sidebar-brand-text"><strong>GBM Finance</strong><span>Meu Controle Financeiro</span></span></div><button class="fechar-btn" type="button" aria-label="Fechar menu">&times;</button></div><nav class="sidebar-content" aria-label="Navegação interna">'+itens()+'</nav>';document.body.appendChild(sidebar);
+        const overlay = document.createElement('div');
+        overlay.id = 'menu-overlay';
+        overlay.className = 'menu-overlay';
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(overlay);
+        const sidebar = document.createElement('aside');
+        sidebar.id = 'sidebar-menu';
+        sidebar.className = 'sidebar-menu gbm-shell-sidebar';
+        sidebar.setAttribute('aria-label', 'Menu da conta');
+        sidebar.innerHTML = '<div class="sidebar-header"><a class="sidebar-brand" href="dashboard.html" aria-label="Ir para o Dashboard"><img class="sidebar-logo" src="logo-transparente.jpg" alt=""><span class="sidebar-brand-text"><strong>GBM Finance</strong><span>Meu Controle Financeiro</span></span></a><button class="fechar-btn" type="button" aria-label="Fechar menu">&times;</button></div><nav class="sidebar-content" aria-label="Navegação interna">' + itens() + '</nav>';
+        document.body.appendChild(sidebar);
     }
-    function fechar(){document.getElementById('sidebar-menu')?.classList.remove('aberto');document.getElementById('menu-overlay')?.classList.remove('aberto');document.getElementById('menu-btn')?.setAttribute('aria-expanded','false');document.body.classList.remove('gbm-menu-aberto');}
-    function abrir(){document.getElementById('sidebar-menu')?.classList.add('aberto');document.getElementById('menu-overlay')?.classList.add('aberto');document.getElementById('menu-btn')?.setAttribute('aria-expanded','true');document.body.classList.add('gbm-menu-aberto');}
-    function ligar(){document.getElementById('menu-btn')?.addEventListener('click',()=>document.getElementById('menu-btn')?.getAttribute('aria-expanded')==='true'?fechar():abrir());document.getElementById('menu-overlay')?.addEventListener('click',fechar);document.querySelector('.fechar-btn')?.addEventListener('click',fechar);document.querySelectorAll('.menu-item:not([data-menu-sair])').forEach((i)=>i.addEventListener('click',fechar));document.querySelector('[data-menu-sair]')?.addEventListener('click',async()=>{fechar();if(typeof window.encerrarSessao==='function'){await window.encerrarSessao();return;}try{await fetch('/logout',{method:'POST',credentials:'include'});}catch(e){}window.location.replace('index.html');});document.addEventListener('keydown',(e)=>{if(e.key==='Escape')fechar();});}
+
+    function restaurarFundo() {
+        elementosInertes.forEach(([elemento, estavaInerte]) => { elemento.inert = estavaInerte; });
+        elementosInertes = [];
+        if (overflowAnterior) {
+            document.body.style.overflow = overflowAnterior.corpo;
+            document.documentElement.style.overflow = overflowAnterior.raiz;
+            overflowAnterior = null;
+        }
+    }
+
+    function fechar(devolverFoco = true) {
+        const sidebar = document.getElementById('sidebar-menu');
+        if (!sidebar) return;
+        const estavaAberto = sidebar.classList.contains('aberto');
+        sidebar.classList.remove('aberto');
+        sidebar.inert = mobile.matches;
+        sidebar.setAttribute('aria-hidden', String(mobile.matches));
+        sidebar.removeAttribute('aria-modal');
+        sidebar.removeAttribute('role');
+        document.getElementById('menu-overlay')?.classList.remove('aberto');
+        document.getElementById('menu-btn')?.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('gbm-menu-aberto');
+        restaurarFundo();
+        if (estavaAberto && devolverFoco && mobile.matches) {
+            const destino = focoAnterior?.isConnected ? focoAnterior : document.getElementById('menu-btn');
+            destino?.focus({ preventScroll: true });
+        }
+    }
+
+    function abrir(evento) {
+        evento?.stopPropagation();
+        const sidebar = document.getElementById('sidebar-menu');
+        if (!sidebar || !mobile.matches || sidebar.classList.contains('aberto')) return;
+        focoAnterior = document.activeElement;
+        sidebar.inert = false;
+        sidebar.setAttribute('aria-hidden', 'false');
+        sidebar.setAttribute('role', 'dialog');
+        sidebar.setAttribute('aria-modal', 'true');
+        sidebar.classList.add('aberto');
+        document.getElementById('menu-overlay')?.classList.add('aberto');
+        document.getElementById('menu-btn')?.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('gbm-menu-aberto');
+        overflowAnterior = { corpo: document.body.style.overflow, raiz: document.documentElement.style.overflow };
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        elementosInertes = [...document.body.children]
+            .filter((elemento) => elemento instanceof HTMLElement && ![sidebar, document.getElementById('menu-overlay')].includes(elemento) && !['SCRIPT', 'STYLE', 'LINK', 'CANVAS'].includes(elemento.tagName))
+            .map((elemento) => [elemento, elemento.inert]);
+        elementosInertes.forEach(([elemento]) => { elemento.inert = true; });
+        sidebar.querySelector('.fechar-btn')?.focus({ preventScroll: true });
+    }
+
+    function ligar() {
+        document.getElementById('menu-btn')?.addEventListener('click', (evento) => {
+            if (document.getElementById('sidebar-menu')?.classList.contains('aberto')) fechar();
+            else abrir(evento);
+        });
+        document.getElementById('menu-overlay')?.addEventListener('click', () => fechar());
+        document.querySelector('#sidebar-menu .fechar-btn')?.addEventListener('click', () => fechar());
+        document.querySelectorAll('#sidebar-menu .menu-item:not([data-menu-sair])').forEach((item) => item.addEventListener('click', () => fechar(false)));
+        document.querySelector('[data-menu-sair]')?.addEventListener('click', async () => {
+            fechar(false);
+            if (typeof window.encerrarSessao === 'function') { await window.encerrarSessao(); return; }
+            try { await fetch('/logout', { method: 'POST', credentials: 'include' }); } catch (erro) {}
+            window.location.replace('index.html');
+        });
+        document.addEventListener('keydown', (evento) => {
+            const sidebar = document.getElementById('sidebar-menu');
+            if (!mobile.matches || !sidebar?.classList.contains('aberto')) return;
+            if (evento.key === 'Escape') { evento.preventDefault(); fechar(); return; }
+            if (evento.key !== 'Tab') return;
+            const focaveis = [...sidebar.querySelectorAll('a[href], button:not(:disabled), [tabindex="0"]')]
+                .filter((elemento) => elemento.getClientRects().length);
+            const primeiro = focaveis[0];
+            const ultimo = focaveis[focaveis.length - 1];
+            if (evento.shiftKey && (document.activeElement === primeiro || !sidebar.contains(document.activeElement))) {
+                evento.preventDefault(); ultimo?.focus();
+            } else if (!evento.shiftKey && (document.activeElement === ultimo || !sidebar.contains(document.activeElement))) {
+                evento.preventDefault(); primeiro?.focus();
+            }
+        });
+        mobile.addEventListener('change', () => {
+            const sidebar = document.getElementById('sidebar-menu');
+            const focoNoMenu = sidebar?.contains(document.activeElement);
+            fechar(false);
+            if (focoNoMenu) {
+                const destino = mobile.matches
+                    ? document.getElementById('menu-btn')
+                    : sidebar.querySelector('[aria-current="page"], a[href]');
+                destino?.focus({ preventScroll: true });
+            }
+        });
+        fechar(false);
+    }
+
     async function atualizarPerfil(){const foto=document.getElementById('foto-perfil-cabecalho');const nome=document.getElementById('nome-perfil-cabecalho');if(!foto||!nome)return;try{const r=typeof window.fetchApi==='function'?await window.fetchApi('/perfil'):await fetch('/perfil',{credentials:'include'});if(!r.ok)return;const d=await r.json();const p=d?.perfil;if(!p)return;nome.textContent=p.nome_exibicao||p.nome||'Meu perfil';if(p.foto_perfil_url)foto.src=p.foto_perfil_url;}catch(e){}}
-    function iniciar(){if(paginasPublicas.has(paginaAtual()))return;document.body.classList.add('gbm-interna');adicionarEstilos();montar();aplicarEstadoAtivo();ligarEventos();atualizarPerfil();}
-    function adicionarEstilos(){css();}
-    function aplicarEstadoAtivo(){const atual=paginaAtual();document.querySelectorAll('[data-menu-page]').forEach((item)=>{const ativo=item.getAttribute('data-menu-page')===atual;item.classList.toggle('menu-item-ativo',ativo);if(ativo)item.setAttribute('aria-current','page');else item.removeAttribute('aria-current');});}
-    function ligarEventos(){ligar();}
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar,{once:true});else iniciar();
+    function iniciar() {
+        if (iniciado || !document.body || !paginasDaConta.has(paginaAtual())) return;
+        iniciado = true;
+        document.body.classList.add('gbm-interna', 'gbm-app-shell');
+        css();
+        montar();
+        aplicarEstadoAtivo();
+        ligar();
+        atualizarPerfil();
+    }
+
+    function aplicarEstadoAtivo() {
+        const atual = paginaAtual() === 'pagamento.html' ? 'assinatura.html' : paginaAtual();
+        document.querySelectorAll('#sidebar-menu [data-menu-page]').forEach((item) => {
+            const ativo = item.getAttribute('data-menu-page') === atual;
+            item.classList.toggle('menu-item-ativo', ativo);
+            if (ativo) item.setAttribute('aria-current', 'page');
+            else item.removeAttribute('aria-current');
+        });
+    }
+
+    window.GBMAppShell = { iniciar, abrir, fechar };
+    // As páginas antigas chamam estes nomes em ações de recursos Premium.
+    window.abrirMenuLateral = abrir;
+    window.fecharMenuLateral = fechar;
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+    else iniciar();
 })();

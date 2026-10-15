@@ -30,8 +30,24 @@ verificação do certificado e do hostname. Mantenha
 ignorado; não interrompe a configuração nem desativa a verificação TLS.
 Se o provedor utiliza uma CA privada, configure
 `DB_SSL_CA_FILE` com o caminho do certificado PEM confiável fornecido por ele.
+Também é possível cadastrar o PEM público em `DB_SSL_CA` (quebras reais ou
+`\n`) ou em `DB_SSL_CA_BASE64`. A ordem de preferência é arquivo, PEM e base64.
+O mesmo certificado é usado nas consultas e no armazenamento das sessões.
 `DB_SSL=false` é permitido somente fora de produção com `DB_HOST=localhost`,
 `127.0.0.1` ou `::1`.
+
+No Aiven, baixe o **CA certificate** na página do serviço e cadastre seu
+conteúdo em `DB_SSL_CA` no Render. Outra opção é enviar esse `ca.pem` em
+**Environment → Secret Files** e apontar `DB_SSL_CA_FILE` para
+`/etc/secrets/ca.pem`. Esse arquivo contém apenas o certificado público da CA;
+não use chave privada, certificado capturado sem confirmação ou senha do banco.
+Depois, faça o deploy e confirme `/health` e o login. O erro
+`self-signed certificate in certificate chain` indica que falta uma CA
+confiável nessa cadeia; mudar `DB_SSL_REJECT_UNAUTHORIZED` não o corrige.
+
+O login diferencia indisponibilidade do serviço (`503`, sem apagar uma sessão
+válida) de credenciais recusadas (`401`). Conexões MySQL interrompidas são
+reabertas na próxima operação; escritas e transações não são repetidas.
 
 Para verificar a execução, confirme que `/health` responde `200` com
 `database: "ok"` e que as migrações concluíram sem erros. Os testes em

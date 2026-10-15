@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script src="gbm-session.js?v=20261015-session1"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurações | GBM</title>
@@ -176,15 +177,12 @@
         </section>
     </main>
 
-    <script src="auth.js"></script>
+    <script src="auth.js?v=20261015-session1"></script>
     <script>
         function pegarUserId() {
-            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+            return window.GBMSession.getUserId();
         }
 
-        if (!pegarUserId()) {
-            window.location.href = 'index.html';
-        }
 
         const senha = document.getElementById('senha-atual');
         const frase = document.getElementById('frase-confirmacao');
@@ -231,8 +229,7 @@
                     throw new Error(dados.message || 'Não foi possível excluir a conta.');
                 }
 
-                localStorage.removeItem('userIdAtual');
-                sessionStorage.removeItem('userIdAtual');
+                limparIdentidadeLocal();
                 informar('Conta excluída. Você será direcionada para a tela inicial.', 'sucesso');
                 setTimeout(() => { window.location.href = 'index.html'; }, 1200);
             } catch (erro) {
@@ -244,7 +241,7 @@
 
         botaoExcluir.addEventListener('click', excluirConta);
     </script>
-    <script src="gbm-pages.js"></script>
-    <script src="gbm-menu.js"></script>
+    <script src="gbm-pages.js?v=20261015-shell1"></script>
+    <script src="gbm-menu.js?v=20261015-shell1"></script>
 </body>
 </html>

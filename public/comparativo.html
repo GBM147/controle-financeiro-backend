@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script src="gbm-session.js?v=20261015-session1"></script>
     <meta charset="UTF-8">
     <title>Comparativo Mensal | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -434,24 +435,18 @@
     </div>
 </div>
 
-<script src="auth.js"></script>
+<script src="auth.js?v=20261015-session1"></script>
     <script>
         // Recupera o userId salvo
         function pegarUserId() {
-            return localStorage.getItem('userIdAtual') || sessionStorage.getItem('userIdAtual');
+            return window.GBMSession.getUserId();
         }
 
         // --- GUARDA DE ACESSO PREMIUM ---
         (async function verificarAcessoPremium() {
-            const userId = pegarUserId();
-            if (!userId) {
-                window.location.href = 'index.html';
-                return;
-            }
             try {
-                const res = await fetchApi('/login-status?userId=' + userId);
-                const data = await res.json();
-
+                const data = await window.gbmSessaoPronta;
+                if (!data) return;
                 let isPremium = false;
                 if (data.statusPagamento === 'pago') {
                     isPremium = true;
@@ -466,7 +461,7 @@
                     window.location.href = 'pagamento.html';
                 }
             } catch (e) {
-                window.location.href = 'index.html';
+                console.warn('Não foi possível verificar o plano agora.', e);
             }
         })();
 
@@ -787,7 +782,7 @@
     })();
 </script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js"></script>
-    <script src="gbm-pages.js"></script>
+    <script src="gbm-menu.js?v=20261015-shell1"></script>
+    <script src="gbm-pages.js?v=20261015-shell1"></script>
 </body>
 </html>
