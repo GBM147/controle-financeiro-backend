@@ -2,6 +2,7 @@
 
 const fs = require('node:fs');
 const net = require('node:net');
+const path = require('node:path');
 const { X509Certificate } = require('node:crypto');
 const mysql = require('mysql2/promise');
 const mysqlCallback = require('mysql2');
@@ -26,6 +27,10 @@ function carregarCaMysql(env) {
             throw new Error('DB_SSL_CA_BASE64 deve conter o certificado CA público em base64.');
         }
         ca = Buffer.from(base64, 'base64').toString('utf8');
+    } else if (String(env.DB_HOST || '').toLowerCase().endsWith('.aivencloud.com')) {
+        // CA pública do projeto Aiven, fornecida pelo responsável pelo serviço.
+        // O arquivo acompanha o deploy; configurações explícitas têm prioridade.
+        ca = fs.readFileSync(path.join(__dirname, 'certificados', 'aiven-ca.pem'), 'utf8');
     }
     if (ca === undefined) return undefined;
 

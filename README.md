@@ -36,8 +36,16 @@ O mesmo certificado é usado nas consultas e no armazenamento das sessões.
 `DB_SSL=false` é permitido somente fora de produção com `DB_HOST=localhost`,
 `127.0.0.1` ou `::1`.
 
-No Aiven, baixe o **CA certificate** na página do serviço e cadastre seu
-conteúdo em `DB_SSL_CA` no Render. Outra opção é enviar esse `ca.pem` em
+Para hosts `*.aivencloud.com`, o projeto usa automaticamente
+`certificados/aiven-ca.pem`, a CA pública fornecida pelo responsável pelo GBM
+Finance no painel da Aiven. O certificado acompanha o deploy e é compartilhado
+pelas consultas e pelo banco de sessões. Não é necessário cadastrar uma nova
+variável no Render para esse serviço. A validação do certificado e do hostname
+continua ativa.
+
+Se mudar de projeto Aiven ou renovar sua CA, baixe o **CA certificate** na
+página do serviço e atualize esse arquivo público, ou cadastre o novo conteúdo
+em `DB_SSL_CA` no Render. Outra opção é enviar esse `ca.pem` em
 **Environment → Secret Files** e apontar `DB_SSL_CA_FILE` para
 `/etc/secrets/ca.pem`. Esse arquivo contém apenas o certificado público da CA;
 não use chave privada, certificado capturado sem confirmação ou senha do banco.

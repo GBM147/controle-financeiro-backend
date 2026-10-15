@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { rootCertificates } = require('node:tls');
+const { X509Certificate } = require('node:crypto');
 const mysql = require('mysql2');
 const { criarConfiguracaoMysql, criarStoreSessaoMysql, criarConexaoMysqlRecuperavel } = require('../mysql-config');
 
@@ -78,6 +79,44 @@ test('CA pública também pode ser configurada por PEM direto, escapado ou base6
     ]) {
         assert.throws(() => criarConfiguracaoMysql(env), /certificado|CA/);
     }
+});
+
+test('Aiven usa a CA pública incluída no deploy sem desativar TLS', () => {
+    const ca = fs.readFileSync(path.join(__dirname, '../certificados/aiven-ca.pem'), 'utf8');
+    assert.equal(new X509Certificate(ca).ca, true);
+    assert.doesNotMatch(ca, /PRIVATE KEY/);
+    const config = criarConfiguracaoMysql({
+        NODE_ENV: 'production', DB_HOST: 'servico.aivencloud.com', DB_SSL: 'true'
+    });
+    assert.equal(config.ssl.ca, ca);
+    assert.equal(config.ssl.rejectUnauthorized, true);
+    assert.equal(config.ssl.verifyIdentity, true);
+});
+
+test('CA explícita tem prioridade sobre a CA Aiven incluída, sem ocultar erro de configuração', () => {
+    const host = { DB_HOST: 'servico.aivencloud.com' };
+    for (const configuracao of [
+        { DB_SSL_CA: rootCertificates[0] },
+        { DB_SSL_CA_BASE64: Buffer.from(rootCertificates[0]).toString('base64') }
+    ]) {
+        assert.equal(criarConfiguracaoMysql({ ...host, ...configuracao }).ssl.ca, rootCertificates[0]);
+    }
+    assert.throws(() => criarConfiguracaoMysql({
+        ...host, DB_SSL_CA_FILE: path.join(__dirname, 'ca-inexistente.pem'),
+        DB_SSL_CA: rootCertificates[0]
+    }), { code: 'ENOENT' });
+    assert.throws(() => criarConfiguracaoMysql({ ...host, DB_SSL_CA: 'PEM inválido' }), /certificado/);
+});
+
+test('CA Aiven incluída não altera a confiança de outros provedores nem do MySQL local', () => {
+    for (const host of ['mysql.exemplo.invalid', 'aivencloud.com.exemplo.invalid', 'aivencloud.com']) {
+        const config = criarConfiguracaoMysql({ DB_HOST: host });
+        assert.equal(config.ssl.ca, undefined);
+        assert.equal(config.ssl.rejectUnauthorized, true);
+    }
+    assert.equal(criarConfiguracaoMysql({
+        DB_HOST: '127.0.0.1', DB_SSL: 'false', NODE_ENV: 'development'
+    }).ssl, undefined);
 });
 
 // Servidor de protocolo MySQL isolado, sem dados ou credenciais reais. Não
