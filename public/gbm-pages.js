@@ -515,6 +515,7 @@ function fecharModalNotificacoes(confirmado = false) {
 
 /* ===== RIPPLE NOS BOTÕES ===== */
 document.addEventListener('click', (e) => {
+    if (window.GBMInteractions || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const btn = e.target.closest('.btn');
     if (!btn) return;
     const ripple = document.createElement('span');

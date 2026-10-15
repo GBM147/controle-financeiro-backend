@@ -1,5 +1,5 @@
 const VERSAO_TUTORIAL = '1.1.48';
-const CACHE_GBM = 'gbm-estatico-v35';
+const CACHE_GBM = 'gbm-estatico-v36';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -15,6 +15,9 @@ const ARQUIVOS_ESTATICOS = [
     '/gbm-app-polish.css?v=20261014-polish1',
     '/gbm-motion.css?v=20261015-motion1',
     '/gbm-motion.js?v=20261015-motion1',
+    '/gbm-interactions.css?v=20261015-depth1',
+    '/gbm-interactions.js?v=20261015-depth1',
+    '/gbm-chart-depth.js?v=20261015-depth1',
     '/fonts/manrope-latin.woff2',
     '/fonts/manrope-latin-ext.woff2',
     '/public-calculators.js',
@@ -22,7 +25,7 @@ const ARQUIVOS_ESTATICOS = [
     '/gbm-session.js?v=20261015-session1',
     '/auth.js?v=20261015-session1',
     '/gbm-pages.css',
-    '/gbm-pages.js?v=20261015-shell1',
+    '/gbm-pages.js?v=20261015-depth1',
     '/gbm-menu.js?v=20261015-shell1',
     '/gbm-shell.css?v=20261015-shell1',
     `/gbm-tutorial.css?v=${VERSAO_TUTORIAL}`,

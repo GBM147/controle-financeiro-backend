@@ -1,0 +1,111 @@
+/* Luz de superfície, pressão e orientação: cada componente responde à sua função. */
+body.gbm-interactions-ready[data-gbm-interactions="ready"] {
+    --gbm-finish-light: 255, 255, 255;
+    --gbm-finish-alpha: .10;
+    --gbm-finish-edge: .17;
+    --gbm-material-shadow: 0, 7, 12;
+}
+body.gbm-public.gbm-interactions-ready[data-gbm-interactions="ready"] {
+    --gbm-finish-alpha: .66;
+    --gbm-finish-edge: .86;
+    --gbm-material-shadow: 18, 48, 44;
+}
+body.gbm-public.gbm-interactions-ready[data-gbm-interactions="ready"] :is(.demo-panel, .premium, .callout) {
+    --gbm-finish-alpha: .10;
+    --gbm-finish-edge: .17;
+}
+
+/* A camada fica dentro do contorno e não intercepta gráficos, seleção ou cliques. */
+.gbm-surface-finish {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    border-radius: inherit !important;
+    pointer-events: none !important;
+    user-select: none !important;
+    z-index: 3;
+    opacity: 0;
+    background:
+        radial-gradient(ellipse 320px 180px at var(--gbm-light-x, 50%) var(--gbm-light-y, 20%), rgba(var(--gbm-finish-light), var(--gbm-finish-alpha)), transparent 74%),
+        linear-gradient(var(--gbm-light-angle, 128deg), rgba(255, 255, 255, .02), transparent 42%, rgba(0, 0, 0, .025));
+    box-shadow: inset 0 1px 0 rgba(var(--gbm-finish-light), var(--gbm-finish-edge)), inset 0 -1px 0 rgba(0, 0, 0, .12);
+    transition: opacity .26s ease-out;
+}
+body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-surface] {
+    transform: none !important;
+    filter: none !important;
+    transition: border-color .24s ease, box-shadow .28s ease, transform .35s cubic-bezier(.2,.7,.25,1) !important;
+}
+body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-surface]::after {
+    /* Desativa os antigos fachos e pulsos contínuos, sem ocupar os pseudo-elementos. */
+    animation: none !important;
+}
+
+/* Botões preservam cor e tamanho. A pressão é curta, sem o salto universal antigo. */
+body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-action] {
+    transform: none !important;
+    filter: none !important;
+    transition: box-shadow .18s ease, border-color .18s ease, background-color .18s ease, transform .16s cubic-bezier(.2,.7,.25,1) !important;
+}
+body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-action="tactile"]:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: translateY(.7px) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, .21), inset 0 1px 0 rgba(0, 0, 0, .08) !important;
+}
+body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-nav] {
+    transform: none !important;
+    filter: none !important;
+}
+body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-text-link] {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0 1px;
+    background-repeat: no-repeat;
+    background-position: 100% calc(100% - 3px);
+    text-decoration-color: transparent;
+    transition: background-size .24s cubic-bezier(.25,.65,.3,1), color .18s ease !important;
+}
+body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-text-link]:focus-visible {
+    background-position: 0 calc(100% - 3px);
+    background-size: 100% 1px;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-hover="true"] > .gbm-surface-finish { opacity: 1; }
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-surface][data-gbm-hover="true"] {
+        box-shadow: 0 12px 25px -13px rgba(var(--gbm-material-shadow), .42), 0 2px 5px rgba(var(--gbm-material-shadow), .12), inset 0 1px 0 rgba(255, 255, 255, .075) !important;
+    }
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-tilt="true"][data-gbm-hover="true"] {
+        transform: perspective(1100px) rotateX(var(--gbm-tilt-x, 0deg)) rotateY(var(--gbm-tilt-y, 0deg)) !important;
+    }
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-action="tactile"]:hover:not(:active):not(:disabled):not([aria-disabled="true"]) {
+        box-shadow: 0 3px 6px rgba(var(--gbm-material-shadow), .16), inset 0 1px 0 rgba(255, 255, 255, .23), inset 0 -1px 0 rgba(0, 0, 0, .16) !important;
+    }
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-text-link]:hover {
+        background-position: 0 calc(100% - 3px);
+        background-size: 100% 1px;
+    }
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-text-link]:not(:hover) {
+        background-position: 100% calc(100% - 3px);
+    }
+}
+
+/* Toque e acessibilidade: nenhum rastreamento, inclinação ou brilho retido. */
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] .gbm-surface-finish { display: none !important; }
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-surface] { transform: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] :is([data-gbm-surface], [data-gbm-action], [data-gbm-text-link], [data-gbm-nav]) {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+    }
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-action]:active { transform: none !important; }
+    body.gbm-interactions-ready[data-gbm-interactions="ready"] [data-gbm-text-link]:is(:hover, :focus-visible) {
+        text-decoration: underline;
+        background-image: none;
+    }
+}
+@media print {
+    .gbm-surface-finish { display: none !important; }
+}
