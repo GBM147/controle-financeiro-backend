@@ -1,4 +1,8 @@
 const { rateLimit } = require('express-rate-limit');
+const { LimiteMysqlStore } = require('./limite-mysql');
+
+// Sem banco real (testes unitários) os contadores ficam em memória.
+const usarMysql = process.env.NODE_ENV !== 'test' || process.env.GBM_TESTE_MYSQL === '1';
 
 function criarLimitador({ janelaMs, maximo, prefixo }) {
     return rateLimit({
@@ -7,6 +11,10 @@ function criarLimitador({ janelaMs, maximo, prefixo }) {
         standardHeaders: 'draft-8',
         legacyHeaders: false,
         identifier: prefixo,
+        ...(usarMysql ? { store: new LimiteMysqlStore({ prefixo }) } : {}),
+        // Se o banco de limites falhar, a requisição segue: disponibilidade
+        // tem prioridade, e as rotas protegidas continuam exigindo login.
+        passOnStoreError: true,
         // O proxy confiável é o balanceador do Render. A validação automática da
         // biblioteca não conhece essa topologia, por isso a regra é documentada aqui.
         validate: { trustProxy: false },

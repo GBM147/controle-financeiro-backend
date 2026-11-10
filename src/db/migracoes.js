@@ -6,6 +6,7 @@ const {
     descriptografarDado,
     gerarHashEmail
 } = require('../servicos/identidade');
+const { garantirTabelaLimites } = require('../web/limite-mysql');
 
 let promessaEstruturaAlertasMultiplos = null;
 function garantirEstruturaAlertasMultiplos() {
@@ -439,6 +440,7 @@ async function prepararBanco() {
     await db.promise().query('SELECT 1');
     await garantirEstruturaAlertasMultiplos();
     await garantirEstruturaProduto();
+    await garantirTabelaLimites();
     await migrarDadosSensiveisExistentes();
     await migrarObjetivosLegados();
 }

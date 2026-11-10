@@ -15,6 +15,7 @@ const {
     paginaEditorialComAnuncios
 } = require('./web/paginas');
 const { servicoTemporariamenteIndisponivel, sessionStore } = require('./web/sessao');
+const { registrarErro } = require('./servicos/log');
 
 // 1. Inicializamos o servidor Express
 const app = express();
@@ -53,23 +54,6 @@ app.use(helmet({
         ? { maxAge: 31536000, includeSubDomains: true }
         : false,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
-}));
-const origensPermitidas = String(
-    process.env.ALLOWED_ORIGINS || process.env.APP_URL || ''
-)
-    .split(',')
-    .map((origem) => origem.trim())
-    .filter(Boolean);
-app.use(cors({
-    credentials: true,
-    origin(origem, callback) {
-        // Navegação direta e webhooks normalmente não enviam Origin. Em produção,
-        // uma origem de navegador só é aceita quando foi configurada explicitamente.
-        if (!origem || origensPermitidas.includes(origem)) {
-            return callback(null, true);
-        }
-        return callback(new Error('Origem não autorizada pelo CORS.'));
-    }
 }));
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -139,6 +123,26 @@ app.use(express.static(DIRETORIO_PUBLICO, {
 }));
 // Respostas de autenticação nunca devem ser reutilizadas pelo navegador ou
 // por proxies: cada consulta precisa refletir o cookie e a sessão atuais.
+// CORS vale para a API. Arquivos públicos (páginas, fontes, imagens) ficam
+// fora da verificação: não carregam dados da conta e precisam abrir em
+// qualquer origem, como subdomínio www ou endereço do Render.
+const origensPermitidas = String(
+    process.env.ALLOWED_ORIGINS || process.env.APP_URL || ''
+)
+    .split(',')
+    .map((origem) => origem.trim())
+    .filter(Boolean);
+app.use(cors({
+    credentials: true,
+    origin(origem, callback) {
+        // Navegação direta e webhooks normalmente não enviam Origin. Em produção,
+        // uma origem de navegador só é aceita quando foi configurada explicitamente.
+        if (!origem || origensPermitidas.includes(origem)) {
+            return callback(null, true);
+        }
+        return callback(new Error('Origem não autorizada pelo CORS.'));
+    }
+}));
 app.use(['/login', '/login-status', '/logout', '/verificar-conta', '/validar-codigo'], (req, res, next) => {
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('Pragma', 'no-cache');
@@ -219,7 +223,7 @@ app.use((erro, req, res, next) => {
             ? 'Ocorreu um erro interno no servidor.'
             : erro.message || 'Não foi possível concluir a solicitação.';
 
-    if (status >= 500) console.error('[SERVER ERROR]', erro);
+    if (status >= 500) registrarErro('[SERVER ERROR]', erro);
     if (indisponivel) res.setHeader('Retry-After', '10');
     return res.status(status).json({ success: false, error: mensagem, message: mensagem });
 });

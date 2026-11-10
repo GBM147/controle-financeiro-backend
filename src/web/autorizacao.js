@@ -4,6 +4,7 @@ const {
     salvarSessao,
     servicoTemporariamenteIndisponivel
 } = require('./sessao');
+const { registrarErro } = require('../servicos/log');
 
 async function exigirLogin(req, res, next) {
     if (!req.session.userId) {
@@ -77,7 +78,7 @@ async function exigirPremium(req, res, next) {
 
         next();
     } catch (erro) {
-        console.error('Erro ao validar plano Premium:', erro);
+        registrarErro('Erro ao validar plano Premium:', erro);
         res.status(500).json({ success: false, error: 'Não foi possível validar o plano.' });
     }
 }

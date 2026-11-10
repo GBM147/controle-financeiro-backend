@@ -2,6 +2,7 @@ const { resend } = require('../config/clientes');
 const { db } = require('../db/banco');
 const { escaparHtmlServidor, revelarIdentidade } = require('../servicos/identidade');
 const { limitarFeedback } = require('../web/limitadores');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     // --- ROTA: RECEBER FEEDBACK DA PÁGINA "FALE CONOSCO" ---
@@ -53,7 +54,7 @@ function registrar(app) {
     });
 
     if (resendError) {
-        console.error('Erro do Resend ao enviar feedback:', resendError);
+        registrarErro('Erro do Resend ao enviar feedback:', resendError);
         return res.status(502).json({
             success: false,
             error: 'O provedor de e-mail não conseguiu enviar sua mensagem.'
@@ -63,7 +64,7 @@ function registrar(app) {
     console.log('Feedback enviado pelo Resend. ID:', data?.id);
     res.json({ success: true, message: 'Mensagem enviada com sucesso!' });
         } catch (error) {
-            console.error('Erro ao enviar feedback:', error);
+            registrarErro('Erro ao enviar feedback:', error);
             res.status(500).json({ success: false, error: 'Falha ao enviar mensagem.' });
         }
     });

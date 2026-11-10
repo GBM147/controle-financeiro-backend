@@ -24,6 +24,7 @@ const {
     validarUploadOfx,
     validarUploadPdf
 } = require('../web/uploads');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     app.post('/importar-ofx', exigirLogin, (req, res) => {
@@ -108,7 +109,7 @@ function registrar(app) {
                 transacoes: transacoesComCategoria
             });
         } catch (error) {
-            console.error('Erro ao converter PDF:', error);
+            registrarErro('Erro ao converter PDF:', error);
             res.status(500).json({ success: false, message: 'Falha ao ler o PDF. Verifique se o ficheiro não está corrompido ou protegido por senha.' });
         }
         }
@@ -149,7 +150,7 @@ function registrar(app) {
                 transacoes: previa.transacoes
             });
         } catch (erro) {
-            console.error('Erro na prévia OFX:', erro);
+            registrarErro('Erro na prévia OFX:', erro);
             res.status(500).json({ success: false, error: 'Falha ao ler o arquivo OFX.' });
         }
         }
@@ -389,7 +390,7 @@ function registrar(app) {
                     error: erro.message
                 });
             }
-            console.error('Erro ao confirmar importação:', erro);
+            registrarErro('Erro ao confirmar importação:', erro);
             res.status(500).json({ success: false, error: 'Falha ao concluir a importação.' });
         }
     });

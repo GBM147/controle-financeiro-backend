@@ -7,6 +7,7 @@ const {
     sqlMesCiclo
 } = require('../servicos/ciclo');
 const { exigirLogin, exigirPremium } = require('../web/autorizacao');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     // --- LÓGICA DE NEGÓCIO EVOLUÍDA: RECEITAS, DESPESAS E METAS ---
@@ -49,7 +50,7 @@ function registrar(app) {
 
             res.json({ status: 'success', data: rows });
         } catch (error) {
-            console.error("Erro na lógica de resumo com balanço:", error);
+            registrarErro("Erro na lógica de resumo com balanço:", error);
             res.status(500).json({ status: 'error', message: 'Falha ao processar resumo financeiro' });
         }
     });
@@ -117,7 +118,7 @@ function registrar(app) {
                 temMesAnterior: !!anterior
             });
         } catch (error) {
-            console.error('Erro ao calcular economia mensal:', error);
+            registrarErro('Erro ao calcular economia mensal:', error);
             res.status(500).json({ error: 'Falha ao calcular economia mensal.' });
         }
     });
@@ -172,7 +173,7 @@ function registrar(app) {
 
             res.json({ inicio, fim: dataFinalSerie, serie });
         } catch (error) {
-            console.error('Erro ao gerar resumo diário:', error);
+            registrarErro('Erro ao gerar resumo diário:', error);
             res.status(500).json({ error: 'Falha ao gerar o resumo diário.' });
         }
     });
@@ -197,7 +198,7 @@ function registrar(app) {
             const [rows] = await db.promise().query(sql, [userId, anoConsulta]);
             res.json(rows);
         } catch (error) {
-            console.error('Erro ao gerar comparativo mensal:', error);
+            registrarErro('Erro ao gerar comparativo mensal:', error);
             res.status(500).json({ error: 'Falha ao gerar comparativo mensal.' });
         }
     });
@@ -215,7 +216,7 @@ function registrar(app) {
             );
             res.json(rows.map(r => r.ano));
         } catch (error) {
-            console.error('Erro ao buscar anos disponíveis:', error);
+            registrarErro('Erro ao buscar anos disponíveis:', error);
             res.status(500).json({ error: 'Falha ao buscar anos.' });
         }
     });
@@ -234,7 +235,7 @@ function registrar(app) {
             const [rows] = await db.promise().query(sql, [userId, mes, ano]);
             res.json(rows);
         } catch (error) {
-            console.error('Erro ao gerar relatório mensal:', error);
+            registrarErro('Erro ao gerar relatório mensal:', error);
             res.status(500).json({ error: 'Falha ao gerar relatório mensal.' });
         }
     });
@@ -263,7 +264,7 @@ function registrar(app) {
             const [rows] = await db.promise().query(sql, params);
             res.json(rows);
         } catch (error) {
-            console.error('Erro ao gerar relatório detalhado:', error);
+            registrarErro('Erro ao gerar relatório detalhado:', error);
             res.status(500).json({ error: 'Falha ao gerar relatório detalhado.' });
         }
     });
@@ -339,7 +340,7 @@ function registrar(app) {
                 saldo_previsto: Number(saldo.total) + futuros
             });
         } catch (erro) {
-            console.error('Erro no calendário financeiro:', erro);
+            registrarErro('Erro no calendário financeiro:', erro);
             res.status(500).json({ success: false, error: 'Falha ao montar o calendário.' });
         }
     });
@@ -414,7 +415,7 @@ function registrar(app) {
             });
             res.json(insights.slice(0, 4));
         } catch (erro) {
-            console.error('Erro ao gerar insights:', erro);
+            registrarErro('Erro ao gerar insights:', erro);
             res.status(500).json({ success: false, error: 'Falha ao gerar insights.' });
         }
     });
@@ -481,7 +482,7 @@ function registrar(app) {
 
             res.json({ data_inicio: dataInicio, data_fim: dataFim, resumo, transacoes });
         } catch (erro) {
-            console.error('Erro no relatório avançado:', erro);
+            registrarErro('Erro no relatório avançado:', erro);
             res.status(500).json({ success: false, error: 'Falha ao gerar o relatório.' });
         }
     });

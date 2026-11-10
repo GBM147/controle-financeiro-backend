@@ -12,6 +12,7 @@ const {
 } = require('../servicos/assinaturas');
 const { revelarIdentidade } = require('../servicos/identidade');
 const { exigirLogin } = require('../web/autorizacao');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     app.post('/criar-sessao-pagamento', exigirLogin, express.json(), async (req, res) => {
@@ -68,7 +69,7 @@ function registrar(app) {
 
             res.json({ url: resultado.init_point }); 
         } catch (error) {
-            console.error("Erro ao criar assinatura no MP:", error);
+            registrarErro("Erro ao criar assinatura no MP:", error);
             res.status(500).json({ error: 'Falha ao gerar link de assinatura.' });
         }
     });
@@ -113,7 +114,7 @@ function registrar(app) {
         
             res.json(revelarIdentidade(rows[0]));
         } catch (error) {
-            console.error('Erro ao buscar assinatura:', error);
+            registrarErro('Erro ao buscar assinatura:', error);
             res.status(500).json({ error: 'Falha ao buscar dados da assinatura.' });
         }
     });
@@ -195,7 +196,7 @@ function registrar(app) {
         
             res.json({ success: true, message: 'Sua assinatura foi cancelada no Mercado Pago com sucesso.' });
         } catch (error) {
-            console.error('Erro ao cancelar assinatura:', error);
+            registrarErro('Erro ao cancelar assinatura:', error);
             res.status(502).json({ success: false, message: 'O Mercado Pago não confirmou o cancelamento. Tente novamente mais tarde.' });
         }
     });

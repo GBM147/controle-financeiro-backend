@@ -67,14 +67,21 @@ test('endereços inexistentes recebem página 404 sem indexação', async () => 
     assert.doesNotMatch(api.text, /Página não encontrada/);
 });
 
-test('bloqueia origens não autorizadas', async () => {
+test('bloqueia origens não autorizadas na API e entrega arquivos públicos', async () => {
     await request(app)
-        .get('/index.html')
+        .post('/login')
         .set('Origin', 'https://exemplo-malicioso.invalid')
+        .send({ identificacao: 'a@b.c', senha: 'x' })
         .expect(403)
         .expect((resposta) => {
             assert.equal(resposta.body.success, false);
         });
+    const fonte = await request(app)
+        .get('/fonts/manrope-latin.woff2')
+        .set('Origin', 'https://www.gbm-finance.com')
+        .expect(200);
+    assert.equal(fonte.headers['access-control-allow-origin'], undefined);
+    await request(app).get('/index.html').set('Origin', 'https://exemplo-malicioso.invalid').expect(200);
 });
 
 test('rejeita JSON excessivo com resposta 413 sem stack trace', async () => {

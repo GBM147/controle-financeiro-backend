@@ -3,6 +3,7 @@ const { garantirEstruturaAlertasMultiplos } = require('../db/migracoes');
 const { auditarMetas } = require('../servicos/alertas');
 const { obterDiaFechamento, sqlAnoCiclo, sqlMesCiclo } = require('../servicos/ciclo');
 const { exigirLogin } = require('../web/autorizacao');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     // --- NOVA ROTA: SALVAR/ATUALIZAR METAS DO USUÁRIO ---
@@ -19,7 +20,7 @@ function registrar(app) {
             console.log(`Nova meta definida: ${categoria} -> R$ ${valor_limite}`);
             res.json({ success: true, message: 'Orçamento atualizado!' });
         } catch (error) {
-            console.error("Erro ao salvar meta:", error);
+            registrarErro("Erro ao salvar meta:", error);
             res.status(500).json({ error: 'Falha ao salvar meta' });
         }
     });
@@ -32,7 +33,7 @@ function registrar(app) {
             console.log(`Limite removido. A categoria [${categoria}] agora é um gasto fixo.`);
             res.json({ success: true, message: 'Limite removido com sucesso!' });
         } catch (error) {
-            console.error("Erro ao remover meta:", error);
+            registrarErro("Erro ao remover meta:", error);
             res.status(500).json({ error: 'Falha ao remover meta' });
         }
     });
@@ -41,7 +42,7 @@ function registrar(app) {
             const [rows] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
             res.json(rows[0] || { percentual_alerta: 80 });
         } catch (error) {
-            console.error('Erro ao buscar configurações de alerta:', error);
+            registrarErro('Erro ao buscar configurações de alerta:', error);
             res.status(500).json({ percentual_alerta: 80 });
         }
     });
@@ -51,7 +52,7 @@ function registrar(app) {
             await db.promise().query('UPDATE preferencias_notificacao SET percentual_alerta = ? WHERE id = 1', [percentual]);
             res.json({ success: true });
         } catch (error) {
-            console.error('Erro ao salvar configurações de alerta:', error);
+            registrarErro('Erro ao salvar configurações de alerta:', error);
             res.status(500).json({ success: false });
         }
     });
@@ -64,7 +65,7 @@ function registrar(app) {
             );
             res.json(rows);
         } catch (error) {
-            console.error('Erro ao buscar alertas:', error);
+            registrarErro('Erro ao buscar alertas:', error);
             res.status(500).json({ error: 'Falha ao buscar alertas.' });
         }
     });
@@ -75,7 +76,7 @@ function registrar(app) {
             await db.promise().query('UPDATE alertas SET lida = TRUE WHERE id = ? AND usuario_id = ?', [id, userId]);
             res.json({ success: true });
         } catch (error) {
-            console.error('Erro ao marcar alerta como lido:', error);
+            registrarErro('Erro ao marcar alerta como lido:', error);
             res.status(500).json({ success: false });
         }
     });
@@ -131,7 +132,7 @@ function registrar(app) {
 
             res.json(resposta);
         } catch (error) {
-            console.error('Erro ao carregar resumo dos limites:', error);
+            registrarErro('Erro ao carregar resumo dos limites:', error);
             res.status(500).json({ success: false, error: 'Falha ao carregar os limites.' });
         }
     });
@@ -196,10 +197,10 @@ function registrar(app) {
                 try {
                     await banco.rollback();
                 } catch (erroRollback) {
-                    console.error('Erro ao desfazer atualização do limite:', erroRollback);
+                    registrarErro('Erro ao desfazer atualização do limite:', erroRollback);
                 }
             }
-            console.error('Erro ao atualizar meta/alerta:', error);
+            registrarErro('Erro ao atualizar meta/alerta:', error);
             res.status(500).json({ success: false, error: 'Falha ao atualizar meta.' });
         }
     });

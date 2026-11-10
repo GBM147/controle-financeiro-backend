@@ -8,6 +8,7 @@ const { normalizarDiaFechamento } = require('../servicos/ciclo');
 const { criptografarDado, revelarIdentidade } = require('../servicos/identidade');
 const { exigirLogin } = require('../web/autorizacao');
 const { enviarImagemParaCloudinary, uploadImagem, validarUploadImagem } = require('../web/uploads');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     app.get('/perfil', exigirLogin, async (req, res) => {
@@ -39,7 +40,7 @@ function registrar(app) {
                 }
             });
         } catch (erro) {
-            console.error('Erro ao buscar perfil:', erro);
+            registrarErro('Erro ao buscar perfil:', erro);
             res.status(500).json({
                 success: false,
                 message: 'Não foi possível carregar o perfil.'
@@ -96,7 +97,7 @@ function registrar(app) {
                 dia_fechamento: diaFechamento
             });
         } catch (erro) {
-            console.error('Erro ao atualizar perfil:', erro);
+            registrarErro('Erro ao atualizar perfil:', erro);
             res.status(500).json({
                 success: false,
                 message: 'Não foi possível atualizar o perfil.'
@@ -132,7 +133,7 @@ function registrar(app) {
                 message: 'Foto atualizada com sucesso.'
             });
         } catch (erro) {
-            console.error('Erro ao enviar foto:', erro);
+            registrarErro('Erro ao enviar foto:', erro);
             res.status(500).json({
                 success: false,
                 message: 'Não foi possível enviar a foto.'
@@ -168,7 +169,7 @@ function registrar(app) {
                 message: 'Capa atualizada com sucesso.'
             });
         } catch (erro) {
-            console.error('Erro ao enviar capa:', erro);
+            registrarErro('Erro ao enviar capa:', erro);
             res.status(500).json({
                 success: false,
                 message: 'Não foi possível enviar a capa.'
@@ -279,7 +280,7 @@ function registrar(app) {
                     usuarios[0].status_pagamento = 'cancelado';
                 }
             } catch (erroMercadoPago) {
-                console.error('Não foi possível conferir a assinatura no Mercado Pago antes de excluir:', erroMercadoPago);
+                registrarErro('Não foi possível conferir a assinatura no Mercado Pago antes de excluir:', erroMercadoPago);
                 await banco.rollback();
                 transacaoAberta = false;
                 return res.status(502).json({
@@ -438,7 +439,7 @@ function registrar(app) {
 
             return req.session.destroy((erroSessao) => {
                 if (erroSessao) {
-                    console.error('Conta apagada, mas não foi possível encerrar a sessão atual:', erroSessao);
+                    registrarErro('Conta apagada, mas não foi possível encerrar a sessão atual:', erroSessao);
                 }
 
                 const opcoesCookie = {
@@ -455,11 +456,11 @@ function registrar(app) {
                 try {
                     await banco.rollback();
                 } catch (erroRollback) {
-                    console.error('Erro ao desfazer a exclusão da conta:', erroRollback);
+                    registrarErro('Erro ao desfazer a exclusão da conta:', erroRollback);
                 }
             }
 
-            console.error('Erro ao excluir conta:', erro);
+            registrarErro('Erro ao excluir conta:', erro);
             const bloqueioPorRelacao = erro.code === 'ER_ROW_IS_REFERENCED' || erro.code === 'ER_ROW_IS_REFERENCED_2';
             return res.status(bloqueioPorRelacao ? 409 : 500).json({
                 success: false,
@@ -516,7 +517,7 @@ function registrar(app) {
             res.setHeader('Content-Disposition', 'attachment; filename="meus-dados-gbm.json"');
             res.send(JSON.stringify(exportacao, null, 2));
         } catch (erro) {
-            console.error('Erro ao exportar dados:', erro);
+            registrarErro('Erro ao exportar dados:', erro);
             res.status(500).json({ success: false, error: 'Falha ao exportar seus dados.' });
         }
     });

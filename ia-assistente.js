@@ -1,7 +1,7 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 
 const genAI = process.env.GEMINI_API_KEY
-    ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
     : null;
 
 const PAGINAS = {
@@ -115,9 +115,12 @@ async function gerarResposta(pergunta, pagina, historico, contexto) {
     if (local) return { texto: local, navegacao };
     if (!genAI) return { texto: 'Não consegui acessar a IA agora. Ainda posso indicar páginas conhecidas do GBM quando a pergunta corresponder a uma delas.', navegacao };
     try {
-        const model = genAI.getGenerativeModel({ model: process.env.GEMINI_ASSISTENTE_MODEL || process.env.GEMINI_MODEL || 'gemini-3.6-flash', generationConfig: { temperature: 0.2, maxOutputTokens: 1024 } });
-        const resultado = await comTimeout(model.generateContent(criarPrompt(pagina, pergunta, historico, contexto)), TEMPO_LIMITE_MS);
-        const texto = String(resultado?.response?.text?.() || '').trim();
+        const resultado = await comTimeout(genAI.models.generateContent({
+            model: process.env.GEMINI_ASSISTENTE_MODEL || process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+            contents: criarPrompt(pagina, pergunta, historico, contexto),
+            config: { temperature: 0.2, maxOutputTokens: 1024 }
+        }), TEMPO_LIMITE_MS);
+        const texto = String(resultado?.text || '').trim();
         if (!texto) throw new Error('O assistente não retornou uma resposta.');
         return { texto: texto.slice(0, 3000), navegacao };
     } catch (erro) {

@@ -3,6 +3,7 @@ const { db } = require('../db/banco');
 const { garantirEstruturaAlertasMultiplos } = require('../db/migracoes');
 const { deslocamentoCiclo } = require('./ciclo');
 const { revelarIdentidade } = require('./identidade');
+const { registrarErro } = require('./log');
 
 // =======================================================
 // --- MÓDULO DE NOTIFICAÇÕES E AUDITORIA DE METAS ---
@@ -142,14 +143,14 @@ async function auditarMetas(usuarioId = null) {
                                 `
                             });
                         } catch (emailErr) {
-                            console.error("Erro ao enviar e-mail de alerta:", emailErr);
+                            registrarErro("Erro ao enviar e-mail de alerta:", emailErr);
                         }
                     }
                 }
             }
         }
     } catch (error) {
-        console.error("Erro na auditoria de metas:", error);
+        registrarErro("Erro na auditoria de metas:", error);
     }
 }
 

@@ -1,6 +1,7 @@
 const { db } = require('../db/banco');
 const { garantirEstruturaProduto } = require('../db/migracoes');
 const { exigirLogin } = require('../web/autorizacao');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     // =======================================================
@@ -30,7 +31,7 @@ function registrar(app) {
         `, [req.session.userId]);
             res.json(contas);
         } catch (erro) {
-            console.error('Erro ao carregar contas:', erro);
+            registrarErro('Erro ao carregar contas:', erro);
             res.status(500).json({ success: false, error: 'Falha ao carregar contas.' });
         }
     });
@@ -52,7 +53,7 @@ function registrar(app) {
             );
             res.status(201).json({ success: true, id: resultado.insertId });
         } catch (erro) {
-            console.error('Erro ao criar conta:', erro);
+            registrarErro('Erro ao criar conta:', erro);
             res.status(500).json({ success: false, error: 'Falha ao criar conta.' });
         }
     });
@@ -142,7 +143,7 @@ function registrar(app) {
             res.json({ success: true });
         } catch (erro) {
             try { await banco.rollback(); } catch {}
-            console.error('Erro ao excluir conta bancária:', erro);
+            registrarErro('Erro ao excluir conta bancária:', erro);
             if (erro.message === 'Conta de destino inválida.') {
                 return res.status(400).json({ success: false, error: erro.message });
             }

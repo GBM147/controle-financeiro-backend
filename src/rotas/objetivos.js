@@ -2,6 +2,7 @@ const { db } = require('../db/banco');
 const { garantirEstruturaProduto } = require('../db/migracoes');
 const { recalcularStatusObjetivo } = require('../servicos/objetivos');
 const { exigirLogin } = require('../web/autorizacao');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     app.get('/objetivos', exigirLogin, async (req, res) => {
@@ -27,7 +28,7 @@ function registrar(app) {
         `, [req.session.userId]);
             res.json(objetivos);
         } catch (erro) {
-            console.error('Erro ao carregar objetivos:', erro);
+            registrarErro('Erro ao carregar objetivos:', erro);
             res.status(500).json({ success: false, error: 'Falha ao carregar objetivos.' });
         }
     });
@@ -67,7 +68,7 @@ function registrar(app) {
                 throw erroTransacao;
             }
         } catch (erro) {
-            console.error('Erro ao criar objetivo:', erro);
+            registrarErro('Erro ao criar objetivo:', erro);
             res.status(500).json({ success: false, error: 'Falha ao criar objetivo.' });
         }
     });
@@ -92,7 +93,7 @@ function registrar(app) {
             }
             res.json({ success: true });
         } catch (erro) {
-            console.error('Erro ao atualizar objetivo:', erro);
+            registrarErro('Erro ao atualizar objetivo:', erro);
             res.status(500).json({ success: false, error: 'Falha ao atualizar objetivo.' });
         }
     });
@@ -124,7 +125,7 @@ function registrar(app) {
             );
             res.status(201).json({ success: true, valor_guardado: resumo?.valor_guardado || 0 });
         } catch (erro) {
-            console.error('Erro ao registrar contribuição:', erro);
+            registrarErro('Erro ao registrar contribuição:', erro);
             res.status(500).json({ success: false, error: 'Falha ao registrar contribuição.' });
         }
     });
@@ -250,7 +251,7 @@ function registrar(app) {
                     error: 'Esta transação já está vinculada a um objetivo.'
                 });
             }
-            console.error('Erro ao vincular transação ao objetivo:', erro);
+            registrarErro('Erro ao vincular transação ao objetivo:', erro);
             res.status(500).json({ success: false, error: 'Falha ao vincular a transação ao objetivo.' });
         }
     });
@@ -316,7 +317,7 @@ function registrar(app) {
             if (transacaoAberta) {
                 try { await banco.rollback(); } catch {}
             }
-            console.error('Erro ao desvincular transação do objetivo:', erro);
+            registrarErro('Erro ao desvincular transação do objetivo:', erro);
             res.status(500).json({ success: false, error: 'Falha ao desvincular a transação do objetivo.' });
         }
     });

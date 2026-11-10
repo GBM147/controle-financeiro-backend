@@ -2,6 +2,7 @@ const { db } = require('../db/banco');
 const { garantirEstruturaProduto } = require('../db/migracoes');
 const { gerarRecorrenciasVencidas } = require('../servicos/recorrencias');
 const { exigirLogin } = require('../web/autorizacao');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     app.get('/recorrencias', exigirLogin, async (req, res) => {
@@ -48,7 +49,7 @@ function registrar(app) {
             await gerarRecorrenciasVencidas(req.session.userId);
             res.status(201).json({ success: true, id: resultado.insertId });
         } catch (erro) {
-            console.error('Erro ao criar recorrência:', erro);
+            registrarErro('Erro ao criar recorrência:', erro);
             res.status(500).json({ success: false, error: 'Falha ao criar recorrência.' });
         }
     });

@@ -1,6 +1,7 @@
 const { BANCOS_INFO, CATEGORIAS_PADRAO } = require('../config/constantes');
 const { db } = require('../db/banco');
 const { exigirLogin } = require('../web/autorizacao');
+const { registrarErro } = require('../servicos/log');
 
 function registrar(app) {
     // Lista as categorias padrão + as personalizadas criadas por este usuário
@@ -27,7 +28,7 @@ function registrar(app) {
 
             res.json(rows.map(r => r.banco));
         } catch (error) {
-            console.error('Erro ao buscar bancos usados:', error);
+            registrarErro('Erro ao buscar bancos usados:', error);
             res.status(500).json({ error: 'Falha ao buscar bancos usados.' });
         }
     });
@@ -46,7 +47,7 @@ function registrar(app) {
                 todas: [...CATEGORIAS_PADRAO, ...rows.map(r => r.nome)]
             });
         } catch (error) {
-            console.error('Erro ao buscar categorias:', error);
+            registrarErro('Erro ao buscar categorias:', error);
             res.status(500).json({ error: 'Falha ao buscar categorias.' });
         }
     });
@@ -75,7 +76,7 @@ function registrar(app) {
             if (error.code === 'ER_DUP_ENTRY') {
                 return res.status(409).json({ success: false, error: 'Você já tem uma categoria com esse nome.' });
             }
-            console.error('Erro ao criar categoria:', error);
+            registrarErro('Erro ao criar categoria:', error);
             res.status(500).json({ success: false, error: 'Falha ao criar categoria.' });
         }
     });
@@ -93,7 +94,7 @@ function registrar(app) {
             }
             res.json({ success: true, message: 'Categoria removida com sucesso!' });
         } catch (error) {
-            console.error('Erro ao remover categoria:', error);
+            registrarErro('Erro ao remover categoria:', error);
             res.status(500).json({ success: false, error: 'Falha ao remover categoria.' });
         }
     });

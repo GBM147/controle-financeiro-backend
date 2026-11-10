@@ -105,8 +105,32 @@ test('fluxos principais com MySQL real', { timeout: 60000 }, async (t) => {
             .send({ identificacao: 'pessoa.teste@example.invalid', senha: SENHA }).expect(200);
         assert.equal(pendente.body.verificado, false);
         await cliente.get('/login-status').expect(401);
-        await db.promise().query('UPDATE usuarios SET verificado = 1 WHERE id = ?', [usuarioId]);
+
+        // O e-mail é interceptado: o código chega à pessoa, mas o banco guarda só o HMAC.
+        const { resend } = require('../src/config/clientes');
+        const enviados = [];
+        t.mock.method(resend.emails, 'send', async (mensagem) => {
+            enviados.push(mensagem.html.match(/\b\d{6}\b/)[0]);
+            return { error: null };
+        });
+        await cliente.post('/enviar-codigo').send({ canal: 'email' }).expect(200);
+        const [[{ token_verificacao: armazenado }]] = await db.promise().query(
+            'SELECT token_verificacao FROM usuarios WHERE id = ?', [usuarioId]
+        );
+        assert.notEqual(armazenado, enviados[0]);
+        assert.match(armazenado, /^[a-f0-9]{64}$/);
+        const outro = String((Number(enviados[0]) + 1) % 1000000).padStart(6, '0');
+        await cliente.post('/verificar-conta').send({ codigo: outro }).expect(400);
+        await cliente.post('/verificar-conta').send({ codigo: enviados[0] }).expect(200);
+
         await cliente.post('/login').send({ identificacao: 'pessoa.teste@example.invalid', senha: 'errada-123456' }).expect(401);
+        await cliente.post('/esqueci-senha').send({ email: 'pessoa.teste@example.invalid' }).expect(200);
+        await cliente.post('/redefinir-senha').send({
+            email: 'pessoa.teste@example.invalid', codigo: enviados[1], novaSenha: SENHA
+        }).expect(200);
+        await cliente.post('/redefinir-senha').send({
+            email: 'pessoa.teste@example.invalid', codigo: enviados[1], novaSenha: SENHA
+        }).expect(400);
         await cliente.post('/login').send({ identificacao: 'pessoa.teste@example.invalid', senha: SENHA }).expect(200);
         const status = await cliente.get('/login-status').expect(200);
         assert.equal(String(status.body.userId), String(usuarioId));
@@ -212,6 +236,25 @@ test('fluxos principais com MySQL real', { timeout: 60000 }, async (t) => {
             "SELECT COUNT(*) AS total FROM transacoes WHERE conta_id = ? AND descricao LIKE 'Paralelo %'", [contaId]
         );
         assert.equal(total, 12);
+    });
+
+    await t.test('limite de requisições fica no MySQL e respeita a janela', async () => {
+        const { LimiteMysqlStore } = require('../src/web/limite-mysql');
+        const store = new LimiteMysqlStore({ prefixo: 'teste' });
+        store.init({ windowMs: 300 });
+        assert.equal((await store.increment('ip-1')).totalHits, 1);
+        assert.equal((await store.increment('ip-1')).totalHits, 2);
+        assert.equal((await new LimiteMysqlStore({ prefixo: 'outro' }).get('ip-1')), undefined);
+        await store.decrement('ip-1');
+        assert.equal((await store.get('ip-1')).totalHits, 1);
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        assert.equal((await store.increment('ip-1')).totalHits, 1);
+        await store.resetKey('ip-1');
+        assert.equal(await store.get('ip-1'), undefined);
+        const [[{ total }]] = await db.promise().query(
+            "SELECT COUNT(*) AS total FROM limites_requisicoes WHERE chave LIKE 'auth:%'"
+        );
+        assert.ok(total >= 1, 'login e cadastro usam o contador compartilhado');
     });
 
     await t.test('assinatura sincronizada por webhook e reconciliação', async (st) => {

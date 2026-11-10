@@ -6,10 +6,11 @@ const { aplicarCorrecoesCategorias } = require('../servicos/categorias');
 const { obterDiaFechamento, sqlAnoCiclo, sqlMesCiclo } = require('../servicos/ciclo');
 const { recalcularStatusObjetivo } = require('../servicos/objetivos');
 const { exigirLogin } = require('../web/autorizacao');
+const { registrarErro } = require('../servicos/log');
 
 function responderErroAlteracaoCategoria(res, erro) {
     const status = Number(erro.statusCode) || 500;
-    if (status >= 500) console.error('Erro ao corrigir categorias:', erro);
+    if (status >= 500) registrarErro('Erro ao corrigir categorias:', erro);
     return res.status(status).json({
         success: false,
         error: status >= 500 ? 'Não foi possível salvar as categorias.' : erro.message
@@ -61,7 +62,7 @@ function registrar(app) {
             await auditarMetas(userId);
             res.json({ success: true, message: 'Lançamento inserido no MySQL!' });
         } catch (error) {
-            console.error("Erro ao salvar lançamento manual:", error);
+            registrarErro("Erro ao salvar lançamento manual:", error);
             res.status(500).json({ error: 'Falha ao processar lançamento.' });
         }
     });
@@ -83,7 +84,7 @@ function registrar(app) {
             }
             res.json({ success: true });
         } catch (err) {
-            console.error(err);
+            registrarErro('Erro ao desfazer lançamento:', err);
             res.status(500).json({ success: false });
         }
     });
@@ -111,7 +112,7 @@ function registrar(app) {
             await db.promise().query('DELETE FROM transacoes WHERE id = ?', [linhas[0].id]);
             res.status(200).json({ success: true, message: 'Último lançamento desfeito com sucesso!' });
         } catch (err) {
-            console.error('Erro ao desfazer transação:', err);
+            registrarErro('Erro ao desfazer transação:', err);
             res.status(500).json({ success: false, error: 'Erro ao excluir no banco de dados.' });
         }
     });
@@ -249,7 +250,7 @@ function registrar(app) {
             if (transacaoAberta) {
                 try { await banco.rollback(); } catch {}
             }
-            console.error('Erro ao excluir transação:', erro);
+            registrarErro('Erro ao excluir transação:', erro);
             res.status(500).json({ success: false, error: 'Não foi possível excluir a movimentação.' });
         }
     });

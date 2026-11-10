@@ -20,6 +20,19 @@ const {
     salvarSessao,
     servicoTemporariamenteIndisponivel
 } = require('../web/sessao');
+const { registrarErro } = require('../servicos/log');
+
+// O código enviado por e-mail não fica legível no banco: só o HMAC, vinculado à conta.
+function hashCodigo(usuarioId, codigo) {
+    const segredo = process.env.SESSION_SECRET || process.env.DATA_ENCRYPTION_KEY || '';
+    return crypto.createHmac('sha256', segredo).update(`${Number(usuarioId)}|${String(codigo)}`).digest('hex');
+}
+
+function codigoConfere(usuarioId, codigo, armazenado) {
+    const esperado = Buffer.from(hashCodigo(usuarioId, codigo), 'hex');
+    const recebido = Buffer.from(String(armazenado || ''), 'hex');
+    return recebido.length === esperado.length && crypto.timingSafeEqual(recebido, esperado);
+}
 
 // A identidade da conta a verificar fica vinculada à sessão criada no cadastro
 // ou no login. O navegador nunca escolhe qual userId será ativado.
@@ -48,7 +61,7 @@ async function validarCodigoConta(req, res) {
                AND token_verificacao = ?
                AND token_finalidade = 'verificacao_conta'
                AND token_expira_em > NOW()`,
-            [userId, codigo]
+            [userId, hashCodigo(userId, codigo)]
         );
 
         if (atualizacao.affectedRows !== 1) {
@@ -57,7 +70,7 @@ async function validarCodigoConta(req, res) {
 
         return req.session.regenerate((erroSessao) => {
             if (erroSessao) {
-                console.error('Erro ao renovar sessão na validação:', erroSessao);
+                registrarErro('Erro ao renovar sessão na validação:', erroSessao);
                 return res.status(500).json({ success: false, message: 'Não foi possível iniciar uma nova sessão.' });
             }
 
@@ -65,7 +78,7 @@ async function validarCodigoConta(req, res) {
             configurarPersistenciaSessao(req.session, manterConectado);
             req.session.save((erroSalvar) => {
                 if (erroSalvar) {
-                    console.error('Erro ao salvar sessão na validação:', erroSalvar);
+                    registrarErro('Erro ao salvar sessão na validação:', erroSalvar);
                     return res.status(500).json({ success: false, message: 'Não foi possível salvar a sessão.' });
                 }
                 return res.json({
@@ -77,7 +90,7 @@ async function validarCodigoConta(req, res) {
             });
         });
     } catch (erro) {
-        console.error('Erro ao validar conta:', erro);
+        registrarErro('Erro ao validar conta:', erro);
         return res.status(500).json({ success: false, message: 'Não foi possível validar a conta.' });
     }
 }
@@ -154,7 +167,7 @@ function registrar(app) {
             await salvarSessao(req);
             res.json({ success: true, userId: result.insertId, message: 'Cadastro realizado!' });
         } catch (error) {
-            console.error(error);
+            registrarErro('Erro ao criar cadastro:', error);
             if (error.code === 'ER_DUP_ENTRY') {
                 return res.status(400).json({ success: false, message: 'E-mail já cadastrado!' });
             }
@@ -192,7 +205,7 @@ function registrar(app) {
                     `UPDATE usuarios
                  SET token_verificacao = ?, token_expira_em = ?, token_finalidade = 'verificacao_conta'
                  WHERE id = ?`,
-                    [codigo, expira, userId]
+                    [hashCodigo(userId, codigo), expira, userId]
                 );
                 const { error } = await resend.emails.send({
                     from: 'GBM Financeiro <naoresponder@gbm-finance.com>',
@@ -210,7 +223,7 @@ function registrar(app) {
                 `
                 });
                 if (error) {
-                    console.error("Erro da API Resend:", error);
+                    registrarErro("Erro da API Resend:", error);
                     return res.status(500).json({ success: false, message: 'Falha no provedor de e-mail.' });
                 }
                 res.json({ success: true, message: 'Código enviado com sucesso!' });
@@ -218,7 +231,7 @@ function registrar(app) {
                 res.status(400).json({ success: false, message: 'Canal de verificação inválido.' });
             }
         } catch (erro) {
-            console.error("Erro crítico no envio do código:", erro);
+            registrarErro("Erro crítico no envio do código:", erro);
             res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
         }
     });
@@ -254,7 +267,7 @@ function registrar(app) {
         }
 
         return req.session.destroy((erro) => {
-            if (erro) console.error('Erro ao encerrar sessão:', erro);
+            if (erro) registrarErro('Erro ao encerrar sessão:', erro);
             limparCookiesSessao(res);
             return res.json({ success: true });
         });
@@ -355,7 +368,7 @@ function registrar(app) {
                 `UPDATE usuarios
              SET token_verificacao = ?, token_expira_em = ?, token_finalidade = 'recuperacao_senha'
              WHERE id = ?`,
-                [codigo, expira, usuario.id]
+                [hashCodigo(usuario.id, codigo), expira, usuario.id]
             );
 
             const { error } = await resend.emails.send({
@@ -375,13 +388,13 @@ function registrar(app) {
             });
 
             if (error) {
-                console.error("Erro da API Resend:", error);
+                registrarErro("Erro da API Resend:", error);
                 return res.status(500).json({ success: false, message: 'Falha ao enviar e-mail.' });
             }
 
             res.json({ success: true, message: 'Se o e-mail existir, enviaremos um código.' });
         } catch (erro) {
-            console.error("Erro ao solicitar recuperação:", erro);
+            registrarErro("Erro ao solicitar recuperação:", erro);
             res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
         }
     });
@@ -413,7 +426,8 @@ function registrar(app) {
             const usuario = rows[0];
             const expirado = !usuario.token_expira_em || new Date(usuario.token_expira_em) < new Date();
 
-            if (usuario.token_verificacao !== codigo || expirado || usuario.token_finalidade !== 'recuperacao_senha') {
+            if (!/^\d{6}$/.test(String(codigo || '')) || !codigoConfere(usuario.id, codigo, usuario.token_verificacao)
+                || expirado || usuario.token_finalidade !== 'recuperacao_senha') {
                 return res.status(400).json({ success: false, message: 'Código inválido ou expirado.' });
             }
 
@@ -429,7 +443,7 @@ function registrar(app) {
 
             res.json({ success: true, message: 'Senha redefinida com sucesso!' });
         } catch (erro) {
-            console.error("Erro ao redefinir senha:", erro);
+            registrarErro("Erro ao redefinir senha:", erro);
             res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
         }
     });
