@@ -4,7 +4,7 @@ const { MercadoPagoConfig, PreApproval, Payment } = require('mercadopago');
 const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 const crypto = require('crypto');
 const express = require('express');
-const { criarConfiguracaoMysql, criarStoreSessaoMysql, criarConexaoMysqlRecuperavel } = require('./mysql-config');
+const { criarConfiguracaoMysql, criarStoreSessaoMysql, criarBancoMysql } = require('./mysql-config');
 const cors = require('cors');
 const helmet = require('helmet');
 const { rateLimit } = require('express-rate-limit');
@@ -781,13 +781,18 @@ app.post('/webhook-mercadopago', async (req, res) => {
     }
 });
 // --- LIGAÇÃO À BASE DE DADOS MYSQL ---
-const db = process.env.NODE_ENV === 'test'
+// Em testes unitários o banco fica indisponível; GBM_TESTE_MYSQL=1 liga os
+// testes de integração a um MySQL real (test/integracao.test.js).
+const db = process.env.NODE_ENV === 'test' && process.env.GBM_TESTE_MYSQL !== '1'
     ? {
         promise() {
             throw new Error('Banco indisponível em testes sem integração MySQL.');
-        }
+        },
+        async end() {}
     }
-    : criarConexaoMysqlRecuperavel(configuracaoConexaoMysql);
+    : criarBancoMysql(configuracaoConexaoMysql, {
+        limiteConexoes: Number(process.env.DB_POOL_LIMIT) || 5
+    });
 
 let promessaEstruturaAlertasMultiplos = null;
 
@@ -1371,25 +1376,16 @@ async function registrarAuditoria(req, evento, detalhes = null, usuarioId = null
     }
 }
 
-if (require.main === module) {
-    db.connect((err) => {
-        if (err) {
-            console.error('Erro a ligar ao MySQL:', err.message);
-            return;
-        }
-        console.log('Ligado à base de dados MySQL com sucesso!');
-        Promise.all([
-            garantirEstruturaAlertasMultiplos(),
-            garantirEstruturaProduto()
-        ])
-            .then(async () => {
-                console.log('Estruturas automáticas do GBM prontas.');
-                await migrarDadosSensiveisExistentes();
-                await migrarObjetivosLegados();
-            })
-            .catch((erroEstrutura) => console.error('Erro ao preparar múltiplos alertas:', erroEstrutura));
-    });
+// Prepara as estruturas automáticas e migra dados legados. Executado na
+// inicialização do servidor e pelos testes de integração.
+async function prepararBanco() {
+    await db.promise().query('SELECT 1');
+    await garantirEstruturaAlertasMultiplos();
+    await garantirEstruturaProduto();
+    await migrarDadosSensiveisExistentes();
+    await migrarObjetivosLegados();
 }
+
 async function obterOuCriarContaDoUsuario(userId) {
     const [contas] = await db.promise().query(
         'SELECT id FROM contas_bancarias WHERE usuario_id = ? LIMIT 1',
@@ -1956,8 +1952,24 @@ app.delete('/metas', exigirLogin, async (req, res) => {
 // --- LANÇAMENTO MANUAL ---
 app.post('/transacao-manual', exigirLogin, async (req, res) => {
     try {
-        const { descricao, valor, tipo, categoria, data_transacao, conta_id } = req.body;
-        const transacaoIdGerado = 'MANUAL_' + Date.now();
+        const { conta_id } = req.body;
+        const descricao = String(req.body.descricao ?? '').trim();
+        const valor = Number(req.body.valor);
+        const tipo = req.body.tipo;
+        const categoria = String(req.body.categoria ?? '').trim() || 'Outros';
+        const data_transacao = String(req.body.data_transacao ?? '');
+        const dataValida = /^\d{4}-\d{2}-\d{2}$/.test(data_transacao)
+            && !Number.isNaN(Date.parse(`${data_transacao}T00:00:00Z`))
+            && new Date(`${data_transacao}T00:00:00Z`).toISOString().slice(0, 10) === data_transacao;
+        if (!descricao || descricao.length > 255 || categoria.length > 120
+            || !Number.isFinite(valor) || valor === 0 || Math.abs(valor) > 9999999999999
+            || !['Receita', 'Despesa'].includes(tipo) || !dataValida) {
+            return res.status(400).json({
+                success: false,
+                error: 'Confira descrição, valor, tipo, categoria e data do lançamento.'
+            });
+        }
+        const transacaoIdGerado = `MANUAL_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
         const userId = req.session.userId;
         let contaInternaId;
         if (conta_id) {
@@ -1979,8 +1991,7 @@ app.post('/transacao-manual', exigirLogin, async (req, res) => {
         const sql = `INSERT INTO transacoes (conta_id, transacao_id_pluggy, descricao, valor, tipo, categoria, data_transacao, banco)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         await db.promise().query(sql, [contaInternaId, transacaoIdGerado, descricao, valorFinal, tipo, categoria, data_transacao, 'Manual']);
-        console.log(`Lançamento Manual: ${descricao} | R$ ${valorFinal} | ${data_transacao}`);
-        await auditarMetas();
+        await auditarMetas(userId);
         res.json({ success: true, message: 'Lançamento inserido no MySQL!' });
     } catch (error) {
         console.error("Erro ao salvar lançamento manual:", error);
@@ -2043,7 +2054,8 @@ function estaNoHorarioSilencioso(inicio, fim) {
         : agora >= comeco || agora <= termino;
 }
 
-async function auditarMetas() {
+// Sem usuário, audita todas as contas (tarefa diária); com usuário, só a dele.
+async function auditarMetas(usuarioId = null) {
     try {
         await garantirEstruturaAlertasMultiplos();
         const [prefs] = await db.promise().query('SELECT percentual_alerta FROM preferencias_notificacao WHERE id = 1');
@@ -2071,9 +2083,11 @@ async function auditarMetas() {
                   = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL (COALESCE(u.dia_fechamento, 1) - 1) DAY))
               AND YEAR(DATE_SUB(t.data_transacao, INTERVAL (COALESCE(u.dia_fechamento, 1) - 1) DAY))
                   = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL (COALESCE(u.dia_fechamento, 1) - 1) DAY))
+              ${usuarioId ? 'AND cb.usuario_id = ?' : ''}
             GROUP BY cb.usuario_id, t.categoria, m.valor_limite, m.percentual_alerta, map.percentual, u.dia_fechamento
         `;
-        const [gastos] = await db.promise().query(sql, [percentualAlertaGlobal]);
+        const parametros = usuarioId ? [percentualAlertaGlobal, usuarioId] : [percentualAlertaGlobal];
+        const [gastos] = await db.promise().query(sql, parametros);
 
         for (const item of gastos) {
             const gastoAbs = Math.abs(item.total_gasto);
@@ -2395,7 +2409,7 @@ app.post('/atualizar-meta-alerta', exigirLogin, async (req, res) => {
 
         await banco.commit();
         transacaoAberta = false;
-        await auditarMetas();
+        await auditarMetas(req.session.userId);
         res.json({ success: true, percentuais_alerta: percentuais });
     } catch (error) {
         if (transacaoAberta) {
@@ -2816,7 +2830,7 @@ app.post('/corrigir-categoria', exigirLogin, async (req, res) => {
             transacaoId: req.body?.transacaoId,
             novaCategoria: req.body?.novaCategoria
         }]);
-        await auditarMetas();
+        await auditarMetas(req.session.userId);
         res.json({ success: true, atualizadas });
     } catch (erro) {
         responderErroAlteracaoCategoria(res, erro);
@@ -2830,7 +2844,7 @@ app.post('/corrigir-categorias', exigirLogin, async (req, res) => {
             req.session.userId,
             req.body?.alteracoes
         );
-        await auditarMetas();
+        await auditarMetas(req.session.userId);
         res.json({ success: true, atualizadas });
     } catch (erro) {
         responderErroAlteracaoCategoria(res, erro);
@@ -2896,7 +2910,7 @@ app.delete('/transacoes/:id', exigirLogin, async (req, res) => {
 
         await banco.commit();
         transacaoAberta = false;
-        await auditarMetas();
+        await auditarMetas(req.session.userId);
         res.json({ success: true, excluida: true, transacaoId });
     } catch (erro) {
         if (transacaoAberta) {
@@ -3608,13 +3622,21 @@ app.delete('/minha-conta', exigirLogin, async (req, res) => {
 
         // Os dois arquivos são removidos após o banco confirmar a exclusão. Falhas
         // no provedor de imagens não desfazem uma conta já apagada; ficam registradas.
+        // A função assíncrona converte erros síncronos do SDK (como credenciais
+        // ausentes) em rejeições, para que nunca interrompam a resposta.
+        const apagarImagem = async (nome) => cloudinary.uploader.destroy(
+            `gbm/perfis/${userId}/${nome}`, { resource_type: 'image', invalidate: true }
+        );
         const resultadosCloudinary = await Promise.allSettled([
-            cloudinary.uploader.destroy(`gbm/perfis/${userId}/foto-perfil`, { resource_type: 'image', invalidate: true }),
-            cloudinary.uploader.destroy(`gbm/perfis/${userId}/capa-perfil`, { resource_type: 'image', invalidate: true })
+            apagarImagem('foto-perfil'),
+            apagarImagem('capa-perfil')
         ]);
         resultadosCloudinary
             .filter((resultadoCloudinary) => resultadoCloudinary.status === 'rejected')
-            .forEach((resultadoCloudinary) => console.warn('Não foi possível apagar uma imagem de perfil:', resultadoCloudinary.reason));
+            .forEach((resultadoCloudinary) => console.warn(
+                'Não foi possível apagar uma imagem de perfil:',
+                resultadoCloudinary.reason?.message || resultadoCloudinary.reason
+            ));
 
         return req.session.destroy((erroSessao) => {
             if (erroSessao) {
@@ -4466,7 +4488,7 @@ app.post('/importacoes/confirmar', exigirLogin, async (req, res) => {
 
         await bancoDados.commit();
         transacaoAberta = false;
-        await auditarMetas();
+        await auditarMetas(req.session.userId);
         res.status(201).json({
             success: true,
             importacao_id: lote.insertId,
@@ -5478,22 +5500,47 @@ app.use((erro, req, res, next) => {
 });
 
 if (require.main === module) {
-    // 4. Liga o servidor
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`Servidor rodando perfeitamente na porta ${PORT}`);
+    const servidor = app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Servidor rodando na porta ${PORT}`);
     });
 
+    prepararBanco()
+        .then(() => console.log('Banco de dados MySQL pronto e estruturas automáticas atualizadas.'))
+        .catch((erro) => console.error('Erro ao preparar o banco de dados:', erro.code || erro.message));
+
     // Roda a auditoria de metas todos os dias às 08:00 no horário de São Paulo.
-    cron.schedule('0 8 * * *', () => {
+    const tarefaDiaria = cron.schedule('0 8 * * *', () => {
         console.log('Rodando auditoria diária de metas...');
         auditarMetas();
         gerarRecorrenciasVencidas()
             .then((quantidade) => {
                 if (quantidade) console.log(`${quantidade} transação(ões) recorrente(s) gerada(s).`);
             })
-            .catch((erro) => console.error('Erro ao gerar recorrências:', erro));
+            .catch((erro) => console.error('Erro ao gerar recorrências:', erro.code || erro.message));
     }, { timezone: 'America/Sao_Paulo' });
+
+    // Uma promessa esquecida sem tratamento não derruba o atendimento dos demais usuários.
+    process.on('unhandledRejection', (motivo) => {
+        console.error('Promessa rejeitada sem tratamento:', motivo?.code || motivo?.message || motivo);
+    });
+
+    // O Render envia SIGTERM antes de substituir a instância em um deploy:
+    // termina as requisições em andamento e fecha as conexões com o banco.
+    let encerrando = false;
+    const encerrar = (sinal) => {
+        if (encerrando) return;
+        encerrando = true;
+        console.log(`${sinal} recebido; encerrando o servidor.`);
+        tarefaDiaria.stop();
+        setTimeout(() => process.exit(1), 10000).unref();
+        servidor.close(() => {
+            Promise.allSettled([db.end(), sessionStore.close?.()])
+                .finally(() => process.exit(0));
+        });
+    };
+    process.on('SIGTERM', () => encerrar('SIGTERM'));
+    process.on('SIGINT', () => encerrar('SIGINT'));
 }
 
-module.exports = { app };
+module.exports = { app, db, prepararBanco };

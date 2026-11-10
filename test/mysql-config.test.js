@@ -8,7 +8,7 @@ const path = require('node:path');
 const { rootCertificates } = require('node:tls');
 const { X509Certificate } = require('node:crypto');
 const mysql = require('mysql2');
-const { criarConfiguracaoMysql, criarStoreSessaoMysql, criarConexaoMysqlRecuperavel } = require('../mysql-config');
+const { criarConfiguracaoMysql, criarStoreSessaoMysql, criarBancoMysql } = require('../mysql-config');
 
 test('MySQL remoto exige TLS com certificado e identidade verificados', () => {
     const configuracao = criarConfiguracaoMysql({ DB_HOST: 'mysql.exemplo.invalid' });
@@ -173,24 +173,61 @@ async function iniciarMysqlLocal(t, dadosSessao) {
     };
 }
 
-test('aplicação reconecta após queda sem repetir consultas nem transações anteriores', { timeout: 5000 }, async (t) => {
+const configuracaoLocal = (porta) => criarConfiguracaoMysql({
+    DB_HOST: '127.0.0.1', DB_PORT: porta, DB_SSL: 'false', NODE_ENV: 'test'
+});
+const contar = (servidor, sql) => servidor.consultas.filter((consulta) => consulta === sql).length;
+const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+test('pool reabre conexões após queda sem repetir consultas', { timeout: 5000 }, async (t) => {
     const servidor = await iniciarMysqlLocal(t, {});
     t.mock.method(console, 'error', () => {});
-    const db = criarConexaoMysqlRecuperavel(criarConfiguracaoMysql({
-        DB_HOST: '127.0.0.1', DB_PORT: servidor.port, DB_SSL: 'false', NODE_ENV: 'test'
-    }));
-    t.after(() => new Promise((resolve) => db.end(resolve)));
-    const conexaoAnterior = db.promise();
-    await conexaoAnterior.query('SELECT primeira');
+    const db = criarBancoMysql(configuracaoLocal(servidor.port), { limiteConexoes: 2 });
+    t.after(() => db.end());
+    await db.promise().query('SELECT primeira');
     servidor.derrubarConexoes();
-    await assert.rejects(conexaoAnterior.query('SELECT interrompida'));
-    // O cliente antigo falha; a operação seguinte pode estabelecer outra conexão.
-    await new Promise((resolve) => setImmediate(resolve));
+    await esperar(50);
     await db.promise().query('SELECT nova');
-    assert.equal(servidor.consultas.filter((sql) => sql === 'SELECT primeira').length, 1);
-    assert.equal(servidor.consultas.filter((sql) => sql === 'SELECT nova').length, 1);
-    await assert.rejects(conexaoAnterior.query('SELECT transacao_anterior'));
-    assert.ok(!servidor.consultas.includes('SELECT transacao_anterior'));
+    assert.equal(contar(servidor, 'SELECT primeira'), 1);
+    assert.equal(contar(servidor, 'SELECT nova'), 1);
+});
+
+test('transação reserva uma conexão exclusiva até commit ou rollback', { timeout: 5000 }, async (t) => {
+    const servidor = await iniciarMysqlLocal(t, {});
+    const db = criarBancoMysql(configuracaoLocal(servidor.port), { limiteConexoes: 1 });
+    t.after(() => db.end());
+    const transacao = db.promise();
+    await transacao.beginTransaction();
+    await transacao.query('UPDATE dentro_da_transacao');
+    let concluida = false;
+    const outraRequisicao = db.promise().query('UPDATE outra_requisicao').then(() => { concluida = true; });
+    await esperar(50);
+    assert.equal(concluida, false, 'outra requisição não pode usar a conexão da transação');
+    await transacao.commit();
+    await outraRequisicao;
+    assert.equal(concluida, true);
+    assert.deepEqual(
+        servidor.consultas.filter((sql) => /TRANSACTION|COMMIT|UPDATE/.test(sql)),
+        ['START TRANSACTION', 'UPDATE dentro_da_transacao', 'COMMIT', 'UPDATE outra_requisicao']
+    );
+    await assert.rejects(transacao.commit(), /Nenhuma transação aberta/);
+    await transacao.rollback();
+});
+
+test('transação esquecida é revertida e libera a conexão', { timeout: 5000 }, async (t) => {
+    const servidor = await iniciarMysqlLocal(t, {});
+    t.mock.method(console, 'error', () => {});
+    const db = criarBancoMysql(configuracaoLocal(servidor.port), {
+        limiteConexoes: 1, tempoMaximoTransacaoMs: 30
+    });
+    t.after(() => db.end());
+    const esquecida = db.promise();
+    await esquecida.beginTransaction();
+    await esperar(80);
+    assert.throws(() => esquecida.query('UPDATE depois_do_prazo'), /tempo máximo/);
+    await db.promise().query('SELECT livre');
+    assert.ok(servidor.consultas.includes('ROLLBACK'));
+    assert.ok(!servidor.consultas.includes('UPDATE depois_do_prazo'));
 });
 
 test('flag legada false não permite que o store conecte a MySQL sem TLS', { timeout: 5000 }, async (t) => {

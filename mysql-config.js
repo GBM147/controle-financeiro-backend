@@ -76,7 +76,7 @@ function criarConfiguracaoMysql(env = process.env) {
 function criarStoreSessaoMysql(configuracao, opcoes = {}) {
     // O store filtra opções de conexão e descarta `ssl` ao criar seu próprio
     // pool. O pool explícito mantém a validação TLS e usa o mysql2 direto.
-    const pool = mysql.createPool(configuracao);
+    const pool = mysql.createPool({ connectionLimit: 3, ...configuracao });
     try {
         return new MySQLStore({ ...opcoes, endConnectionOnClose: true }, pool);
     } catch (erro) {
@@ -87,41 +87,98 @@ function criarStoreSessaoMysql(configuracao, opcoes = {}) {
     }
 }
 
-function criarConexaoMysqlRecuperavel(configuracao) {
-    let conexao = null;
-    let encerrada = false;
+const TEMPO_MAXIMO_TRANSACAO_MS = 5 * 60 * 1000;
 
-    function obterConexao() {
-        if (encerrada) throw new Error('A conexão MySQL foi encerrada.');
-        if (!conexao) {
-            const novaConexao = mysqlCallback.createConnection(configuracao);
-            conexao = novaConexao;
-            novaConexao.on('error', (erro) => {
-                // O provedor pode encerrar conexões ociosas. A próxima operação
-                // abre outra conexão, sem repetir uma escrita ou transação.
-                if (conexao === novaConexao) conexao = null;
-                console.error('Conexão MySQL interrompida:', erro.code || 'ERRO_MYSQL');
-            });
-            // Falhas de handshake podem ser entregues somente ao callback da
-            // consulta. O fechamento também invalida essa conexão para depois.
-            novaConexao.stream.once('close', () => {
-                if (conexao === novaConexao) conexao = null;
-            });
+// Pool de conexões com transações isoladas. Cada chamada a promise() devolve
+// uma sessão: consultas fora de transação usam qualquer conexão livre do pool;
+// beginTransaction() reserva uma conexão exclusiva até commit() ou rollback().
+// Assim, requisições simultâneas nunca participam da transação de outra.
+function criarBancoMysql(configuracao, opcoes = {}) {
+    const pool = mysqlCallback.createPool({
+        ...configuracao,
+        waitForConnections: true,
+        connectionLimit: opcoes.limiteConexoes ?? 5,
+        maxIdle: opcoes.limiteConexoes ?? 5,
+        idleTimeout: 60000,
+        queueLimit: 0,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 10000
+    });
+    pool.on?.('error', (erro) => console.error('Erro no pool MySQL:', erro.code || 'ERRO_MYSQL'));
+    const poolPromise = pool.promise();
+    const tempoMaximoTransacao = opcoes.tempoMaximoTransacaoMs ?? TEMPO_MAXIMO_TRANSACAO_MS;
+
+    function criarSessao() {
+        let conexao = null;
+        let temporizador = null;
+        let expirada = false;
+
+        function liberar() {
+            clearTimeout(temporizador);
+            temporizador = null;
+            const atual = conexao;
+            conexao = null;
+            if (atual) atual.release();
         }
-        return conexao;
+
+        function destino() {
+            if (expirada) throw new Error('A transação excedeu o tempo máximo e foi revertida.');
+            return conexao || poolPromise;
+        }
+
+        return {
+            query(...argumentos) { return destino().query(...argumentos); },
+            execute(...argumentos) { return destino().execute(...argumentos); },
+            ping() { return poolPromise.query('SELECT 1'); },
+            async beginTransaction() {
+                if (conexao) throw new Error('Já existe uma transação aberta nesta sessão.');
+                expirada = false;
+                const nova = await poolPromise.getConnection();
+                try {
+                    await nova.beginTransaction();
+                } catch (erro) {
+                    nova.release();
+                    throw erro;
+                }
+                conexao = nova;
+                // Proteção contra transação esquecida aberta: reverte e devolve a
+                // conexão ao pool para não bloquear tabelas indefinidamente.
+                temporizador = setTimeout(() => {
+                    console.error('Transação MySQL excedeu o tempo máximo e foi revertida.');
+                    expirada = true;
+                    const atual = conexao;
+                    conexao = null;
+                    if (atual) atual.rollback().catch(() => {}).finally(() => atual.release());
+                }, tempoMaximoTransacao);
+                temporizador.unref?.();
+            },
+            async commit() {
+                if (!conexao) throw new Error('Nenhuma transação aberta para confirmar.');
+                try {
+                    await conexao.commit();
+                } catch (erro) {
+                    await conexao.rollback().catch(() => {});
+                    throw erro;
+                } finally {
+                    liberar();
+                }
+            },
+            async rollback() {
+                if (!conexao) return;
+                try {
+                    await conexao.rollback();
+                } finally {
+                    liberar();
+                }
+            }
+        };
     }
 
     return {
-        connect(callback) { return obterConexao().connect(callback); },
-        query(...argumentos) { return obterConexao().query(...argumentos); },
-        // A mesma conexão permanece vinculada a toda a transação existente.
-        promise() { return obterConexao().promise(); },
-        end(callback) {
-            encerrada = true;
-            if (conexao) return conexao.end(callback);
-            if (callback) queueMicrotask(() => callback());
-        }
+        pool,
+        promise: criarSessao,
+        end() { return poolPromise.end(); }
     };
 }
 
-module.exports = { criarConfiguracaoMysql, criarStoreSessaoMysql, criarConexaoMysqlRecuperavel };
+module.exports = { criarConfiguracaoMysql, criarStoreSessaoMysql, criarBancoMysql };
