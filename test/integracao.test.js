@@ -214,6 +214,68 @@ test('fluxos principais com MySQL real', { timeout: 60000 }, async (t) => {
         assert.equal(total, 12);
     });
 
+    await t.test('assinatura sincronizada por webhook e reconciliação', async (st) => {
+        const mercadopago = require('mercadopago');
+        const crypto = require('node:crypto');
+        const { reconciliarAssinaturas } = require('../src/servicos/assinaturas');
+        const statusAtual = async () => (await db.promise().query(
+            'SELECT status_pagamento, assinatura_cancelada_no_mp, trial_expira FROM usuarios WHERE id = ?',
+            [usuarioId]
+        ))[0][0];
+        let assinaturaMp = {};
+        st.mock.method(mercadopago.PreApproval.prototype, 'get', async () => assinaturaMp);
+        st.mock.method(mercadopago.Payment.prototype, 'get', async () => ({
+            status: 'approved', external_reference: String(usuarioId)
+        }));
+        const notificar = (tipo, id) => cliente.post(`/webhook-mercadopago?data.id=${id}&type=${tipo}`)
+            .send({ type: tipo, data: { id } });
+
+        await db.promise().query(
+            "UPDATE usuarios SET status_pagamento = 'trial', trial_expira = NOW(), mercadopago_preapproval_id = 'pre1' WHERE id = ?",
+            [usuarioId]
+        );
+        await cliente.get('/relatorio-mensal').expect(403);
+
+        assinaturaMp = { id: 'pre1', status: 'authorized', external_reference: String(usuarioId) };
+        await notificar('subscription_preapproval', 'pre1').expect(200);
+        assert.equal((await statusAtual()).status_pagamento, 'pago');
+        await cliente.get('/relatorio-mensal').expect(200);
+
+        const proximaCobranca = new Date(Date.now() + 10 * 86400000);
+        assinaturaMp = { id: 'pre1', status: 'cancelled', next_payment_date: proximaCobranca.toISOString() };
+        await notificar('subscription_preapproval', 'pre1').expect(200);
+        let atual = await statusAtual();
+        assert.equal(atual.status_pagamento, 'cancelado');
+        assert.equal(atual.assinatura_cancelada_no_mp, 1);
+        assert.ok(new Date(atual.trial_expira) > new Date(Date.now() + 9 * 86400000));
+        await cliente.get('/relatorio-mensal').expect(200); // período pago continua liberado
+
+        await notificar('payment', '123').expect(200);
+        assert.equal((await statusAtual()).status_pagamento, 'cancelado');
+
+        process.env.MP_WEBHOOK_SECRET = 'segredo-webhook-teste';
+        st.after(() => { delete process.env.MP_WEBHOOK_SECRET; });
+        await notificar('payment', '123').expect(401);
+        const ts = String(Date.now());
+        const v1 = crypto.createHmac('sha256', process.env.MP_WEBHOOK_SECRET)
+            .update(`id:123;request-id:req-1;ts:${ts};`).digest('hex');
+        await notificar('payment', '123').set('x-request-id', 'req-1')
+            .set('x-signature', `ts=${ts},v1=${v1}`).expect(200);
+        delete process.env.MP_WEBHOOK_SECRET;
+
+        await db.promise().query(
+            "UPDATE usuarios SET status_pagamento = 'pago', assinatura_cancelada_no_mp = 0, trial_expira = NULL WHERE id = ?",
+            [usuarioId]
+        );
+        assinaturaMp = { id: 'pre1', status: 'paused' };
+        const resultado = await reconciliarAssinaturas({ intervaloMs: 0 });
+        assert.deepEqual(resultado, { verificadas: 1, corrigidas: 1 });
+        atual = await statusAtual();
+        assert.equal(atual.status_pagamento, 'cancelado');
+        assert.equal(atual.assinatura_cancelada_no_mp, 0);
+        await db.promise().query('UPDATE usuarios SET mercadopago_preapproval_id = NULL WHERE id = ?', [usuarioId]);
+    });
+
     await t.test('exclusão da conta remove os dados do usuário', async () => {
         await cliente.delete('/minha-conta').send({ senha: SENHA, confirmacao: 'EXCLUIR MINHA CONTA' }).expect(200);
         const [[{ usuarios }]] = await db.promise().query('SELECT COUNT(*) AS usuarios FROM usuarios WHERE id = ?', [usuarioId]);

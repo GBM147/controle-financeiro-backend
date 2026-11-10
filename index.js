@@ -5,6 +5,7 @@ const { db } = require('./src/db/banco');
 const { prepararBanco } = require('./src/db/migracoes');
 const { auditarMetas } = require('./src/servicos/alertas');
 const { gerarRecorrenciasVencidas } = require('./src/servicos/recorrencias');
+const { reconciliarAssinaturas } = require('./src/servicos/assinaturas');
 const { sessionStore } = require('./src/web/sessao');
 
 if (require.main === module) {
@@ -28,6 +29,15 @@ if (require.main === module) {
             .catch((erro) => console.error('Erro ao gerar recorrências:', erro.code || erro.message));
     }, { timezone: 'America/Sao_Paulo' });
 
+    // Confere no Mercado Pago as assinaturas ativas cuja notificação pode ter se perdido.
+    const reconciliacaoDiaria = cron.schedule('10 4 * * *', () => {
+        reconciliarAssinaturas()
+            .then(({ verificadas, corrigidas }) => {
+                console.log(`Assinaturas verificadas: ${verificadas}; status corrigidos: ${corrigidas}.`);
+            })
+            .catch((erro) => console.error('Erro na reconciliação de assinaturas:', erro.code || erro.message));
+    }, { timezone: 'America/Sao_Paulo' });
+
     // Uma promessa esquecida sem tratamento não derruba o atendimento dos demais usuários.
     process.on('unhandledRejection', (motivo) => {
         console.error('Promessa rejeitada sem tratamento:', motivo?.code || motivo?.message || motivo);
@@ -41,6 +51,7 @@ if (require.main === module) {
         encerrando = true;
         console.log(`${sinal} recebido; encerrando o servidor.`);
         tarefaDiaria.stop();
+        reconciliacaoDiaria.stop();
         setTimeout(() => process.exit(1), 10000).unref();
         servidor.close(() => {
             Promise.allSettled([db.end(), sessionStore.close?.()])

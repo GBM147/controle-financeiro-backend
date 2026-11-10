@@ -1,8 +1,15 @@
 const express = require('express');
-const { Payment, PreApproval } = require('mercadopago');
+const { PreApproval } = require('mercadopago');
 const { mpClient } = require('../config/clientes');
 const { db } = require('../db/banco');
-const { assinaturaEstaCanceladaNoMP, localizarAssinaturaNoMP } = require('../servicos/assinaturas');
+const {
+    acessoAte,
+    assinaturaEstaCanceladaNoMP,
+    localizarAssinaturaNoMP,
+    processarPagamento,
+    sincronizarAssinatura,
+    webhookMercadoPagoAutentico
+} = require('../servicos/assinaturas');
 const { revelarIdentidade } = require('../servicos/identidade');
 const { exigirLogin } = require('../web/autorizacao');
 
@@ -65,49 +72,30 @@ function registrar(app) {
             res.status(500).json({ error: 'Falha ao gerar link de assinatura.' });
         }
     });
-    // --- O CAIXA AUTOMÁTICO (WEBHOOK DO MERCADO PAGO) ---
+    // --- WEBHOOK DO MERCADO PAGO ---
+    // Pagamentos aprovados liberam o Premium; eventos da assinatura (autorizada,
+    // pausada ou cancelada) sincronizam o status. A API do Mercado Pago é sempre
+    // consultada: o corpo da notificação não é usado como prova.
     app.post('/webhook-mercadopago', async (req, res) => {
-        // Ele pode mandar o ID do pagamento de duas formas, tentamos ler ambas
-        const paymentId = String(req.query.id || req.body?.data?.id || '').trim();
-
-        // Se houver um pagamento para investigar
-        if (!/^\d{1,32}$/.test(paymentId)
-            || (req.body?.type !== 'payment' && req.body?.action !== 'payment.created')) {
-            return res.sendStatus(200);
+        if (!webhookMercadoPagoAutentico(req)) {
+            console.warn('Notificação do Mercado Pago com assinatura inválida foi recusada.');
+            return res.sendStatus(401);
         }
+        const tipo = String(req.body?.type || req.query.type || req.query.topic || '');
+        const acao = String(req.body?.action || '');
+        const id = String(req.query['data.id'] || req.body?.data?.id || req.query.id || '').trim();
+        if (!/^[A-Za-z0-9-]{1,64}$/.test(id)) return res.sendStatus(200);
 
         try {
-            // A API do Mercado Pago é a fonte de verdade: nenhum status recebido no
-            // corpo do webhook é usado para liberar a assinatura.
-            const paymentAPI = new Payment(mpClient);
-            const pagamentoInfo = await paymentAPI.get({ id: paymentId });
-
-            // Se a pessoa pagou o PIX ou o cartão passou
-            if (pagamentoInfo.status === 'approved') {
-                const userId = Number(pagamentoInfo.external_reference);
-                if (!Number.isInteger(userId) || userId <= 0) {
-                    console.warn(`Pagamento ${paymentId} sem referência de usuário válida.`);
-                    return res.sendStatus(200);
-                }
-                console.log(`PAGAMENTO APROVADO! Liberando usuário ID: ${userId}`);
-                
-                // Um webhook atrasado de uma cobrança antiga não pode reativar
-                // uma assinatura que já foi cancelada pelo usuário.
-                const [atualizacao] = await db.promise().query(
-                    `UPDATE usuarios
-                 SET status_pagamento = 'pago'
-                 WHERE id = ? AND assinatura_cancelada_no_mp = 0`,
-                    [userId]
-                );
-
-                if (atualizacao.affectedRows === 0) {
-                    console.log(`Pagamento ${paymentId} recebido, mas a conta ${userId} permanece cancelada.`);
-                }
+            if (tipo === 'payment' || acao.startsWith('payment.')) {
+                if (/^\d+$/.test(id)) await processarPagamento(id);
+            } else if (tipo === 'subscription_preapproval' || tipo === 'preapproval') {
+                await sincronizarAssinatura(id);
             }
             return res.sendStatus(200);
-        } catch (err) {
+        } catch (erro) {
             // O 500 permite que o Mercado Pago tente entregar o evento novamente.
-            console.error('Erro ao checar status do pagamento no MP:', err);
+            console.error('Erro ao processar notificação do Mercado Pago:', erro.status || erro.code || erro.message);
             return res.sendStatus(500);
         }
     });
@@ -193,13 +181,16 @@ function registrar(app) {
                 });
             }
 
+            // O período já pago continua liberado até a próxima cobrança prevista.
+            const liberadoAte = acessoAte(encontrada.assinatura);
             await db.promise().query(
                 `UPDATE usuarios
              SET mercadopago_preapproval_id = ?,
                  status_pagamento = 'cancelado',
-                 assinatura_cancelada_no_mp = 1
+                 assinatura_cancelada_no_mp = 1,
+                 trial_expira = GREATEST(COALESCE(trial_expira, ?), ?)
              WHERE id = ?`,
-                [encontrada.preapprovalId, userId]
+                [encontrada.preapprovalId, liberadoAte, liberadoAte, userId]
             );
         
             res.json({ success: true, message: 'Sua assinatura foi cancelada no Mercado Pago com sucesso.' });

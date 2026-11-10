@@ -117,6 +117,16 @@ Antes de pedir nova avaliação no AdSense:
 
 Uma nova aprovação depende da avaliação do Google e não pode ser garantida pelo código.
 
+## Assinaturas no Mercado Pago
+
+O webhook `/webhook-mercadopago` trata pagamentos aprovados e eventos da assinatura (`subscription_preapproval`). O status é sempre consultado na API do Mercado Pago:
+
+- assinatura autorizada libera o Premium;
+- assinatura cancelada ou pausada passa a `cancelado`, com acesso mantido até a próxima cobrança já paga;
+- um pagamento antigo não reativa uma assinatura cancelada.
+
+No painel do Mercado Pago, em **Suas integrações → Webhooks**, ative os eventos **Pagamentos** e **Planos e assinaturas** apontando para `https://gbm-finance.com/webhook-mercadopago` e cadastre a chave secreta em `MP_WEBHOOK_SECRET` no Render: notificações sem `x-signature` válida passam a ser recusadas. Todos os dias às 04:10 (horário de Brasília) o servidor reconcilia as assinaturas ativas com o Mercado Pago.
+
 ## CI
 
 O workflow em `.github/workflows/ci.yml` valida Node.js 20 e 22, sintaxe, testes de integração e vulnerabilidades de severidade alta em cada push e pull request.
