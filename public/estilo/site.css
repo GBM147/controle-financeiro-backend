@@ -118,7 +118,6 @@ article h1,
     .btn-enviar:hover { background: var(--accent-hover); color: var(--on-accent); }
 }
 .text-link { color: var(--accent); font-size: 14px; font-weight: 500; text-decoration: none; }
-.text-link::after { content: " →"; }
 a:hover .text-link,
 .text-link:hover { text-decoration: underline; }
 

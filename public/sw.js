@@ -1,5 +1,5 @@
 const VERSAO_TUTORIAL = '1.2.0';
-const CACHE_GBM = 'gbm-estatico-79e6c368';
+const CACHE_GBM = 'gbm-estatico-1c69b285';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -17,7 +17,7 @@ const ARQUIVOS_ESTATICOS = [
     '/estilo/base.css?v=3532b91c9f',
     '/estilo/componentes.css?v=beae3d383c',
     '/estilo/app.css?v=79f9015933',
-    '/estilo/site.css?v=6f31fdf3a3',
+    '/estilo/site.css?v=1aead9d790',
     '/fonts/geist-latin.woff2',
     '/fonts/geist-latin-ext.woff2',
     '/fonts/instrument-serif-latin.woff2',
