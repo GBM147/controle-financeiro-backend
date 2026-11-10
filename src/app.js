@@ -36,8 +36,10 @@ const diretivasCsp = {
     manifestSrc: ["'self'"],
     mediaSrc: ["'self'"],
     objectSrc: ["'none'"],
-    scriptSrc: ["'self'", "'unsafe-inline'"],
-    scriptSrcAttr: ["'unsafe-inline'"],
+    // Sem 'unsafe-inline': scripts ficam em arquivos e as ações usam
+    // data-acao (gbm-acoes.js) no lugar de atributos on*.
+    scriptSrc: ["'self'"],
+    scriptSrcAttr: ["'none'"],
     styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
     workerSrc: ["'self'", 'blob:']
 };

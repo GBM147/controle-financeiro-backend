@@ -1,5 +1,5 @@
 const VERSAO_TUTORIAL = '1.1.48';
-const CACHE_GBM = 'gbm-estatico-f4ab48a5';
+const CACHE_GBM = 'gbm-estatico-e69fc43e';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -9,6 +9,8 @@ const ARQUIVOS_ESTATICOS = [
     '/educacao-financeira.html',
     '/sobre.html',
     '/offline.html',
+    '/paginas/offline.css?v=e79a470137',
+    '/gbm-acoes.js?v=b9030c8ef0',
     '/public-site.css?v=05fae4f17f',
     '/gbm-typography.css?v=4d6364e02a',
     '/gbm-app-polish.css?v=9b9b068195',
@@ -24,7 +26,7 @@ const ARQUIVOS_ESTATICOS = [
     '/gbm-session.js?v=94c6656885',
     '/auth.js?v=6f32663332',
     '/gbm-pages.css?v=453f9c0c23',
-    '/gbm-pages.js?v=876af69394',
+    '/gbm-pages.js?v=b53b3cd6b3',
     '/gbm-menu.js?v=56467e5b3d',
     '/gbm-shell.css?v=9948129792',
     `/gbm-tutorial.css?v=${VERSAO_TUTORIAL}`,

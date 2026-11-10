@@ -5,116 +5,7 @@
     <meta charset="UTF-8">
     <title>Ativar Premium | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        /* Partículas — garante que o conteúdo fique acima do canvas */
-        body > *:not(#particles-canvas) { position: relative; z-index: 1; }
-
-        /* Logo flutuante no cabeçalho */
-        .gbm-logo-img { animation: float-logo 4s ease-in-out infinite; }
-        @keyframes float-logo {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-5px); }
-        }
-
-        :root {
-            --cor-destaque: #2E8B57;
-            --texto-principal: #ffffff;
-            --texto-mutado: #b0bec5;
-            --borda: rgba(255, 255, 255, 0.15);
-            --cor-receita: #10b981;
-            --cor-despesa: #ef4444;
-        }
-
-        body {
-            margin: 0; padding: 0;
-            font-family: 'Inter', sans-serif;
-            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('fundo-marmore.jpg');
-            background-size: cover; background-position: center; background-attachment: fixed;
-            color: var(--texto-principal); min-height: 100vh;
-        }
-
-        /* CABEÇALHO GBM */
-        .gbm-header {
-            background: transparent; border-bottom: 1px solid var(--borda);
-            padding: 0 20px; display: flex; align-items: center; justify-content: space-between;
-            height: 56px; position: sticky; top: 0; z-index: 10;
-        }
-        .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
-        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; }
-        .gbm-title {
-            font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 2px; margin: 0;
-            background: linear-gradient(90deg, #2E8B57 0%, #5fffa8 25%, #3d28ff 50%, #655aff 75%, #2E8B57 100%);
-            background-size: 200% auto; -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent; color: transparent; animation: gbm-shine 4s linear infinite;
-        }
-        @keyframes gbm-shine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
-
-        .btn-voltar {
-            text-decoration: none; color: var(--texto-principal);
-            font-family: 'Sora', sans-serif; font-weight: 700; letter-spacing: 1px;
-            background: #0f1a2b; padding: 8px 16px; border-radius: 8px;
-            border: 1px solid rgba(95, 255, 168, 0.25); transition: 0.3s;
-            cursor: pointer;
-        }
-        .btn-voltar:hover { border-color: #5fffa8; box-shadow: 0 0 14px rgba(95, 255, 168, 0.3); }
-
-        @media (max-width: 768px) { .gbm-title { display: none; } }
-
-        .page-wrapper { max-width: 460px; margin: 0 auto; padding: 40px 20px; }
-
-        .titulo-pagina {
-            font-family: 'Sora', sans-serif; text-align: center;
-            font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 700;
-            letter-spacing: 1.5px; margin: 0 0 30px 0;
-        }
-
-        /* CARD DE ATIVAÇÃO */
-        .card {
-            background: rgba(20, 30, 40, 0.7); backdrop-filter: blur(12px);
-            border: 1px solid rgba(95, 255, 168, 0.22); border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 35px 30px;
-            text-align: center;
-        }
-
-        #descricao-pagamento { color: var(--texto-mutado); font-size: 1rem; line-height: 1.5; margin: 0 0 25px 0; }
-
-        .banner-trial {
-            display:none; background: rgba(16,185,129,0.12); border: 1px solid #10b981; border-radius: 10px;
-            padding: 12px 18px; margin-bottom: 20px; color: #10b981; font-weight: 600; font-size: 0.9rem;
-        }
-
-        .preco { font-family: 'Sora', sans-serif; font-size: 2.6rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
-        .sub-preco { color: var(--texto-mutado); font-size: 0.9rem; margin-bottom: 25px; }
-
-        .plano-features {
-            list-style: none; padding: 0; margin: 0 0 28px 0; text-align: left;
-        }
-        .plano-features li {
-            font-size: 0.9rem; color: #d1d9e0; margin-bottom: 12px;
-            display: flex; align-items: center; gap: 8px;
-        }
-
-        .btn-pagar {
-            background: var(--cor-destaque); color: #fff; border: none;
-            padding: 15px 30px; font-size: 1.05rem; font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            border-radius: 8px; width: 100%; cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4);
-        }
-        .btn-pagar:hover { background: #3cb371; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 139, 87, 0.5); }
-        .btn-pagar:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-
-        .btn-secundario {
-            background: transparent; color: var(--texto-mutado); border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 12px 30px; font-size: 0.9rem; font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            border-radius: 8px; width: 100%; cursor: pointer;
-            transition: all 0.3s ease; margin-top: 12px;
-        }
-        .btn-secundario:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
-    </style>
+    <link rel="stylesheet" href="paginas/pagamento.css?v=e76ff3817d">
     <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
     <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
     <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
@@ -123,6 +14,7 @@
     <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
     <script src="gbm-interactions.js?v=63cc46c496" defer></script>
     <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <script src="gbm-acoes.js?v=b9030c8ef0"></script>
 </head>
 <body class="gbm-polished">
 <canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
@@ -132,7 +24,7 @@
         <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
         <h1 class="gbm-title">Guardian Of Budget & Money</h1>
     </div>
-    <button onclick="continuarGratis()" class="btn-voltar">Pular por agora</button>
+    <button data-acao="continuarGratis" class="btn-voltar">Pular por agora</button>
 </header>
 
 <div class="page-wrapper">
@@ -158,102 +50,15 @@
             <li style="color: #3cb371; font-weight: 500;">Experiência Zero Anúncios</li>
         </ul>
 
-        <button onclick="irParaPagamento()" id="btn-action" class="btn-pagar">Ativar Premium (1º Mês Grátis)</button>
-        <button onclick="continuarGratis()" id="btn-gratis" class="btn-secundario">Continuar no Plano Gratuito (com anúncios)</button>
+        <button data-acao="irParaPagamento" id="btn-action" class="btn-pagar">Ativar Premium (1º Mês Grátis)</button>
+        <button data-acao="continuarGratis" id="btn-gratis" class="btn-secundario">Continuar no Plano Gratuito (com anúncios)</button>
     </div>
 </div>
 
 <script src="auth.js?v=6f32663332"></script>
-<script>
-    function pegarUserId() {
-        return window.GBMSession.getUserId();
-    }
+<script src="paginas/pagamento-1.js?v=55aa02d59f"></script>
 
-
-    // Mostra o banner de trial se vier da tela de cadastro novo
-    async function verificarStatusTrial() {
-        try {
-            const res = await fetchApi('/login-status');
-            const data = await res.json();
-            if (data.statusPagamento === 'trial') {
-                document.getElementById('banner-trial').style.display = 'block';
-                document.querySelector('.titulo-pagina').innerText = 'Ative agora — 1º mês grátis!';
-            }
-        } catch(e) {}
-    }
-    verificarStatusTrial();
-
-    async function irParaPagamento() {
-        const btn = document.getElementById('btn-action');
-        btn.innerText = 'Redirecionando...';
-        btn.disabled = true;
-
-        try {
-            const res = await fetchApi('/criar-sessao-pagamento', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId: pegarUserId() })
-            });
-            const data = await res.json();
-
-            if(data.url) {
-                window.location.href = data.url; // Leva o usuário para o checkout seguro do Mercado Pago
-            } else {
-                alert('Erro ao chamar o checkout. Tente novamente.');
-                btn.innerText = 'Ativar Premium (1º Mês Grátis)';
-                btn.disabled = false;
-            }
-        } catch (err) {
-            alert('Erro na comunicação com o gateway.');
-            btn.innerText = 'Ativar Premium (1º Mês Grátis)';
-            btn.disabled = false;
-        }
-    }
-    // Função para quem escolher o plano gratuito
-    function continuarGratis() {
-        const btn = document.getElementById('btn-gratis');
-        btn.innerText = 'Entrando...';
-        btn.disabled = true;
-        window.location.href = 'dashboard.html';
-    }
-</script>
-
-<script>
-    // --- PARTÍCULAS DOURADAS GBM ---
-    (function() {
-        const canvas = document.getElementById('particles-canvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resizeCanvas); resizeCanvas();
-
-        function Particle() {
-            this.x = Math.random() * canvas.width; this.y = canvas.height + Math.random() * 100;
-            this.size = Math.random() * 2.5 + 0.8; this.speedY = Math.random() * 1.2 + 0.3;
-            this.opacity = Math.random() * 0.4 + 0.2;
-        }
-        Particle.prototype.update = function() {
-            this.y -= this.speedY;
-            if (this.y < -10) { this.y = canvas.height + 10; this.x = Math.random() * canvas.width; this.opacity = Math.random() * 0.4 + 0.2; }
-        };
-        Particle.prototype.draw = function() {
-            ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`; ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-        };
-
-        const count = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 15000), 65);
-        for (let i = 0; i < count; i++) particles.push(new Particle());
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animate);
-        }
-        animate();
-    })();
-</script>
-    <script src="gbm-pages.js?v=876af69394"></script>
+<script src="paginas/pagamento-2.js?v=9b1588e874"></script>
+    <script src="gbm-pages.js?v=b53b3cd6b3"></script>
 </body>
 </html>

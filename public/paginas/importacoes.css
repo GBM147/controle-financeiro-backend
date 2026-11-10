@@ -1,0 +1,15 @@
+        .dropzone {
+            padding: 28px;
+            border: 1px dashed rgba(95,255,168,.38);
+            border-radius: 13px;
+            background: rgba(57,217,138,.04);
+            text-align: center;
+        }
+        .dropzone input { max-width:520px; margin:12px auto 0; }
+        .preview-table input { min-width:150px; min-height:34px; padding:6px 8px; }
+        .tipo-receita { color:#7fffb7; }
+        .tipo-despesa { color:#ff909c; }
+        .import-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:22px; }
+        .import-stats .stat-card { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; padding:16px 18px; }
+        .import-stats .stat-card span.rotulo { display:block; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+        .import-stats .stat-card strong { font-size:1.5rem; font-weight:800; }

@@ -85,45 +85,6 @@
         </div>
     </main>
     <footer class="site-footer"><nav aria-label="Links institucionais"><a href="educacao-financeira.html">Guias</a><a href="ferramentas.html">Ferramentas</a><a href="sobre.html">Sobre e critérios editoriais</a><a href="fale-conosco.html">Contato</a><a href="termos.html">Termos</a><a href="politica-de-privacidade.html">Privacidade</a></nav><small>© 2026 GBM Finance. Conteúdo educativo e exemplos ilustrativos.</small></footer>
-    <script>
-        document.getElementById('formFeedback').addEventListener('submit', async function (e) {
-            e.preventDefault();
-            const btnSubmit = document.getElementById('btnSubmit');
-            const statusDiv = document.getElementById('mensagem-status');
-            const nome = document.getElementById('nome').value;
-            const email = document.getElementById('email').value;
-            const assunto = document.getElementById('assunto').value;
-            const mensagem = document.getElementById('mensagem').value;
-
-            btnSubmit.innerText = 'Enviando...';
-            btnSubmit.disabled = true;
-
-            try {
-                const response = await fetch('/api/enviar-feedback', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, email, assunto, mensagem })
-                });
-
-                if (response.ok) {
-                    document.getElementById('formFeedback').reset();
-                    statusDiv.className = 'sucesso';
-                    statusDiv.innerText = 'Mensagem enviada com sucesso! Retornaremos em breve.';
-                    statusDiv.style.display = 'block';
-                } else {
-                    let motivo = '';
-                    try { motivo = (await response.json()).error || ''; } catch (e) {}
-                    throw new Error(motivo || 'Falha no envio');
-                }
-            } catch (error) {
-                statusDiv.className = 'erro';
-                statusDiv.innerText = 'Erro ao enviar mensagem: ' + (error.message || 'tente novamente mais tarde.');
-                statusDiv.style.display = 'block';
-            } finally {
-                btnSubmit.innerText = 'Enviar mensagem';
-                btnSubmit.disabled = false;
-            }
-        });
-    </script>
+    <script src="paginas/fale-conosco.js?v=73d57c8f19"></script>
 </body>
 </html>

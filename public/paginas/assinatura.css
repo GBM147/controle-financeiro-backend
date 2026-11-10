@@ -1,0 +1,160 @@
+        /* Partículas — garante que o conteúdo fique acima do canvas */
+        body > *:not(#particles-canvas) { position: relative; z-index: 1; }
+
+        /* Logo flutuante no cabeçalho */
+        .gbm-logo-img { animation: float-logo 4s ease-in-out infinite; }
+        @keyframes float-logo {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-5px); }
+        }
+
+        :root {
+            --cor-destaque: #2E8B57;
+            --texto-principal: #ffffff;
+            --texto-mutado: #b0bec5;
+            --borda: rgba(255, 255, 255, 0.15);
+            --cor-receita: #10b981;
+            --cor-despesa: #ef4444;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)), url('../fundo-marmore.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--texto-principal); min-height: 100vh;
+        }
+
+        /* CABEÇALHO GBM */
+        .gbm-header {
+            background: transparent; border-bottom: 1px solid var(--borda);
+            padding: 0 20px; display: flex; align-items: center; justify-content: space-between;
+            height: 56px; position: sticky; top: 0; z-index: 10;
+        }
+        .gbm-logo-container { display: flex; align-items: center; gap: 15px; }
+        .gbm-logo-img { height: 50px; width: auto; border-radius: 8px; }
+        .gbm-title {
+            font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px; margin: 0;
+            background: linear-gradient(90deg, #2E8B57 0%, #5fffa8 25%, #3d28ff 50%, #655aff 75%, #2E8B57 100%);
+            background-size: 200% auto; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent; animation: gbm-shine 4s linear infinite;
+        }
+        @keyframes gbm-shine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+
+        .btn-voltar {
+            text-decoration: none; color: var(--texto-principal);
+            font-family: 'Sora', sans-serif; font-weight: 700; letter-spacing: 1px;
+            background: #0f1a2b; padding: 8px 16px; border-radius: 8px;
+            border: 1px solid rgba(95, 255, 168, 0.25); transition: 0.3s;
+        }
+        .btn-voltar:hover { border-color: #5fffa8; box-shadow: 0 0 14px rgba(95, 255, 168, 0.3); }
+
+        .page-wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+
+        .titulo-pagina {
+            font-family: 'Sora', sans-serif; text-align: center;
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 700;
+            letter-spacing: 1.5px; margin: 0 0 30px 0;
+        }
+
+        /* CARD DE ASSINATURA */
+        .card {
+            background: rgba(15, 26, 43, 0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(95, 255, 168, 0.22); border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 30px;
+        }
+
+        .info-linha {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .info-linha:last-child { border-bottom: none; }
+        
+        .info-label { color: var(--texto-mutado); font-size: 0.95rem; font-weight: 600; }
+        .info-valor { font-family: 'Sora', sans-serif; font-size: 1.2rem; font-weight: 700; color: #fff; }
+
+        .badge-status {
+            padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;
+            font-family: 'Inter', sans-serif; font-weight: bold; text-transform: uppercase;
+        }
+        .status-ativo { background: rgba(16,185,129,0.2); color: var(--cor-receita); border: 1px solid var(--cor-receita); }
+        .status-trial { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+        .status-cancelado { background: rgba(239,68,68,0.2); color: var(--cor-despesa); border: 1px solid var(--cor-despesa); }
+
+        .btn-cancelar-assinatura {
+            width: 100%; padding: 15px; margin-top: 30px;
+            background: rgba(239, 68, 68, 0.1); color: #ff4d4d;
+            border: 1px solid #ff4d4d; border-radius: 8px;
+            font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .btn-cancelar-assinatura:hover { background: rgba(239, 68, 68, 0.25); }
+
+        @media (max-width: 768px) { .gbm-title { display: none; } }
+        /* =========================================
+           ESTRUTURA DE GRID DOS PLANOS (FREEMIUM)
+           ========================================= */
+        .planos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .plano-card {
+            background: rgba(20, 30, 40, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        .plano-card.plano-ativo {
+            background: rgba(30, 45, 60, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .plano-badge-atual {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: #8a9ba8;
+            color: #1a1a2e;
+            padding: 4px 15px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .plano-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            flex-grow: 1;
+        }
+        .plano-features li {
+            font-size: 0.9rem;
+            color: #d1d9e0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .feature-inativa {
+            color: #6c7a87 !important;
+            text-decoration: line-through;
+        }
+        .btn-upgrade {
+            width: 100%; padding: 14px; background: #2E8B57; color: #fff; border: none; border-radius: 8px; 
+            font-weight: 600; cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
+        }
+        .btn-upgrade:hover { 
+            background: #3cb371; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 139, 87, 0.5); 
+        }

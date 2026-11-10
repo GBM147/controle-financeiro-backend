@@ -8,6 +8,16 @@ const vm = require('node:vm');
 
 const raiz = path.resolve(__dirname, '..');
 const ler = (arquivo) => fs.readFileSync(path.join(raiz, arquivo), 'utf8');
+// Página com os scripts e estilos extraídos para public/paginas/ reinseridos no
+// lugar original, como o navegador os executa.
+const lerPagina = (arquivo) => {
+    const base = path.dirname(arquivo);
+    return ler(arquivo)
+        .replace(/<link rel="stylesheet" href="(paginas\/[^"?]+)(?:\?[^"]*)?">/g,
+            (_, relativo) => `<style>${ler(path.join(base, relativo))}</style>`)
+        .replace(/<script src="(paginas\/[^"?]+)(?:\?[^"]*)?"><\/script>/g,
+            (_, relativo) => `<script>${ler(path.join(base, relativo))}</script>`);
+};
 // Código do servidor: ponto de entrada e módulos em src/.
 const lerServidor = () => {
     const listar = (diretorio) => fs.readdirSync(diretorio, { withFileTypes: true }).flatMap((item) => {
@@ -30,7 +40,7 @@ test('infraestrutura editorial está completa', () => {
     assert.match(ler('public/ads.txt'), /^google\.com, pub-2735805392775741, DIRECT, f08c47fec0942fa0/m);
     assert.match(ler('public/robots.txt'), /Sitemap: https:\/\/gbm-finance\.com\/sitemap\.xml/);
     assert.match(ler('public/sitemap.xml'), /guias\/orcamento-pessoal\.html/);
-    assert.match(ler('public/index.html'), /educacao-financeira\.html/);
+    assert.match(lerPagina('public/index.html'), /educacao-financeira\.html/);
 
     const paginas = [
         'public/guias/orcamento-pessoal.html',
@@ -54,7 +64,7 @@ test('infraestrutura editorial está completa', () => {
 
 test('páginas editoriais carregam o AdSense e estão no sitemap', () => {
     const sitemap = ler('public/sitemap.xml');
-    const biblioteca = ler('public/educacao-financeira.html');
+    const biblioteca = lerPagina('public/educacao-financeira.html');
     const guias = fs.readdirSync(path.join(raiz, 'public/guias')).filter((nome) => nome.endsWith('.html'));
     assert.ok(guias.length >= 12, 'a biblioteca precisa manter ao menos 12 guias');
     const paginas = ['index.html', 'educacao-financeira.html', 'ferramentas.html',
@@ -72,11 +82,11 @@ test('páginas editoriais carregam o AdSense e estão no sitemap', () => {
         assert.match(sitemap, new RegExp(`https://gbm-finance\\.com/guias/${nome.replace('.', '\\.')}`), `${nome} fora do sitemap`);
         assert.match(biblioteca, new RegExp(`href="guias/${nome.replace('.', '\\.')}"`), `${nome} fora da biblioteca`);
     }
-    assert.match(ler('public/index.html'), /name="google-adsense-account" content="ca-pub-2735805392775741"/);
+    assert.match(lerPagina('public/index.html'), /name="google-adsense-account" content="ca-pub-2735805392775741"/);
 });
 
 test('política de privacidade informa cookies de publicidade do Google', () => {
-    const politica = ler('public/politica-de-privacidade.html');
+    const politica = lerPagina('public/politica-de-privacidade.html');
     assert.match(politica, /Fornecedores terceiros, incluindo o Google, usam cookies/);
     assert.match(politica, /adssettings\.google\.com/);
     assert.match(politica, /aboutads\.info/);
@@ -110,19 +120,19 @@ test('PWA possui fallback offline e nomes de rota consistentes', () => {
     assert.match(ler('public/sw.js'), /offline\.html/);
     assert.ok(fs.existsSync(path.join(raiz, 'public/limite-de-gastos.html')));
     assert.ok(!fs.existsSync(path.join(raiz, 'public/Limite-de-Gastos.html')));
-    assert.doesNotMatch(ler('public/dashboard.html'), /Limite-de-Gastos\.html/);
+    assert.doesNotMatch(lerPagina('public/dashboard.html'), /Limite-de-Gastos\.html/);
 });
 
 test('login informa ao usuário quando as credenciais são recusadas', () => {
-    const login = ler('public/login.html');
+    const login = lerPagina('public/login.html');
     assert.match(login, /if \(!data\.success\)/);
     assert.match(login, /gbmAlerta\(data\.message \|\| 'E-mail ou senha incorretos\.'/);
 });
 
 test('login temporário usa a sessão do servidor sem depender do storage', () => {
     const servidor = lerServidor();
-    const login = ler('public/login.html');
-    const dashboard = ler('public/dashboard.html');
+    const login = lerPagina('public/login.html');
+    const dashboard = lerPagina('public/dashboard.html');
     const autenticacao = ler('public/auth.js');
 
     assert.match(login, /JSON\.stringify\([\s\S]*manterConectado/);
@@ -136,7 +146,7 @@ test('login temporário usa a sessão do servidor sem depender do storage', () =
 
 test('modal permite exclusão individual e salva categorias em lote', () => {
     const servidor = lerServidor();
-    const dashboard = ler('public/dashboard.html');
+    const dashboard = lerPagina('public/dashboard.html');
 
     assert.match(servidor, /app\.post\('\/corrigir-categorias', exigirLogin/);
     assert.match(servidor, /app\.delete\('\/transacoes\/:id', exigirLogin/);
@@ -151,6 +161,7 @@ test('interface não contém emojis e o menu usa capitalização comum sem brilh
     const extensoesTexto = new Set(['.css', '.html', '.js', '.json', '.txt', '.xml']);
     const arquivosPublicos = fs.readdirSync(path.join(raiz, 'public'), { recursive: true })
         .filter((arquivo) => extensoesTexto.has(path.extname(String(arquivo)).toLowerCase()))
+        .filter((arquivo) => !String(arquivo).startsWith('vendor'))
         .map((arquivo) => path.join('public', String(arquivo)));
     // Mantém a proibição de emojis reais, mas não confunde símbolos Unicode usados
     // como ícones da interface (⌂, ⇄, ⚙ etc.) com emoji.
@@ -162,7 +173,7 @@ test('interface não contém emojis e o menu usa capitalização comum sem brilh
         assert.doesNotMatch(conteudo, /☰/, `${arquivo} ainda contém símbolo decorativo de menu`);
     }
 
-    const dashboard = ler('public/dashboard.html');
+    const dashboard = lerPagina('public/dashboard.html');
     const estilos = [...dashboard.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)]
         .map(([, css]) => css).join('\n');
     assert.match(estilos, /\.dashboard-v3-nav-item\s*\{/);
@@ -189,8 +200,8 @@ test('interface não contém emojis e o menu usa capitalização comum sem brilh
     for (const [rotulo, destino, acao] of [
         ['Contas', 'contas.html'],
         ['Limite de gastos', 'limite-de-gastos.html'],
-        ['Relatórios', '#', /acessarRotaPremium\('relatorio-avancado\.html','Relatório mensal'\);return false;/],
-        ['Comparativo', '#', /acessarRotaPremium\('comparativo\.html','Comparativo mensal'\);return false;/]
+        ['Relatórios', '#', /data-acao="acessarRotaPremium" data-args="\[&quot;relatorio-avancado\.html&quot;, &quot;Relatório mensal&quot;\]" data-prevenir/],
+        ['Comparativo', '#', /data-acao="acessarRotaPremium" data-args="\[&quot;comparativo\.html&quot;, &quot;Comparativo mensal&quot;\]" data-prevenir/]
     ]) {
         const link = links.find((item) => item.rotulo === rotulo);
         assert.ok(link, `Item do menu ausente: ${rotulo}`);
@@ -201,9 +212,9 @@ test('interface não contém emojis e o menu usa capitalização comum sem brilh
 });
 
 test('análises oferecem tipos de gráfico e o dashboard permite exibir somente o gráfico', () => {
-    const dashboard = ler('public/dashboard.html');
-    const relatorio = ler('public/relatorio-avancado.html');
-    const comparativo = ler('public/comparativo.html');
+    const dashboard = lerPagina('public/dashboard.html');
+    const relatorio = lerPagina('public/relatorio-avancado.html');
+    const comparativo = lerPagina('public/comparativo.html');
 
     assert.match(dashboard, /id="select-tipo"[\s\S]*?<option value="chart">Apenas gráfico<\/option>/);
     assert.match(dashboard, /id="select-grafico-dashboard"[\s\S]*?<option value="bar">Barras<\/option>[\s\S]*?<option value="doughnut">Rosca<\/option>[\s\S]*?<option value="line">Linha<\/option>/);
@@ -218,7 +229,7 @@ test('análises oferecem tipos de gráfico e o dashboard permite exibir somente 
 });
 
 test('redesign preserva o mármore e deixa perfil e menu sem card', () => {
-    const dashboard = ler('public/dashboard.html');
+    const dashboard = lerPagina('public/dashboard.html');
     const estilosInternos = ler('public/gbm-pages.css');
 
     assert.match(dashboard, /\.atalho-perfil,\s*\.gbm-menu-btn\s*\{[\s\S]*?border:\s*0\s*!important;[\s\S]*?background:\s*transparent\s*!important;[\s\S]*?box-shadow:\s*none\s*!important;/);
@@ -273,4 +284,25 @@ test('páginas têm ícone e as editoriais têm Open Graph e dados estruturados 
     const dados = JSON.parse(guia.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
     assert.equal(dados['@type'], 'Article');
     assert.equal(dados.dateModified, '2026-11-10');
+});
+
+test('páginas não usam scripts nem atributos de evento inline', () => {
+    const paginas = fs.readdirSync(path.join(raiz, 'public'), { recursive: true })
+        .map(String).filter((arquivo) => arquivo.endsWith('.html') && !arquivo.startsWith('vendor'));
+    const scripts = fs.readdirSync(path.join(raiz, 'public', 'paginas')).filter((nome) => nome.endsWith('.js'))
+        .map((nome) => `paginas/${nome}`);
+    const atributoEvento = /\son(?:click|change|input|submit|load|error|mouse\w+|key\w+|focus|blur)\s*=/i;
+    for (const arquivo of [...paginas, ...scripts]) {
+        const conteudo = ler(`public/${arquivo}`);
+        assert.doesNotMatch(conteudo, atributoEvento, `${arquivo} usa atributo de evento inline`);
+        assert.doesNotMatch(conteudo, /javascript:/i, `${arquivo} usa URL javascript:`);
+        if (arquivo.endsWith('.html')) {
+            const inline = [...conteudo.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/gi)]
+                .filter((m) => !/application\/ld\+json/.test(m[1]));
+            assert.equal(inline.length, 0, `${arquivo} tem <script> inline`);
+            if (/data-acao|data-fundo-/.test(lerPagina(`public/${arquivo}`))) {
+                assert.match(conteudo, /<script src="(?:\.\.\/)?gbm-acoes\.js\?v=/, `${arquivo} precisa de gbm-acoes.js`);
+            }
+        }
+    }
 });

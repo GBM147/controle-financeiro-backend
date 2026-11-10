@@ -583,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('gbm-ai-ajuda-script')) return;
     const script = document.createElement('script');
     script.id = 'gbm-ai-ajuda-script';
-    script.src = 'gbm-ai-ajuda.js';
+    script.src = 'gbm-ai-ajuda.js?v=cde8fc8826';
     script.async = false;
     document.head.appendChild(script);
 })();
