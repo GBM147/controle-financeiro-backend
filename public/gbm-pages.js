@@ -250,7 +250,7 @@ function gbmGarantirMenuInterno() {
 
     const script = document.createElement('script');
     script.id = 'gbm-menu-bootstrap';
-    script.src = 'gbm-menu.js?v=20261015-shell1';
+    script.src = 'gbm-menu.js?v=56467e5b3d';
     script.async = false;
     (document.head || document.documentElement).appendChild(script);
 }

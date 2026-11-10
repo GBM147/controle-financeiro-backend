@@ -36,7 +36,7 @@ const diretivasCsp = {
     manifestSrc: ["'self'"],
     mediaSrc: ["'self'"],
     objectSrc: ["'none'"],
-    scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com'],
+    scriptSrc: ["'self'", "'unsafe-inline'"],
     scriptSrcAttr: ["'unsafe-inline'"],
     styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
     workerSrc: ["'self'", 'blob:']
@@ -113,6 +113,13 @@ app.use(express.static(DIRETORIO_PUBLICO, {
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');
             res.setHeader('Surrogate-Control', 'no-store');
+        }
+
+        // CSS e JS com ?v=<hash do conteúdo> mudam de URL a cada alteração
+        // (scripts/versionar-assets.js), então podem ficar em cache por um ano.
+        const versionado = /[?&]v=[\w.-]+/.test(res.req?.originalUrl || '');
+        if (versionado && !exigeAtualizacaoImediata && /\.(?:css|js)$/.test(nomeArquivo)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         }
 
         if (PAGINAS_PRIVADAS_OU_DE_ACAO.has(nomeArquivo)) {

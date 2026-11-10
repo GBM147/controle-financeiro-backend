@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=20261015-session1"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Importações | GBM</title>
-    <link rel="stylesheet" href="gbm-pages.css">
+    <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
     <style>
         .dropzone {
             padding: 28px;
@@ -24,12 +24,13 @@
         .import-stats .stat-card strong { font-size:1.5rem; font-weight:800; }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-motion.css?v=20261015-motion1">
-    <script src="gbm-motion.js?v=20261015-motion1" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=20261015-depth1">
-    <script src="gbm-interactions.js?v=20261015-depth1" defer></script>
+    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
+    <link rel="stylesheet" href="gbm-motion.css?v=c80e92e4b3">
+    <script src="gbm-motion.js?v=88bf99267f" defer></script>
+    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
+    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
+    <link rel="icon" href="/logo-transparente.png" type="image/png">
 </head>
 <body class="gbm-interna gbm-polished">
 
@@ -199,8 +200,8 @@
     </section>
 </main>
 
-<script src="auth.js?v=20261015-session1"></script>
-<script src="gbm-pages.js?v=20261015-depth1"></script>
+<script src="auth.js?v=6f32663332"></script>
+<script src="gbm-pages.js?v=876af69394"></script>
 <script>
     let previa = null;
     let contas = [];
@@ -340,7 +341,7 @@
     Promise.all([carregarContas(), carregarHistorico()]).catch((erro) => gbmToast(erro.message, 'erro'));
 </script>
 <script src="gbm-tutorial.js"></script>
-<script src="gbm-menu.js?v=20261015-shell1"></script>
+<script src="gbm-menu.js?v=56467e5b3d"></script>
 
 <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
     <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:480px; width:90%; box-shadow:0 0 30px rgba(95,255,168,0.1);">

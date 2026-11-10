@@ -29,6 +29,12 @@ O servidor usa a porta definida em `PORT` e publica os arquivos da pasta `public
 - `src/db/`: pool MySQL e migrações automáticas; `db/schema.sql` traz o esquema base para desenvolvimento e testes.
 - `src/web/`: sessão, autorização, limites de requisição, uploads e páginas editoriais.
 
+## Arquivos do site
+
+- Depois de alterar qualquer CSS ou JS em `public/`, execute `npm run versionar`: o parâmetro `?v=` das páginas, dos scripts e do service worker passa a ser o hash do conteúdo, e o servidor entrega arquivos versionados com cache de um ano. Os testes falham se alguma versão estiver desatualizada.
+- Chart.js, ExcelJS, jsPDF e jsPDF-AutoTable ficam em `public/vendor/` (com as licenças em `public/vendor/licencas/`), sem depender de CDN.
+- Novos guias devem manter `canonical`, Open Graph, dados estruturados (`Article`) e o código do AdSense, como os existentes.
+
 ## Testes com MySQL real
 
 `npm test` roda os testes unitários. Os testes de integração recriam todas as tabelas de um banco descartável:

@@ -92,3 +92,15 @@ test('rejeita JSON excessivo com resposta 413 sem stack trace', async () => {
         .expect(413);
     assert.doesNotMatch(JSON.stringify(resposta.body), /node_modules|at Object\./);
 });
+
+test('arquivos versionados recebem cache longo; sem versão, revalidação', async () => {
+    const versionado = await request(app).get('/public-site.css?v=abc123').expect(200);
+    assert.match(versionado.headers['cache-control'], /max-age=31536000/);
+    const semVersao = await request(app).get('/public-site.css').expect(200);
+    assert.doesNotMatch(semVersao.headers['cache-control'] || '', /immutable/);
+    const tutorial = await request(app).get('/gbm-tutorial.js?v=1').expect(200);
+    assert.match(tutorial.headers['cache-control'], /no-store/);
+    await request(app).get('/vendor/chart-4.5.1.umd.min.js').expect(200);
+    const csp = (await request(app).get('/dashboard.html').expect(200)).headers['content-security-policy'];
+    assert.doesNotMatch(csp, /jsdelivr|cdnjs/);
+});

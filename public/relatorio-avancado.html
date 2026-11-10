@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=20261015-session1"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Relatório Avançado | GBM</title><link rel="stylesheet" href="gbm-pages.css?v=20260921">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
-    <script src="gbm-chart-depth.js?v=20261015-depth1"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <title>Relatório Avançado | GBM</title><link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
+    <script src="vendor/chart-4.5.1.umd.min.js?v=48444a82d4"></script>
+    <script src="gbm-chart-depth.js?v=446dce1de1"></script>
+    <script src="vendor/jspdf-2.5.1.umd.min.js?v=98ccf17aa1"></script>
+    <script src="vendor/jspdf-autotable-3.5.25.min.js?v=0216761340"></script>
+    <script src="vendor/exceljs-4.4.0.min.js?v=7e49da6858"></script>
     <style>
         .resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
         #tabela-transacoes table{min-width:900px}
@@ -27,12 +27,13 @@
         }
     </style>
     <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-motion.css?v=20261015-motion1">
-    <script src="gbm-motion.js?v=20261015-motion1" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=20261015-depth1">
-    <script src="gbm-interactions.js?v=20261015-depth1" defer></script>
+    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
+    <link rel="stylesheet" href="gbm-motion.css?v=c80e92e4b3">
+    <script src="gbm-motion.js?v=88bf99267f" defer></script>
+    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
+    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
+    <link rel="icon" href="/logo-transparente.png" type="image/png">
 </head>
 <body class="gbm-interna gbm-polished">
 <header class="gbm-header">
@@ -176,7 +177,7 @@
             <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap" tabindex="0" role="region" aria-label="Transações do relatório avançado"></div></section>
         </section>
     </main>
-    <script src="auth.js?v=20261015-session1"></script><script src="gbm-pages.js?v=20261015-depth1"></script>
+    <script src="auth.js?v=6f32663332"></script><script src="gbm-pages.js?v=876af69394"></script>
     <script>
         let relatorioAtual=null;
         let graficoRelatorio=null;
@@ -752,6 +753,6 @@
         carregarFiltros().then(gerar).catch(e=>gbmToast(e.message,'erro'));
     </script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js?v=20261015-shell1"></script>
+    <script src="gbm-menu.js?v=56467e5b3d"></script>
 </body>
 </html>

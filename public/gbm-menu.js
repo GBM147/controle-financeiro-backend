@@ -52,7 +52,7 @@
         const estilo = document.createElement('link');
         estilo.id = 'gbm-shell-style';
         estilo.rel = 'stylesheet';
-        estilo.href = 'gbm-shell.css?v=20261015-shell1';
+        estilo.href = 'gbm-shell.css?v=9948129792';
         document.head.appendChild(estilo);
     }
 

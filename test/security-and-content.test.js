@@ -231,7 +231,7 @@ test('scripts embutidos e links locais das páginas são válidos', () => {
     for (const arquivo of paginas) {
         const caminho = path.join(raiz, 'public', arquivo);
         const html = fs.readFileSync(caminho, 'utf8');
-        for (const correspondencia of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)) {
+        for (const correspondencia of html.matchAll(/<script(?![^>]*\b(?:src=|type="application\/ld\+json"))[^>]*>([\s\S]*?)<\/script>/gi)) {
             assert.doesNotThrow(
                 () => new vm.Script(correspondencia[1], { filename: caminho }),
                 `JavaScript inválido em ${arquivo}`
@@ -250,4 +250,27 @@ test('scripts embutidos e links locais das páginas são válidos', () => {
             );
         }
     }
+});
+
+test('CSS e JS locais estão com a versão do conteúdo atual', () => {
+    const { verificarVersoes } = require('../scripts/versionar-assets');
+    assert.deepEqual(verificarVersoes(), [], 'execute npm run versionar após alterar CSS ou JS');
+    for (const arquivo of fs.readdirSync(path.join(raiz, 'public')).filter((nome) => nome.endsWith('.html'))) {
+        assert.doesNotMatch(ler(`public/${arquivo}`), /cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com/, arquivo);
+    }
+});
+
+test('páginas têm ícone e as editoriais têm Open Graph e dados estruturados válidos', () => {
+    const paginas = fs.readdirSync(path.join(raiz, 'public'), { recursive: true })
+        .filter((arquivo) => String(arquivo).endsWith('.html') && !String(arquivo).startsWith('vendor'));
+    for (const arquivo of paginas) assert.match(ler(`public/${arquivo}`), /rel="icon"/, arquivo);
+    for (const arquivo of ['index.html', 'guias/cartao-de-credito.html', 'calculadoras/orcamento-mensal.html']) {
+        const html = ler(`public/${arquivo}`);
+        assert.match(html, /property="og:title"/, arquivo);
+        assert.match(html, /property="og:url" content="https:\/\/gbm-finance\.com\//, arquivo);
+    }
+    const guia = ler('public/guias/cartao-de-credito.html');
+    const dados = JSON.parse(guia.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+    assert.equal(dados['@type'], 'Article');
+    assert.equal(dados.dateModified, '2026-11-10');
 });
