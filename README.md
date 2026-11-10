@@ -81,7 +81,9 @@ Nunca publique `.env`, tokens ou credenciais. Credenciais que já apareceram no 
 
 ## Área editorial e AdSense
 
-Anúncios não são carregados em login, dashboard, alertas ou páginas de ferramenta. A área pública de educação financeira fica em `/educacao-financeira.html`; `robots.txt`, `sitemap.xml` e `ads.txt` são publicados na raiz.
+O código do AdSense é carregado somente nas páginas editoriais: início, `/educacao-financeira.html`, `/ferramentas.html`, `/guias/*` e `/calculadoras/*`. Login, dashboard e demais telas da conta não carregam anúncios e mantêm a CSP restritiva com `default-src 'self'`.
+
+As páginas editoriais são entregues pelo servidor com um nonce por requisição e a CSP recomendada pelo Google para AdSense (`'nonce-…' 'strict-dynamic'`, `object-src 'none'`, `base-uri 'none'`). Todo `<script>` dessas páginas recebe o nonce automaticamente; não use atributos de evento inline (`onclick`) nelas. Ao criar um guia, inclua o código do AdSense no `<head>`, adicione a página ao `sitemap.xml` e à biblioteca. A Política de Privacidade (seção 12) traz a divulgação obrigatória sobre cookies de publicidade. `robots.txt`, `sitemap.xml` e `ads.txt` são publicados na raiz.
 
 Antes de pedir nova avaliação no AdSense:
 
@@ -89,7 +91,8 @@ Antes de pedir nova avaliação no AdSense:
 2. confirme que as páginas do sitemap respondem com `200`;
 3. solicite indexação das páginas editoriais no Google Search Console;
 4. aguarde a indexação e revise a cobertura;
-5. só então marque os problemas como corrigidos e peça nova análise.
+5. no AdSense, em **Privacidade e mensagens**, ative a mensagem de consentimento do Google (obrigatória para visitantes do Espaço Econômico Europeu, Reino Unido e Suíça);
+6. só então marque os problemas como corrigidos e peça nova análise.
 
 Uma nova aprovação depende da avaliação do Google e não pode ser garantida pelo código.
 

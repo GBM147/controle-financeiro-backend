@@ -28,12 +28,50 @@ test('infraestrutura editorial está completa', () => {
         'public/guias/controle-de-gastos.html',
         'public/guias/reserva-de-emergencia.html',
         'public/guias/dividas-e-juros.html',
-        'public/guias/metas-financeiras.html'
+        'public/guias/metas-financeiras.html',
+        'public/guias/cartao-de-credito.html',
+        'public/guias/decimo-terceiro-salario.html',
+        'public/guias/renda-variavel.html',
+        'public/guias/gastos-de-inicio-de-ano.html',
+        'public/guias/compras-parceladas.html',
+        'public/guias/assinaturas-e-gastos-recorrentes.html',
+        'public/guias/orcamento-a-dois.html'
     ];
     for (const pagina of paginas) {
         const texto = ler(pagina).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
         assert.ok(texto.split(' ').length >= 550, `${pagina} precisa manter conteúdo substancial`);
     }
+});
+
+test('páginas editoriais carregam o AdSense e estão no sitemap', () => {
+    const sitemap = ler('public/sitemap.xml');
+    const biblioteca = ler('public/educacao-financeira.html');
+    const guias = fs.readdirSync(path.join(raiz, 'public/guias')).filter((nome) => nome.endsWith('.html'));
+    assert.ok(guias.length >= 12, 'a biblioteca precisa manter ao menos 12 guias');
+    const paginas = ['index.html', 'educacao-financeira.html', 'ferramentas.html',
+        'calculadoras/orcamento-mensal.html', 'calculadoras/reserva-de-emergencia.html',
+        ...guias.map((nome) => `guias/${nome}`)];
+    for (const pagina of paginas) {
+        const html = ler(`public/${pagina}`);
+        assert.equal(
+            (html.match(/adsbygoogle\.js\?client=ca-pub-2735805392775741/g) || []).length, 1,
+            `${pagina} precisa carregar o código do AdSense uma vez`
+        );
+        assert.doesNotMatch(html, /name="robots" content="noindex/i, `${pagina} precisa ser indexável`);
+    }
+    for (const nome of guias) {
+        assert.match(sitemap, new RegExp(`https://gbm-finance\\.com/guias/${nome.replace('.', '\\.')}`), `${nome} fora do sitemap`);
+        assert.match(biblioteca, new RegExp(`href="guias/${nome.replace('.', '\\.')}"`), `${nome} fora da biblioteca`);
+    }
+    assert.match(ler('public/index.html'), /name="google-adsense-account" content="ca-pub-2735805392775741"/);
+});
+
+test('política de privacidade informa cookies de publicidade do Google', () => {
+    const politica = ler('public/politica-de-privacidade.html');
+    assert.match(politica, /Fornecedores terceiros, incluindo o Google, usam cookies/);
+    assert.match(politica, /adssettings\.google\.com/);
+    assert.match(politica, /aboutads\.info/);
+    assert.match(politica, /policies\.google\.com\/technologies\/partner-sites/);
 });
 
 test('configuração evita regressões de segurança conhecidas', () => {
@@ -194,7 +232,9 @@ test('scripts embutidos e links locais das páginas são válidos', () => {
         for (const correspondencia of html.matchAll(/(?:href|src)="([^"]+)"/gi)) {
             const destino = correspondencia[1].split(/[?#]/)[0];
             if (!destino || /^(?:https?:|data:|mailto:|tel:|#)/i.test(destino)) continue;
-            const arquivoDestino = path.resolve(path.dirname(caminho), destino);
+            const arquivoDestino = destino.startsWith('/')
+                ? path.join(raiz, 'public', destino)
+                : path.resolve(path.dirname(caminho), destino);
             assert.ok(
                 arquivoDestino.startsWith(path.join(raiz, 'public')) && fs.existsSync(arquivoDestino),
                 `Link local ausente em ${arquivo}: ${destino}`

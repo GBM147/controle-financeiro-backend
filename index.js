@@ -14,6 +14,7 @@ const { Resend } = require('resend');
 const multer = require('multer');
 const { parseOfx, numeroOfx } = require('./ofx-parser');
 const path = require('path');
+const fs = require('fs');
 const pdfParse = require('pdf-parse');
 const { renderComEspacamento } = require('./pdf-render');
 const { extrairTransacoesDoPdf, detectarBanco: detectarBancoPdf } = require('./pdf-extrato-parser');
@@ -427,6 +428,65 @@ const PAGINAS_PRIVADAS_OU_DE_ACAO = new Set([
     'calendario.html', 'contas.html', 'importacoes.html', 'importar-pdf.html',
     'limite-de-gastos.html', 'relatorio.html'
 ]);
+
+// Páginas editoriais que carregam o código do Google AdSense. O Google não
+// publica uma lista fixa de domínios para anúncios; a política suportada usa
+// nonce com 'strict-dynamic' (support.google.com/adsense/answer/16283098).
+// Por isso essas páginas recebem um nonce por requisição e não usam
+// default-src, enquanto as áreas privadas mantêm a CSP restritiva.
+const PAGINAS_EDITORIAIS_COM_ANUNCIOS = new Set([
+    '/index.html', '/educacao-financeira.html', '/ferramentas.html'
+]);
+const PADRAO_PAGINA_EDITORIAL_EM_PASTA = /^\/(?:guias|calculadoras)\/[a-z0-9-]+\.html$/;
+const DIRETORIO_PUBLICO = path.join(__dirname, 'public');
+const cachePaginasEditoriais = new Map();
+
+function paginaEditorialComAnuncios(caminho) {
+    const pagina = caminho === '/' ? '/index.html' : caminho;
+    if (PAGINAS_EDITORIAIS_COM_ANUNCIOS.has(pagina) || PADRAO_PAGINA_EDITORIAL_EM_PASTA.test(pagina)) {
+        return pagina;
+    }
+    return null;
+}
+
+async function lerPaginaEditorial(pagina) {
+    if (cachePaginasEditoriais.has(pagina)) return cachePaginasEditoriais.get(pagina);
+    const conteudo = await fs.promises.readFile(path.join(DIRETORIO_PUBLICO, pagina), 'utf8');
+    if (process.env.NODE_ENV === 'production') cachePaginasEditoriais.set(pagina, conteudo);
+    return conteudo;
+}
+
+function cspPaginaEditorial(nonce) {
+    const diretivas = [
+        `script-src 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline' 'unsafe-eval' https: http:`,
+        "object-src 'none'",
+        "base-uri 'none'",
+        "frame-ancestors 'none'",
+        "form-action 'self'"
+    ];
+    if (process.env.NODE_ENV === 'production') diretivas.push('upgrade-insecure-requests');
+    return diretivas.join('; ');
+}
+
+app.use(async (req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+    const pagina = paginaEditorialComAnuncios(req.path);
+    if (!pagina) return next();
+
+    let html;
+    try {
+        html = await lerPaginaEditorial(pagina);
+    } catch (erro) {
+        return erro.code === 'ENOENT' ? next() : next(erro);
+    }
+
+    const nonce = crypto.randomBytes(16).toString('base64');
+    res.setHeader('Content-Security-Policy', cspPaginaEditorial(nonce));
+    // Cliques em anúncios abrem janelas de outros domínios a partir de iframes.
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    res.setHeader('Cache-Control', 'no-cache');
+    return res.type('html').send(html.replace(/<script(?=[\s>])/gi, `<script nonce="${nonce}"`));
+});
 
 // Entrega os arquivos públicos. Tutorial e service worker nunca podem ficar
 // presos no cache do navegador ou do proxy após uma atualização.
@@ -5368,6 +5428,17 @@ app.get('/minha-conta/exportar', exigirLogin, async (req, res) => {
         console.error('Erro ao exportar dados:', erro);
         res.status(500).json({ success: false, error: 'Falha ao exportar seus dados.' });
     }
+});
+
+// Navegação para endereço inexistente recebe uma página 404 com links úteis.
+// Outras requisições seguem adiante: a rota do assistente é registrada no
+// listen (ia-assistente-loader.js), depois deste middleware.
+app.use((req, res, next) => {
+    if ((req.method !== 'GET' && req.method !== 'HEAD') || req.accepts(['json', 'html']) !== 'html') {
+        return next();
+    }
+    res.setHeader('X-Robots-Tag', 'noindex');
+    return res.status(404).sendFile(path.join(DIRETORIO_PUBLICO, '404.html'));
 });
 
 app.use((erro, req, res, next) => {
