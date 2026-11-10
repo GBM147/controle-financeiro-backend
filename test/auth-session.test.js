@@ -29,9 +29,7 @@ test('rotas de acesso preservam a sessão, aguardam a gravação e distinguem in
     const estado = { indisponivel: false, usuario };
     const store = new session.MemoryStore();
     store.onReady = async () => {};
-    const conexao = new EventEmitter();
-    conexao.stream = new EventEmitter();
-    conexao.promise = () => ({
+    const consultar = {
         async query(sql, parametros = []) {
             if (estado.indisponivel) {
                 throw Object.assign(new Error('certificado não confiável de teste'), { code: 'HANDSHAKE_SSL_ERROR' });
@@ -47,8 +45,22 @@ test('rotas de acesso preservam a sessão, aguardam a gravação e distinguem in
             if (/INFORMATION_SCHEMA/.test(sql)) return [[{ existe: 1 }]];
             return [{ affectedRows: 1 }];
         }
+    };
+    const pool = new EventEmitter();
+    pool.promise = () => ({
+        query: consultar.query,
+        async getConnection() {
+            return {
+                query: consultar.query,
+                async beginTransaction() {},
+                async commit() {},
+                async rollback() {},
+                release() {}
+            };
+        },
+        async end() {}
     });
-    t.mock.method(mysql, 'createConnection', () => conexao);
+    t.mock.method(mysql, 'createPool', () => pool);
     t.mock.method(mysqlConfig, 'criarStoreSessaoMysql', () => store);
     t.mock.method(console, 'error', () => {});
     const { app } = require('../index');

@@ -4,9 +4,23 @@
 
     if (window.GBMVisualMotion) return;
 
+    // Aparelhos com pouca memória ou poucos núcleos, conexões lentas e o modo de
+    // economia de dados não recebem as partículas: o conteúdo continua igual.
+    function aparelhoLimitado() {
+        const conexao = navigator.connection;
+        return Boolean(conexao && conexao.saveData)
+            || /(^|-)2g$/.test(String((conexao && conexao.effectiveType) || ''))
+            || (Number.isFinite(navigator.deviceMemory) && navigator.deviceMemory <= 2)
+            || (Number.isFinite(navigator.hardwareConcurrency) && navigator.hardwareConcurrency <= 2);
+    }
+
     function initialize() {
         const body = document.body;
         if (!body || window.GBMVisualMotion) return;
+        if (aparelhoLimitado()) {
+            window.GBMVisualMotion = Object.freeze({ ativo: false, motivo: 'aparelho-limitado' });
+            return;
+        }
 
         const reducedQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');

@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=20261015-session1"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Privacidade e Dados | GBM</title><link rel="stylesheet" href="gbm-pages.css">
+    <title>Privacidade e Dados | GBM</title><link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
     <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-motion.css?v=20261015-motion1">
-    <script src="gbm-motion.js?v=20261015-motion1" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=20261015-depth1">
-    <script src="gbm-interactions.js?v=20261015-depth1" defer></script>
+    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
+    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
+    <script src="gbm-motion.js?v=88bf99267f" defer></script>
+    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
+    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
+    <link rel="icon" href="/logo-transparente.png" type="image/png">
 </head>
 <body class="gbm-interna gbm-polished">
     <header class="topbar">
@@ -54,43 +55,8 @@
             </section>
         </div>
     </main>
-    <script src="auth.js?v=20261015-session1"></script><script src="gbm-pages.js?v=20261015-depth1"></script>
-    <script>
-        async function carregarStatus(){
-            try{
-                const dados=await gbmJson(await fetchApi('/privacidade/status'));
-                document.getElementById('consentimento').checked=Boolean(dados.consentimento_privacidade_em);
-                document.getElementById('data-consentimento').textContent=dados.consentimento_privacidade_em
-                    ? `Consentimento registrado em ${new Date(dados.consentimento_privacidade_em).toLocaleString('pt-BR')}.`
-                    : 'O consentimento ainda não foi registrado.';
-                document.getElementById('data-termos').textContent=dados.termos_aceitos_em
-                    ? `Versão ${dados.termos_versao || 'não identificada'} aceita em ${new Date(dados.termos_aceitos_em).toLocaleString('pt-BR')}.`
-                    : 'O aceite dos Termos ainda não foi registrado nesta conta.';
-                document.getElementById('status-criptografia').innerHTML=dados.criptografia_ativa
-                    ? '<span class="pill green">Criptografia ativa</span>'
-                    : '<span class="pill amber">Configuração pendente no Render</span>';
-            }catch(erro){gbmToast(erro.message,'erro')}
-        }
-        document.getElementById('salvar-consentimento').addEventListener('click',async()=>{
-            try{
-                await gbmJson(await fetchApi('/privacidade/consentimento',{
-                    method:'PUT',headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({aceito:document.getElementById('consentimento').checked})
-                }));
-                gbmToast('Escolha registrada.');carregarStatus();
-            }catch(erro){gbmToast(erro.message,'erro')}
-        });
-        document.getElementById('exportar').addEventListener('click',async()=>{
-            try{
-                const resposta=await fetchApi('/minha-conta/exportar');
-                if(!resposta.ok) throw new Error('Falha ao exportar.');
-                const blob=await resposta.blob();const url=URL.createObjectURL(blob);
-                const link=document.createElement('a');link.href=url;link.download='meus-dados-gbm.json';link.click();
-                setTimeout(()=>URL.revokeObjectURL(url),1000);
-            }catch(erro){gbmToast(erro.message,'erro')}
-        });
-        carregarStatus();
-    </script>
+    <script src="auth.js?v=6f32663332"></script><script src="gbm-pages.js?v=b53b3cd6b3"></script>
+    <script src="paginas/privacidade.js?v=afacc412c9"></script>
     <script src="gbm-tutorial.js"></script>
 </body>
 </html>

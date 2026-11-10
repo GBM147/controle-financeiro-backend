@@ -1,0 +1,9 @@
+        .resumo-calendario { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:18px; }
+        .evento { display:grid; grid-template-columns:70px 1fr auto; gap:13px; align-items:center; padding:13px 0; border-bottom:1px solid rgba(255,255,255,.08); }
+        .evento-data { text-align:center; font-weight:800; color:var(--blue); }
+        .evento-data strong { display:block; font-size:1.35rem; }
+        .evento-valor.receita { color:#7fffb7; }
+        .evento-valor.despesa { color:#ff909c; }
+        .tipo-receita { color:#7fffb7; }
+        .tipo-despesa { color:#ff909c; }
+        @media(max-width:600px){.evento{grid-template-columns:55px 1fr}.evento-valor{grid-column:2}}

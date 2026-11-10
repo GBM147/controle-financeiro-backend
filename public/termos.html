@@ -5,13 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Termos de Uso do Guardian of Budget & Money (GBM).">
     <title>Termos de Uso | GBM</title>
-    <link rel="stylesheet" href="public-site.css?v=20261014-polish1">
+    <link rel="stylesheet" href="public-site.css?v=05fae4f17f">
     <link rel="canonical" href="https://gbm-finance.com/termos.html">
-    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-motion.css?v=20261015-motion1">
-    <script src="gbm-motion.js?v=20261015-motion1" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=20261015-depth1">
-    <script src="gbm-interactions.js?v=20261015-depth1" defer></script>
+    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
+    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
+    <script src="gbm-motion.js?v=88bf99267f" defer></script>
+    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
+    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
+    <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="GBM Finance">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:title" content="Termos de Uso | GBM">
+    <meta property="og:description" content="Termos de Uso do Guardian of Budget &amp; Money (GBM).">
+    <meta property="og:url" content="https://gbm-finance.com/termos.html">
+    <meta property="og:image" content="https://gbm-finance.com/logo-transparente.png">
+    <meta name="twitter:card" content="summary">
 </head>
 <body class="gbm-public gbm-polished">
     <a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
@@ -166,93 +175,6 @@
     </main>
     <footer class="site-footer"><nav aria-label="Links institucionais"><a href="educacao-financeira.html">Guias</a><a href="ferramentas.html">Ferramentas</a><a href="sobre.html">Sobre e critérios editoriais</a><a href="fale-conosco.html">Contato</a><a href="termos.html">Termos</a><a href="politica-de-privacidade.html">Privacidade</a></nav><small>© 2026 GBM Finance. Conteúdo educativo e exemplos ilustrativos.</small></footer>
 
-    <script>
-        const TERMOS_VERSAO = '2026.07';
-        const statusTermos = document.getElementById('termos-status');
-        const botaoAceitar = document.getElementById('aceitar-termos');
-        const cartaoAceite = document.getElementById('cartao-aceite');
-        const botaoRetorno = document.getElementById('botao-retorno');
-        const origensPermitidas = {
-            cadastro: { rotulo: 'Fechar e voltar ao cadastro', destino: 'index.html' },
-            configuracoes: { rotulo: '← Configurações', destino: 'configuracoes.html' },
-            privacidade: { rotulo: '← Privacidade e dados', destino: 'privacidade.html' }
-        };
-        const origemSolicitada = new URLSearchParams(window.location.search).get('origem');
-        const origem = Object.hasOwn(origensPermitidas, origemSolicitada) ? origemSolicitada : null;
-        const retorno = origem ? origensPermitidas[origem] : { rotulo: '← Voltar', destino: 'index.html' };
-
-        botaoRetorno.textContent = retorno.rotulo;
-        botaoRetorno.href = retorno.destino;
-
-        document.querySelectorAll('[data-link-legal]').forEach((link) => {
-            if (!origem) return;
-            const destino = new URL(link.getAttribute('href'), window.location.href);
-            destino.searchParams.set('origem', origem);
-            link.href = `${destino.pathname.split('/').pop()}${destino.search}${destino.hash}`;
-        });
-
-        botaoRetorno.addEventListener('click', (evento) => {
-            if (origem !== 'cadastro' || !window.opener || window.opener.closed) return;
-            evento.preventDefault();
-            window.opener.focus();
-            window.close();
-            window.setTimeout(() => {
-                if (!window.closed) window.location.replace(retorno.destino);
-            }, 150);
-        });
-
-        function mostrarStatus(texto, aceito) {
-            statusTermos.textContent = texto;
-            botaoAceitar.hidden = Boolean(aceito);
-        }
-
-        async function carregarAceite() {
-            try {
-                const resposta = await fetch('/termos/status', {
-                    credentials: 'same-origin',
-                    headers: { Accept: 'application/json' }
-                });
-                if (resposta.status === 401) {
-                    mostrarStatus('Entre na sua conta para consultar ou registrar o aceite. A leitura dos Termos é pública.', true);
-                    return;
-                }
-                const dados = await resposta.json();
-                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível consultar o aceite.');
-                if (dados.termos_versao === TERMOS_VERSAO && dados.termos_aceitos_em) {
-                    const data = new Date(dados.termos_aceitos_em).toLocaleString('pt-BR');
-                    mostrarStatus(`Versão ${TERMOS_VERSAO} aceita em ${data}.`, true);
-                    return;
-                }
-                mostrarStatus(`Sua conta ainda não aceitou a versão ${TERMOS_VERSAO}. Leia o documento antes de continuar.`, false);
-            } catch (erro) {
-                mostrarStatus(erro.message, true);
-            }
-        }
-
-        botaoAceitar.addEventListener('click', async () => {
-            botaoAceitar.disabled = true;
-            try {
-                const resposta = await fetch('/termos/aceitar', {
-                    method: 'PUT',
-                    credentials: 'same-origin',
-                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                    body: JSON.stringify({ aceito: true })
-                });
-                const dados = await resposta.json();
-                if (!resposta.ok) throw new Error(dados.error || 'Não foi possível registrar o aceite.');
-                await carregarAceite();
-            } catch (erro) {
-                mostrarStatus(erro.message, false);
-            } finally {
-                botaoAceitar.disabled = false;
-            }
-        });
-
-        if (origem === 'cadastro') {
-            cartaoAceite.hidden = true;
-        } else {
-            carregarAceite();
-        }
-    </script>
+    <script src="paginas/termos.js?v=f36247f2db"></script>
 </body>
 </html>

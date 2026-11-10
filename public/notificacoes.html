@@ -1,25 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=20261015-session1"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Notificações | GBM</title>
-    <link rel="stylesheet" href="gbm-pages.css">
-    <style>
-        .notificacao { padding:15px; border:1px solid rgba(255,255,255,.09); border-radius:11px; background:rgba(255,255,255,.025); }
-        .notificacao.nao-lida { border-color:rgba(57,217,138,.34); background:rgba(57,217,138,.05); }
-        .notificacao + .notificacao { margin-top:10px; }
-        .switch-row { display:flex;justify-content:space-between;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08); }
-        .switch-row input { width:20px;height:20px;min-height:auto; }
-    </style>
+    <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
+    <link rel="stylesheet" href="paginas/notificacoes.css?v=6037050ec8">
     <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-motion.css?v=20261015-motion1">
-    <script src="gbm-motion.js?v=20261015-motion1" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=20261015-depth1">
-    <script src="gbm-interactions.js?v=20261015-depth1" defer></script>
+    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
+    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
+    <script src="gbm-motion.js?v=88bf99267f" defer></script>
+    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
+    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
+    <link rel="icon" href="/logo-transparente.png" type="image/png">
 </head>
 <body class="gbm-interna gbm-polished">
     <header class="topbar">
@@ -62,57 +57,9 @@
             </aside>
         </div>
     </main>
-    <script src="auth.js?v=20261015-session1"></script><script src="gbm-pages.js?v=20261015-depth1"></script>
-    <script>
-        async function carregarNotificacoes() {
-            try {
-                const status = document.getElementById('filtro-status').value;
-                const tipo = document.getElementById('filtro-tipo').value;
-                const itens = await gbmJson(await fetchApi(`/notificacoes?status=${status}&tipo=${tipo}`));
-                document.getElementById('lista-notificacoes').innerHTML = itens.length ? itens.map((item) => `
-                    <article class="notificacao ${Number(item.lida) ? '' : 'nao-lida'}">
-                        <div style="display:flex;justify-content:space-between;gap:12px">
-                            <span class="pill ${Number(item.lida) ? '' : 'green'}">${Number(item.lida) ? 'Lida' : 'Nova'}</span>
-                            <small style="color:var(--muted)">${new Date(item.data_criacao).toLocaleString('pt-BR')}</small>
-                        </div>
-                        <p style="margin:11px 0 7px;line-height:1.5">${gbmEscapar(item.mensagem)}</p>
-                        <span class="pill">${gbmEscapar(item.categoria || item.tipo)}</span>
-                    </article>`).join('') : '<div class="empty">Nenhuma notificação encontrada.</div>';
-            } catch (erro) { gbmToast(erro.message,'erro'); }
-        }
-        async function carregarPreferencias() {
-            try {
-                const p = await gbmJson(await fetchApi('/notificacoes/preferencias'));
-                document.getElementById('pref-site').checked = Number(p.notificacao_site) === 1;
-                document.getElementById('pref-email').checked = Number(p.notificacao_email) === 1;
-                document.getElementById('pref-inicio').value = p.horario_silencio_inicio ? String(p.horario_silencio_inicio).slice(0,5) : '';
-                document.getElementById('pref-fim').value = p.horario_silencio_fim ? String(p.horario_silencio_fim).slice(0,5) : '';
-            } catch (erro) { gbmToast(erro.message,'erro'); }
-        }
-        document.getElementById('filtro-status').addEventListener('change',carregarNotificacoes);
-        document.getElementById('filtro-tipo').addEventListener('change',carregarNotificacoes);
-        document.getElementById('marcar-todas').addEventListener('click',async()=>{
-            try {
-                await gbmJson(await fetchApi('/notificacoes/marcar-todas-lidas',{method:'POST'}));
-                carregarNotificacoes();
-            } catch(erro){gbmToast(erro.message,'erro')}
-        });
-        document.getElementById('salvar-preferencias').addEventListener('click',async()=>{
-            try {
-                await gbmJson(await fetchApi('/notificacoes/preferencias',{
-                    method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-                        notificacao_site:document.getElementById('pref-site').checked,
-                        notificacao_email:document.getElementById('pref-email').checked,
-                        horario_silencio_inicio:document.getElementById('pref-inicio').value || null,
-                        horario_silencio_fim:document.getElementById('pref-fim').value || null
-                    })
-                }));
-                gbmToast('Preferências salvas.');
-            } catch(erro){gbmToast(erro.message,'erro')}
-        });
-        carregarNotificacoes();carregarPreferencias();
-    </script>
+    <script src="auth.js?v=6f32663332"></script><script src="gbm-pages.js?v=b53b3cd6b3"></script>
+    <script src="paginas/notificacoes.js?v=42277d320c"></script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js?v=20261015-shell1"></script>
+    <script src="gbm-menu.js?v=56467e5b3d"></script>
 </body>
 </html>

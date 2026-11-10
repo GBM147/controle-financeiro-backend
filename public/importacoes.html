@@ -1,35 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=20261015-session1"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Importações | GBM</title>
-    <link rel="stylesheet" href="gbm-pages.css">
-    <style>
-        .dropzone {
-            padding: 28px;
-            border: 1px dashed rgba(95,255,168,.38);
-            border-radius: 13px;
-            background: rgba(57,217,138,.04);
-            text-align: center;
-        }
-        .dropzone input { max-width:520px; margin:12px auto 0; }
-        .preview-table input { min-width:150px; min-height:34px; padding:6px 8px; }
-        .tipo-receita { color:#7fffb7; }
-        .tipo-despesa { color:#ff909c; }
-        .import-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:22px; }
-        .import-stats .stat-card { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; padding:16px 18px; }
-        .import-stats .stat-card span.rotulo { display:block; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
-        .import-stats .stat-card strong { font-size:1.5rem; font-weight:800; }
-    </style>
+    <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
+    <link rel="stylesheet" href="paginas/importacoes.css?v=8216ff0849">
     <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-motion.css?v=20261015-motion1">
-    <script src="gbm-motion.js?v=20261015-motion1" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=20261015-depth1">
-    <script src="gbm-interactions.js?v=20261015-depth1" defer></script>
+    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
+    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
+    <script src="gbm-motion.js?v=88bf99267f" defer></script>
+    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
+    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
+    <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <script src="gbm-acoes.js?v=b9030c8ef0"></script>
 </head>
 <body class="gbm-interna gbm-polished">
 
@@ -44,13 +30,13 @@
             <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
         </a>
         <div class="gbm-menu-container">
-            <button id="menu-btn" class="gbm-menu-btn" onclick="abrirMenuLateral(event)" style="position:relative;" aria-label="Abrir menu">
+            <button id="menu-btn" class="gbm-menu-btn" data-acao="abrirMenuLateral" data-com-evento style="position:relative;" aria-label="Abrir menu">
                 <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
             </button>
         </div>
     </div>
 </header>
-<div id="menu-overlay" class="menu-overlay" onclick="fecharMenuLateral()"></div>
+<div id="menu-overlay" class="menu-overlay" data-acao="fecharMenuLateral"></div>
 
 <div id="sidebar-menu" class="sidebar-menu">
     <div class="sidebar-header">
@@ -61,7 +47,7 @@
                 <span>Proteção financeira para você</span>
             </div>
         </div>
-        <button class="fechar-btn" onclick="fecharMenuLateral()" aria-label="Fechar menu">&times;</button>
+        <button class="fechar-btn" data-acao="fecharMenuLateral" aria-label="Fechar menu">&times;</button>
     </div>
     <nav class="sidebar-content" aria-label="Menu principal">
         <div class="menu-grupo">
@@ -100,12 +86,12 @@
         </div>
         <div class="menu-grupo menu-grupo-premium">
             <p class="menu-grupo-titulo">Análises</p>
-            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('relatorio-avancado.html', 'Relatório mensal'); return false;">
+            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador" data-acao="acessarRotaPremium" data-args="[&quot;relatorio-avancado.html&quot;, &quot;Relatório mensal&quot;]" data-prevenir>
                 <span class="menu-item-icone" aria-hidden="true">▥</span>
                 <span class="menu-item-conteudo">Relatório mensal</span>
                 <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
             </a>
-            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" onclick="acessarRotaPremium('comparativo.html', 'Comparativo mensal'); return false;">
+            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" data-acao="acessarRotaPremium" data-args="[&quot;comparativo.html&quot;, &quot;Comparativo mensal&quot;]" data-prevenir>
                 <span class="menu-item-icone" aria-hidden="true">⇄</span>
                 <span class="menu-item-conteudo">Comparativo mensal</span>
                 <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
@@ -125,7 +111,7 @@
                 <span class="menu-item-icone" aria-hidden="true">♙</span>
                 <span class="menu-item-conteudo">Perfil</span>
             </a>
-            <a href="#" class="menu-item texto-vermelho menu-item-sair" onclick="fazerLogout(); return false;">
+            <a href="#" class="menu-item texto-vermelho menu-item-sair" data-acao="fazerLogout" data-prevenir>
                 <span class="menu-item-icone" aria-hidden="true">↪</span>
                 <span class="menu-item-conteudo">Sair</span>
             </a>
@@ -199,148 +185,11 @@
     </section>
 </main>
 
-<script src="auth.js?v=20261015-session1"></script>
-<script src="gbm-pages.js?v=20261015-depth1"></script>
-<script>
-    let previa = null;
-    let contas = [];
-
-    async function carregarContas() {
-        contas = await gbmJson(await fetchApi('/contas'));
-        const ativas = contas.filter((conta) => Number(conta.ativa) === 1);
-        document.getElementById('conta-importacao').innerHTML = ativas.length
-            ? ativas.map((conta) => `<option value="${conta.id}">${gbmEscapar(conta.nome)}</option>`).join('')
-            : '<option value="">Crie uma conta primeiro</option>';
-    }
-
-    document.getElementById('btn-analisar').addEventListener('click', async () => {
-        const arquivo = document.getElementById('arquivo-extrato').files[0];
-        if (!arquivo) return gbmToast('Selecione um arquivo OFX ou PDF.', 'erro');
-        if (!document.getElementById('conta-importacao').value) return gbmToast('Crie e selecione uma conta.', 'erro');
-        const extensao = arquivo.name.split('.').pop().toLowerCase();
-        if (!['ofx', 'pdf'].includes(extensao)) return gbmToast('Formato não aceito.', 'erro');
-        const formData = new FormData();
-        formData.append('arquivo', arquivo);
-        const botao = document.getElementById('btn-analisar');
-        botao.disabled = true;
-        botao.textContent = 'Analisando...';
-        try {
-            const endpoint = extensao === 'ofx' ? '/ofx-extrato/preview' : '/pdf-extrato/preview';
-            previa = await gbmJson(await fetchApi(endpoint, { method: 'POST', body: formData }));
-            previa.tipo_arquivo = extensao.toUpperCase();
-            previa.nome_arquivo = previa.nome_arquivo || arquivo.name;
-            previa.transacoes = previa.transacoes.map((item) => ({ ...item, selecionada: true }));
-            renderizarPrevia();
-        } catch (erro) {
-            gbmToast(erro.message, 'erro');
-        } finally {
-            botao.disabled = false;
-            botao.textContent = 'Analisar arquivo';
-        }
-    });
-
-    function renderizarPrevia() {
-        const selecionadas = previa.transacoes.filter((item) => item.selecionada);
-        const total = selecionadas.reduce((soma, item) => soma + Number(item.valor || 0), 0);
-        document.getElementById('previa-banco').textContent = previa.banco_detectado || 'Outro banco';
-        document.getElementById('previa-quantidade').textContent = `${selecionadas.length} selecionadas`;
-        document.getElementById('previa-total').textContent = gbmMoeda(total);
-        document.getElementById('corpo-previa').innerHTML = previa.transacoes.map((item, indice) => `
-            <tr style="${item.selecionada ? '' : 'opacity:.38'}">
-                <td>${gbmData(item.data)}</td>
-                <td title="${gbmEscapar(item.descricao)}">${gbmEscapar(String(item.descricao).slice(0, 48))}</td>
-                <td><input value="${gbmEscapar(item.categoria || 'Outros')}" onchange="alterarCategoria(${indice}, this.value)"></td>
-                <td class="${item.tipo === 'Receita' ? 'tipo-receita' : 'tipo-despesa'}">${gbmEscapar(item.tipo)}</td>
-                <td>${gbmMoeda(item.valor)}</td>
-                <td><button class="btn btn-small" onclick="alternarLinha(${indice})">${item.selecionada ? 'Remover' : 'Incluir'}</button></td>
-            </tr>
-        `).join('');
-        document.getElementById('secao-previa').hidden = false;
-        document.getElementById('secao-previa').scrollIntoView({ behavior:'smooth', block:'start' });
-    }
-
-    function alterarCategoria(indice, valor) { previa.transacoes[indice].categoria = valor.trim() || 'Outros'; }
-    function alternarLinha(indice) { previa.transacoes[indice].selecionada = !previa.transacoes[indice].selecionada; renderizarPrevia(); }
-
-    document.getElementById('btn-confirmar').addEventListener('click', confirmarImportacao);
-    async function confirmarImportacao() {
-        const transacoes = previa.transacoes.filter((item) => item.selecionada);
-        if (!transacoes.length) return gbmToast('Selecione pelo menos uma transação.', 'erro');
-        const botao = document.getElementById('btn-confirmar');
-        botao.disabled = true;
-        try {
-            const dados = await gbmJson(await fetchApi('/importacoes/confirmar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    conta_id: Number(document.getElementById('conta-importacao').value),
-                    tipo_arquivo: previa.tipo_arquivo,
-                    nome_arquivo: previa.nome_arquivo,
-                    banco: previa.banco_detectado,
-                    hash_arquivo: previa.hash_arquivo,
-                    assinatura_previa: previa.assinatura_previa,
-                    saldo_detectado: previa.saldo_detectado,
-                    transacoes
-                })
-            }));
-            gbmToast(dados.message);
-            previa = null;
-            document.getElementById('secao-previa').hidden = true;
-            document.getElementById('arquivo-extrato').value = '';
-            carregarHistorico();
-        } catch (erro) {
-            gbmToast(erro.message, 'erro');
-        } finally { botao.disabled = false; }
-    }
-
-    function atualizarStatsImportacoes(lotes) {
-        const importadas = lotes.reduce((soma, l) => soma + Number(l.quantidade_inseridas || 0), 0);
-        const duplicadas = lotes.reduce((soma, l) => soma + Number(l.quantidade_duplicadas || 0), 0);
-        document.getElementById('stat-importadas').textContent = importadas;
-        document.getElementById('stat-arquivos').textContent = lotes.length;
-        document.getElementById('stat-duplicadas').textContent = duplicadas;
-    }
-
-    async function carregarHistorico() {
-        try {
-            const lotes = await gbmJson(await fetchApi('/importacoes'));
-            atualizarStatsImportacoes(lotes);
-            const container = document.getElementById('historico-importacoes');
-            if (!lotes.length) {
-                container.innerHTML = '<div class="empty">Nenhuma importação registrada ainda.</div>';
-                return;
-            }
-            container.innerHTML = `<table>
-                <thead><tr><th>Data</th><th>Arquivo</th><th>Conta</th><th>Resultado</th><th>Status</th><th></th></tr></thead>
-                <tbody>${lotes.map((lote) => `
-                    <tr>
-                        <td>${new Date(lote.criado_em).toLocaleString('pt-BR')}</td>
-                        <td>${gbmEscapar(lote.nome_arquivo || lote.tipo_arquivo)}<br><span class="pill">${gbmEscapar(lote.banco || '')}</span></td>
-                        <td>${gbmEscapar(lote.conta)}</td>
-                        <td>${lote.quantidade_inseridas} novas / ${lote.quantidade_duplicadas} duplicadas</td>
-                        <td><span class="pill ${lote.status === 'concluida' ? 'green' : 'amber'}">${gbmEscapar(lote.status)}</span></td>
-                        <td>${lote.status === 'concluida' ? `<button class="btn btn-danger btn-small" onclick="desfazerImportacao(${lote.id})">Desfazer</button>` : ''}</td>
-                    </tr>`).join('')}</tbody>
-            </table>`;
-        } catch (erro) {
-            document.getElementById('historico-importacoes').innerHTML = `<div class="empty">${gbmEscapar(erro.message)}</div>`;
-        }
-    }
-
-    async function desfazerImportacao(id) {
-        if (!confirm('Remover todas as transações adicionadas por esta importação?')) return;
-        try {
-            const dados = await gbmJson(await fetchApi(`/importacoes/${id}`, { method:'DELETE' }));
-            gbmToast(`${dados.removidas} transação(ões) removida(s).`);
-            carregarHistorico();
-        } catch (erro) { gbmToast(erro.message, 'erro'); }
-    }
-
-    carregarAtalhoPerfilCabecalho();
-    Promise.all([carregarContas(), carregarHistorico()]).catch((erro) => gbmToast(erro.message, 'erro'));
-</script>
+<script src="auth.js?v=6f32663332"></script>
+<script src="gbm-pages.js?v=b53b3cd6b3"></script>
+<script src="paginas/importacoes.js?v=8ee0ee9a81"></script>
 <script src="gbm-tutorial.js"></script>
-<script src="gbm-menu.js?v=20261015-shell1"></script>
+<script src="gbm-menu.js?v=56467e5b3d"></script>
 
 <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
     <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:480px; width:90%; box-shadow:0 0 30px rgba(95,255,168,0.1);">
@@ -349,12 +198,12 @@
                 <img src="logo-transparente.jpg" style="height:32px; border-radius:6px;">
                 <span style="font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
             </div>
-            <button onclick="fecharModalNotificacoes(false)" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer;">&times;</button>
+            <button data-acao="fecharModalNotificacoes" data-args="[false]" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
         <div id="lista-notificacoes-modal" style="display:flex; flex-direction:column; gap:12px; max-height:340px; overflow-y:auto;"></div>
         <div style="display:flex; gap:10px; margin-top:20px;">
-            <button id="btn-confirmar-modal" onclick="fecharModalNotificacoes(true)" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">CONFIRMAR</button>
-            <button id="btn-fechar-modal" onclick="fecharModalNotificacoes(false)" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">FECHAR</button>
+            <button id="btn-confirmar-modal" data-acao="fecharModalNotificacoes" data-args="[true]" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">CONFIRMAR</button>
+            <button id="btn-fechar-modal" data-acao="fecharModalNotificacoes" data-args="[false]" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer;">FECHAR</button>
         </div>
     </div>
 </div>

@@ -20,6 +20,31 @@ npm start
 
 O servidor usa a porta definida em `PORT` e publica os arquivos da pasta `public/`.
 
+## Estrutura
+
+- `index.js`: ponto de entrada; inicia o servidor, prepara o banco, agenda a tarefa diária e encerra com segurança no deploy.
+- `src/app.js`: cria o Express com a mesma ordem de middlewares de segurança, arquivos estáticos, sessão, rotas e tratamento de erros.
+- `src/rotas/`: rotas por assunto (autenticação, transações, importações, objetivos, pagamentos etc.).
+- `src/servicos/`: regras compartilhadas (identidade criptografada, importação, alertas, recorrências, assinaturas).
+- `src/db/`: pool MySQL e migrações automáticas; `db/schema.sql` traz o esquema base para desenvolvimento e testes.
+- `src/web/`: sessão, autorização, limites de requisição, uploads e páginas editoriais.
+
+## Arquivos do site
+
+- Depois de alterar qualquer CSS ou JS em `public/`, execute `npm run versionar`: o parâmetro `?v=` das páginas, dos scripts e do service worker passa a ser o hash do conteúdo, e o servidor entrega arquivos versionados com cache de um ano. Os testes falham se alguma versão estiver desatualizada.
+- Chart.js, ExcelJS, jsPDF e jsPDF-AutoTable ficam em `public/vendor/` (com as licenças em `public/vendor/licencas/`), sem depender de CDN.
+- Novos guias devem manter `canonical`, Open Graph, dados estruturados (`Article`) e o código do AdSense, como os existentes.
+
+## Testes com MySQL real
+
+`npm test` roda os testes unitários. Os testes de integração recriam todas as tabelas de um banco descartável:
+
+```bash
+GBM_TESTE_MYSQL=1 DB_HOST=127.0.0.1 DB_PORT=3306 DB_USER=root DB_PASSWORD=root DB_NAME=gbm_teste node --test test/integracao.test.js
+```
+
+Nunca aponte essas variáveis para o banco de produção. O CI executa esses testes em um MySQL 8 temporário.
+
 Use um banco dedicado ao desenvolvimento. A inicialização executa migrações
 automáticas aditivas e pressupõe que o esquema base já existe; este repositório
 não inclui um script de criação desse esquema.
@@ -54,8 +79,10 @@ Depois, faça o deploy e confirme `/health` e o login. O erro
 confiável nessa cadeia; mudar `DB_SSL_REJECT_UNAUTHORIZED` não o corrige.
 
 O login diferencia indisponibilidade do serviço (`503`, sem apagar uma sessão
-válida) de credenciais recusadas (`401`). Conexões MySQL interrompidas são
-reabertas na próxima operação; escritas e transações não são repetidas.
+válida) de credenciais recusadas (`401`). A aplicação usa um pool MySQL
+(`DB_POOL_LIMIT`, padrão 5): cada transação reserva uma conexão exclusiva até
+o commit ou rollback, conexões interrompidas são substituídas e escritas não
+são repetidas automaticamente.
 
 Para verificar a execução, confirme que `/health` responde `200` com
 `database: "ok"` e que as migrações concluíram sem erros. Os testes em
@@ -81,7 +108,9 @@ Nunca publique `.env`, tokens ou credenciais. Credenciais que já apareceram no 
 
 ## Área editorial e AdSense
 
-Anúncios não são carregados em login, dashboard, alertas ou páginas de ferramenta. A área pública de educação financeira fica em `/educacao-financeira.html`; `robots.txt`, `sitemap.xml` e `ads.txt` são publicados na raiz.
+O código do AdSense é carregado somente nas páginas editoriais: início, `/educacao-financeira.html`, `/ferramentas.html`, `/guias/*` e `/calculadoras/*`. Login, dashboard e demais telas da conta não carregam anúncios e mantêm a CSP restritiva com `default-src 'self'`.
+
+As páginas editoriais são entregues pelo servidor com um nonce por requisição e a CSP recomendada pelo Google para AdSense (`'nonce-…' 'strict-dynamic'`, `object-src 'none'`, `base-uri 'none'`). Todo `<script>` dessas páginas recebe o nonce automaticamente; não use atributos de evento inline (`onclick`) nelas. Ao criar um guia, inclua o código do AdSense no `<head>`, adicione a página ao `sitemap.xml` e à biblioteca. A Política de Privacidade (seção 12) traz a divulgação obrigatória sobre cookies de publicidade. `robots.txt`, `sitemap.xml` e `ads.txt` são publicados na raiz.
 
 Antes de pedir nova avaliação no AdSense:
 
@@ -89,9 +118,20 @@ Antes de pedir nova avaliação no AdSense:
 2. confirme que as páginas do sitemap respondem com `200`;
 3. solicite indexação das páginas editoriais no Google Search Console;
 4. aguarde a indexação e revise a cobertura;
-5. só então marque os problemas como corrigidos e peça nova análise.
+5. no AdSense, em **Privacidade e mensagens**, ative a mensagem de consentimento do Google (obrigatória para visitantes do Espaço Econômico Europeu, Reino Unido e Suíça);
+6. só então marque os problemas como corrigidos e peça nova análise.
 
 Uma nova aprovação depende da avaliação do Google e não pode ser garantida pelo código.
+
+## Assinaturas no Mercado Pago
+
+O webhook `/webhook-mercadopago` trata pagamentos aprovados e eventos da assinatura (`subscription_preapproval`). O status é sempre consultado na API do Mercado Pago:
+
+- assinatura autorizada libera o Premium;
+- assinatura cancelada ou pausada passa a `cancelado`, com acesso mantido até a próxima cobrança já paga;
+- um pagamento antigo não reativa uma assinatura cancelada.
+
+No painel do Mercado Pago, em **Suas integrações → Webhooks**, ative os eventos **Pagamentos** e **Planos e assinaturas** apontando para `https://gbm-finance.com/webhook-mercadopago` e cadastre a chave secreta em `MP_WEBHOOK_SECRET` no Render: notificações sem `x-signature` válida passam a ser recusadas. Todos os dias às 04:10 (horário de Brasília) o servidor reconcilia as assinaturas ativas com o Mercado Pago.
 
 ## CI
 

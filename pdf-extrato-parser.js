@@ -1,9 +1,10 @@
 require('./ia-assistente-loader');
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require('@google/genai');
+const { resumoErro } = require('./src/servicos/log');
 
-// Inicializa a IA usando a chave da Render
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Inicializa a IA com a chave configurada no Render.
+const genAI = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
 
 function detectarBanco(texto) {
     const t = texto.toLowerCase();
@@ -22,10 +23,7 @@ function detectarBanco(texto) {
 
 async function extrairTransacoesDoPdf(texto) {
     try {
-        // Usamos o modelo mais rápido e inteligente para essa tarefa
-        const model = genAI.getGenerativeModel({
-            model: process.env.GEMINI_MODEL || 'gemini-3.6-flash'
-        });
+        if (!genAI) throw new Error('GEMINI_API_KEY não configurada.');
 
         const prompt = `
             Você é um assistente financeiro especialista em extração de dados.
@@ -49,8 +47,13 @@ async function extrairTransacoesDoPdf(texto) {
             ${texto}
         `;
 
-        const result = await model.generateContent(prompt);
-        let respostaTexto = result.response.text();
+        // responseMimeType pede JSON puro; a limpeza abaixo cobre respostas antigas.
+        const result = await genAI.models.generateContent({
+            model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+            contents: prompt,
+            config: { responseMimeType: 'application/json', temperature: 0 }
+        });
+        let respostaTexto = String(result.text || '');
         
         // Limpa possíveis formatações markdown que a IA possa retornar
         respostaTexto = respostaTexto.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -64,7 +67,7 @@ async function extrairTransacoesDoPdf(texto) {
         };
 
     } catch (error) {
-        console.error("Erro ao chamar o Gemini API:", error);
+        console.error('Erro ao chamar a API do Gemini:', resumoErro(error));
         return { transacoes: [], reconciliacao: null, confianca: 'baixa' };
     }
 }

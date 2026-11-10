@@ -1,0 +1,5 @@
+        .conta-card { display:flex; flex-direction:column; gap:13px; }
+        .conta-topo { display:flex; justify-content:space-between; gap:12px; }
+        .conta-saldo { font-size:1.7rem; font-weight:850; }
+        .conta-detalhes { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+        .conta-detalhes div { padding:10px; border-radius:9px; background:rgba(255,255,255,.04); }

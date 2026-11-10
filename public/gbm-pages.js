@@ -250,7 +250,7 @@ function gbmGarantirMenuInterno() {
 
     const script = document.createElement('script');
     script.id = 'gbm-menu-bootstrap';
-    script.src = 'gbm-menu.js?v=20261015-shell1';
+    script.src = 'gbm-menu.js?v=56467e5b3d';
     script.async = false;
     (document.head || document.documentElement).appendChild(script);
 }
@@ -583,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('gbm-ai-ajuda-script')) return;
     const script = document.createElement('script');
     script.id = 'gbm-ai-ajuda-script';
-    script.src = 'gbm-ai-ajuda.js';
+    script.src = 'gbm-ai-ajuda.js?v=cde8fc8826';
     script.async = false;
     document.head.appendChild(script);
 })();

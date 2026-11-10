@@ -1,43 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=20261015-session1"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Objetivos de Poupança | GBM</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="gbm-pages.css">
-    <style>
-        .objetivo-card { position: relative; overflow: hidden; }
-        .objetivo-card::before {
-            content: "";
-            position: absolute;
-            inset: 0 auto 0 0;
-            width: 4px;
-            background: var(--objetivo-cor, var(--purple));
-        }
-        .objetivo-topo { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-        .objetivo-topo h3 { margin-bottom:4px; font-size:1.25rem; }
-        .objetivo-valores { display:flex; justify-content:space-between; gap:12px; margin:14px 0 8px; color:var(--muted); font-size:.82rem; }
-        .objetivo-valores strong { color:var(--text); }
-        .objetivo-actions { margin-top:16px; }
-        dialog {
-            width:min(520px, calc(100% - 28px));
-            border:1px solid var(--border);
-            border-radius:16px;
-            background:var(--card);
-            color:var(--text);
-            padding:22px;
-        }
-        dialog::backdrop { background:rgba(0,0,0,.72); backdrop-filter:blur(5px); }
-    </style>
+    <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
+    <link rel="stylesheet" href="paginas/metas.css?v=a9ea163a13">
     <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-typography.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=20261014-polish1">
-    <link rel="stylesheet" href="gbm-motion.css?v=20261015-motion1">
-    <script src="gbm-motion.js?v=20261015-motion1" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=20261015-depth1">
-    <script src="gbm-interactions.js?v=20261015-depth1" defer></script>
+    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
+    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
+    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
+    <script src="gbm-motion.js?v=88bf99267f" defer></script>
+    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
+    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
+    <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <script src="gbm-acoes.js?v=b9030c8ef0"></script>
 </head>
 <body class="gbm-interna gbm-polished">
     <header class="topbar">
@@ -122,159 +101,17 @@
             </div>
             <div class="field full">
                 <div class="actions end">
-                    <button type="button" class="btn" onclick="document.getElementById('dialog-contribuicao').close()">Cancelar</button>
+                    <button type="button" class="btn" data-acao="gbm:fechar-dialogo" data-args="[&quot;dialog-contribuicao&quot;]">Cancelar</button>
                     <button class="btn btn-primary">Adicionar</button>
                 </div>
             </div>
         </form>
     </dialog>
 
-    <script src="auth.js?v=20261015-session1"></script>
-    <script src="gbm-pages.js?v=20261015-depth1"></script>
-    <script>
-        let objetivos = [];
-        const hoje = new Date().toISOString().slice(0, 10);
-        document.getElementById('contribuicao-data').value = hoje;
-
-        async function carregarObjetivos() {
-            try {
-                objetivos = await gbmJson(await fetchApi('/objetivos'));
-                renderizarObjetivos();
-            } catch (erro) {
-                document.getElementById('lista-objetivos').innerHTML =
-                    `<div class="empty">${gbmEscapar(erro.message)}</div>`;
-            }
-        }
-
-        function renderizarObjetivos() {
-            const container = document.getElementById('lista-objetivos');
-            if (!objetivos.length) {
-                container.innerHTML = '<div class="empty">Nenhum objetivo criado ainda. Comece pela sua prioridade de poupança.</div>';
-                return;
-            }
-            container.innerHTML = objetivos.map((objetivo) => {
-                const guardado = Number(objetivo.valor_guardado || 0);
-                const meta = Number(objetivo.valor_meta || 0);
-                const percentual = meta > 0 ? Math.min((guardado / meta) * 100, 100) : 0;
-                const concluido = objetivo.status === 'concluido' || guardado >= meta;
-                return `
-                    <article class="card objetivo-card" style="--objetivo-cor:${gbmEscapar(objetivo.cor)}">
-                        <div class="objetivo-topo">
-                            <div>
-                                <h3>${gbmEscapar(objetivo.nome)}</h3>
-                                <span class="pill ${concluido ? 'green' : 'blue'}">${concluido ? '✓ Concluída' : gbmData(objetivo.prazo)}</span>
-                            </div>
-                            <strong>${percentual.toFixed(1)}%</strong>
-                        </div>
-                        <div class="objetivo-valores">
-                            <span>Guardado<br><strong>${gbmMoeda(guardado)}</strong></span>
-                            <span style="text-align:right">Objetivo<br><strong>${gbmMoeda(meta)}</strong></span>
-                        </div>
-                        <div class="progress"><span style="width:${percentual}%;background:${gbmEscapar(objetivo.cor)}"></span></div>
-                        <p class="stat">Faltam <strong>${gbmMoeda(Math.max(meta - guardado, 0))}</strong></p>
-                        <div class="actions objetivo-actions">
-                            <button class="btn btn-primary btn-small" onclick="abrirContribuicao(${objetivo.id})">+ Contribuir</button>
-                            <button class="btn btn-small" onclick="editarObjetivo(${objetivo.id})">Editar</button>
-                            <button class="btn btn-danger btn-small" onclick="excluirObjetivo(${objetivo.id})">Excluir</button>
-                        </div>
-                    </article>
-                `;
-            }).join('');
-        }
-
-        document.getElementById('form-objetivo').addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-            const id = document.getElementById('objetivo-id').value;
-            const payload = {
-                nome: document.getElementById('objetivo-nome').value,
-                valor_meta: Number(document.getElementById('objetivo-valor').value),
-                valor_inicial: Number(document.getElementById('objetivo-inicial').value || 0),
-                prazo: document.getElementById('objetivo-prazo').value || null,
-                cor: document.getElementById('objetivo-cor').value
-            };
-            try {
-                await gbmJson(await fetchApi(id ? `/objetivos/${id}` : '/objetivos', {
-                    method: id ? 'PUT' : 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }));
-                gbmToast(id ? 'Objetivo atualizado.' : 'Objetivo criado.');
-                limparFormulario();
-                carregarObjetivos();
-            } catch (erro) {
-                gbmToast(erro.message, 'erro');
-            }
-        });
-
-        function editarObjetivo(id) {
-            const objetivo = objetivos.find((item) => Number(item.id) === Number(id));
-            if (!objetivo) return;
-            document.getElementById('objetivo-id').value = objetivo.id;
-            document.getElementById('objetivo-nome').value = objetivo.nome;
-            document.getElementById('objetivo-valor').value = objetivo.valor_meta;
-            document.getElementById('objetivo-inicial').value = 0;
-            document.getElementById('objetivo-inicial').disabled = true;
-            document.getElementById('objetivo-prazo').value = objetivo.prazo ? String(objetivo.prazo).slice(0, 10) : '';
-            document.getElementById('objetivo-cor').value = objetivo.cor || '#55a7ff';
-            document.getElementById('titulo-form').textContent = 'Editar objetivo';
-            document.getElementById('cancelar-edicao').hidden = false;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function limparFormulario() {
-            document.getElementById('form-objetivo').reset();
-            document.getElementById('objetivo-id').value = '';
-            document.getElementById('objetivo-cor').value = '#55a7ff';
-            document.getElementById('objetivo-inicial').disabled = false;
-            document.getElementById('titulo-form').textContent = 'Criar novo objetivo';
-            document.getElementById('cancelar-edicao').hidden = true;
-        }
-        document.getElementById('cancelar-edicao').addEventListener('click', limparFormulario);
-
-        function abrirContribuicao(id) {
-            const objetivo = objetivos.find((item) => Number(item.id) === Number(id));
-            document.getElementById('contribuicao-objetivo-id').value = id;
-            document.getElementById('contribuicao-titulo').textContent = objetivo?.nome || '';
-            document.getElementById('contribuicao-valor').value = '';
-            document.getElementById('contribuicao-observacao').value = '';
-            document.getElementById('dialog-contribuicao').showModal();
-        }
-
-        document.getElementById('form-contribuicao').addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-            const id = document.getElementById('contribuicao-objetivo-id').value;
-            try {
-                await gbmJson(await fetchApi(`/objetivos/${id}/contribuicoes`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        valor: Number(document.getElementById('contribuicao-valor').value),
-                        data: document.getElementById('contribuicao-data').value,
-                        observacao: document.getElementById('contribuicao-observacao').value
-                    })
-                }));
-                document.getElementById('dialog-contribuicao').close();
-                gbmToast('Contribuição adicionada.');
-                carregarObjetivos();
-            } catch (erro) {
-                gbmToast(erro.message, 'erro');
-            }
-        });
-
-        async function excluirObjetivo(id) {
-            if (!confirm('Excluir este objetivo e todo o histórico de contribuições?')) return;
-            try {
-                await gbmJson(await fetchApi(`/objetivos/${id}`, { method: 'DELETE' }));
-                gbmToast('Objetivo excluído.');
-                carregarObjetivos();
-            } catch (erro) {
-                gbmToast(erro.message, 'erro');
-            }
-        }
-
-        carregarObjetivos();
-    </script>
+    <script src="auth.js?v=6f32663332"></script>
+    <script src="gbm-pages.js?v=b53b3cd6b3"></script>
+    <script src="paginas/metas.js?v=8b3e1a3073"></script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js?v=20261015-shell1"></script>
+    <script src="gbm-menu.js?v=56467e5b3d"></script>
 </body>
 </html>

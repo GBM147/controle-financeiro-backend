@@ -1,0 +1,5 @@
+        .notificacao { padding:15px; border:1px solid rgba(255,255,255,.09); border-radius:11px; background:rgba(255,255,255,.025); }
+        .notificacao.nao-lida { border-color:rgba(57,217,138,.34); background:rgba(57,217,138,.05); }
+        .notificacao + .notificacao { margin-top:10px; }
+        .switch-row { display:flex;justify-content:space-between;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08); }
+        .switch-row input { width:20px;height:20px;min-height:auto; }

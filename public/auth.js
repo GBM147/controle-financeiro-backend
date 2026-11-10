@@ -55,7 +55,7 @@ async function fetchApi(url, opcoes = {}) {
 // e fornece fallback offline quando necessário.
 function atualizarServiceWorkerGbm() {
     if (!('serviceWorker' in navigator)) return;
-    navigator.serviceWorker.register('/sw.js?v=20261015-session1', {
+    navigator.serviceWorker.register('/sw.js', {
         updateViaCache: 'none'
     }).then((registro) => {
         registro.update().catch(() => undefined);
@@ -70,7 +70,7 @@ function carregarAnimacoesUiGbm() {
     const link = document.createElement('link');
     link.id = 'gbm-ui-animations-css';
     link.rel = 'stylesheet';
-    link.href = 'gbm-ui-animations.css?v=1.0.0';
+    link.href = 'gbm-ui-animations.css?v=72efb0ce01';
     document.head.appendChild(link);
 }
 

@@ -1,0 +1,296 @@
+        /* === GBM design tokens (regua visual unica) === */
+        :root {
+            --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
+            --space-4: 16px; --space-5: 20px; --space-6: 24px; --space-8: 32px;
+            --radius-sm: 8px; --radius-md: 10px; --radius-lg: 14px; --radius-pill: 999px;
+            --shadow-1: 0 1px 2px rgba(0,0,0,.30);
+            --shadow-2: 0 8px 24px rgba(0,0,0,.28);
+            --fonte-titulo: 'Sora', 'Inter', sans-serif;
+            --fonte-texto: 'Inter', system-ui, sans-serif;
+        }
+
+        /* --- ESTILOS GERAIS & BACKGROUND --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(9, 16, 26, 0.6) 0%, rgba(9, 16, 26, 0.85) 100%), 
+                        url('../fundo-marmore.jpg') no-repeat center center fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Canvas de Partículas Douradas */
+        #particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- CARD DE LOGIN TRANSLÚCIDO (GLASSMORPHISM) --- */
+        .login-container {
+            position: relative;
+            z-index: 2;
+            background: rgba(17, 28, 46, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 40px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                max-width: 100%;
+                border-radius: 14px;
+            }
+        }
+
+        /* Logo Animado */
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            color: #b3b3b3;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        /* --- INPUTS COM LABELS FLUTUANTES --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #060a12;
+            border: 1px solid #1f3047;
+            border-radius: 10px;
+            outline: none;
+            color: #ffffff;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a9ba8;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        /* Comportamento de flutuar quando focado ou preenchido */
+        .input-group input:focus ~ label,
+        .input-group input:not(:placeholder-shown) ~ label {
+            top: -10px;
+            left: 10px;
+            transform: translateY(0) scale(0.85);
+            color: #c89f53; /* Dourado GBM */
+            font-weight: 600;
+            background: #060a12; /* Fundo para cobrir a borda ao flutuar */
+            padding: 0 4px;
+            border-radius: 8px;
+        }
+
+        /* Borda dourada e glow ao focar */
+        .input-group input:focus {
+            border-color: #c89f53;
+            box-shadow: 0 0 12px rgba(200, 159, 83, 0.25);
+        }
+
+        /* --- CONFIGURAÇÕES EXTRAS --- */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+
+        .remember-me {
+            color: #8a9ba8;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember-me input {
+            margin-right: 8px;
+            accent-color: #10b981;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .forgot-pass {
+            color: #c89f53;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .forgot-pass:hover {
+            color: #e0b769;
+            text-decoration: underline;
+        }
+
+        /* --- BOTÃO ESMERALDA COM SHINE --- */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #205c4e; /* Esmeralda escuro do seu projeto */
+            border: 1px solid #18473c;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(32, 92, 78, 0.3);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .btn-login:hover {
+            background: #297a66;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(32, 92, 78, 0.5);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        /* Efeito de Brilho Correndo (Shine) */
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 30%;
+            height: 200%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(30deg);
+            animation: shine 4s infinite ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { left: -60%; }
+            15% { left: 130%; }
+            100% { left: 130%; }
+        }
+
+        .signup-prompt {
+            margin-top: 25px;
+            color: #8a9ba8;
+            font-size: 14px;
+        }
+
+        .signup-prompt span {
+            color: #10b981;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .signup-prompt span:hover {
+            color: #34d399;
+            text-decoration: underline;
+        }
+
+        /* --- RODAPÉ COM VERSÍCULO --- */
+        .login-footer {
+            position: relative;
+            z-index: 2;
+            margin-top: 25px;
+            max-width: 420px;
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        .verse {
+            font-style: italic;
+            color: #e2e8f0;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .reference {
+            color: #c89f53;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+    
+        /* === GBM normalizacao visual: hierarquia, numeros e sombras === */
+        h1, h2, h3, .gbm-title, .card-titulo, .logo-text, .hero h1, .price {
+            font-family: var(--fonte-titulo);
+        }
+        body, p, span, td, th, input, select, button, label, .card, .card p, .card h3 {
+            font-family: var(--fonte-texto);
+        }
+        .card p, td, th, .valor, .card-fluxo p, .price, table {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+        .card p, .card-fluxo p, .grid-cards .card p {
+            text-shadow: none !important;
+        }
+        .card, .insights-panel, .categorias-panel, .chart-container, .painel-ajustes,
+        .container-tabela, .feature-card, .price-card {
+            border-radius: var(--radius-lg) !important;
+            box-shadow: var(--shadow-2);
+        }
+        .card { padding: var(--space-5) var(--space-5); }

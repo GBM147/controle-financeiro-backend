@@ -1,0 +1,6 @@
+        body { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+        .offline-card { width: min(520px, 100%); text-align: center; padding: 36px; }
+        .offline-card img { width: 112px; height: 112px; object-fit: contain; }
+        .offline-card h1 { margin: 18px 0 10px; }
+        .offline-card p { color: var(--muted); line-height: 1.6; }
+        .offline-card .btn { margin-top: 16px; }
