@@ -20,215 +20,6 @@ function gbmEscapar(valor) {
         .replaceAll("'", '&#039;');
 }
 
-/* ===== ACABAMENTO VISUAL GLOBAL =====
-   Esta camada altera apenas a aparência. A estrutura e o conteúdo das páginas
-   permanecem exatamente como foram definidos em cada HTML.
-*/
-function gbmAplicarTemaVisual() {
-    if (document.getElementById('gbm-tema-visual')) return;
-
-    const ativarTemaNaPagina = () => {
-        if (!document.body) return;
-        const paginaAtual = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-        const paginasPublicas = new Set([
-            'index.html',
-            'login.html',
-            'termos.html',
-            'politica-de-privacidade.html',
-            'sobre.html',
-            'fale-conosco.html',
-            'educacao-financeira.html',
-            'offline.html',
-            'sw-reset.html'
-        ]);
-        if (paginasPublicas.has(paginaAtual)) return;
-        document.body.classList.add('gbm-interna');
-        if (paginaAtual === 'dashboard.html') {
-            document.body.classList.add('gbm-dashboard-padrao');
-        }
-    };
-    if (document.body) {
-        ativarTemaNaPagina();
-    } else {
-        document.addEventListener('DOMContentLoaded', ativarTemaNaPagina, { once: true });
-    }
-
-    const estilo = document.createElement('style');
-    estilo.id = 'gbm-tema-visual';
-    estilo.textContent = `
-        :root {
-            --gbm-bg: #071015;
-            --gbm-surface: rgba(16, 32, 40, .96);
-            --gbm-surface-strong: rgba(11, 26, 34, .96);
-            --gbm-surface-soft: rgba(19, 40, 50, .72);
-            --gbm-line: rgba(52, 166, 216, .2);
-            --gbm-line-focus: rgba(34, 201, 139, .7);
-            --gbm-text: #f1f7f5;
-            --gbm-muted: #9aadb2;
-            --gbm-green: #22c98b;
-            --gbm-blue: #34a6d8;
-            --gbm-red: #ff6070;
-            --gbm-radius: 8px;
-            --gbm-shadow: 0 10px 26px rgba(0, 0, 0, .22), inset 0 1px rgba(255, 255, 255, .025);
-        }
-
-        html { color-scheme: dark; }
-
-        body.gbm-interna {
-            background: #07111f !important;
-            background-image: radial-gradient(circle at 16% 5%, rgba(34, 201, 139, .055), transparent 28%), radial-gradient(circle at 86% 20%, rgba(52, 166, 216, .05), transparent 24%) !important;
-            font-family: 'Inter', system-ui, sans-serif !important;
-            color: var(--gbm-text);
-            letter-spacing: 0;
-        }
-
-        body.gbm-interna::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            pointer-events: none;
-            background: linear-gradient(180deg, rgba(7, 16, 21, .12), rgba(7, 16, 21, .54));
-        }
-
-        body.gbm-interna :where(h1, h2, h3, .gbm-title, .titulo, .titulo-pagina, .card-titulo, .logo-text) {
-            font-family: 'Sora', 'Inter', sans-serif !important;
-            letter-spacing: 0 !important;
-            text-shadow: none !important;
-        }
-
-        body.gbm-interna :where(p, span, label, input, select, textarea, button, a, td, th) {
-            letter-spacing: 0;
-        }
-
-        body.gbm-interna :where(p, .page-title p, .card-subtitulo, label) {
-            color: var(--gbm-muted) !important;
-        }
-
-        body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .modal-content, .plano-card, .form-card) {
-            background: linear-gradient(145deg, var(--gbm-surface), var(--gbm-surface-strong)) !important;
-            border: 1px solid var(--gbm-line) !important;
-            border-radius: var(--gbm-radius) !important;
-            box-shadow: var(--gbm-shadow) !important;
-            backdrop-filter: blur(10px) !important;
-        }
-
-        body.gbm-interna :where(.page-wrapper, .container) {
-            width: min(1180px, calc(100% - 40px));
-            margin-inline: auto;
-        }
-
-        body.gbm-interna :where(.page-wrapper > .card, .container > .card) {
-            background: transparent !important;
-            border: 0 !important;
-            border-radius: 0 !important;
-            box-shadow: inset 0 -1px 0 rgba(85, 167, 255, .16) !important;
-        }
-        body.gbm-interna :where(#card-resultado, .filtros-card, .grafico-wrapper, .resumo-item) {
-            background: #132036 !important;
-            border: 0 !important;
-            border-radius: 0 !important;
-            box-shadow: inset 0 -1px 0 rgba(85, 167, 255, .16) !important;
-        }
-
-        body.gbm-interna :where(.filtros) {
-            background: rgba(7, 20, 27, .76) !important;
-            border: 1px solid rgba(52, 166, 216, .14) !important;
-            border-radius: var(--gbm-radius) !important;
-        }
-
-        body.gbm-interna :where(.resumo-ano, .resumo-rapido) {
-            gap: 10px !important;
-        }
-
-        body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card) {
-            transition: border-color .2s ease, background-color .2s ease, transform .2s ease, box-shadow .2s ease;
-        }
-
-        body.gbm-interna :where(.card, .panel, .painel, .resumo-card, .stat-card, .conta-card, .meta, .plano-card):hover {
-            transform: none !important;
-            border-color: var(--gbm-line-focus) !important;
-            box-shadow: var(--gbm-shadow) !important;
-        }
-
-        body.gbm-interna :where(input, select, textarea) {
-            min-height: 42px;
-            color: var(--gbm-text) !important;
-            background-color: rgba(7, 20, 27, .9) !important;
-            border-color: var(--gbm-line) !important;
-            border-radius: 7px !important;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, .16) !important;
-            font-family: 'Inter', system-ui, sans-serif !important;
-            transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
-        }
-
-        body.gbm-interna :where(input, select, textarea):focus {
-            border-color: var(--gbm-line-focus) !important;
-            background-color: rgba(7, 20, 27, .96) !important;
-            box-shadow: 0 0 0 3px rgba(34, 201, 139, .1) !important;
-            outline: none;
-        }
-
-        body.gbm-interna :where(button, .btn, .btn-voltar) {
-            border-radius: 7px !important;
-            font-family: 'Inter', system-ui, sans-serif !important;
-            font-weight: 700;
-            text-shadow: none !important;
-            box-shadow: none;
-            transition: filter .2s ease, border-color .2s ease, background-color .2s ease, transform .2s ease;
-        }
-
-        body.gbm-interna :where(button, .btn, .btn-voltar):hover {
-            filter: brightness(1.07);
-        }
-
-        body.gbm-interna :where(.valor, .price, .preco, .info-valor, .evento-valor, [id*='saldo'], [id*='total']) {
-            font-variant-numeric: tabular-nums;
-            text-shadow: none !important;
-        }
-
-        body.gbm-interna :where(table) {
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        body.gbm-interna :where(th) {
-            color: var(--gbm-muted) !important;
-            font-size: .75rem;
-            text-transform: uppercase;
-        }
-
-        body.gbm-interna :where(td, th) {
-            border-color: rgba(52, 166, 216, .1) !important;
-        }
-
-        body.gbm-interna :where(.topbar, .gbm-header, header) {
-            background-color: rgba(7, 16, 21, .88) !important;
-            border-color: rgba(52, 166, 216, .16) !important;
-            box-shadow: 0 8px 28px rgba(0, 0, 0, .16) !important;
-            backdrop-filter: blur(14px);
-        }
-
-        @media (max-width: 700px) {
-            body.gbm-interna :where(.page-wrapper, .container) {
-                width: min(100% - 24px, 1180px);
-            }
-        }
-
-        #particles-canvas { opacity: .2 !important; }
-
-        @media (prefers-reduced-motion: reduce) {
-            body.gbm-interna *, body.gbm-interna *::before, body.gbm-interna *::after {
-                animation-duration: .01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: .01ms !important;
-            }
-        }
-    `;
-    document.head.appendChild(estilo);
-}
-
-
 const gbmPaginaVisualAtual = (window.location.pathname.split('/').pop() || '').toLowerCase();
 
 /* ===== MENU INTERNO GLOBAL =====
@@ -250,12 +41,11 @@ function gbmGarantirMenuInterno() {
 
     const script = document.createElement('script');
     script.id = 'gbm-menu-bootstrap';
-    script.src = 'gbm-menu.js?v=56467e5b3d';
+    script.src = 'gbm-menu.js?v=4701e41f46';
     script.async = false;
     (document.head || document.documentElement).appendChild(script);
 }
 
-gbmAplicarTemaVisual();
 gbmGarantirMenuInterno();
 
 
@@ -275,17 +65,6 @@ function gbmObservarCabecalho() {
 
 if (document.body) gbmObservarCabecalho();
 else document.addEventListener('DOMContentLoaded', gbmObservarCabecalho, { once: true });
-
-function gbmToast(mensagem, tipo = 'sucesso') {
-    document.querySelector('.toast')?.remove();
-    const toast = document.createElement('div');
-    toast.className = `toast ${tipo}`;
-    toast.setAttribute('role', tipo === 'erro' ? 'alert' : 'status');
-    toast.setAttribute('aria-live', tipo === 'erro' ? 'assertive' : 'polite');
-    toast.textContent = mensagem;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4200);
-}
 
 async function gbmJson(resposta) {
     const dados = await resposta.json().catch(() => ({}));
@@ -311,107 +90,6 @@ document.addEventListener('keydown', (evento) => {
     campo.form.requestSubmit();
 });
 
-function gbmInicializarParticulas() {
-    const corpo = document.body;
-    if (!corpo?.classList.contains('gbm-interna')) return;
-    if (corpo.dataset.gbmParticulasInicializadas === 'true') return;
-
-    let canvas = document.getElementById('particles-canvas');
-    if (!canvas) {
-        canvas = document.createElement('canvas');
-        canvas.id = 'particles-canvas';
-        corpo.prepend(canvas);
-    }
-
-    const contexto = canvas.getContext('2d');
-    if (!contexto) return;
-
-    corpo.dataset.gbmParticulasInicializadas = 'true';
-    canvas.setAttribute('aria-hidden', 'true');
-
-    const movimentoReduzido = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let largura = 0;
-    let altura = 0;
-    let particulas = [];
-    let quadroAnimacao = 0;
-    let quadroResize = 0;
-
-    function criarParticula() {
-        return {
-            x: Math.random() * largura,
-            y: Math.random() * altura,
-            tamanho: Math.random() * 2.5 + .8,
-            velocidade: Math.random() * 1.2 + .3,
-            opacidade: Math.random() * .4 + .2
-        };
-    }
-
-    function desenhar() {
-        contexto.clearRect(0, 0, largura, altura);
-        particulas.forEach((particula) => {
-            contexto.beginPath();
-            contexto.arc(particula.x, particula.y, particula.tamanho, 0, Math.PI * 2);
-            contexto.fillStyle = `rgba(85, 167, 255, ${particula.opacidade * .55})`;
-            contexto.fill();
-        });
-    }
-
-    function animar() {
-        particulas.forEach((particula) => {
-            particula.y -= particula.velocidade;
-            if (particula.y < -particula.tamanho) {
-                particula.y = altura + particula.tamanho;
-                particula.x = Math.random() * largura;
-            }
-        });
-        desenhar();
-        quadroAnimacao = window.requestAnimationFrame(animar);
-    }
-
-    function atualizarAnimacao() {
-        window.cancelAnimationFrame(quadroAnimacao);
-        quadroAnimacao = 0;
-        desenhar();
-        if (!movimentoReduzido.matches) {
-            quadroAnimacao = window.requestAnimationFrame(animar);
-        }
-    }
-
-    function redimensionar() {
-        largura = window.innerWidth;
-        altura = window.innerHeight;
-        const proporcao = Math.min(window.devicePixelRatio || 1, 2);
-
-        canvas.width = Math.round(largura * proporcao);
-        canvas.height = Math.round(altura * proporcao);
-        contexto.setTransform(proporcao, 0, 0, proporcao, 0, 0);
-
-        const quantidade = Math.min(65, Math.floor((largura * altura) / 15000));
-        particulas = Array.from({ length: quantidade }, criarParticula);
-        atualizarAnimacao();
-    }
-
-    window.addEventListener('resize', () => {
-        window.cancelAnimationFrame(quadroResize);
-        quadroResize = window.requestAnimationFrame(redimensionar);
-    });
-
-    if (typeof movimentoReduzido.addEventListener === 'function') {
-        movimentoReduzido.addEventListener('change', atualizarAnimacao);
-    } else {
-        movimentoReduzido.addListener(atualizarAnimacao);
-    }
-
-    redimensionar();
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', gbmInicializarParticulas, { once: true });
-} else {
-    gbmInicializarParticulas();
-}
-
-/* ===== MENU LATERAL, PERFIL NO CABEÇALHO E MODAL GBM (compartilhado) ===== */
 function abrirMenuLateral(event) {
     if (window.GBMAppShell) { window.GBMAppShell.abrir(event); return; }
     if (event) event.stopPropagation();
@@ -447,7 +125,11 @@ function acessarRotaPremium(url, nomeRecurso) {
         window.location.href = url;
     } else {
         fecharMenuLateral();
-        gbmConfirmar(`A ferramenta <strong>${nomeRecurso}</strong> é uma funcionalidade exclusiva para assinantes do plano Premium.<br><br>Deseja assinar agora por apenas R$ 9,90 e liberar todos os recursos avançados sem anúncios?`).then((confirmado) => {
+        gbmConfirmar(`A ferramenta <strong>${nomeRecurso}</strong> é exclusiva do plano Premium.<br><br>Assine por R$ 9,90 por mês para liberar os recursos avançados e usar o GBM sem anúncios.`, {
+            titulo: 'Recurso Premium',
+            confirmar: 'Conhecer o Premium',
+            cancelar: 'Agora não'
+        }).then((confirmado) => {
             if (confirmado) window.location.href = 'pagamento.html';
         });
     }
@@ -472,108 +154,118 @@ async function carregarAtalhoPerfilCabecalho() {
     }
 }
 
-let _gbmResolveConfirm = null;
 
+/* ===== AVISOS E CONFIRMAÇÕES =====
+   Um único componente de aviso (toast) e um diálogo de confirmação nativo,
+   usados por todas as páginas. Mensagens são texto; só <strong> e <br>
+   são preservados. */
 const gbmEscaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
 })[caractere]);
 
+function gbmMensagemSegura(mensagem) {
+    return gbmEscaparMensagemModal(mensagem)
+        .replace(/&lt;(\/?)strong&gt;/g, '<$1strong>')
+        .replace(/&lt;br\s*\/?&gt;/g, '<br>');
+}
+
+const GBM_ICONES_AVISO = {
+    erro: '<circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path>',
+    aviso: '<path d="M12 4 2.5 20h19z"></path><path d="M12 10v4M12 17h.01"></path>',
+    info: '<circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path>',
+    sucesso: '<path d="M5 12.5l4.2 4.2L19 7"></path>'
+};
+
+function gbmToast(mensagem, tipo = 'sucesso') {
+    const tipoValido = GBM_ICONES_AVISO[tipo] ? tipo : 'info';
+    let pilha = document.querySelector('.gbm-avisos');
+    if (!pilha) {
+        pilha = document.createElement('div');
+        pilha.className = 'gbm-avisos';
+        document.body.appendChild(pilha);
+    }
+    pilha.querySelectorAll('.toast').forEach((anterior) => anterior.remove());
+    const toast = document.createElement('div');
+    toast.className = `toast ${tipoValido}`;
+    toast.setAttribute('role', tipoValido === 'erro' ? 'alert' : 'status');
+    toast.setAttribute('aria-live', tipoValido === 'erro' ? 'assertive' : 'polite');
+    toast.innerHTML = `<svg class="toast-icone" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GBM_ICONES_AVISO[tipoValido]}</svg>`
+        + '<span class="toast-texto"></span><button type="button" class="toast-fechar" aria-label="Fechar aviso">×</button>';
+    toast.querySelector('.toast-texto').innerHTML = gbmMensagemSegura(mensagem);
+    const fechar = () => {
+        if (!toast.isConnected || toast.classList.contains('saindo')) return;
+        toast.classList.add('saindo');
+        setTimeout(() => toast.remove(), 170);
+    };
+    toast.querySelector('.toast-fechar').addEventListener('click', fechar);
+    pilha.appendChild(toast);
+    const texto = toast.textContent || '';
+    const duracao = Math.min(12000, 4000 + texto.length * 45) + (tipoValido === 'erro' ? 3000 : 0);
+    let temporizador = setTimeout(fechar, duracao);
+    toast.addEventListener('mouseenter', () => clearTimeout(temporizador));
+    toast.addEventListener('mouseleave', () => { temporizador = setTimeout(fechar, 2500); });
+    return toast;
+}
+
 function gbmAlerta(mensagem, tipo = 'info') {
-    const cor = tipo === 'erro' ? 'rgba(239,68,68,0.3)'
-        : tipo === 'aviso' ? 'rgba(85,167,255,0.3)'
-        : 'rgba(95,255,168,0.3)';
-    document.getElementById('lista-notificacoes-modal').innerHTML = `
-        <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-            ${gbmEscaparMensagemModal(mensagem)}
-        </div>`;
-    document.getElementById('btn-confirmar-modal').style.display = 'none';
-    document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
-    document.getElementById('modal-notificacoes').style.display = 'flex';
-    _gbmResolveConfirm = null;
+    return gbmToast(mensagem, tipo === 'erro' || tipo === 'aviso' || tipo === 'sucesso' ? tipo : 'info');
 }
 
-function gbmConfirmar(mensagem) {
-    return new Promise(resolve => {
+let _gbmResolveConfirm = null;
+function gbmDialogoConfirmacao() {
+    let dialogo = document.getElementById('gbm-dialogo-confirmacao');
+    if (dialogo) return dialogo;
+    dialogo = document.createElement('dialog');
+    dialogo.id = 'gbm-dialogo-confirmacao';
+    dialogo.className = 'gbm-dialogo';
+    dialogo.setAttribute('aria-labelledby', 'gbm-dialogo-titulo');
+    dialogo.innerHTML = '<form method="dialog" class="gbm-dialogo-corpo">'
+        + '<h2 id="gbm-dialogo-titulo" class="gbm-dialogo-titulo"></h2>'
+        + '<p class="gbm-dialogo-mensagem"></p>'
+        + '<div class="gbm-dialogo-acoes">'
+        + '<button type="submit" value="cancelar" class="btn" data-gbm-cancelar></button>'
+        + '<button type="submit" value="confirmar" class="btn btn-primary" data-gbm-confirmar></button>'
+        + '</div></form>';
+    dialogo.addEventListener('close', () => {
+        const confirmado = dialogo.returnValue === 'confirmar';
+        if (_gbmResolveConfirm) {
+            const resolver = _gbmResolveConfirm;
+            _gbmResolveConfirm = null;
+            resolver(confirmado);
+        }
+    });
+    document.body.appendChild(dialogo);
+    return dialogo;
+}
+
+function gbmConfirmar(mensagem, opcoes = {}) {
+    const {
+        titulo = 'Confirmar ação',
+        confirmar = 'Confirmar',
+        cancelar = 'Cancelar',
+        perigo = false
+    } = opcoes;
+    return new Promise((resolve) => {
+        if (_gbmResolveConfirm) _gbmResolveConfirm(false);
+        const dialogo = gbmDialogoConfirmacao();
+        dialogo.querySelector('.gbm-dialogo-titulo').textContent = titulo;
+        dialogo.querySelector('.gbm-dialogo-mensagem').innerHTML = gbmMensagemSegura(mensagem);
+        dialogo.querySelector('[data-gbm-cancelar]').textContent = cancelar;
+        const botaoConfirmar = dialogo.querySelector('[data-gbm-confirmar]');
+        botaoConfirmar.textContent = confirmar;
+        botaoConfirmar.className = perigo ? 'btn btn-danger' : 'btn btn-primary';
         _gbmResolveConfirm = resolve;
-        document.getElementById('lista-notificacoes-modal').innerHTML = `
-            <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                ${gbmEscaparMensagemModal(mensagem)}
-            </div>`;
-        document.getElementById('btn-confirmar-modal').style.display = 'block';
-        document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
-        document.getElementById('modal-notificacoes').style.display = 'flex';
+        dialogo.returnValue = '';
+        if (!dialogo.open) dialogo.showModal();
+        botaoConfirmar.focus();
     });
 }
 
+// Nome mantido para chamadas antigas: fecha o diálogo com a resposta indicada.
 function fecharModalNotificacoes(confirmado = false) {
-    document.getElementById('modal-notificacoes').style.display = 'none';
-    if (_gbmResolveConfirm) {
-        _gbmResolveConfirm(confirmado);
-        _gbmResolveConfirm = null;
-    }
+    const dialogo = document.getElementById('gbm-dialogo-confirmacao');
+    if (dialogo?.open) dialogo.close(confirmado ? 'confirmar' : 'cancelar');
 }
-
-/* ===== RIPPLE NOS BOTÕES ===== */
-document.addEventListener('click', (e) => {
-    if (window.GBMInteractions || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const btn = e.target.closest('.btn');
-    if (!btn) return;
-    const ripple = document.createElement('span');
-    ripple.className = 'ripple';
-    const rect = btn.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
-    ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px`;
-    btn.appendChild(ripple);
-    ripple.addEventListener('animationend', () => ripple.remove());
-});
-
-/* ===== CONTAGEM ANIMADA NOS NÚMEROS ===== */
-function gbmContarAte(el) {
-    const texto = el.textContent.trim();
-    const match = texto.match(/(R\$\s*)?([\d.,]+)/);
-    if (!match) return;
-    const prefixo = match[1] || '';
-    const alvo = parseFloat(match[2].replace(/\./g, '').replace(',', '.'));
-    if (isNaN(alvo)) return;
-    const duracao = 900;
-    const inicio = performance.now();
-    function step(agora) {
-        const progresso = Math.min((agora - inicio) / duracao, 1);
-        const ease = 1 - Math.pow(1 - progresso, 3);
-        const atual = (alvo * ease).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        el.textContent = prefixo + atual;
-        if (progresso < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-}
-
-const observadorContagem = new IntersectionObserver((entradas) => {
-    entradas.forEach(e => {
-        if (!e.isIntersecting) return;
-        gbmContarAte(e.target);
-        observadorContagem.unobserve(e.target);
-    });
-}, { threshold: .3 });
-
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.gbm-count-up').forEach(el => observadorContagem.observe(el));
-});
-
-/* ===== BARRAS DE PROGRESSO ANIMADAS ===== */
-const observadorBarras = new IntersectionObserver((entradas) => {
-    entradas.forEach(e => {
-        if (!e.isIntersecting) return;
-        const barra = e.target;
-        const largura = barra.getAttribute('data-width') || barra.style.width;
-        barra.style.setProperty('--w', largura);
-        requestAnimationFrame(() => barra.classList.add('animado'));
-        observadorBarras.unobserve(barra);
-    });
-}, { threshold: .1 });
-
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.progress > span[data-width], .barra div[data-width]').forEach(el => observadorBarras.observe(el));
-});
 
 /* Os títulos e descrições permanecem no conteúdo, como no dashboard.
    O menu compartilhado identifica a seção e não remove informações da página. */
@@ -583,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('gbm-ai-ajuda-script')) return;
     const script = document.createElement('script');
     script.id = 'gbm-ai-ajuda-script';
-    script.src = 'gbm-ai-ajuda.js?v=cde8fc8826';
+    script.src = 'gbm-ai-ajuda.js?v=c879ffdc23';
     script.async = false;
     document.head.appendChild(script);
 })();

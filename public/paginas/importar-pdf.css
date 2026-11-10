@@ -1,0 +1,3 @@
+/* Redirecionamento antigo para a central de importações (importar-pdf.html). */
+body { display: grid; min-height: 100vh; margin: 0; padding: 24px; place-items: center; }
+body > .container { width: min(560px, 100%); }

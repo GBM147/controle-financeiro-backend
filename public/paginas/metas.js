@@ -27,17 +27,17 @@
                     <article class="card objetivo-card" style="--objetivo-cor:${gbmEscapar(objetivo.cor)}">
                         <div class="objetivo-topo">
                             <div>
-                                <h3>${gbmEscapar(objetivo.nome)}</h3>
-                                <span class="pill ${concluido ? 'green' : 'blue'}">${concluido ? '✓ Concluída' : gbmData(objetivo.prazo)}</span>
+                                <h3><i class="objetivo-cor" aria-hidden="true"></i>${gbmEscapar(objetivo.nome)}</h3>
+                                ${concluido ? '<span class="pill green">Concluído</span>' : (objetivo.prazo ? `<span class="pill">Até ${gbmData(objetivo.prazo)}</span>` : '')}
                             </div>
-                            <strong>${percentual.toFixed(1)}%</strong>
+                            <strong class="objetivo-percentual">${percentual.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</strong>
                         </div>
                         <div class="objetivo-valores">
                             <span>Guardado<br><strong>${gbmMoeda(guardado)}</strong></span>
-                            <span style="text-align:right">Objetivo<br><strong>${gbmMoeda(meta)}</strong></span>
+                            <span class="objetivo-alvo">Objetivo<br><strong>${gbmMoeda(meta)}</strong></span>
                         </div>
-                        <div class="progress"><span style="width:${percentual}%;background:${gbmEscapar(objetivo.cor)}"></span></div>
-                        <p class="stat">Faltam <strong>${gbmMoeda(Math.max(meta - guardado, 0))}</strong></p>
+                        <div class="progress"><span style="width:${percentual.toFixed(1)}%"></span></div>
+                        <p class="objetivo-falta">Faltam <strong>${gbmMoeda(Math.max(meta - guardado, 0))}</strong></p>
                         <div class="actions objetivo-actions">
                             <button class="btn btn-primary btn-small" data-acao="abrirContribuicao" data-args="[${objetivo.id}]">+ Contribuir</button>
                             <button class="btn btn-small" data-acao="editarObjetivo" data-args="[${objetivo.id}]">Editar</button>
@@ -81,7 +81,7 @@
             document.getElementById('objetivo-inicial').value = 0;
             document.getElementById('objetivo-inicial').disabled = true;
             document.getElementById('objetivo-prazo').value = objetivo.prazo ? String(objetivo.prazo).slice(0, 10) : '';
-            document.getElementById('objetivo-cor').value = objetivo.cor || '#55a7ff';
+            document.getElementById('objetivo-cor').value = objetivo.cor || '#0F7B5F';
             document.getElementById('titulo-form').textContent = 'Editar objetivo';
             document.getElementById('cancelar-edicao').hidden = false;
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -90,7 +90,7 @@
         function limparFormulario() {
             document.getElementById('form-objetivo').reset();
             document.getElementById('objetivo-id').value = '';
-            document.getElementById('objetivo-cor').value = '#55a7ff';
+            document.getElementById('objetivo-cor').value = '#0F7B5F';
             document.getElementById('objetivo-inicial').disabled = false;
             document.getElementById('titulo-form').textContent = 'Criar novo objetivo';
             document.getElementById('cancelar-edicao').hidden = true;

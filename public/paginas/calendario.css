@@ -1,9 +1,54 @@
-        .resumo-calendario { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:18px; }
-        .evento { display:grid; grid-template-columns:70px 1fr auto; gap:13px; align-items:center; padding:13px 0; border-bottom:1px solid rgba(255,255,255,.08); }
-        .evento-data { text-align:center; font-weight:800; color:var(--blue); }
-        .evento-data strong { display:block; font-size:1.35rem; }
-        .evento-valor.receita { color:#7fffb7; }
-        .evento-valor.despesa { color:#ff909c; }
-        .tipo-receita { color:#7fffb7; }
-        .tipo-despesa { color:#ff909c; }
-        @media(max-width:600px){.evento{grid-template-columns:55px 1fr}.evento-valor{grid-column:2}}
+/* Calendário financeiro (calendario.html). */
+.recorrencia { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.recorrencia:last-child { border-bottom: 0; }
+.recorrencia.pausada { color: var(--text-3); }
+.recorrencia-topo { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.recorrencia-detalhe { margin: 2px 0 8px; color: var(--text-3); font-size: 12.5px; }
+.calendario-topo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.calendario-topo h2 { margin: 0; }
+.calendario-topo input { width: auto; }
+.resumo-calendario {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.evento {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+.evento:last-child { border-bottom: 0; }
+.evento-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 0;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    color: var(--text-2);
+    font-size: 12px;
+    line-height: 1.2;
+    text-transform: lowercase;
+}
+.evento-data strong { color: var(--text); font-size: 18px; font-weight: 600; }
+.evento .pill { margin-top: 4px; }
+.evento-valor { font-size: 14px; white-space: nowrap; }
+.evento-valor.receita,
+.tipo-receita { color: var(--pos); }
+.evento-valor.despesa,
+.tipo-despesa { color: var(--neg); }
+@media (max-width: 600px) {
+    .evento { grid-template-columns: 48px minmax(0, 1fr); }
+    .evento-valor { grid-column: 2; }
+    .resumo-calendario { grid-template-columns: minmax(0, 1fr); }
+}

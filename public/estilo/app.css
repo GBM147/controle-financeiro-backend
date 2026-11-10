@@ -1,0 +1,390 @@
+/* Estrutura das telas da conta: menu lateral, cabeçalho e área de conteúdo.
+   A marcação do menu vem de gbm-menu.js. */
+
+body.gbm-interna {
+    --menu-largura: 264px;
+    --cabecalho-altura: 60px;
+}
+
+/* Antes de o menu compartilhado montar, as páginas mostram o topo próprio. */
+body.gbm-interna > .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: var(--cabecalho-altura);
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+.topbar .brand,
+.topbar .brand span { color: var(--text); font-weight: 600; text-decoration: none; }
+.topbar .brand img { display: none; }
+.top-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ---------- Shell ---------- */
+body.gbm-app-shell {
+    padding: var(--cabecalho-altura) 0 0 var(--menu-largura);
+}
+
+.gbm-shell-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: var(--menu-largura);
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: var(--cabecalho-altura);
+    padding: 0 clamp(16px, 3vw, 32px);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    transition: background-color var(--dur) ease, border-color var(--dur) ease;
+}
+.gbm-shell-header .gbm-logo-container { display: none; }
+.gbm-shell-page-name {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.dashboard-header-search {
+    display: flex;
+    flex: 0 1 380px;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-3);
+}
+.dashboard-header-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.dashboard-header-search input {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text);
+    font-size: 14px;
+}
+.dashboard-header-search input:focus { box-shadow: none; }
+.dashboard-search-icon {
+    position: relative;
+    flex: 0 0 14px;
+    width: 14px;
+    height: 14px;
+}
+.dashboard-search-icon::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 9px;
+    height: 9px;
+    border: 1.6px solid currentColor;
+    border-radius: 50%;
+}
+.dashboard-search-icon::after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 10px;
+    width: 5px;
+    height: 1.6px;
+    border-radius: 2px;
+    background: currentColor;
+    transform: rotate(45deg);
+}
+
+.gbm-header-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+.dashboard-notification-link,
+.gbm-tema-btn,
+.gbm-menu-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-2);
+    transition: background-color var(--dur-rapida) ease, color var(--dur-rapida) ease, transform var(--dur-rapida) var(--ease);
+}
+.dashboard-notification-link svg,
+.gbm-tema-btn svg { width: 19px; height: 19px; }
+.gbm-tema-btn:active,
+.gbm-menu-btn:active { transform: scale(.94); }
+.dashboard-notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 7px;
+    height: 7px;
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+    background: var(--neg);
+    box-sizing: content-box;
+}
+.atalho-perfil {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 3px 10px 3px 3px;
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+.avatar-perfil-cabecalho,
+.avatar-iniciais {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-2);
+}
+.avatar-perfil { display: inline-flex; flex: none; }
+.avatar-iniciais {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+.avatar-iniciais:empty::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border: 1.6px solid currentColor;
+    border-radius: 50%;
+}
+.nome-perfil-cabecalho { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gbm-menu-btn { display: none; }
+.hamburger-icon { display: inline-flex; flex-direction: column; gap: 4px; width: 18px; }
+.hamburger-icon span { display: block; width: 100%; height: 1.75px; border-radius: 2px; background: currentColor; }
+
+@media (hover: hover) and (pointer: fine) {
+    .dashboard-notification-link:hover,
+    .gbm-tema-btn:hover,
+    .gbm-menu-btn:hover,
+    .atalho-perfil:hover { background: var(--surface-2); color: var(--text); }
+}
+
+/* ---------- Menu lateral ---------- */
+#sidebar-menu.gbm-shell-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 950;
+    display: flex;
+    flex-direction: column;
+    width: var(--menu-largura);
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    transition: background-color var(--dur) ease, border-color var(--dur) ease;
+}
+#sidebar-menu .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    height: var(--cabecalho-altura);
+    padding: 0 16px;
+}
+#sidebar-menu .sidebar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: var(--text);
+    text-decoration: none;
+}
+.gbm-marca {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+}
+#sidebar-menu .sidebar-logo { display: none; }
+#sidebar-menu .sidebar-brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+#sidebar-menu .sidebar-brand-text strong { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+#sidebar-menu .sidebar-brand-text span { color: var(--text-3); font-size: 12px; }
+#sidebar-menu .fechar-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-2);
+    font-size: 22px;
+    line-height: 1;
+}
+#sidebar-menu .sidebar-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 0;
+    padding: 6px 10px 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+#sidebar-menu .menu-grupo { display: flex; flex-direction: column; gap: 1px; }
+#sidebar-menu .menu-grupo-conta {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+#sidebar-menu .menu-grupo-titulo {
+    margin: 0 0 4px;
+    padding: 0 10px;
+    color: var(--text-3);
+    font-size: 12px;
+    font-weight: 500;
+}
+#sidebar-menu .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 36px;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 14px;
+    text-align: left;
+    text-decoration: none;
+    transition: background-color var(--dur-rapida) ease, color var(--dur-rapida) ease;
+}
+#sidebar-menu .menu-item-icone { display: inline-flex; flex: none; width: 18px; height: 18px; color: var(--text-3); }
+#sidebar-menu .menu-item-icone svg { width: 18px; height: 18px; }
+#sidebar-menu .menu-item-conteudo { flex: 1; min-width: 0; line-height: 1.3; overflow-wrap: anywhere; }
+#sidebar-menu .menu-item-indicadores { display: inline-flex; margin-left: auto; }
+#sidebar-menu .menu-item.menu-item-ativo {
+    background: var(--surface-2);
+    color: var(--text);
+    font-weight: 500;
+}
+#sidebar-menu .menu-item.menu-item-ativo .menu-item-icone { color: var(--accent); }
+@media (hover: hover) and (pointer: fine) {
+    #sidebar-menu .menu-item:hover { background: var(--surface-2); color: var(--text); }
+    #sidebar-menu .menu-item-sair:hover,
+    #sidebar-menu .menu-item-sair:hover .menu-item-icone { color: var(--neg); }
+}
+.menu-overlay { display: none; }
+
+/* ---------- Conteúdo ---------- */
+body.gbm-interna > main,
+body.gbm-interna > .container,
+body.gbm-interna > .page-wrapper,
+.gbm-shell-content {
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 24px clamp(16px, 3vw, 32px) 56px;
+}
+.gbm-shell-content:focus { outline: none; }
+/* O menu lateral já leva de volta à visão geral; o botão "Voltar" só sobra no celular. */
+.gbm-shell-page-actions .btn-voltar { display: none; }
+.gbm-shell-page-actions:not(:has(> :not(.btn-voltar))) { display: none; }
+.gbm-shell-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.page-title { margin-bottom: 20px; }
+.page-title h1 { margin: 0 0 4px; }
+.page-title p { max-width: 720px; margin: 0; color: var(--text-2); }
+body.gbm-interna main > section + section,
+body.gbm-interna .container > section + section { margin-top: 16px; }
+
+/* ---------- Celular: menu vira gaveta ---------- */
+@media (max-width: 768px) {
+    body.gbm-interna { --menu-largura: 0px; --cabecalho-altura: 56px; }
+    body.gbm-app-shell { padding-left: 0; }
+    .gbm-shell-header { left: 0; gap: 8px; padding: 0 12px; }
+    .gbm-shell-header .gbm-logo-container { display: flex; }
+    .gbm-shell-header .gbm-logo-container a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .gbm-shell-header .gbm-logo-img { display: none; }
+    .gbm-shell-page-name { flex: 1; font-size: 14px; }
+    .dashboard-header-search,
+    .nome-perfil-cabecalho { display: none; }
+    .atalho-perfil { padding: 3px; }
+    .gbm-menu-btn { display: inline-flex; }
+    #sidebar-menu.gbm-shell-sidebar {
+        width: min(300px, 86vw);
+        box-shadow: var(--shadow-lg);
+        transform: translateX(-104%);
+        visibility: hidden;
+        transition: transform 280ms var(--ease-gaveta), visibility 280ms;
+    }
+    #sidebar-menu.gbm-shell-sidebar.aberto { transform: none; visibility: visible; }
+    #sidebar-menu .fechar-btn { display: inline-flex; align-items: center; justify-content: center; }
+    .menu-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 940;
+        display: block;
+        background: var(--overlay);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 200ms ease;
+    }
+    .menu-overlay.aberto { opacity: 1; pointer-events: auto; }
+    .page-title { align-items: flex-start; }
+}
+
+@media print {
+    body.gbm-app-shell { padding: 0; }
+    .gbm-shell-header,
+    #sidebar-menu,
+    .menu-overlay,
+    .gbm-shell-page-actions { display: none !important; }
+}

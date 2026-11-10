@@ -1,13 +1,92 @@
-        .form-limite{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.1)}
-        .percentuais{grid-column:1/-1;padding:14px;border:1px solid rgba(85,167,255,.13);border-radius:10px;background:rgba(20,34,57,.72)}
-        .percentual-row{display:flex;gap:9px;max-width:340px}
-        .percentual-row input{max-width:190px}
-        .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-        .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid rgba(95,255,168,.3);border-radius:999px;background:rgba(38,135,78,.12);color:#8dffc1;font-size:.78rem;font-weight:700}
-        .chip button{min-width:20px;height:20px;padding:0 7px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:.68rem;line-height:20px;white-space:nowrap}
-        .dica{margin:7px 0 0;color:var(--muted);font-size:.72rem;line-height:1.45}
-        .lista-metas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
-        .meta-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:1rem}
-        .meta-head strong:last-child{white-space:nowrap;flex-shrink:0}
-        .alertas{margin-top:13px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
-        @media(max-width:760px){.form-limite,.lista-metas{grid-template-columns:1fr}.percentuais{grid-column:1}}
+/* Limite de gastos (limite-de-gastos.html). */
+.form-limite {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+    gap: 16px;
+}
+.percentuais {
+    grid-column: 1 / -1;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+}
+.percentual-row { display: flex; gap: 8px; max-width: 360px; margin-top: 4px; }
+.percentual-row input { max-width: 190px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+}
+.chip button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: -6px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-3);
+    font-size: 15px;
+    line-height: 1;
+}
+.chip button:hover { background: var(--neg-soft); color: var(--neg); }
+.dica { margin: 8px 0 0; color: var(--text-3); font-size: 12.5px; }
+.lista-metas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+.lista-metas > .empty { grid-column: 1 / -1; }
+.meta-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+.meta-head strong:first-child { font-weight: 600; }
+.meta-percentual { flex-shrink: 0; font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+.limite-card .progress { height: 8px; }
+.limite-card[data-faixa="ok"] .progress > span { background: var(--accent); }
+.limite-card[data-faixa="atencao"] .progress > span { background: var(--warn); }
+.limite-card[data-faixa="atencao"] .meta-percentual { color: var(--warn); }
+.limite-card[data-faixa="estourou"] .progress > span { background: var(--neg); }
+.limite-card[data-faixa="estourou"] .meta-percentual { color: var(--neg); }
+.meta-valores {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+    color: var(--text-2);
+    font-size: 13px;
+}
+.alertas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.alertas-rotulo { color: var(--text-3); font-size: 12px; }
+.alertas .chips { margin-top: 4px; }
+@media (max-width: 760px) {
+    .form-limite,
+    .lista-metas { grid-template-columns: minmax(0, 1fr); }
+}

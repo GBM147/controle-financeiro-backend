@@ -42,8 +42,9 @@ carregarBancosInfo();
 
 function etiquetaBanco(nomeBanco) {
     if (!nomeBanco) return '';
-    const cor = BANCOS_CORES[nomeBanco] || '#607d8b';
-    return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;"> ${escaparHtmlRelatorio(nomeBanco)}</span>`;
+    const corBanco = String(BANCOS_CORES[nomeBanco] || '');
+    const cor = /^#[0-9a-f]{3,8}$/i.test(corBanco) ? corBanco : 'var(--text-3)';
+    return `<span class="etiqueta-banco"><i style="background:${cor}"></i>${escaparHtmlRelatorio(nomeBanco)}</span>`;
 }
 
 function escaparHtmlRelatorio(valor) {
@@ -111,20 +112,20 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
                     else totalDespesa += v;
                 });
                 const saldo = totalReceita - totalDespesa;
-                const corSaldo = saldo >= 0 ? 'var(--cor-receita)' : 'var(--cor-despesa)';
+                const moeda = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
                 let html = `
                     <div class="resultado-header">
                         <h3>${NOMES_MESES[mes]} / ${ano}${banco !== 'todos' ? ' — ' + escaparHtmlRelatorio(banco) : ''}</h3>
                         <div class="resumo-rapido">
                             <div class="resumo-item">Entradas
-                                <strong style="color: var(--cor-receita);">R$ ${totalReceita.toFixed(2)}</strong>
+                                <strong class="positivo">${moeda(totalReceita)}</strong>
                             </div>
                             <div class="resumo-item">Saídas
-                                <strong style="color: var(--cor-despesa);">R$ ${totalDespesa.toFixed(2)}</strong>
+                                <strong class="negativo">${moeda(totalDespesa)}</strong>
                             </div>
                             <div class="resumo-item">Saldo
-                                <strong style="color: ${corSaldo};">R$ ${saldo.toFixed(2)}</strong>
+                                <strong class="${saldo >= 0 ? 'positivo' : 'negativo'}">${moeda(saldo)}</strong>
                             </div>
                         </div>
                     </div>
@@ -134,30 +135,30 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
                                 <th>Categoria</th>
                                 <th>Banco</th>
                                 <th>Tipo</th>
-                                <th style="text-align: right;">Valor</th>
+                                <th class="num">Valor</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
                 dadosRelatorio.forEach(item => {
                     const isReceita = item.tipo === 'Receita';
-                    const cor    = isReceita ? 'var(--cor-receita)' : 'var(--cor-despesa)';
+                    const classeValor = isReceita ? 'positivo' : 'negativo';
                     const sinal  = isReceita ? '+ ' : '- ';
                     const badge  = isReceita
                         ? '<span class="badge-tipo badge-receita">Receita</span>'
                         : '<span class="badge-tipo badge-despesa">Despesa</span>';
-                    const valor  = Math.abs(parseFloat(item.valor) || 0).toFixed(2);
+                    const valor  = moeda(Math.abs(parseFloat(item.valor) || 0));
                     const itemId = Number(item.id);
 
                     html += `
                         <tr>
-                            <td style="font-weight: 500;">
+                            <td class="relatorio-categoria">
                                 ${escaparHtmlRelatorio(item.categoria || 'Sem categoria')}
                                 <br><button class="btn-editar-cat" data-editar-id="${Number.isInteger(itemId) ? itemId : 0}">Editar</button>
                             </td>
                             <td>${etiquetaBanco(item.banco)}</td>
                             <td>${badge}</td>
-                            <td style="text-align: right; font-weight: 700; color: ${cor};">${sinal}R$ ${valor}</td>
+                            <td class="num ${classeValor}">${sinal}${valor}</td>
                         </tr>`;
                 });
 
@@ -186,18 +187,18 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            doc.setFillColor(15, 25, 42);
+            doc.setFillColor(15, 123, 95);
             doc.rect(0, 0, 210, 38, 'F');
 
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(20);
             doc.setFont('helvetica', 'bold');
-            doc.text('GUARDIAN OF BUDGET & MONEY', 14, 15);
+            doc.text('GBM Finance', 14, 15);
 
             doc.setFontSize(11);
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(176, 190, 197);
-            doc.text(`Relatório Financeiro — ${NOMES_MESES[mes]} / ${ano}${banco !== 'todos' ? ' — ' + banco : ''}`, 14, 25);
+            doc.setTextColor(231, 243, 239);
+            doc.text(`Relatório financeiro — ${NOMES_MESES[mes]} / ${ano}${banco !== 'todos' ? ' — ' + banco : ''}`, 14, 25);
             doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 32);
 
             let totalReceita = 0, totalDespesa = 0;
@@ -208,24 +209,24 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
             });
             const saldo = totalReceita - totalDespesa;
 
-            doc.setFillColor(26, 35, 50);
+            doc.setFillColor(243, 242, 238);
             doc.rect(14, 42, 55, 18, 'F');
             doc.rect(73, 42, 55, 18, 'F');
             doc.rect(132, 42, 64, 18, 'F');
 
             doc.setFontSize(8);
-            doc.setTextColor(176, 190, 197);
+            doc.setTextColor(85, 85, 79);
             doc.text('ENTRADAS', 16, 48);
             doc.text('SAÍDAS', 75, 48);
             doc.text('SALDO DO PERÍODO', 134, 48);
 
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(16, 185, 129);
+            doc.setTextColor(21, 128, 61);
             doc.text(`R$ ${totalReceita.toFixed(2)}`, 16, 56);
-            doc.setTextColor(239, 68, 68);
+            doc.setTextColor(180, 35, 24);
             doc.text(`R$ ${totalDespesa.toFixed(2)}`, 75, 56);
-            doc.setTextColor(saldo >= 0 ? 16 : 239, saldo >= 0 ? 185 : 68, saldo >= 0 ? 129 : 68);
+            doc.setTextColor(saldo >= 0 ? 21 : 180, saldo >= 0 ? 128 : 35, saldo >= 0 ? 61 : 24);
             doc.text(`R$ ${saldo.toFixed(2)}`, 134, 56);
 
             doc.autoTable({
@@ -241,16 +242,16 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
                 }),
                 startY: 65,
                 theme: 'striped',
-                headStyles: { fillColor: [15, 25, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-                alternateRowStyles: { fillColor: [245, 247, 250] },
+                headStyles: { fillColor: [15, 123, 95], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+                alternateRowStyles: { fillColor: [250, 250, 248] },
                 didParseCell: function(data) {
                     if (data.cell.section === 'body') {
                         if (data.column.index === 2) {
-                            data.cell.styles.textColor = data.cell.raw === 'Receita' ? [16, 185, 129] : [239, 68, 68];
+                            data.cell.styles.textColor = data.cell.raw === 'Receita' ? [21, 128, 61] : [180, 35, 24];
                             data.cell.styles.fontStyle = 'bold';
                         }
                         if (data.column.index === 3) {
-                            data.cell.styles.textColor = String(data.cell.raw).startsWith('+') ? [16, 185, 129] : [239, 68, 68];
+                            data.cell.styles.textColor = String(data.cell.raw).startsWith('+') ? [21, 128, 61] : [180, 35, 24];
                             data.cell.styles.fontStyle = 'bold';
                         }
                     }
@@ -317,48 +318,3 @@ const res = await fetchApi(`/relatorio-detalhado?mes=${mes}&ano=${ano}&userId=${
             if (e.target === this) fecharModal();
         });
 
-        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
-        let _resolveConfirm = null;
-
-        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[caractere]);
-
-        function gbmAlerta(mensagem, tipo = 'info') {
-            const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
-                        : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
-                        :                    'rgba(95,255,168,0.3)';
-
-            document.getElementById('lista-notificacoes-modal').innerHTML = `
-                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                    ${escaparMensagemModal(mensagem)}
-                </div>`;
-
-            document.getElementById('btn-confirmar-modal').style.display = 'none';
-            document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
-            document.getElementById('modal-notificacoes').style.display = 'flex';
-            _resolveConfirm = null;
-        }
-
-        function gbmConfirmar(mensagem) {
-            return new Promise(resolve => {
-                _resolveConfirm = resolve;
-
-                document.getElementById('lista-notificacoes-modal').innerHTML = `
-                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                        ${escaparMensagemModal(mensagem)}
-                    </div>`;
-
-                document.getElementById('btn-confirmar-modal').style.display = 'block';
-                document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
-                document.getElementById('modal-notificacoes').style.display = 'flex';
-            });
-        }
-
-        function fecharModalNotificacoes(confirmado = false) {
-            document.getElementById('modal-notificacoes').style.display = 'none';
-            if (_resolveConfirm) {
-                _resolveConfirm(confirmado);
-                _resolveConfirm = null;
-            }
-        }

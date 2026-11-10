@@ -49,12 +49,12 @@
             try {
                 const itens = await gbmJson(await fetchApi('/recorrencias'));
                 document.getElementById('lista-recorrencias').innerHTML = itens.length ? itens.map((item) => `
-                    <div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)">
-                        <div style="display:flex;justify-content:space-between;gap:10px">
+                    <div class="recorrencia${Number(item.ativa) ? '' : ' pausada'}">
+                        <div class="recorrencia-topo">
                             <strong>${gbmEscapar(item.descricao)}</strong>
                             <span class="${item.tipo === 'Receita' ? 'tipo-receita' : 'tipo-despesa'}">${gbmMoeda(item.valor)}</span>
                         </div>
-                        <p style="color:var(--muted);font-size:.78rem">Todo dia ${item.dia_mes} · ${gbmEscapar(item.conta)}</p>
+                        <p class="recorrencia-detalhe">Todo dia ${item.dia_mes} · ${gbmEscapar(item.conta)}${Number(item.ativa) ? '' : ' · pausada'}</p>
                         <div class="actions">
                             <button class="btn btn-small" data-acao="alternarRecorrencia" data-args="[${item.id}, ${Number(item.ativa) ? 'false' : 'true'}]">${Number(item.ativa) ? 'Pausar' : 'Ativar'}</button>
                             <button class="btn btn-danger btn-small" data-acao="excluirRecorrencia" data-args="[${item.id}]">Excluir</button>

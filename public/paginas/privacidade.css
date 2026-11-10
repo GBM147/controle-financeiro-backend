@@ -1,0 +1,4 @@
+/* Privacidade e dados (privacidade.html). */
+.page-title .actions { margin-top: 12px; }
+.linha-consentimento { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 14px; }
+.linha-consentimento input { margin-top: 3px; flex: none; }

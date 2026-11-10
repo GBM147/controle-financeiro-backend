@@ -1,143 +1,60 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8">
-    <title>Dashboard | GBM</title>
+    <script src="gbm-tema.js?v=69a291f638"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
+    <title>Visão geral | GBM Finance</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive">
-    <script src="vendor/chart-4.5.1.umd.min.js?v=48444a82d4"></script>
-    <script src="gbm-chart-depth.js?v=446dce1de1"></script>
-    <link rel="stylesheet" href="paginas/dashboard-1.css?v=48b1b9e76a">
-</style>
-    <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
-
-    <link rel="stylesheet" href="paginas/dashboard-2.css?v=2810f0f057">
-
-
-
-
-
-
-
-
-
-
-    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
-    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
-    <script src="gbm-motion.js?v=88bf99267f" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
-    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
+    <meta name="color-scheme" content="light dark">
     <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <link rel="stylesheet" href="estilo/tokens.css?v=88606937b0">
+    <link rel="stylesheet" href="estilo/base.css?v=3532b91c9f">
+    <link rel="stylesheet" href="estilo/componentes.css?v=beae3d383c">
+    <link rel="stylesheet" href="estilo/app.css?v=79f9015933">
+    <link rel="stylesheet" href="gbm-tutorial.css">
+    <link rel="stylesheet" href="paginas/dashboard.css?v=f70cf3a145">
+    <script src="vendor/chart-4.5.1.umd.min.js?v=48444a82d4"></script>
+    <script src="gbm-movimento.js?v=4b7404e164"></script>
     <script src="gbm-acoes.js?v=b9030c8ef0"></script>
 </head>
-<body class="gbm-interna gbm-dashboard-padrao gbm-polished">
-<canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
-<header class="gbm-header dashboard-v3-header">
-    <div class="dashboard-v3-brand-mobile">
-        <img src="logo-transparente.jpg" alt="GBM">
-        <span>GBM</span>
-    </div>
-    <div class="dashboard-v3-search" role="search">
-        <span class="dashboard-v3-search-icon" aria-hidden="true"></span>
-        <input type="search" placeholder="Buscar movimentações, categorias..." aria-label="Buscar movimentações e categorias">
-    </div>
-    <div class="dashboard-v3-header-actions">
-        <a href="notificacoes.html" class="dashboard-v3-bell" aria-label="Abrir notificações">
-            <span aria-hidden="true"></span>
-            <i id="dot-alertas"></i>
-        </a>
-        <a href="perfil.html" class="dashboard-v3-user" aria-label="Abrir meu perfil">
-            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil">
-            <span id="nome-perfil-cabecalho">Giovanni</span>
-            <b aria-hidden="true">⌄</b>
-        </a>
-        <button id="menu-btn" class="gbm-menu-btn dashboard-v3-menu-btn" type="button" data-acao="abrirMenuLateral" data-com-evento aria-label="Abrir menu">
-            <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-        </button>
-    </div>
-</header>
-
-<aside id="sidebar-menu" class="sidebar-menu dashboard-v3-sidebar">
-    <div class="dashboard-v3-sidebar-brand">
-        <img src="logo-transparente.jpg" alt="GBM">
-        <div><strong>GBM</strong><span>Meu Controle Financeiro</span></div>
-    </div>
-    <button class="fechar-btn" type="button" data-acao="fecharMenuLateral" aria-label="Fechar menu">×</button>
-    <nav class="dashboard-v3-nav" aria-label="Navegação principal">
-        <div class="dashboard-v3-nav-group">
-            <span class="dashboard-v3-nav-label">VISÃO GERAL</span>
-            <a href="dashboard.html" class="dashboard-v3-nav-item menu-item-ativo" data-menu-page="dashboard.html"><span class="nav-ico">⌂</span>Dashboard</a>
-        </div>
-        <div class="dashboard-v3-nav-group">
-            <span class="dashboard-v3-nav-label">MOVIMENTAÇÕES</span>
-            <a href="contas.html" class="dashboard-v3-nav-item" data-menu-page="contas.html"><span class="nav-ico">▣</span>Contas</a>
-            <a href="importacoes.html" class="dashboard-v3-nav-item" data-menu-page="importacoes.html"><span class="nav-ico">↥</span>Importações</a>
-            <a href="importar-pdf.html" class="dashboard-v3-nav-item" data-menu-page="importar-pdf.html"><span class="nav-ico">▤</span>Importar PDF</a>
-        </div>
-        <div class="dashboard-v3-nav-group">
-            <span class="dashboard-v3-nav-label">PLANEJAMENTO</span>
-            <a href="calendario.html" class="dashboard-v3-nav-item" data-menu-page="calendario.html"><span class="nav-ico">□</span>Calendário</a>
-            <a href="limite-de-gastos.html" class="dashboard-v3-nav-item" data-menu-page="limite-de-gastos.html"><span class="nav-ico">◒</span>Limite de gastos</a>
-            <a href="metas.html" class="dashboard-v3-nav-item" data-menu-page="metas.html"><span class="nav-ico">◎</span>Metas financeiras</a>
-        </div>
-        <div class="dashboard-v3-nav-group">
-            <span class="dashboard-v3-nav-label">ANÁLISES</span>
-            <a href="#" id="item-relatorio-mensal" class="dashboard-v3-nav-item" data-acao="acessarRotaPremium" data-args="[&quot;relatorio-avancado.html&quot;, &quot;Relatório mensal&quot;]" data-prevenir><span class="nav-ico">▥</span><span>Relatórios</span><em id="cadeado-relatorio" class="cadeado-premium">Premium</em></a>
-            <a href="#" id="item-comparativo-mensal" class="dashboard-v3-nav-item" data-acao="acessarRotaPremium" data-args="[&quot;comparativo.html&quot;, &quot;Comparativo mensal&quot;]" data-prevenir><span class="nav-ico">⇄</span><span>Comparativo</span><em id="cadeado-comparativo" class="cadeado-premium">Premium</em></a>
-            <div id="aviso-recursos-premium" class="aviso-recursos-premium" role="status"></div>
-        </div>
-        <div class="dashboard-v3-nav-group dashboard-v3-nav-account">
-            <span class="dashboard-v3-nav-label">CONTA</span>
-            <a href="notificacoes.html" id="item-notificacoes" class="dashboard-v3-nav-item"><span class="nav-ico">♧</span><span>Notificações</span><b id="badge-alertas-menu" style="display:none">0</b></a>
-            <a href="configuracoes.html" class="dashboard-v3-nav-item"><span class="nav-ico">⚙</span>Configurações</a>
-            <a href="perfil.html" class="dashboard-v3-nav-item"><span class="nav-ico">♙</span>Meu perfil</a>
-            <button type="button" class="dashboard-v3-nav-item dashboard-v3-logout" data-acao="fazerLogout"><span class="nav-ico">↪</span>Sair</button>
-        </div>
-    </nav>
-</aside>
-<div id="menu-overlay" class="menu-overlay" data-acao="fecharMenuLateral"></div>
-
+<body class="gbm-interna gbm-dashboard">
 <div id="dropdownMenu" hidden></div><span id="detalhe-economia-resultado" hidden></span>
 <main class="dashboard-v3-shell">
     <section class="dashboard-v3-heading">
         <div>
-            <span class="dashboard-v3-eyebrow">VISÃO GERAL</span>
-            <h1>Olá, <span id="dashboard-nome">Giovanni</span>!</h1>
-            <p>Aqui está um resumo da sua vida financeira.</p>
+            <h1>Olá, <span id="dashboard-nome">você</span></h1>
+            <p class="dashboard-v3-contexto">Período de <span id="rotulo-periodo-ciclo" class="dashboard-periodo">—</span> <span aria-hidden="true">·</span> hoje, <span id="dashboard-data-atual">—</span></p>
         </div>
-        <div class="dashboard-v3-heading-right">
-            <div class="dashboard-v3-date"><span>◷</span><div><strong id="dashboard-data-atual">—</strong><small>período atual</small></div></div>
-            <div class="dashboard-filtros">
-                <select id="filtro-conta-dashboard" data-acao-change="trocarContaDashboard" aria-label="Conta"><option value="">Todas as contas</option></select>
-                <select id="dia-fechamento" data-acao-change="salvarDiaFechamento" title="Dia em que o mês financeiro vira" aria-label="Fechamento do mês"></select>
-                <span id="rotulo-periodo-ciclo" class="dashboard-periodo"></span>
-            </div>
+        <div class="dashboard-filtros">
+            <label class="sr-only" for="filtro-conta-dashboard">Conta</label>
+            <select id="filtro-conta-dashboard" data-acao-change="trocarContaDashboard"><option value="">Todas as contas</option></select>
+            <label class="sr-only" for="dia-fechamento">Dia em que o mês financeiro vira</label>
+            <select id="dia-fechamento" data-acao-change="salvarDiaFechamento" title="Dia em que o mês financeiro vira"></select>
         </div>
     </section>
 
     <section class="dashboard-v3-metrics" aria-label="Resumo financeiro">
         <article class="v3-metric v3-metric-total">
-            <div class="v3-metric-top"><span class="v3-icon">◈</span><span>Saldo total</span></div>
+            <span class="v3-metric-rotulo">Saldo total</span>
             <strong id="saldo-total-dashboard">R$ 0,00</strong>
-            <small>Saldo disponível nas contas</small>
+            <small>Somando todas as contas</small>
         </article>
         <article class="v3-metric v3-metric-income">
-            <div class="v3-metric-top"><span class="v3-icon">↓</span><span>Receitas</span></div>
+            <span class="v3-metric-rotulo"><i class="ponto ponto-pos" aria-hidden="true"></i>Receitas</span>
             <strong id="total-entradas">R$ 0,00</strong>
             <small id="comparativo-entradas" style="display:none"></small>
         </article>
         <article class="v3-metric v3-metric-expense">
-            <div class="v3-metric-top"><span class="v3-icon">↑</span><span>Despesas</span></div>
+            <span class="v3-metric-rotulo"><i class="ponto ponto-neg" aria-hidden="true"></i>Despesas</span>
             <strong id="total-saidas">R$ 0,00</strong>
             <small id="comparativo-saidas" style="display:none"></small>
         </article>
         <article class="v3-metric v3-metric-available">
-            <div class="v3-metric-top"><span class="v3-icon">✦</span><span>Disponível</span></div>
+            <span class="v3-metric-rotulo">Resultado do período</span>
             <strong id="saldo-liquido">R$ 0,00</strong>
-            <small>Resultado do período</small>
+            <small>Receitas menos despesas</small>
             <span id="taxa-poupada-badge" class="metric-meta" style="display:none"></span>
         </article>
     </section>
@@ -145,15 +62,15 @@
     <section class="dashboard-v3-feature">
         <article class="dashboard-v3-surface dashboard-v3-chart">
             <div class="dashboard-v3-card-head">
-                <div><span class="dashboard-v3-eyebrow">DESEMPENHO</span><h2>Evolução financeira</h2></div>
-                <span class="dashboard-v3-legend"><i></i>Resultado</span>
+                <h2>Evolução no período</h2>
+                <span class="dashboard-v3-legend"><i aria-hidden="true"></i>Resultado acumulado</span>
             </div>
-            <div class="dashboard-v3-chart-canvas"><canvas id="grafico-resultado-periodo"></canvas></div>
+            <div class="dashboard-v3-chart-canvas"><canvas id="grafico-resultado-periodo" aria-label="Gráfico do resultado acumulado no período" role="img"></canvas></div>
         </article>
         <article class="dashboard-v3-surface dashboard-v3-transactions">
             <div class="dashboard-v3-card-head">
-                <div><span class="dashboard-v3-eyebrow">MOVIMENTAÇÕES</span><h2>Últimas movimentações</h2></div>
-                <a href="#" data-acao="abrirModalTransacoes" data-prevenir>Ver todas →</a>
+                <h2>Últimas movimentações</h2>
+                <a href="#" data-acao="abrirModalTransacoes" data-prevenir>Ver todas</a>
             </div>
             <div id="ultimas-movimentacoes-lista" class="dashboard-v3-transactions-list"><div class="dashboard-v3-empty">Carregando movimentações...</div></div>
         </article>
@@ -162,69 +79,53 @@
     <section class="dashboard-v3-quad">
         <article class="dashboard-v3-surface dashboard-v3-categories">
             <div class="dashboard-v3-card-head">
-                <div><span class="dashboard-v3-eyebrow">DISTRIBUIÇÃO</span><h2>Gastos por categoria</h2></div>
+                <h2>Gastos por categoria</h2>
             </div>
-            <p class="dashboard-v3-subtitle">Participação nas despesas deste período</p>
             <div class="dashboard-v3-categories-content">
+                <div class="dashboard-v3-expense-chart-wrap"><canvas id="grafico-gastos-categorias" aria-label="Gráfico dos gastos por categoria" role="img"></canvas><div id="grafico-gastos-categorias-vazio" class="dashboard-v3-empty-chart" hidden>Sem despesas no período.</div></div>
                 <div id="principais-categorias-lista" class="principais-categorias-lista"><div class="categoria-participacao-item"><span class="categoria-participacao-vazio">Sem despesas no período.</span></div></div>
-                <div class="dashboard-v3-expense-chart-wrap"><canvas id="grafico-gastos-categorias" aria-label="Gráfico dos gastos por categoria"></canvas><div id="grafico-gastos-categorias-vazio" class="dashboard-v3-empty-chart" hidden>Sem despesas no período.</div></div>
             </div>
         </article>
 
         <article class="dashboard-v3-surface dashboard-v3-goals">
             <div class="dashboard-v3-card-head">
-                <div><span class="dashboard-v3-eyebrow">PLANEJAMENTO</span><h2>Metas financeiras</h2></div>
-                <a href="metas.html">Ver todas →</a>
+                <h2>Objetivos de poupança</h2>
+                <a href="metas.html">Ver todos</a>
             </div>
-            <div id="objetivos-dashboard-lista" class="dashboard-v3-goals-list"><div class="dashboard-v3-empty">Carregando metas...</div></div>
+            <div id="objetivos-dashboard-lista" class="dashboard-v3-goals-list"><div class="dashboard-v3-empty">Carregando objetivos...</div></div>
         </article>
 
-        <article class="dashboard-v3-surface dashboard-v3-promo">
-            <div>
-                <span class="v3-promo-icon">↗</span>
-                <h2>Organize suas finanças<br>com mais facilidade</h2>
-                <p>Adicione suas contas, importe seus extratos e tenha uma visão completa do seu dinheiro em um só lugar.</p>
-                <a href="contas.html" class="v3-promo-btn">Começar agora →</a>
-            </div>
-            <div class="v3-promo-lines" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-        </article>
-    </section>
-
-    <section class="dashboard-v3-pulse-insight">
         <article class="dashboard-v3-surface dashboard-v3-pulse">
-            <div class="dashboard-v3-card-head"><div><span class="dashboard-v3-eyebrow">LEITURA DO MÊS</span><h2>Pulso financeiro</h2></div></div>
-            <p class="dashboard-v3-subtitle">Como sua renda foi distribuída neste período</p>
-            <div class="pulso-barra"><div id="pulso-barra-preenchimento" class="pulso-barra-preenchimento"></div><span id="pulso-marcador-meta" class="pulso-marcador-meta"></span></div>
-            <div class="pulso-legenda"><div><span>Gasto</span><strong id="pulso-gasto">0,0%</strong></div><div><span>Preservado</span><strong id="pulso-preservado">0,0%</strong></div><div><span>Meta</span><strong id="pulso-meta">15%</strong></div></div>
-            <div class="pulso-status"><span class="pulso-status-icone">✓</span><div><strong id="pulso-status-titulo">Seu mês permanece positivo</strong><span id="pulso-status-texto">Registre dados para calcular sua taxa poupada.</span></div></div>
-        </article>
-        <article class="dashboard-v3-surface dashboard-v3-insights">
-            <div class="dashboard-v3-card-head"><div><span class="dashboard-v3-eyebrow">ASSISTENTE</span><h2>O que merece atenção</h2></div></div>
-            <p class="dashboard-v3-subtitle">Insights gerados a partir do comportamento deste período</p>
-            <div id="insights-lista" class="insights-lista"><div class="insight-item"><span>Analisando seu mês...</span></div></div>
+            <div class="dashboard-v3-card-head"><h2>Quanto da renda foi gasto</h2></div>
+            <div class="pulso-barra" aria-hidden="true"><div id="pulso-barra-preenchimento" class="pulso-barra-preenchimento"></div><span id="pulso-marcador-meta" class="pulso-marcador-meta"></span></div>
+            <div class="pulso-legenda">
+                <div><span>Gasto</span><strong id="pulso-gasto">0,0%</strong></div>
+                <div><span>Preservado</span><strong id="pulso-preservado">0,0%</strong></div>
+                <div><span>Meta de poupança</span><strong id="pulso-meta">15%</strong></div>
+            </div>
+            <div class="pulso-status"><span class="pulso-status-icone" aria-hidden="true"></span><div><strong id="pulso-status-titulo">Calculando o período</strong><span id="pulso-status-texto">Registre dados para calcular sua taxa poupada.</span></div></div>
         </article>
     </section>
 
-        <section class="dashboard-v3-workspace dashboard-v3-surface" aria-labelledby="titulo-ferramentas-dashboard">
-    <header class="dashboard-v3-workspace-header">
-        <div>
-            <span class="dashboard-v3-eyebrow">FERRAMENTAS</span>
-            <h2 id="titulo-ferramentas-dashboard">Ferramentas e análise detalhada</h2>
-            <p>Registre movimentações, ajuste sua gestão e analise os dados sem sair do Dashboard.</p>
+    <section class="dashboard-v3-surface dashboard-v3-insights">
+        <div class="dashboard-v3-card-head">
+            <h2>O que merece atenção</h2>
+            <span class="dashboard-v3-subtitle">Leitura automática deste período</span>
         </div>
-    </header>
+        <div id="insights-lista" class="insights-lista"><div class="insight-item"><span>Analisando seu mês...</span></div></div>
+    </section>
 
-    <section class="dashboard-v3-quick" aria-labelledby="titulo-lancamento-rapido">
-        <div class="dashboard-v3-quick-copy">
-            <span class="dashboard-v3-eyebrow">AÇÃO RÁPIDA</span>
-            <h3 id="titulo-lancamento-rapido">Lançamento rápido</h3>
-            <p>Registre uma movimentação com os mesmos dados usados no restante do sistema.</p>
+    <section class="dashboard-v3-workspace dashboard-v3-surface" aria-labelledby="titulo-lancamento-rapido">
+        <div class="dashboard-v3-card-head">
+            <div>
+                <h2 id="titulo-lancamento-rapido">Lançamento rápido</h2>
+                <p class="dashboard-v3-subtitle">Registre uma receita ou despesa sem sair da visão geral.</p>
+            </div>
         </div>
-
         <div class="lancamento-rapido-form">
             <select id="manual-conta" aria-label="Conta do lançamento"><option value="">Carregando contas...</option></select>
             <input type="text" id="manual-desc" aria-label="Descrição do lançamento" placeholder="Descrição">
-            <input type="number" id="manual-valor" aria-label="Valor do lançamento em reais" placeholder="R$ 0,00" step="0.01">
+            <input type="number" id="manual-valor" aria-label="Valor do lançamento em reais" placeholder="R$ 0,00" step="0.01" inputmode="decimal">
             <select id="manual-tipo" aria-label="Tipo">
                 <option value="Despesa">Despesa</option>
                 <option value="Receita">Receita</option>
@@ -249,67 +150,70 @@
                 <option value="Outros">Outros</option>
             </select>
             <input type="date" id="manual-data" aria-label="Data do lançamento">
-            <button class="btn-acao" data-acao="salvarLancamentoManual">Adicionar lançamento</button>
-            <button id="btn-desfazer-lancamento" class="btn-acao dashboard-undo" data-acao="desfazerUltimo" title="Desfazer último lançamento">Desfazer</button>
+            <div class="lancamento-rapido-acoes">
+                <button class="btn-acao btn-primario" data-acao="salvarLancamentoManual">Adicionar</button>
+                <button id="btn-desfazer-lancamento" class="btn-acao dashboard-undo" data-acao="desfazerUltimo" title="Desfazer o último lançamento">Desfazer</button>
+            </div>
         </div>
     </section>
 
-    <div class="dashboard-v3-tools" aria-label="Configurações e análise detalhada">
+    <section class="dashboard-v3-tools" aria-labelledby="titulo-ferramentas-dashboard">
         <div class="dashboard-v3-tools-header">
-            <div>
-                <span class="dashboard-v3-eyebrow">GESTÃO E ANÁLISE</span>
-                <h3>Configurações e análise detalhada</h3>
-                <p>Defina limites, crie categorias, acompanhe objetivos e escolha como visualizar seus dados.</p>
-            </div>
+            <h2 id="titulo-ferramentas-dashboard">Ajustes e análise detalhada</h2>
+            <p class="dashboard-v3-subtitle">Limites, categorias, objetivos e a forma de ver os dados do período.</p>
         </div>
 
         <div class="dashboard-v3-management-grid">
             <div id="card-economia-legado" class="card" style="display:none">
-                <h3>Economia vs. Mês Anterior</h3>
+                <h3>Economia vs. mês anterior</h3>
                 <p id="economia-mensal">R$ 0,00</p>
                 <div id="detalhe-economia"></div>
             </div>
 
-            <div class="painel-ajustes" id="painel-limite">
+            <div class="painel-ajustes dashboard-v3-surface" id="painel-limite">
                 <div class="grupo-ajuste">
                     <label for="meta-valor">Limite de gastos</label>
                     <div class="dashboard-tool-line">
                         <select id="meta-categoria" aria-label="Categoria do limite de gastos"><option value="" disabled selected>Categoria...</option></select>
-                        <input type="number" id="meta-valor" placeholder="R$ 0,00" step="10">
-                        <button class="btn-acao" data-acao="salvarMeta">Gravar</button>
-                        <button class="btn-acao dashboard-secondary-action" data-acao="removerMeta">Sem limite</button>
+                        <input type="number" id="meta-valor" placeholder="R$ 0,00" step="10" inputmode="decimal">
+                    </div>
+                    <div class="dashboard-tool-acoes">
+                        <button class="btn-acao" data-acao="salvarMeta">Gravar limite</button>
+                        <button class="btn-acao dashboard-secondary-action" data-acao="removerMeta">Remover limite</button>
                     </div>
                 </div>
             </div>
 
-            <div class="painel-ajustes" id="painel-categoria">
+            <div class="painel-ajustes dashboard-v3-surface" id="painel-categoria">
                 <div class="grupo-ajuste">
-                    <label for="nova-categoria-nome">Criar nova categoria</label>
+                    <label for="nova-categoria-nome">Nova categoria</label>
                     <div class="dashboard-tool-line">
-                        <input type="text" id="nova-categoria-nome" placeholder="Ex: Pet, Cursos, Hobbies...">
-                        <button class="btn-acao" data-acao="criarNovaCategoria">Criar categoria</button>
+                        <input type="text" id="nova-categoria-nome" placeholder="Ex.: Pet, Cursos, Hobbies">
+                        <button class="btn-acao" data-acao="criarNovaCategoria">Criar</button>
                     </div>
-                    <p>Suas categorias personalizadas ficam disponíveis só na sua conta.</p>
+                    <p>Categorias personalizadas ficam só na sua conta.</p>
                     <div id="lista-categorias-personalizadas" class="dashboard-chip-list"></div>
                 </div>
             </div>
 
-            <div class="painel-ajustes" id="painel-meta">
+            <div class="painel-ajustes dashboard-v3-surface" id="painel-meta">
                 <div class="grupo-ajuste">
                     <label for="objetivo-nome">Novo objetivo de poupança</label>
                     <div class="dashboard-tool-line">
-                        <input type="text" id="objetivo-nome" placeholder="Ex: Viagem, Poupança...">
-                        <input type="number" id="objetivo-valor" aria-label="Valor do objetivo de poupança em reais" placeholder="R$ 0,00" step="10">
+                        <input type="text" id="objetivo-nome" placeholder="Ex.: Viagem, reserva">
+                        <input type="number" id="objetivo-valor" aria-label="Valor do objetivo de poupança em reais" placeholder="R$ 0,00" step="10" inputmode="decimal">
+                    </div>
+                    <div class="dashboard-tool-acoes">
                         <button class="btn-acao" data-acao="salvarObjetivo">Adicionar objetivo</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="dashboard-v3-analysis">
+        <div class="dashboard-v3-analysis dashboard-v3-surface">
             <div class="dashboard-v3-analysis-controls">
                 <div class="grupo-ajuste">
-                    <label for="select-tipo">Exibição de dados</label>
+                    <label for="select-tipo">Exibição</label>
                     <select id="select-tipo" data-acao-change="renderizarVisualizacao">
                         <option value="table">Apenas tabela</option>
                         <option value="chart">Apenas gráfico</option>
@@ -327,71 +231,50 @@
             </div>
 
             <div class="chart-container" id="container-do-grafico">
-                <div class="container-tabela" id="minhaTabelaContainer" tabindex="0" role="region" aria-label="Tabela de movimentações do painel" style="display:none">
+                <div class="container-tabela tabela-rolagem" id="minhaTabelaContainer" tabindex="0" role="region" aria-label="Tabela de movimentações do painel" style="display:none">
                     <table>
-                        <thead><tr><th>Categoria</th><th>Valor Movimentado</th></tr></thead>
+                        <thead><tr><th>Categoria</th><th class="num">Valor movimentado</th></tr></thead>
                         <tbody id="corpo-tabela"></tbody>
                     </table>
                 </div>
                 <div class="grafico-wrapper" id="wrapper-do-grafico" style="display:none">
-                    <canvas id="meuGrafico"></canvas>
+                    <canvas id="meuGrafico" aria-label="Gráfico das movimentações por categoria" role="img"></canvas>
                 </div>
             </div>
         </div>
 
-        <div id="card-ofx" class="card dashboard-v3-imports">
+        <div id="card-ofx" class="dashboard-v3-surface dashboard-v3-imports">
             <div>
-                <span class="dashboard-v3-eyebrow">IMPORTAÇÕES</span>
-                <h3>Central de importações</h3>
-                <p>Revise extratos OFX ou PDF antes de confirmar os lançamentos.</p>
+                <h3>Importar extratos</h3>
+                <p>Revise arquivos OFX ou PDF antes de confirmar os lançamentos.</p>
             </div>
             <div class="dashboard-v3-import-actions">
-                <button type="button" class="btn-acao" data-acao="gbm:navegar" data-args="[&quot;importacoes.html&quot;]">Abrir central</button>
-                <button type="button" id="btn-gerenciar-categorias" class="btn-acao dashboard-secondary-action" data-acao="abrirModalTransacoes">Gerenciar categorias</button>
+                <button type="button" class="btn-acao" data-acao="gbm:navegar" data-args="[&quot;importacoes.html&quot;]">Abrir importações</button>
+                <button type="button" id="btn-gerenciar-categorias" class="btn-acao dashboard-secondary-action" data-acao="abrirModalTransacoes">Revisar categorias</button>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
-        <div class="modal-gbm-dialogo">
-            <div class="modal-gbm-topo"><h2 id="titulo-modal-transacoes">Categorias e objetivos das transações</h2><button type="button" class="modal-gbm-fechar" data-acao="fecharModalTransacoes">✕</button></div>
-            <p>Corrija categorias, exclua uma movimentação ou destine-a a um objetivo de poupança. Salve todas as mudanças de categoria de uma só vez.</p>
+    <div id="modal-transacoes" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-transacoes" aria-hidden="true">
+        <div class="modal-gbm-dialogo modal-gbm-dialogo-largo">
+            <div class="modal-gbm-topo"><h2 id="titulo-modal-transacoes">Movimentações do período</h2><button type="button" class="modal-gbm-fechar" data-acao="fecharModalTransacoes" aria-label="Fechar">×</button></div>
+            <p class="modal-desc">Corrija categorias, exclua uma movimentação ou destine-a a um objetivo de poupança. As mudanças de categoria são salvas de uma vez.</p>
             <div id="lista-transacoes-modal">Carregando...</div>
         </div>
     </div>
     <div id="modal-vinculo-objetivo" class="modal-gbm" role="dialog" aria-modal="true" aria-labelledby="titulo-vinculo-objetivo" aria-hidden="true">
         <div class="modal-gbm-dialogo modal-gbm-dialogo-pequeno">
-            <div class="modal-gbm-topo"><h2 id="titulo-vinculo-objetivo">Destinar ao objetivo</h2><button type="button" class="modal-gbm-fechar" data-acao="fecharVinculoObjetivo">✕</button></div>
-            <p id="resumo-transacao-vinculo"></p><div id="aviso-despesa-vinculo" class="aviso-vinculo" hidden></div>
-            <div class="campo-vinculo-objetivo"><label for="objetivo-vinculo-select">Objetivo de poupança ativo</label><select id="objetivo-vinculo-select" required></select></div>
-            <div class="acoes-vinculo"><button type="button" class="btn-objetivo-transacao secundario" data-acao="fecharVinculoObjetivo">Cancelar</button><button type="button" id="confirmar-vinculo-objetivo" class="btn-objetivo-transacao" data-acao="confirmarVinculoObjetivo">Confirmar vínculo</button></div>
+            <div class="modal-gbm-topo"><h2 id="titulo-vinculo-objetivo">Destinar ao objetivo</h2><button type="button" class="modal-gbm-fechar" data-acao="fecharVinculoObjetivo" aria-label="Fechar">×</button></div>
+            <p id="resumo-transacao-vinculo" class="modal-desc"></p><div id="aviso-despesa-vinculo" class="aviso-vinculo" hidden></div>
+            <div class="campo-vinculo-objetivo field"><label for="objetivo-vinculo-select">Objetivo de poupança ativo</label><select id="objetivo-vinculo-select" required></select></div>
+            <div class="acoes-vinculo modal-acoes"><button type="button" class="btn-objetivo-transacao secundario btn" data-acao="fecharVinculoObjetivo">Cancelar</button><button type="button" id="confirmar-vinculo-objetivo" class="btn-objetivo-transacao btn btn-primario" data-acao="confirmarVinculoObjetivo">Confirmar</button></div>
         </div>
     </div>
 </main>
-<script src="auth.js?v=6f32663332"></script>
-<script src="paginas/dashboard-1.js?v=212699266f"></script>
-
-    <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
-        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:14px; padding:30px; max-width:480px; width:90%; box-shadow:0 0 30px rgba(95,255,168,0.1);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="logo-transparente.jpg" style="height:32px; border-radius:10px;">
-                    <span style="font-family:'Sora',sans-serif; font-size:1.25rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
-                </div>
-                <button data-acao="fecharModalNotificacoes" data-args="[false]" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer;">&times;</button>
-            </div>
-            <div id="lista-notificacoes-modal" style="display:flex; flex-direction:column; gap:12px; max-height:340px; overflow-y:auto;"></div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="btn-confirmar-modal" data-acao="fecharModalNotificacoes" data-args="[true]" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:10px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" data-fundo-hover="#246e45" data-fundo-normal="#2E8B57">CONFIRMAR</button>
-                <button id="btn-fechar-modal" data-acao="fecharModalNotificacoes" data-args="[false]" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" data-fundo-hover="rgba(255,255,255,0.15)" data-fundo-normal="rgba(255,255,255,0.08)">FECHAR</button>
-            </div>
-        </div>
-    </div>
-
-<script src="paginas/dashboard-2.js?v=82c2b3762a"></script>
-    <script src="gbm-tutorial.js"></script>
-    <script src="gbm-ai-ajuda.js?v=cde8fc8826"></script>
-    <script src="gbm-pages.js?v=b53b3cd6b3"></script>
+<script src="auth.js?v=89cc681816"></script>
+<script src="paginas/dashboard-1.js?v=bf7b0e0085"></script>
+<script src="gbm-tutorial.js"></script>
+<script src="gbm-ai-ajuda.js?v=c879ffdc23"></script>
+<script src="gbm-pages.js?v=50214434c6"></script>
 </body>
 </html>

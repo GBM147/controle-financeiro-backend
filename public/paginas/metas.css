@@ -1,22 +1,34 @@
-        .objetivo-card { position: relative; overflow: hidden; }
-        .objetivo-card::before {
-            content: "";
-            position: absolute;
-            inset: 0 auto 0 0;
-            width: 4px;
-            background: var(--objetivo-cor, var(--purple));
-        }
-        .objetivo-topo { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-        .objetivo-topo h3 { margin-bottom:4px; font-size:1.25rem; }
-        .objetivo-valores { display:flex; justify-content:space-between; gap:12px; margin:14px 0 8px; color:var(--muted); font-size:.82rem; }
-        .objetivo-valores strong { color:var(--text); }
-        .objetivo-actions { margin-top:16px; }
-        dialog {
-            width:min(520px, calc(100% - 28px));
-            border:1px solid var(--border);
-            border-radius:16px;
-            background:var(--card);
-            color:var(--text);
-            padding:22px;
-        }
-        dialog::backdrop { background:rgba(0,0,0,.72); backdrop-filter:blur(5px); }
+/* Objetivos de poupança (metas.html). */
+.aviso-explicativo { margin-bottom: 16px; background: var(--bg); }
+.aviso-explicativo p { margin: 0; color: var(--text-2); font-size: 14px; }
+.aviso-explicativo strong { color: var(--text); font-weight: 600; }
+.field-acoes { justify-content: flex-end; }
+.gbm-interna input[type="color"] {
+    width: 100%;
+    height: 40px;
+    padding: 4px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: var(--surface);
+    cursor: pointer;
+}
+.objetivo-card { --objetivo-cor: var(--accent); }
+.objetivo-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.objetivo-topo h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 16px; }
+.objetivo-cor { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--objetivo-cor); }
+.objetivo-percentual { font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+.objetivo-valores {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 14px 0 8px;
+    color: var(--text-2);
+    font-size: 13px;
+}
+.objetivo-valores strong { color: var(--text); font-size: 15px; font-weight: 600; }
+.objetivo-alvo { text-align: right; }
+.objetivo-card .progress { height: 8px; }
+.objetivo-card .progress > span { background: var(--objetivo-cor); }
+.objetivo-falta { margin: 10px 0 0; color: var(--text-2); font-size: 13.5px; }
+.objetivo-falta strong { color: var(--text); }
+.objetivo-actions { margin-top: 14px; }

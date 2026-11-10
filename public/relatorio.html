@@ -1,28 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8">
+    <script src="gbm-tema.js?v=69a291f638"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <title>Relatório Mensal | GBM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="estilo/tokens.css?v=88606937b0">
+    <link rel="stylesheet" href="estilo/base.css?v=3532b91c9f">
+    <link rel="stylesheet" href="estilo/componentes.css?v=beae3d383c">
+    <link rel="stylesheet" href="estilo/app.css?v=79f9015933">
+    <link rel="stylesheet" href="gbm-tutorial.css">
+    <link rel="stylesheet" href="paginas/relatorio.css?v=1e44d545a0">
     <script src="vendor/jspdf-2.5.1.umd.min.js?v=98ccf17aa1"></script>
     <script src="vendor/jspdf-autotable-3.5.25.min.js?v=0216761340"></script>
-    <link rel="stylesheet" href="paginas/relatorio-1.css?v=12c0f6c0e3">
-    <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
-
-    <link rel="stylesheet" href="paginas/relatorio-2.css?v=0790f9a1c3">
-    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
-    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
-    <script src="gbm-motion.js?v=88bf99267f" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
-    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
     <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <script src="gbm-movimento.js?v=4b7404e164"></script>
     <script src="gbm-acoes.js?v=b9030c8ef0"></script>
 </head>
-<body class="gbm-interna gbm-polished">
-<canvas id="particles-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
+<body class="gbm-interna">
 <header class="gbm-header">
     <div class="gbm-logo-container">
         <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
@@ -32,7 +29,10 @@
 </header>
 
 <div class="page-wrapper">
-
+    <div class="page-title">
+        <h1>Relatório mensal</h1>
+        <p>Entradas e saídas do mês por categoria e banco, com exportação em PDF.</p>
+    </div>
     <div class="card">
         <div class="filtros">
             <select id="mes-ref" aria-label="Mês do relatório">
@@ -53,21 +53,21 @@
             <select id="banco-ref" aria-label="Banco do relatório">
                 <option value="todos">Todos os bancos</option>
             </select>
-            <button class="btn-acao btn-gerar" data-acao="gerarRelatorio">Gerar Relatório</button>
+            <button class="btn-acao btn-primario btn-gerar" data-acao="gerarRelatorio">Gerar relatório</button>
             <button class="btn-acao btn-pdf"   data-acao="baixarPDF">Baixar PDF</button>
         </div>
     </div>
 
     <div class="card" id="card-resultado">
         <div id="resultado-relatorio">
-            <p class="texto-vazio">Escolha o mês e o ano e clique em "Gerar Relatório".</p>
+            <p class="texto-vazio">Escolha o mês e o ano e clique em "Gerar relatório".</p>
         </div>
     </div>
 </div>
 <!-- MODAL EDITAR CATEGORIA -->
 <div class="modal-overlay" id="modal-categoria">
     <div class="modal-box">
-        <h3>Alterar Categoria</h3>
+        <h3>Alterar categoria</h3>
         <p class="modal-desc" id="modal-desc-tx"></p>
         <select id="modal-select-cat">
             <option>Alimentação</option>
@@ -93,34 +93,16 @@
             <option>Outros</option>
         </select>
         <div class="modal-acoes">
-            <button class="btn-cancelar" data-acao="fecharModal">Cancelar</button>
-            <button class="btn-confirmar" data-acao="salvarCategoria">Salvar</button>
+            <button class="btn btn-cancelar" data-acao="fecharModal">Cancelar</button>
+            <button class="btn btn-primario btn-confirmar" data-acao="salvarCategoria">Salvar</button>
         </div>
     </div>
 </div>
-<script src="auth.js?v=6f32663332"></script>
-    <script src="paginas/relatorio-1.js?v=981e0c7b6b"></script>
+<script src="auth.js?v=89cc681816"></script>
+    <script src="paginas/relatorio-1.js?v=4fb0144dfd"></script>
 
-    <!-- MODAL DE NOTIFICAÇÕES GBM -->
-    <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
-        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:16px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="logo-transparente.jpg" alt="GBM" style="height:28px;">
-                    <span style="font-family:'Sora',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
-                </div>
-                <button data-acao="fecharModalNotificacoes" data-args="[false]" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
-            </div>
-            <div id="lista-notificacoes-modal"></div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="btn-confirmar-modal" data-acao="fecharModalNotificacoes" data-args="[true]" style="display:none; flex:1; padding:12px; background:#2E8B57; color:#fff; border:none; border-radius:8px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" data-fundo-hover="#246e45" data-fundo-normal="#2E8B57">CONFIRMAR</button>
-                <button id="btn-fechar-modal" data-acao="fecharModalNotificacoes" data-args="[false]" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" data-fundo-hover="rgba(255,255,255,0.15)" data-fundo-normal="rgba(255,255,255,0.08)">FECHAR</button>
-            </div>
-        </div>
-    </div>
-<script src="paginas/relatorio-2.js?v=74d39001cc"></script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js?v=56467e5b3d"></script>
-    <script src="gbm-pages.js?v=b53b3cd6b3"></script>
+    <script src="gbm-menu.js?v=4701e41f46"></script>
+    <script src="gbm-pages.js?v=50214434c6"></script>
 </body>
 </html>

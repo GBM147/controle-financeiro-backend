@@ -5,11 +5,11 @@
                 const itens = await gbmJson(await fetchApi(`/notificacoes?status=${status}&tipo=${tipo}`));
                 document.getElementById('lista-notificacoes').innerHTML = itens.length ? itens.map((item) => `
                     <article class="notificacao ${Number(item.lida) ? '' : 'nao-lida'}">
-                        <div style="display:flex;justify-content:space-between;gap:12px">
+                        <div class="notificacao-topo">
                             <span class="pill ${Number(item.lida) ? '' : 'green'}">${Number(item.lida) ? 'Lida' : 'Nova'}</span>
-                            <small style="color:var(--muted)">${new Date(item.data_criacao).toLocaleString('pt-BR')}</small>
+                            <small>${new Date(item.data_criacao).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</small>
                         </div>
-                        <p style="margin:11px 0 7px;line-height:1.5">${gbmEscapar(item.mensagem)}</p>
+                        <p>${gbmEscapar(item.mensagem)}</p>
                         <span class="pill">${gbmEscapar(item.categoria || item.tipo)}</span>
                     </article>`).join('') : '<div class="empty">Nenhuma notificação encontrada.</div>';
             } catch (erro) { gbmToast(erro.message,'erro'); }

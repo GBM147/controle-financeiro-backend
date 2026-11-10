@@ -42,7 +42,7 @@
         document.getElementById('previa-quantidade').textContent = `${selecionadas.length} selecionadas`;
         document.getElementById('previa-total').textContent = gbmMoeda(total);
         document.getElementById('corpo-previa').innerHTML = previa.transacoes.map((item, indice) => `
-            <tr style="${item.selecionada ? '' : 'opacity:.38'}">
+            <tr class="${item.selecionada ? '' : 'linha-ignorada'}">
                 <td>${gbmData(item.data)}</td>
                 <td title="${gbmEscapar(item.descricao)}">${gbmEscapar(String(item.descricao).slice(0, 48))}</td>
                 <td><input value="${gbmEscapar(item.categoria || 'Outros')}" data-acao-change="alterarCategoria" data-args-change="[${indice}]" data-com-valor-change></td>

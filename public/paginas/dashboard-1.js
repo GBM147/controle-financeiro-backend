@@ -98,10 +98,6 @@
                 });
             }
         }
-        // --- 1. TEMA ESCURO (Lembrar escolha) ---
-        try {
-            if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-theme');
-        } catch { /* O tema padrão também funciona com storage bloqueado. */ }
         let meuChart = null;
         // Recupera o userId salvo (permanente com "Manter conectado", ou só da aba atual)
         function pegarUserId() {
@@ -227,8 +223,9 @@
         // Monta a etiqueta pequena e colorida com o nome do banco
         function etiquetaBanco(nomeBanco) {
             if (!nomeBanco) return '';
-            const cor = BANCOS_CORES[nomeBanco] || '#607d8b';
-            return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; color:${cor}; border:1px solid ${cor}55; background:${cor}18; padding:1px 8px; border-radius:10px; margin-left:6px; white-space:nowrap;"> ${escaparHtmlDashboard(nomeBanco)}</span>`;
+            const corBanco = String(BANCOS_CORES[nomeBanco] || '');
+            const cor = /^#[0-9a-f]{3,8}$/i.test(corBanco) ? corBanco : 'var(--text-3)';
+            return `<span class="etiqueta-banco"><i style="background:${cor}"></i>${escaparHtmlDashboard(nomeBanco)}</span>`;
         }
         // Preenche a data de hoje no lançamento rápido para facilitar
         const inputData = document.getElementById('manual-data');
@@ -244,11 +241,8 @@
                 menu.classList.remove('show');
             }
         }
-        function alternarTema() { 
-            document.body.classList.toggle('dark-theme'); 
-            const modoEscuroAtivo = document.body.classList.contains('dark-theme');
-            localStorage.setItem('tema', modoEscuroAtivo ? 'dark' : 'light');
-            renderizarVisualizacao(); 
+        function alternarTema() {
+            window.GBMTema?.alternar();
         }
         // --- 3. CARREGAR E DESENHAR DADOS ---
         async function carregarDados() {
@@ -293,27 +287,19 @@
                 if (graficoResultado) graficoResultado.destroy();
 
                 const ultimoValor = valores.length ? valores[valores.length - 1] : 0;
-                const linha = ultimoValor < 0 ? '#ff5d6c' : '#39d98a';
-                const area = ultimoValor < 0 ? 'rgba(255,93,108,.14)' : 'rgba(57,217,138,.10)';
+                const tom = ultimoValor < 0 ? 'neg' : 'accent';
 
                 graficoResultado = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels,
-                        datasets: [{
+                        datasets: [GBMGraficos.tingir({
                             label: 'Resultado',
                             data: valores,
-                            borderColor: linha,
-                            backgroundColor: area,
-                            borderWidth: 2.2,
                             fill: true,
-                            tension: .38,
-                            pointRadius: 0,
-                            pointHoverRadius: 3,
-                            pointHoverBackgroundColor: linha,
-                            pointHoverBorderColor: '#07111c',
+                            gbmTokens: { borderColor: tom, backgroundColor: [tom, 0.08], pointHoverBackgroundColor: tom, pointHoverBorderColor: 'surface' },
                             pointHoverBorderWidth: 2
-                        }]
+                        })]
                     },
                     options: {
                         responsive: true,
@@ -322,31 +308,21 @@
                         plugins: {
                             legend: { display: false },
                             tooltip: {
-                                enabled: true,
-                                displayColors: false,
-                                backgroundColor: '#101c2b',
-                                borderColor: 'rgba(255,255,255,.10)',
-                                borderWidth: 1,
-                                titleColor: '#edf5fb',
-                                bodyColor: '#b8c6d5',
-                                padding: 10,
                                 callbacks: {
-                                    label: (contexto) => ' ' + Number(contexto.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                    label: (contexto) => Number(contexto.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                                 }
                             }
                         },
                         scales: {
                             x: {
-                                grid: { color: 'rgba(148,163,184,.055)' },
+                                grid: { display: false },
                                 border: { display: false },
-                                ticks: { color: '#65768b', maxTicksLimit: 7, font: { family: 'Inter', size: 10 } }
+                                ticks: { maxTicksLimit: 7, maxRotation: 0 }
                             },
                             y: {
-                                grid: { color: 'rgba(148,163,184,.065)' },
                                 border: { display: false },
                                 ticks: {
-                                    color: '#65768b',
-                                    font: { family: 'Inter', size: 10 },
+                                    maxTicksLimit: 5,
                                     callback: (valor) => Number(valor).toLocaleString('pt-BR', { notation: 'compact', maximumFractionDigits: 1 })
                                 }
                             }
@@ -370,9 +346,9 @@
                 const resposta = await fetchApi('/perfil');
                 const dados = await resposta.json();
                 const perfil = dados.perfil || dados;
-                nomeEl.textContent = perfil.nome_exibicao || perfil.nome || 'Giovanni';
+                nomeEl.textContent = String(perfil.nome_exibicao || perfil.nome || 'você').trim().split(/\s+/)[0];
             } catch {
-                nomeEl.textContent = 'Giovanni';
+                nomeEl.textContent = 'você';
             }
         }
 
@@ -399,9 +375,9 @@
                     const descricao = item.descricao || item.categoria || 'Movimentação';
                     const categoria = item.categoria || item.tipo || 'Sem categoria';
                     return '<div class="dashboard-v3-transaction">' +
-                        '<span class="dashboard-v3-transaction-icon ' + (receita ? 'receita' : 'despesa') + '">' + (receita ? '↑' : '•') + '</span>' +
+                        '<span class="dashboard-v3-transaction-icon ' + (receita ? 'receita' : 'despesa') + '" aria-hidden="true">' + escaparHtmlDashboard(String(categoria).trim().charAt(0).toUpperCase() || '•') + '</span>' +
                         '<div class="dashboard-v3-transaction-main"><strong>' + escaparHtmlDashboard(descricao) + '</strong><span>' + escaparHtmlDashboard(categoria) + '</span></div>' +
-                        '<div class="dashboard-v3-transaction-value ' + (receita ? 'receita' : 'despesa') + '"><strong>' + (receita ? '+' : '-') + ' ' + formatarMoedaDashboard(valor) + '</strong><span>' + dataFmt + '</span></div>' +
+                        '<div class="dashboard-v3-transaction-value ' + (receita ? 'receita' : 'despesa') + '"><strong>' + (receita ? '+' : '−') + ' ' + formatarMoedaDashboard(valor) + '</strong><span>' + dataFmt + '</span></div>' +
                     '</div>';
                 }).join('');
             } catch (erro) {
@@ -427,7 +403,7 @@
                     const guardado = Math.max(0, Number(objetivo.valor_guardado) || 0);
                     const percentual = meta > 0 ? Math.min(100, (guardado / meta) * 100) : 0;
                     return '<div class="dashboard-v3-goal">' +
-                        '<span class="dashboard-v3-goal-icon">◎</span>' +
+                        '<span class="dashboard-v3-goal-icon" aria-hidden="true"></span>' +
                         '<div class="dashboard-v3-goal-main"><strong>' + escaparHtmlDashboard(objetivo.nome || 'Objetivo') + '</strong><span>' + formatarMoedaDashboard(guardado) + ' / ' + formatarMoedaDashboard(meta) + '</span><div class="dashboard-v3-goal-bar"><i style="width:' + percentual.toFixed(1) + '%"></i></div></div>' +
                         '<span class="dashboard-v3-goal-pct">' + percentual.toFixed(0) + '%</span>' +
                     '</div>';
@@ -455,6 +431,10 @@
 
     if (selecionadaAntes) selectMeta.value = selecionadaAntes;
 }
+        function formatarPercentualDashboard(valor) {
+            return Number(valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        }
+
         function formatarMoedaDashboard(valor) {
             const numero = Number(valor) || 0;
             return numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -477,15 +457,14 @@
     const periodo = ent - sai;
     const elPeriodo = document.getElementById('saldo-liquido');
     elPeriodo.innerText = formatarMoedaDashboard(periodo);
-    elPeriodo.style.color = periodo < 0 ? '#ff5d6c' : '#f4f8fc';
-    elPeriodo.style.textShadow = 'none';
+    elPeriodo.classList.toggle('negativo', periodo < 0);
 
     const badgeTaxa = document.getElementById('taxa-poupada-badge');
     if (badgeTaxa) {
         if (ent > 0) {
             const taxa = (periodo / ent) * 100;
             badgeTaxa.style.display = 'inline-flex';
-            badgeTaxa.innerHTML = `Taxa poupada <strong>${taxa.toFixed(1)}%</strong>`;
+            badgeTaxa.innerHTML = `Taxa poupada <strong>${formatarPercentualDashboard(taxa)}%</strong>`;
         } else {
             badgeTaxa.style.display = 'none';
         }
@@ -497,7 +476,7 @@
             const percentualUsado = (sai / ent) * 100;
             badgeSaidas.style.display = 'block';
             badgeSaidas.className = 'badge-comparativo-fluxo ' + (percentualUsado > 100 ? 'negativo' : 'neutro');
-            badgeSaidas.innerText = `${percentualUsado.toFixed(1)}% das entradas utilizadas`;
+            badgeSaidas.innerText = `${formatarPercentualDashboard(percentualUsado)}% das entradas utilizadas`;
         } else {
             badgeSaidas.style.display = 'none';
         }
@@ -523,21 +502,28 @@
             const gastoPct = ent > 0 ? Math.min(100, (resumo.sai / ent) * 100) : 0;
             const preservadoPct = ent > 0 ? Math.max(0, 100 - gastoPct) : 0;
 
+            // A barra mostra o quanto da renda foi gasto; o marcador fica no limite
+            // que ainda preserva a meta (100% - meta).
+            const estado = ent <= 0 ? 'neutro'
+                : preservadoPct >= META_TAXA_POUPADA ? 'ok'
+                    : gastoPct >= 100 ? 'estourou' : 'atencao';
             barra.style.width = `${gastoPct.toFixed(1)}%`;
-            if (marcador) marcador.style.left = `${Math.min(100, META_TAXA_POUPADA)}%`;
-            elGasto.innerText = `${gastoPct.toFixed(1)}%`;
-            elPreservado.innerText = `${preservadoPct.toFixed(1)}%`;
+            barra.dataset.estado = estado;
+            barra.closest('.dashboard-v3-pulse')?.setAttribute('data-estado', estado);
+            if (marcador) marcador.style.left = `${Math.max(0, 100 - META_TAXA_POUPADA)}%`;
+            elGasto.innerText = `${formatarPercentualDashboard(gastoPct)}%`;
+            elPreservado.innerText = `${formatarPercentualDashboard(preservadoPct)}%`;
             if (elMeta) elMeta.innerText = `${META_TAXA_POUPADA}%`;
 
             if (elStatusTitulo && elStatus) {
                 if (preservadoPct >= META_TAXA_POUPADA) {
                     elStatusTitulo.innerText = 'Seu mês permanece positivo';
-                    elStatus.innerText = `Você já preservou ${preservadoPct.toFixed(1)}% da renda, acima da meta de ${META_TAXA_POUPADA}%.`;
+                    elStatus.innerText = `Você já preservou ${formatarPercentualDashboard(preservadoPct)}% da renda, acima da meta de ${META_TAXA_POUPADA}%.`;
                 } else {
                     const faltam = Math.max(0, META_TAXA_POUPADA - preservadoPct);
                     elStatusTitulo.innerText = ent > 0 ? 'Faltam pontos para a meta' : 'Sem entradas no período';
                     elStatus.innerText = ent > 0
-                        ? `Faltam ${faltam.toFixed(1)} pontos para alcançar a meta.`
+                        ? `Faltam ${formatarPercentualDashboard(faltam)} pontos para alcançar a meta.`
                         : 'Registre entradas para calcular sua taxa poupada.';
                 }
             }
@@ -574,46 +560,27 @@
             }
             if (!temDados) return;
 
-            const cores = ['#55a7ff','#39d98a','#8b6cff','#6f91b6','#3a6d93','#8aa2b8'];
             graficoGastosCategorias = new Chart(canvas.getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: ordenadas.map(([categoria]) => categoria),
-                    datasets: [{
+                    datasets: [GBMGraficos.tingir({
                         data: ordenadas.map(([, valor]) => valor),
-                        backgroundColor: cores,
-                        borderColor: '#0d1825',
-                        borderWidth: 3,
-                        hoverOffset: 3
-                    }]
+                        gbmTokens: { backgroundColor: 'paleta', borderColor: 'surface' },
+                        borderWidth: 2,
+                        hoverOffset: 2
+                    })]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '70%',
+                    cutout: '72%',
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#8191a4',
-                                boxWidth: 8,
-                                boxHeight: 8,
-                                padding: 10,
-                                font: { family: 'Inter', size: 9 }
-                            }
-                        },
+                        // A lista ao lado do gráfico já funciona como legenda, com as mesmas cores.
+                        legend: { display: false },
                         tooltip: {
-                            displayColors: false,
-                            backgroundColor: '#101c2b',
-                            borderColor: 'rgba(255,255,255,.10)',
-                            borderWidth: 1,
-                            titleColor: '#edf5fb',
-                            bodyColor: '#b8c6d5',
                             callbacks: {
-                                label: (contexto) => {
-                                    const valor = Number(contexto.raw || 0);
-                                    return ' ' + valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                                }
+                                label: (contexto) => Number(contexto.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                             }
                         }
                     }
@@ -641,12 +608,10 @@
                 return;
             }
 
-            const cores = ['#55a7ff', '#39d98a', '#55a7ff', '#39d98a', '#55a7ff'];
             const ordenadas = [...despesasPorCategoria.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
             lista.innerHTML = ordenadas.map(([categoria, valor], indice) => {
                 const pct = (valor / totalDespesas) * 100;
-                const cor = cores[indice % cores.length];
                 return `
                     <div class="categoria-participacao-item">
                         <div class="categoria-participacao-topo">
@@ -654,7 +619,7 @@
                             <span class="categoria-participacao-pct">${pct.toFixed(0)}%</span>
                         </div>
                         <div class="categoria-participacao-barra-fundo">
-                            <div class="categoria-participacao-barra-preenchimento" style="width:${pct.toFixed(1)}%; background:${cor};"></div>
+                            <div class="categoria-participacao-barra-preenchimento" style="width:${pct.toFixed(1)}%; background:var(--grafico-${(indice % 6) + 1});"></div>
                         </div>
                     </div>
                 `;
@@ -675,8 +640,7 @@
 
                 if (!dados.temMesAnterior) {
                     elEconomia.innerText = '—';
-                    elEconomia.style.color = 'var(--texto-mutado)';
-                    elEconomia.style.textShadow = 'none';
+                    elEconomia.classList.remove('positivo', 'negativo');
                     elDetalhe.innerText = 'Sem dados do mês anterior para comparar ainda.';
                     return;
                 }
@@ -685,10 +649,10 @@
                 const positivo = economia >= 0;
 
                 elEconomia.innerText = `${positivo ? '+' : '-'} ${formatarMoedaDashboard(Math.abs(economia))}`;
-                elEconomia.style.color = positivo ? '#2ecc71' : '#ff4d4d';
-                elEconomia.style.textShadow = positivo ? '0 0 5px rgba(46,204,113,0.3)' : '0 0 5px rgba(255,77,77,0.3)';
+                elEconomia.classList.toggle('positivo', positivo);
+                elEconomia.classList.toggle('negativo', !positivo);
 
-                const percentualTexto = dados.percentual !== null ? ` (${Math.abs(dados.percentual).toFixed(1)}%)` : '';
+                const percentualTexto = dados.percentual !== null ? ` (${formatarPercentualDashboard(Math.abs(dados.percentual))}%)` : '';
                 elDetalhe.innerText = positivo
                     ? `Você gastou ${formatarMoedaDashboard(Math.abs(economia))} a menos que o mês passado${percentualTexto}.`
                     : `Você gastou ${formatarMoedaDashboard(Math.abs(economia))} a mais que o mês passado${percentualTexto}.`;
@@ -696,9 +660,7 @@
                 const badgeResultado = document.getElementById('detalhe-economia-resultado');
                 if (badgeResultado) {
                     badgeResultado.style.display = 'inline-flex';
-                    badgeResultado.style.borderColor = positivo ? 'rgba(57,217,138,.35)' : 'rgba(255,93,108,.35)';
-                    badgeResultado.style.background = positivo ? 'rgba(57,217,138,.1)' : 'rgba(255,93,108,.1)';
-                    badgeResultado.style.color = positivo ? '#8bffc1' : '#ff9aa4';
+                    badgeResultado.className = 'pill ' + (positivo ? 'sucesso' : 'erro');
                     badgeResultado.innerText = `${positivo ? '↑' : '↓'} ${formatarMoedaDashboard(Math.abs(economia))} ${positivo ? 'melhor' : 'pior'} que antes`;
                 }
 
@@ -710,7 +672,7 @@
                         const receitaSubiu = dados.percentualReceita >= 0;
                         badgeEntradas.style.display = 'block';
                         badgeEntradas.className = 'badge-comparativo-fluxo ' + (receitaSubiu ? 'positivo' : 'negativo');
-                        badgeEntradas.innerText = `${Math.abs(dados.percentualReceita).toFixed(1)}% ${receitaSubiu ? 'acima' : 'abaixo'} do mês anterior`;
+                        badgeEntradas.innerText = `${formatarPercentualDashboard(Math.abs(dados.percentualReceita))}% ${receitaSubiu ? 'acima' : 'abaixo'} do mês anterior`;
                     }
                 }
             } catch (e) {
@@ -742,7 +704,7 @@
             if (showTable && corpoTabela) {
                 corpoTabela.innerHTML = ''; 
                 if (dadosAPI.length === 0) {
-                    corpoTabela.innerHTML = `<tr><td colspan="2" style="text-align: center; padding: 30px;">Sem dados registrados.</td></tr>`;
+                    corpoTabela.innerHTML = `<tr><td colspan="2" class="empty">Sem dados registrados.</td></tr>`;
                 } else {
                     dadosAPI.forEach(item => {
                         const isCredit = item.tipo === 'Receita';
@@ -751,8 +713,8 @@
                         
                        corpoTabela.innerHTML += `
                                 <tr>
-                                    <td style="font-weight: 600;">${escaparHtmlDashboard(item.categoria || 'Sem Categoria')}${etiquetaBanco(item.banco)}</td>
-                                    <td style="font-weight: bold;">${sinal} R$ ${valorLimpo.toFixed(2)}</td>
+                                    <td>${escaparHtmlDashboard(item.categoria || 'Sem categoria')}${etiquetaBanco(item.banco)}</td>
+                                    <td class="num">${sinal} ${formatarMoedaDashboard(valorLimpo)}</td>
                                 </tr>
                             `;
                         aplicarCoresFinanceiras();
@@ -770,16 +732,13 @@
                 const circular = tipoGrafico === 'doughnut';
                 const valores = dadosAPI.map(i => Math.abs(parseFloat(String(i.total_movimentado || i.valor || 0).replace(',', '.'))) || 0);
 
-                // Padrão visual financeiro dos gráficos comuns: entradas = verde, saídas = vermelho.
-                const fundos = dadosAPI.map(i => i.tipo === 'Receita' ? 'rgba(57, 217, 138, .76)' : 'rgba(255, 77, 77, .76)');
-                const bordas = dadosAPI.map(i => i.tipo === 'Receita' ? '#39d98a' : '#ff4d4d');
+                // Entradas em verde e saídas em vermelho, com as cores do tema (nomes de token).
+                const fundos = dadosAPI.map(i => i.tipo === 'Receita' ? 'pos' : 'neg');
+                const bordas = fundos;
 
                 // Na rosca, cada categoria de gasto recebe uma cor própria para que
-                // a legenda (caixas abaixo do gráfico) identifique exatamente cada gasto.
-                const coresGastosRosca = [
-                    '#ff4d4d', '#ff7a59', '#ffb84d', '#a78bfa', '#f472b6',
-                    '#60a5fa', '#22d3ee', '#f59e0b', '#c084fc', '#fb7185'
-                ];
+                // a legenda identifique exatamente cada gasto.
+                const coresGastosRosca = ['grafico-6', 'grafico-3', 'grafico-4', 'grafico-2', 'grafico-5'];
                 const mapaCoresRosca = new Map();
                 let indiceCorGasto = 0;
                 const corRoscaDaCategoria = (categoria) => {
@@ -814,7 +773,7 @@
                     labelsGrafico = grupos.map((grupo) => `${grupo.categoria} — ${grupo.tipo}`);
                     valoresGrafico = grupos.map((grupo) => grupo.valor);
                     fundosGrafico = grupos.map((grupo) =>
-                        grupo.tipo === 'Entrada' ? '#39d98a' : corRoscaDaCategoria(grupo.categoria)
+                        grupo.tipo === 'Entrada' ? 'pos' : corRoscaDaCategoria(grupo.categoria)
                     );
                     bordasGrafico = fundosGrafico.map((cor) => cor);
                     detalhesGrafico = grupos;
@@ -831,36 +790,28 @@
                     detalhesGrafico = dadosAPI;
                 }
 
-                const dataset = {
+                const linha = tipoGrafico === 'line';
+                const tomLinha = detalhesGrafico.length && detalhesGrafico[detalhesGrafico.length - 1]?.tipo === 'Despesa' ? 'neg' : 'pos';
+                const dataset = GBMGraficos.tingir({
                     label: 'Valor movimentado',
                     data: valoresGrafico,
-                    backgroundColor: tipoGrafico === 'line'
-                        ? (detalhesGrafico.length && detalhesGrafico[detalhesGrafico.length - 1]?.tipo === 'Despesa'
-                            ? 'rgba(255, 77, 77, .14)'
-                            : 'rgba(57, 183, 122, .10)')
-                        : fundosGrafico,
-                    borderColor: tipoGrafico === 'line'
-                        ? (detalhesGrafico.length && detalhesGrafico[detalhesGrafico.length - 1]?.tipo === 'Despesa'
-                            ? '#ff4d4d' : '#26874E')
-                        : bordasGrafico,
-                    borderWidth: tipoGrafico === 'line' ? 2.5 : (circular ? 2 : 1.5),
-                    borderRadius: tipoGrafico === 'bar' ? 7 : 0,
+                    gbmTokens: linha
+                        ? { backgroundColor: [tomLinha, 0.08], borderColor: tomLinha, pointBackgroundColor: bordasGrafico, pointBorderColor: bordasGrafico }
+                        : { backgroundColor: fundosGrafico, borderColor: circular ? 'surface' : bordasGrafico },
+                    borderWidth: linha ? 2 : (circular ? 2 : 0),
+                    borderRadius: tipoGrafico === 'bar' ? 4 : 0,
                     borderSkipped: false,
-                    fill: tipoGrafico === 'line',
-                    tension: tipoGrafico === 'line' ? .35 : 0,
-                    pointBackgroundColor: tipoGrafico === 'line' ? bordasGrafico : undefined,
-                    pointBorderColor: tipoGrafico === 'line' ? bordasGrafico : undefined,
-                    pointRadius: tipoGrafico === 'line' ? 3 : undefined,
-                    pointHoverRadius: tipoGrafico === 'line' ? 5 : undefined,
-                    ...(tipoGrafico === 'line' ? {
+                    fill: linha,
+                    pointRadius: linha ? 2.5 : undefined,
+                    ...(linha ? {
                         segment: {
                             borderColor: (context) => {
                                 const indice = context.p1DataIndex ?? context.p0DataIndex ?? 0;
-                                return dadosAPI[indice]?.tipo === 'Receita' ? '#39d98a' : '#ff4d4d';
+                                return GBMGraficos.cor(dadosAPI[indice]?.tipo === 'Receita' ? 'pos' : 'neg');
                             }
                         }
                     } : {})
-                };
+                });
 
                 meuChart = new Chart(ctx, {
                     type: tipoGrafico,
@@ -872,18 +823,18 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: circular ? undefined : {
-                            x: { grid: { display: false }, ticks: { color: '#b0bec5' } },
-                            y: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#b0bec5' }, beginAtZero: true }
+                            x: { grid: { display: false }, border: { display: false } },
+                            y: { border: { display: false }, beginAtZero: true }
                         },
                         plugins: {
-                            legend: { display: circular, position: 'bottom', labels: { color: '#eef6ff', boxWidth: 12, padding: 16 } },
+                            legend: { display: circular, position: 'bottom', labels: { padding: 12 } },
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
                                         const item = detalhesGrafico[context.dataIndex];
                                         const tipo = item?.tipo || 'Movimentação';
                                         const categoria = item?.categoria ? `${item.categoria}: ` : '';
-                                        return `${categoria}${tipo}: R$ ${Number(context.raw || 0).toFixed(2)}`;
+                                        return `${categoria}${tipo}: ${formatarMoedaDashboard(Number(context.raw || 0))}`;
                                     },
                                     afterLabel: function(context) {
                                         const item = detalhesGrafico[context.dataIndex];
@@ -1005,61 +956,17 @@
                 if (texto.includes('R$')) {
                     // Se for negativo (tiver sinal de menos) OU estiver dentro da caixa de "Gasto" / "Saídas"
                     if (texto.includes('-') || textoDoCard.includes('gasto') || textoDoCard.includes('saídas') || textoDoCard.includes('saidas')) {
-                        el.style.color = '#ff4d4d'; // Vermelho vivo
-                        el.style.textShadow = '0 0 5px rgba(255, 77, 77, 0.3)'; // Brilho leve
+                        el.classList.add('negativo');
+                        el.classList.remove('positivo');
                     } 
                     // Se for positivo e não for zero
                     else if (texto !== 'R$ 0,00' && texto !== 'R$ 0') {
-                        el.style.color = '#2ecc71'; // Verde brilhante
-                        el.style.textShadow = '0 0 5px rgba(46, 204, 113, 0.3)'; // Brilho leve
+                        el.classList.add('positivo');
+                        el.classList.remove('negativo');
                     }
                 }
             });
         }
-        let _resolveConfirm = null;
-
-        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[caractere]);
-
-        function gbmAlerta(mensagem, tipo = 'info') {
-    const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
-                : tipo === 'aviso' ? 'rgba(85,167,255,0.3)'
-                :                    'rgba(95,255,168,0.3)';
-
-    document.getElementById('lista-notificacoes-modal').innerHTML = `
-        <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:1rem; line-height:1.6; text-align:center;">
-            ${escaparMensagemModal(mensagem)}
-        </div>`;
-
-    document.getElementById('btn-confirmar-modal').style.display = 'none';
-    document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
-    document.getElementById('modal-notificacoes').style.display = 'flex';
-    _resolveConfirm = null;
-}
-
-function gbmConfirmar(mensagem) {
-    return new Promise(resolve => {
-        _resolveConfirm = resolve;
-
-        document.getElementById('lista-notificacoes-modal').innerHTML = `
-            <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:1rem; line-height:1.6; text-align:center;">
-                ${escaparMensagemModal(mensagem)}
-            </div>`;
-
-        document.getElementById('btn-confirmar-modal').style.display = 'block';
-        document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
-        document.getElementById('modal-notificacoes').style.display = 'flex';
-    });
-}
-
-function fecharModalNotificacoes(confirmado = false) {
-    document.getElementById('modal-notificacoes').style.display = 'none';
-    if (_resolveConfirm) {
-        _resolveConfirm(confirmado);
-        _resolveConfirm = null;
-    }
-}
         // Funções do Menu Lateral (Sidebar)
         function abrirMenuLateral(event) {
             if(event) event.stopPropagation();
@@ -1146,14 +1053,14 @@ function renderizarCategoriasPersonalizadas() {
     const lista = window._categoriasPersonalizadas || [];
 
     if (lista.length === 0) {
-        container.innerHTML = '<span style="color: var(--texto-mutado); font-size:0.8125rem;">Nenhuma categoria personalizada ainda.</span>';
+        container.innerHTML = '<span class="texto-suave">Nenhuma categoria personalizada ainda.</span>';
         return;
     }
 
     container.innerHTML = lista.map(c => `
-        <span style="display:inline-flex; align-items:center; gap:6px; background:rgba(26,86,160,0.25); border:1px solid rgba(95,255,168,0.2); padding:5px 10px; border-radius:14px; font-size:0.8125rem;">
+        <span class="chip-categoria">
             ${escaparHtmlDashboard(c.nome)}
-            <button data-acao="removerCategoriaPersonalizada" data-args="[${Number(c.id)}]" title="Remover categoria" style="background:none; border:none; color:#ff8080; cursor:pointer; font-size:0.875rem; line-height:1;">✕</button>
+            <button type="button" data-acao="removerCategoriaPersonalizada" data-args="[${Number(c.id)}]" aria-label="Remover a categoria ${escaparHtmlDashboard(c.nome)}" title="Remover categoria">×</button>
         </span>
     `).join('');
 }
@@ -1256,7 +1163,7 @@ async function abrirModalTransacoes() {
     const container = document.getElementById('lista-transacoes-modal');
     modal.style.display = 'flex';
     modal.setAttribute('aria-hidden', 'false');
-    container.innerHTML = '<p style="color:#a0a0a0;text-align:center;">Carregando...</p>';
+    container.innerHTML = '<p class="empty">Carregando...</p>';
     try {
         const { mes: mesCiclo, ano: anoCiclo } = cicloAtual();
         const res = await fetchApi(`/transacoes-individuais?mes=${mesCiclo}&ano=${anoCiclo}${queryContaDashboard()}`);
@@ -1266,7 +1173,7 @@ async function abrirModalTransacoes() {
         carregarObjetivosVinculo().catch(() => {});
 
         if (!transacoesModal.length) {
-            container.innerHTML = `<p style="color:#a0a0a0; text-align:center;">Nenhuma transação no período (${intervaloCiclo(mesCiclo, anoCiclo)}).</p>`;
+            container.innerHTML = `<p class="empty">Nenhuma transação no período (${intervaloCiclo(mesCiclo, anoCiclo)}).</p>`;
             return;
         }
 
@@ -1280,39 +1187,38 @@ async function abrirModalTransacoes() {
                     Salvar alterações
                 </button>
             </div>
-            <div class="transacoes-scroll"><table style="width:100%; border-collapse:collapse;">
+            <div class="transacoes-scroll"><table class="tabela-transacoes">
             <thead>
-                <tr style="color:#a0a0a0; font-size:0.875rem;">
-                    <th style="text-align:left; padding:10px;">Data</th>
-                    <th style="text-align:left; padding:10px;">Descrição</th>
-                    <th style="text-align:left; padding:10px;">Valor</th>
-                    <th style="text-align:left; padding:10px;">Banco</th>
-                    <th style="text-align:left; padding:10px;">Categoria</th>
-                    <th style="text-align:left; padding:10px;">Objetivo de poupança</th>
-                    <th style="padding:10px;">Excluir</th>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th class="num">Valor</th>
+                    <th>Banco</th>
+                    <th>Categoria</th>
+                    <th>Objetivo de poupança</th>
+                    <th><span class="sr-only">Excluir</span></th>
                 </tr>
             </thead><tbody>`;
 
         transacoesModal.forEach((t) => {
-            const cor = t.tipo === 'Receita' ? '#10b981' : '#ef4444';
+            const classeValor = t.tipo === 'Receita' ? 'positivo' : 'negativo';
             const sinal = t.tipo === 'Receita' ? '+' : '-';
             const [ano, mes, dia] = String(t.data_transacao).slice(0, 10).split('-');
             const data = ano && mes && dia ? `${dia}/${mes}/${ano}` : '—';
             html += `
-                <tr id="transacao-${Number(t.id)}" style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <td style="padding:10px; font-size:0.8125rem; color:#a0a0a0; white-space:nowrap;">${data}</td>
-                    <td style="padding:10px; font-size:0.8125rem; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escaparHtmlDashboard(t.descricao)}</td>
-                    <td style="padding:10px; font-weight:bold; color:${cor}; white-space:nowrap;">${sinal} R$ ${Number(t.valor).toFixed(2)}</td>
-                    <td style="padding:10px;">${etiquetaBanco(t.banco)}</td>
-                    <td style="padding:10px;">
+                <tr id="transacao-${Number(t.id)}">
+                    <td class="transacao-data">${data}</td>
+                    <td class="transacao-descricao">${escaparHtmlDashboard(t.descricao)}</td>
+                    <td class="num ${classeValor}">${sinal} ${formatarMoedaDashboard(Number(t.valor))}</td>
+                    <td>${etiquetaBanco(t.banco)}</td>
+                    <td>
                         <label class="sr-only" for="cat-${Number(t.id)}">Categoria de ${escaparHtmlDashboard(t.descricao)}</label>
-                        <select id="cat-${Number(t.id)}" data-acao-change="atualizarEstadoSalvarCategorias"
-                            style="min-height:44px;background:#2a2a2a; border:1px solid rgba(255,255,255,0.15); color:white; padding:6px 8px; border-radius:10px; font-size:0.8125rem; width:100%;">
+                        <select id="cat-${Number(t.id)}" data-acao-change="atualizarEstadoSalvarCategorias">
                             ${categoriasOpcoes(t.categoria)}
                         </select>
                     </td>
-                    <td style="padding:10px;min-width:190px;">${renderizarAcaoObjetivoTransacao(t)}</td>
-                    <td style="padding:10px;text-align:center;">
+                    <td class="transacao-objetivo">${renderizarAcaoObjetivoTransacao(t)}</td>
+                    <td>
                         <button type="button" id="excluir-transacao-${Number(t.id)}" class="btn-excluir-transacao"
                             data-acao="excluirTransacao" data-args="[${Number(t.id)}]"
                             aria-label="Excluir somente a transação ${escaparHtmlDashboard(t.descricao)}">
@@ -1326,7 +1232,7 @@ async function abrirModalTransacoes() {
         container.innerHTML = html;
         atualizarEstadoSalvarCategorias();
     } catch (erro) {
-        container.innerHTML = `<p style="color:#fca5a5;text-align:center;">${escaparHtmlDashboard(erro.message)}</p>`;
+        container.innerHTML = `<p class="empty erro">${escaparHtmlDashboard(erro.message)}</p>`;
         gbmAlerta(erro.message, 'erro');
     }
 }
@@ -1419,7 +1325,7 @@ async function excluirTransacao(transacaoId) {
         document.getElementById(`transacao-${Number(transacaoId)}`)?.remove();
         if (!transacoesModal.length) {
             document.getElementById('lista-transacoes-modal').innerHTML =
-                '<p style="color:#a0a0a0;text-align:center;">Nenhuma transação neste período.</p>';
+                '<p class="empty">Nenhuma transação neste período.</p>';
         } else {
             atualizarEstadoSalvarCategorias();
         }
@@ -1573,20 +1479,20 @@ async function carregarInsights() {
         if (!res.ok) throw new Error('Falha ao carregar insights.');
         const insights = await res.json();
         const corPorTipo = (tipo) => tipo === 'aumento'
-            ? { borda: '#55a7ff', badge: null }
+            ? { classe: 'insight-atencao', badge: null }
             : tipo === 'positivo'
-                ? { borda: '#39d98a', badge: 'Desempenho positivo' }
-                : { borda: '#ff9aa4', badge: null };
+                ? { classe: 'insight-positivo', badge: 'Desempenho positivo' }
+                : { classe: 'insight-alerta', badge: null };
         const rotuloPorTipo = (tipo) => tipo === 'aumento'
-            ? 'ATENÇÃO'
+            ? 'Atenção'
             : tipo === 'positivo'
-                ? 'DESEMPENHO'
-                : 'ALERTA';
+                ? 'Desempenho'
+                : 'Alerta';
         container.innerHTML = insights.length
             ? insights.map((item) => {
                 const estilo = corPorTipo(item.tipo);
                 return `
-                <div class="insight-item" style="border-left:3px solid ${estilo.borda};">
+                <div class="insight-item ${estilo.classe}">
                     <span class="insight-rotulo">${rotuloPorTipo(item.tipo)}</span>
                     <strong>${escaparHtmlDashboard(item.titulo || '')}</strong>
                     <span>${escaparHtmlDashboard(item.texto || '')}</span>

@@ -9,7 +9,7 @@
                     return;
                 }
                 container.innerHTML = contas.map((conta) => `
-                    <article class="card conta-card" style="${Number(conta.ativa) ? '' : 'opacity:.62'}">
+                    <article class="card conta-card${Number(conta.ativa) ? '' : ' arquivada'}">
                         <div class="conta-topo">
                             <div>
                                 <h3>${gbmEscapar(conta.nome)}</h3>
@@ -21,7 +21,7 @@
                         <div class="conta-saldo">${gbmMoeda(conta.saldo)}</div>
                         <div class="conta-detalhes">
                             <div class="stat">Movimentações<br><strong>${Number(conta.quantidade_transacoes)}</strong></div>
-                            <div class="stat">Última<br><strong style="font-size:.9rem">${gbmData(conta.ultima_movimentacao)}</strong></div>
+                            <div class="stat">Última<br><strong class="conta-data">${gbmData(conta.ultima_movimentacao)}</strong></div>
                         </div>
                         <div class="actions">
                             <button class="btn btn-small" data-acao="editarConta" data-args="[${conta.id}]">Editar</button>

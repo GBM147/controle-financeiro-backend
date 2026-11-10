@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8">
+    <script src="gbm-tema.js?v=69a291f638"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <title>Acesso - GBM Finance</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive">
@@ -13,208 +14,153 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GBM Finance">
 <link rel="apple-touch-icon" href="logo-transparente.png">
-    <link rel="stylesheet" href="paginas/login.css?v=8a9686f947">
-    <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
-    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
-    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
-    <script src="gbm-motion.js?v=88bf99267f" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
-    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
     <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="estilo/tokens.css?v=88606937b0">
+    <link rel="stylesheet" href="estilo/base.css?v=3532b91c9f">
+    <link rel="stylesheet" href="estilo/componentes.css?v=beae3d383c">
+    <link rel="stylesheet" href="estilo/app.css?v=79f9015933">
+    <link rel="stylesheet" href="paginas/login.css?v=8b6b593f02">
+    <script src="gbm-movimento.js?v=4b7404e164"></script>
     <script src="gbm-acoes.js?v=b9030c8ef0"></script>
 </head>
-<body class="gbm-polished">
+<body class="gbm-auth">
+    <main class="login-container">
+        <a class="login-marca" href="index.html" aria-label="GBM Finance, página inicial"><span class="gbm-marca" aria-hidden="true">G</span><span>GBM Finance</span></a>
 
-    <canvas id="particles-canvas"></canvas>
-
-    <div class="login-container">
-        
-        <!-- BOTÃO DE INSTALAR O APP -->
-        <button id="btn-instalar-app" style="display:none; width:100%; margin-bottom: 20px; padding:12px; background:#c89f53; color:#09101a; border:none; border-radius:10px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 15px rgba(200, 159, 83, 0.4); transition: 0.3s;">
-    Instalar Aplicativo GBM
-</button>
-
-        <div id="form-login">
-            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
-            <h2>Bem-vindo de volta</h2>
-            <p class="subtitle">Entre na sua conta para continuar</p>
-
+        <div id="form-login" class="login-painel">
+            <h1>Bem-vindo de volta</h1>
+            <p class="subtitle">Entre na sua conta para continuar.</p>
             <div class="input-group">
-                <input type="email" id="login-identificacao" placeholder=" " required>
                 <label for="login-identificacao">E-mail</label>
+                <input type="email" id="login-identificacao" autocomplete="username" required>
             </div>
-
             <div class="input-group">
-                <input type="password" id="login-senha" placeholder=" " required>
                 <label for="login-senha">Senha</label>
+                <input type="password" id="login-senha" autocomplete="current-password" required>
             </div>
-
             <div class="form-options">
                 <label class="remember-me" for="login-manter-conectado">
                     <input type="checkbox" id="login-manter-conectado">
                     <span>Manter conectado</span>
                 </label>
-                <span class="forgot-pass" data-acao="mostrarRecuperacao">Esqueceu sua senha?</span>
+                <button type="button" class="forgot-pass link-botao" data-acao="mostrarRecuperacao">Esqueceu a senha?</button>
             </div>
-
-            <button class="btn-login" data-acao="fazerLogin">Entrar</button>
-
+            <button type="button" class="btn-login" data-acao="fazerLogin">Entrar</button>
             <p class="signup-prompt">
-                Ainda não tem conta? <span data-acao="alternarForms" data-args="[&quot;cadastro&quot;]">Criar uma agora</span>
+                Ainda não tem conta? <button type="button" class="link-botao" data-acao="alternarForms" data-args="[&quot;cadastro&quot;]">Criar conta</button>
             </p>
         </div>
 
-        <div id="form-cadastro" style="display: none;">
-            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo" style="width: 90px; margin-bottom: 15px;">
-            <h2>Criar Conta</h2>
-            
-            <div style="display: flex; gap: 10px;">
-                <div class="input-group" style="flex: 1;">
-                    <input type="text" id="cad-nome" placeholder=" ">
+        <div id="form-cadastro" class="login-painel" style="display: none;">
+            <h1>Criar conta</h1>
+            <p class="subtitle">Leva menos de um minuto. O primeiro mês do Premium é grátis.</p>
+            <div class="linha-dupla">
+                <div class="input-group">
                     <label for="cad-nome">Nome</label>
+                    <input type="text" id="cad-nome" autocomplete="given-name">
                 </div>
-                <div class="input-group" style="flex: 1;">
-                    <input type="text" id="cad-sobrenome" placeholder=" ">
+                <div class="input-group">
                     <label for="cad-sobrenome">Sobrenome</label>
+                    <input type="text" id="cad-sobrenome" autocomplete="family-name">
                 </div>
             </div>
-
             <div class="input-group">
-                <input type="email" id="cad-email" placeholder=" ">
                 <label for="cad-email">E-mail</label>
+                <input type="email" id="cad-email" autocomplete="email">
             </div>
-
             <div class="input-group">
-                <input type="text" id="cad-telefone" placeholder=" " maxlength="15" data-acao-input="mascaraTelefone" data-com-elemento-input>
                 <label for="cad-telefone">Telefone</label>
+                <input type="text" id="cad-telefone" maxlength="15" inputmode="tel" autocomplete="tel" data-acao-input="mascaraTelefone" data-com-elemento-input>
             </div>
-
-            <div class="input-group" style="margin-bottom: 10px;">
-                <input type="password" id="cad-senha" placeholder=" ">
+            <div class="input-group">
                 <label for="cad-senha">Senha</label>
+                <input type="password" id="cad-senha" autocomplete="new-password" aria-describedby="ajuda-senha">
+                <small id="ajuda-senha" class="ajuda-campo">Mínimo de 8 caracteres, com letras maiúsculas, minúsculas e números.</small>
             </div>
-            <div style="text-align: left; margin-bottom: 25px;">
-                <small style="color: #8a9ba8; font-size: 0.75rem;">Deve conter letras maiúsculas, minúsculas e números.</small>
-            </div>
-
-            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; text-align: left;">
-                <input type="checkbox" id="aceite-termos" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #10b981; cursor: pointer;">
-                <label for="aceite-termos" style="color: #8a9ba8; font-size: 13px; line-height: 1.4; cursor: pointer;">
+            <div class="aceite">
+                <input type="checkbox" id="aceite-termos">
+                <label for="aceite-termos">
                     Li e concordo com os
-                    <a href="termos.html?origem=cadastro" target="_blank" rel="opener" style="color: #c89f53; text-decoration: none; font-weight: 600;">Termos de Uso</a>
+                    <a href="termos.html?origem=cadastro" target="_blank" rel="opener">Termos de Uso</a>
                     (versão 2026.07).
                 </label>
             </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 25px; text-align: left;">
-                <input type="checkbox" id="aceite-privacidade" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #10b981; cursor: pointer;">
-                <label for="aceite-privacidade" style="color: #8a9ba8; font-size: 13px; line-height: 1.4; cursor: pointer;">
-                    Li a <a href="politica-de-privacidade.html?origem=cadastro" target="_blank" rel="opener" style="color: #c89f53; text-decoration: none; font-weight: 600;">Política de Privacidade</a>
+            <div class="aceite">
+                <input type="checkbox" id="aceite-privacidade">
+                <label for="aceite-privacidade">
+                    Li a <a href="politica-de-privacidade.html?origem=cadastro" target="_blank" rel="opener">Política de Privacidade</a>
                     e estou ciente do tratamento necessário para o funcionamento do serviço.
                 </label>
             </div>
-
-            <button class="btn-login" data-acao="registrarUsuario" style="background: #10b981; border-color: #059669;">Registrar e Validar</button>
-            
+            <button type="button" class="btn-login" data-acao="registrarUsuario">Criar conta e validar e-mail</button>
             <p class="signup-prompt">
-                Já tem uma conta? <span data-acao="alternarForms" data-args="[&quot;login&quot;]">Fazer login</span>
+                Já tem uma conta? <button type="button" class="link-botao" data-acao="alternarForms" data-args="[&quot;login&quot;]">Entrar</button>
             </p>
         </div>
 
-        <div id="form-escolha-validacao" style="display: none;">
-            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
-            <h2>Verificação</h2>
-            <p class="subtitle" style="margin-bottom: 25px;">Enviaremos um código de 6 dígitos para o seu e-mail.</p>
-            
-            <button class="btn-login" data-acao="enviarCodigo" data-args="[&quot;email&quot;]" style="margin-bottom: 15px;">Receber Código por E-mail</button>
+        <div id="form-escolha-validacao" class="login-painel" style="display: none;">
+            <h1>Verificação</h1>
+            <p class="subtitle">Enviaremos um código de 6 dígitos para o seu e-mail.</p>
+            <button type="button" class="btn-login" data-acao="enviarCodigo" data-args="[&quot;email&quot;]">Receber código por e-mail</button>
             <input type="hidden" id="temp-user-id">
         </div>
 
-        <div id="form-validar-codigo" style="display: none;">
-            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
-            <h2>Código Enviado</h2>
-            <p class="subtitle">Insira os 6 dígitos que recebeu:</p>
-            
+        <div id="form-validar-codigo" class="login-painel" style="display: none;">
+            <h1>Código enviado</h1>
+            <p class="subtitle">Digite os 6 dígitos que você recebeu.</p>
             <div class="input-group">
-                <input type="text" id="codigo-input" aria-label="Código de verificação de 6 dígitos" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 12px; font-size: 1.5rem; font-weight: bold; padding-left: 24px;">
-                <label for="codigo-input" style="left: 50%; transform: translate(-50%, -50%);">000000</label>
+                <label for="codigo-input">Código de verificação</label>
+                <input type="text" id="codigo-input" class="campo-codigo" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
             </div>
-            
-            <button class="btn-login" data-acao="verificarCodigo">Validar Agora</button>
-            
+            <button type="button" class="btn-login" data-acao="verificarCodigo">Validar</button>
             <p class="signup-prompt">
-                <span id="reenviar-link-codigo" data-acao="reenviarCodigoEmail">Reenviar código</span>
-                <span id="reenviar-timer-codigo" style="display:none; color: #8a9ba8; cursor: default;"></span>
+                <button type="button" id="reenviar-link-codigo" class="link-botao" data-acao="reenviarCodigoEmail">Reenviar código</button>
+                <span id="reenviar-timer-codigo" class="reenviar-timer" style="display:none"></span>
             </p>
         </div>
 
-        <div id="form-esqueci-senha" style="display: none;">
-            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
-            <h2>Recuperar Senha</h2>
-            <p class="subtitle">Informe seu e-mail cadastrado:</p>
-            
+        <div id="form-esqueci-senha" class="login-painel" style="display: none;">
+            <h1>Recuperar senha</h1>
+            <p class="subtitle">Informe o e-mail cadastrado.</p>
             <div class="input-group">
-                <input type="email" id="recuperar-email" placeholder=" ">
                 <label for="recuperar-email">E-mail</label>
+                <input type="email" id="recuperar-email" autocomplete="email">
             </div>
-            
-            <button class="btn-login" data-acao="solicitarRecuperacao">Enviar Código</button>
-            
+            <button type="button" class="btn-login" data-acao="solicitarRecuperacao">Enviar código</button>
             <p class="signup-prompt">
-                <span data-acao="alternarForms" data-args="[&quot;login&quot;]">Voltar ao login</span>
+                <button type="button" class="link-botao" data-acao="alternarForms" data-args="[&quot;login&quot;]">Voltar ao login</button>
             </p>
         </div>
 
-        <div id="form-redefinir-senha" style="display: none;">
-            <img src="logo-transparente.jpg" alt="GBM Logo" class="logo">
-            <h2>Nova Senha</h2>
-            <p class="subtitle">Insira o código recebido e a nova senha:</p>
-            
+        <div id="form-redefinir-senha" class="login-painel" style="display: none;">
+            <h1>Nova senha</h1>
+            <p class="subtitle">Digite o código recebido e a nova senha.</p>
             <input type="hidden" id="temp-recuperar-email">
-            
             <div class="input-group">
-                <input type="text" id="redefinir-codigo" placeholder=" " maxlength="6" style="text-align: center; letter-spacing: 10px; font-size: 1.25rem; font-weight: bold;">
                 <label for="redefinir-codigo">Código de 6 dígitos</label>
+                <input type="text" id="redefinir-codigo" class="campo-codigo" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
             </div>
-            
             <div class="input-group">
-                <input type="password" id="redefinir-senha-nova" placeholder=" ">
-                <label for="redefinir-senha-nova">Nova Senha</label>
+                <label for="redefinir-senha-nova">Nova senha</label>
+                <input type="password" id="redefinir-senha-nova" autocomplete="new-password">
             </div>
-            
-            <button class="btn-login" data-acao="redefinirSenha">Salvar Nova Senha</button>
-            
+            <button type="button" class="btn-login" data-acao="redefinirSenha">Salvar nova senha</button>
             <p class="signup-prompt">
-                <span id="reenviar-link-senha" data-acao="reenviarCodigoSenha">Reenviar código</span>
-                <span id="reenviar-timer-senha" style="display:none; color: #8a9ba8; cursor: default;"></span>
+                <button type="button" id="reenviar-link-senha" class="link-botao" data-acao="reenviarCodigoSenha">Reenviar código</button>
+                <span id="reenviar-timer-senha" class="reenviar-timer" style="display:none"></span>
             </p>
         </div>
-    </div>
 
+        <button type="button" id="btn-instalar-app" class="btn-instalar" style="display:none">Instalar o aplicativo GBM</button>
+    </main>
     <footer class="login-footer">
         <p class="verse">“O sábio economiza e tem sempre bastante comida e dinheiro em sua casa, mas o tolo gasta todo o seu dinheiro assim que o recebe.”</p>
-        <span class="reference">PROVÉRBIOS 21:20</span>
+        <span class="reference">Provérbios 21:20</span>
     </footer>
+    <script src="paginas/login-1.js?v=86ebbed20a"></script>
 
-    <script src="paginas/login-1.js?v=eb1ca3dc58"></script>
-
-    <div id="modal-notificacoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center;">
-        <div style="background:#0f1a2b; border:1px solid rgba(95,255,168,0.3); border-radius:14px; padding:30px; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="logo-transparente.jpg" alt="GBM" style="height:28px;">
-                    <span style="font-family:'Sora',sans-serif; font-size:1.25rem; font-weight:700; letter-spacing:2px; color:#5fffa8;">GBM — NOTIFICAÇÕES</span>
-                </div>
-                <button data-acao="fecharModalNotificacoes" data-args="[false]" style="background:none; border:none; color:#b0bec5; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
-            </div>
-            <div id="lista-notificacoes-modal"></div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="btn-confirmar-modal" data-acao="fecharModalNotificacoes" data-args="[true]" style="display:none; flex:1; padding:12px; background:#205c4e; color:#fff; border:none; border-radius:10px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" data-fundo-hover="#297a66" data-fundo-normal="#205c4e">CONFIRMAR</button>
-                <button id="btn-fechar-modal" data-acao="fecharModalNotificacoes" data-args="[false]" style="flex:1; padding:12px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-family:'Sora',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; cursor:pointer; transition:0.2s;" data-fundo-hover="rgba(255,255,255,0.15)" data-fundo-normal="rgba(255,255,255,0.08)">FECHAR</button>
-            </div>
-        </div>
-    </div>
     <script src="paginas/login-2.js?v=1e0329c7cb"></script>
-    <script src="gbm-pages.js?v=b53b3cd6b3"></script>
+    <script src="gbm-pages.js?v=50214434c6"></script>
 </body>
 </html>

@@ -173,41 +173,26 @@ test('interface não contém emojis e o menu usa capitalização comum sem brilh
         assert.doesNotMatch(conteudo, /☰/, `${arquivo} ainda contém símbolo decorativo de menu`);
     }
 
-    const dashboard = lerPagina('public/dashboard.html');
-    const estilos = [...dashboard.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)]
-        .map(([, css]) => css).join('\n');
-    assert.match(estilos, /\.dashboard-v3-nav-item\s*\{/);
-    const regrasMenu = [...estilos.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
-        .filter(([, seletor]) => seletor.includes('.dashboard-v3-nav-item'));
-    for (const [, seletor, regra] of regrasMenu) {
-        // A navegação v3 usa os valores padrão (none) para estas propriedades.
-        // Verifica também estados ativos/hover, em vez do CSS legado sem uso.
-        for (const [, propriedade, valor] of regra.matchAll(/\b(text-transform|text-shadow|box-shadow)\s*:\s*([^;}]+)/g)) {
-            assert.equal(valor.replace(/\s*!important\s*$/, '').trim(), 'none', `${seletor}: ${propriedade}`);
-        }
-    }
-
-    const menu = dashboard.match(/<nav\b[^>]*class="dashboard-v3-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
-    assert.ok(menu, 'Navegação principal atual precisa estar presente');
-    const links = [...menu.matchAll(/<a\b([^>]+)>([\s\S]*?)<\/a>/g)]
-        .map(([, atributos, conteudo]) => ({
-            atributos,
-            rotulo: conteudo
-                .replace(/<span\b[^>]*class="nav-ico"[^>]*>[\s\S]*?<\/span>/g, '')
-                .replace(/<(em|b)\b[^>]*>[\s\S]*?<\/\1>/g, '')
-                .replace(/<[^>]+>/g, '').trim()
-        }));
-    for (const [rotulo, destino, acao] of [
-        ['Contas', 'contas.html'],
-        ['Limite de gastos', 'limite-de-gastos.html'],
-        ['Relatórios', '#', /data-acao="acessarRotaPremium" data-args="\[&quot;relatorio-avancado\.html&quot;, &quot;Relatório mensal&quot;\]" data-prevenir/],
-        ['Comparativo', '#', /data-acao="acessarRotaPremium" data-args="\[&quot;comparativo\.html&quot;, &quot;Comparativo mensal&quot;\]" data-prevenir/]
+    // O menu da conta vem de gbm-menu.js (único para todas as telas internas).
+    const menu = ler('public/gbm-menu.js');
+    for (const [rotulo, destino, premium] of [
+        ['Visão geral', 'dashboard.html', false],
+        ['Minhas contas', 'contas.html', false],
+        ['Limite de gastos', 'limite-de-gastos.html', false],
+        ['Relatórios', 'relatorio.html', false],
+        ['Relatório avançado', 'relatorio-avancado.html', true],
+        ['Comparativo mensal', 'comparativo.html', true]
     ]) {
-        const link = links.find((item) => item.rotulo === rotulo);
-        assert.ok(link, `Item do menu ausente: ${rotulo}`);
-        assert.match(link.atributos, /class="[^"]*\bdashboard-v3-nav-item\b/);
-        assert.ok(link.atributos.includes(`href="${destino}"`), `Destino incorreto: ${rotulo}`);
-        if (acao) assert.match(link.atributos, acao);
+        const item = menu.match(new RegExp(`\\{href:'${destino.replace('.', '\\.')}'[^}]*texto:'${rotulo}'[^}]*\\}`));
+        assert.ok(item, `Item do menu ausente: ${rotulo}`);
+        assert.equal(/premium:true/.test(item[0]), premium, `Selo Premium incorreto: ${rotulo}`);
+    }
+    const app = ler('public/estilo/app.css');
+    const regrasMenu = [...app.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+        .filter(([, seletor]) => /menu-item|menu-grupo-titulo/.test(seletor));
+    assert.ok(regrasMenu.length > 0);
+    for (const [, seletor, regra] of regrasMenu) {
+        assert.doesNotMatch(regra, /text-transform\s*:\s*uppercase|text-shadow|box-shadow/, `${seletor.trim()} não deve ter caixa alta nem brilho`);
     }
 });
 
@@ -228,11 +213,105 @@ test('análises oferecem tipos de gráfico e o dashboard permite exibir somente 
     assert.match(comparativo, /function trocarTipoGraficoComparativo\(\)/);
 });
 
-test('redesign preserva o mármore e deixa perfil e menu sem card', () => {
-    const dashboard = lerPagina('public/dashboard.html');
-    const estilosInternos = ler('public/gbm-pages.css');
+function blocoDeTokens(css, cabecalho) {
+    const inicio = css.indexOf(cabecalho);
+    assert.ok(inicio >= 0, `Bloco de tokens ausente: ${cabecalho}`);
+    const abre = css.indexOf('{', inicio);
+    let profundidade = 0;
+    for (let i = abre; i < css.length; i += 1) {
+        if (css[i] === '{') profundidade += 1;
+        if (css[i] === '}' && --profundidade === 0) {
+            return Object.fromEntries([...css.slice(abre + 1, i).matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)]
+                .map(([, nome, valor]) => [nome, valor.trim()]));
+        }
+    }
+    throw new Error(`Bloco sem fechamento: ${cabecalho}`);
+}
 
-    assert.match(dashboard, /\.atalho-perfil,\s*\.gbm-menu-btn\s*\{[\s\S]*?border:\s*0\s*!important;[\s\S]*?background:\s*transparent\s*!important;[\s\S]*?box-shadow:\s*none\s*!important;/);
+function corRgb(valor, fundo) {
+    const hex = valor.match(/^#([0-9a-f]{6})$/i);
+    if (hex) return [0, 2, 4].map((i) => parseInt(hex[1].slice(i, i + 2), 16));
+    const rgba = valor.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)$/i);
+    assert.ok(rgba, `Cor não reconhecida: ${valor}`);
+    const alfa = rgba[4] === undefined ? 1 : Number(rgba[4]);
+    return [1, 2, 3].map((i, indice) => Number(rgba[i]) * alfa + (fundo ? fundo[indice] * (1 - alfa) : 255 * (1 - alfa)));
+}
+
+function contraste(frente, fundo) {
+    const luminancia = (rgb) => {
+        const [r, g, b] = rgb.map((canal) => {
+            const c = canal / 255;
+            return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const [maior, menor] = [luminancia(frente), luminancia(fundo)].sort((a, b) => b - a);
+    return (maior + 0.05) / (menor + 0.05);
+}
+
+test('tema claro e escuro definem os mesmos tokens com contraste WCAG AA', () => {
+    const css = ler('public/estilo/tokens.css');
+    const claro = blocoDeTokens(css, ':root {');
+    const escuro = blocoDeTokens(css, ':root[data-tema="escuro"]');
+    const sistema = blocoDeTokens(css.slice(css.indexOf('@media (prefers-color-scheme: dark)')), ':root:not([data-tema="claro"])');
+    const cores = Object.keys(claro).filter((nome) => !/^(font|radius|ease|dur|shadow|overlay)/.test(nome));
+    for (const nome of cores) {
+        assert.ok(escuro[nome], `Tema escuro sem --${nome}`);
+        assert.equal(sistema[nome], escuro[nome], `--${nome} difere entre data-tema="escuro" e prefers-color-scheme`);
+    }
+    const pares = [
+        ['text', 'bg'], ['text', 'surface'], ['text-2', 'surface'], ['text-3', 'surface'], ['text-3', 'bg'],
+        ['accent', 'surface'], ['accent', 'bg'], ['on-accent', 'accent'],
+        ['pos', 'surface'], ['neg', 'surface'], ['warn', 'surface'],
+        ['pos', 'pos-soft'], ['neg', 'neg-soft'], ['warn', 'warn-soft'], ['accent', 'accent-soft'], ['info', 'info-soft']
+    ];
+    for (const [nomeTema, tema] of [['claro', claro], ['escuro', escuro]]) {
+        for (const [frente, fundo] of pares) {
+            const base = corRgb(tema.surface);
+            const corFundo = corRgb(tema[fundo], base);
+            const razao = contraste(corRgb(tema[frente], corFundo), corFundo);
+            assert.ok(razao >= 4.5, `Contraste ${frente} sobre ${fundo} no tema ${nomeTema}: ${razao.toFixed(2)}`);
+        }
+    }
+});
+
+test('visual sem partículas, vidro, brilhos e texto em gradiente', () => {
+    const publico = path.join(raiz, 'public');
+    const arquivos = fs.readdirSync(publico, { recursive: true })
+        .map(String)
+        .filter((arquivo) => /\.(css|js|html)$/.test(arquivo) && !arquivo.startsWith('vendor'));
+    for (const arquivo of arquivos) {
+        const conteudo = fs.readFileSync(path.join(publico, arquivo), 'utf8');
+        assert.doesNotMatch(conteudo, /particles-canvas|class Particle|constellation/i, `${arquivo}: partículas`);
+        assert.doesNotMatch(conteudo, /backdrop-filter/i, `${arquivo}: efeito de vidro`);
+        assert.doesNotMatch(conteudo, /background-clip\s*:\s*text/i, `${arquivo}: texto em gradiente`);
+        assert.doesNotMatch(conteudo, /text-shadow\s*:\s*(?!none)/i, `${arquivo}: brilho em texto`);
+        assert.doesNotMatch(conteudo, /fundo-marmore/i, `${arquivo}: fundo de mármore`);
+        if (arquivo.endsWith('.css')) {
+            assert.doesNotMatch(conteudo, /(?:linear|radial|conic)-gradient\(/i, `${arquivo}: gradiente decorativo`);
+            for (const [, seletor, regra] of conteudo.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+                if (/\binfinite\b/.test(regra)) {
+                    assert.match(seletor, /esqueleto|carregando/, `${arquivo}: animação infinita fora de um estado de carregamento (${seletor.trim()})`);
+                }
+            }
+        }
+    }
+});
+
+test('páginas aplicam o tema antes do CSS e usam a base de estilos nova', () => {
+    const paginas = fs.readdirSync(path.join(raiz, 'public'), { recursive: true })
+        .map(String)
+        .filter((arquivo) => arquivo.endsWith('.html'));
+    assert.ok(paginas.length > 20);
+    for (const arquivo of paginas) {
+        const html = ler(path.join('public', arquivo));
+        const tema = html.search(/<script src="[^"]*gbm-tema\.js/);
+        const primeiroCss = html.search(/<link rel="stylesheet"/);
+        assert.ok(tema > -1, `${arquivo} sem gbm-tema.js`);
+        assert.ok(primeiroCss > -1 && tema < primeiroCss, `${arquivo}: gbm-tema.js precisa vir antes do CSS`);
+        assert.match(html, /estilo\/tokens\.css\?v=/, `${arquivo} sem tokens`);
+        assert.doesNotMatch(html, /gbm-(?:pages|shell|typography|app-polish|motion|interactions)\.css|public-site\.css/, `${arquivo} ainda carrega CSS antigo`);
+    }
 });
 
 test('scripts embutidos e links locais das páginas são válidos', () => {

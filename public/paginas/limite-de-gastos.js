@@ -5,7 +5,7 @@
             return [...new Set((Array.isArray(v) ? v : []).map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= 100))].sort((a, b) => a - b);
         }
         function renderChips() {
-            document.getElementById('chips').innerHTML = percentuaisSelecionados.map(p => `<span class="chip">${p}%<button type="button" data-acao="removerPercentual" data-args="[${p}]">Remover</button></span>`).join('');
+            document.getElementById('chips').innerHTML = percentuaisSelecionados.map(p => `<span class="chip">${p}%<button type="button" data-acao="removerPercentual" data-args="[${p}]" aria-label="Remover o aviso de ${p}%">×</button></span>`).join('');
         }
         function adicionarPercentual() {
             const i = document.getElementById('novo-percentual'), p = Number(i.value);
@@ -42,22 +42,20 @@
                 c.innerHTML = metasCarregadas.map((m, i) => {
                     const limite = Number(m.limite) || 0, gasto = Number(m.gasto) || 0;
                     const p = limite > 0 ? gasto / limite * 100 : 0, w = Math.min(p, 100);
-                    const cor = p < 75 ? 'var(--green)' : p < 100 ? 'var(--amber)' : 'var(--red)';
+                    const faixa = p < 75 ? 'ok' : p < 100 ? 'atencao' : 'estourou';
                     const ps = norm(m.percentuais_alerta);
-                    return `<article class="card">
-                        <div class="meta-head"><strong>${gbmEscapar(m.categoria)}</strong><strong class="gbm-count-up" style="color:${cor}">${p.toFixed(1)}%</strong></div>
-                        <div class="progress"><span data-width="${w}%" style="background:${cor}"></span></div>
-                        <div style="display:flex;justify-content:space-between;gap:10px;margin-top:10px;color:var(--muted);font-size:.82rem">
+                    return `<article class="card limite-card" data-faixa="${faixa}">
+                        <div class="meta-head"><strong>${gbmEscapar(m.categoria)}</strong><strong class="meta-percentual">${p.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</strong></div>
+                        <div class="progress"><span style="width:${w.toFixed(1)}%"></span></div>
+                        <div class="meta-valores">
                             <span>${gbmMoeda(gasto)} de ${gbmMoeda(limite)}</span><span>Gasto</span>
                         </div>
                         <div class="alertas">
-                            <div><span style="font-size:.75rem;color:var(--muted)">Avisos configurados</span><div class="chips">${ps.map(x => `<span class="chip">${x}%</span>`).join('')}</div></div>
+                            <div><span class="alertas-rotulo">Avisos configurados</span><div class="chips">${ps.map(x => `<span class="chip">${x}%</span>`).join('')}</div></div>
                             <button class="btn btn-small" data-acao="editarLimite" data-args="[${i}]">Editar</button>
                         </div>
                     </article>`;
                 }).join('');
-                document.querySelectorAll('.progress > span[data-width]').forEach(el => observadorBarras.observe(el));
-                document.querySelectorAll('.gbm-count-up').forEach(el => observadorContagem.observe(el));
             } catch (erro) { gbmToast(erro.message, 'erro'); }
         }
         async function salvarNovoLimite() {

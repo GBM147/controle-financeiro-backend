@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    const VERSAO_TUTORIAL = '1.1.47';
+    const VERSAO_TUTORIAL = '1.2.0';
 
     const PAGINAS = {
         'dashboard.html': {
@@ -19,17 +19,17 @@
                     texto: 'Escolha uma conta bancária específica ou mantenha “Todas” para visualizar o resultado consolidado.'
                 },
                 {
-                    alvo: '.grid-cards',
+                    alvo: '.dashboard-v3-metrics',
                     titulo: 'Resumo financeiro',
                     texto: 'Os cartões mostram entradas, saídas, resultado do período e comparação com o mês anterior.'
                 },
                 {
-                    alvo: '.insights-panel',
+                    alvo: '.dashboard-v3-insights',
                     titulo: 'Pontos de atenção',
                     texto: 'O GBM analisa os dados atuais e destaca informações que merecem sua atenção.'
                 },
                 {
-                    alvo: '.lancamento-rapido',
+                    alvo: '.lancamento-rapido-form',
                     titulo: 'Lançamento rápido',
                     texto: 'Registre manualmente uma receita ou despesa, escolhendo conta, descrição, categoria, valor e data.'
                 },
@@ -49,7 +49,7 @@
                     texto: 'Crie um objetivo de poupança. Ele só avança com contribuições manuais ou transações que você destinar explicitamente.'
                 },
                 {
-                    alvo: '#painel-exibicao',
+                    alvo: '.dashboard-v3-analysis',
                     titulo: 'Exibição dos dados',
                     texto: 'Alterne entre tabela e gráfico para analisar as transações da forma que preferir.'
                 },
@@ -194,7 +194,7 @@
                     texto: 'Digite o valor máximo que pretende gastar nessa categoria durante o mês.'
                 },
                 {
-                    alvo: '.campo-percentuais',
+                    alvo: '.percentuais',
                     titulo: 'Vários percentuais',
                     texto: 'Adicione quantos avisos precisar, como 50%, 70% e 90%. Não é necessário usar intervalos de dez em dez.'
                 },
