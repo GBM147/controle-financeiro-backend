@@ -2,7 +2,7 @@
 --
 -- Contém apenas as tabelas que o servidor não cria sozinho. As demais tabelas,
 -- colunas e índices são adicionados pelas migrações automáticas em
--- lib/migracoes.js na inicialização. Foi derivado das consultas do código;
+-- src/db/migracoes.js na inicialização. Foi derivado das consultas do código;
 -- para comparar com produção, gere `mysqldump --no-data` do banco publicado.
 
 CREATE TABLE IF NOT EXISTS usuarios (

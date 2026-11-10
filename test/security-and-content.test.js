@@ -8,6 +8,15 @@ const vm = require('node:vm');
 
 const raiz = path.resolve(__dirname, '..');
 const ler = (arquivo) => fs.readFileSync(path.join(raiz, arquivo), 'utf8');
+// Código do servidor: ponto de entrada e módulos em src/.
+const lerServidor = () => {
+    const listar = (diretorio) => fs.readdirSync(diretorio, { withFileTypes: true }).flatMap((item) => {
+        const caminho = path.join(diretorio, item.name);
+        return item.isDirectory() ? listar(caminho) : item.name.endsWith('.js') ? [caminho] : [];
+    });
+    return [path.join(raiz, 'index.js'), ...listar(path.join(raiz, 'src'))]
+        .map((arquivo) => fs.readFileSync(arquivo, 'utf8')).join('\n');
+};
 
 test('páginas de ação não carregam anúncios e não são indexáveis', () => {
     for (const pagina of ['public/login.html', 'public/dashboard.html']) {
@@ -75,7 +84,7 @@ test('política de privacidade informa cookies de publicidade do Google', () => 
 });
 
 test('configuração evita regressões de segurança conhecidas', () => {
-    const servidor = ler('index.js');
+    const servidor = lerServidor();
     const pacote = JSON.parse(ler('package.json'));
     assert.doesNotMatch(servidor, /rejectUnauthorized:\s*false/);
     assert.doesNotMatch(servidor, /Math\.random\(\).*900000/);
@@ -111,7 +120,7 @@ test('login informa ao usuário quando as credenciais são recusadas', () => {
 });
 
 test('login temporário usa a sessão do servidor sem depender do storage', () => {
-    const servidor = ler('index.js');
+    const servidor = lerServidor();
     const login = ler('public/login.html');
     const dashboard = ler('public/dashboard.html');
     const autenticacao = ler('public/auth.js');
@@ -126,7 +135,7 @@ test('login temporário usa a sessão do servidor sem depender do storage', () =
 });
 
 test('modal permite exclusão individual e salva categorias em lote', () => {
-    const servidor = ler('index.js');
+    const servidor = lerServidor();
     const dashboard = ler('public/dashboard.html');
 
     assert.match(servidor, /app\.post\('\/corrigir-categorias', exigirLogin/);

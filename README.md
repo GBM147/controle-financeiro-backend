@@ -20,6 +20,25 @@ npm start
 
 O servidor usa a porta definida em `PORT` e publica os arquivos da pasta `public/`.
 
+## Estrutura
+
+- `index.js`: ponto de entrada; inicia o servidor, prepara o banco, agenda a tarefa diária e encerra com segurança no deploy.
+- `src/app.js`: cria o Express com a mesma ordem de middlewares de segurança, arquivos estáticos, sessão, rotas e tratamento de erros.
+- `src/rotas/`: rotas por assunto (autenticação, transações, importações, objetivos, pagamentos etc.).
+- `src/servicos/`: regras compartilhadas (identidade criptografada, importação, alertas, recorrências, assinaturas).
+- `src/db/`: pool MySQL e migrações automáticas; `db/schema.sql` traz o esquema base para desenvolvimento e testes.
+- `src/web/`: sessão, autorização, limites de requisição, uploads e páginas editoriais.
+
+## Testes com MySQL real
+
+`npm test` roda os testes unitários. Os testes de integração recriam todas as tabelas de um banco descartável:
+
+```bash
+GBM_TESTE_MYSQL=1 DB_HOST=127.0.0.1 DB_PORT=3306 DB_USER=root DB_PASSWORD=root DB_NAME=gbm_teste node --test test/integracao.test.js
+```
+
+Nunca aponte essas variáveis para o banco de produção. O CI executa esses testes em um MySQL 8 temporário.
+
 Use um banco dedicado ao desenvolvimento. A inicialização executa migrações
 automáticas aditivas e pressupõe que o esquema base já existe; este repositório
 não inclui um script de criação desse esquema.
@@ -54,8 +73,10 @@ Depois, faça o deploy e confirme `/health` e o login. O erro
 confiável nessa cadeia; mudar `DB_SSL_REJECT_UNAUTHORIZED` não o corrige.
 
 O login diferencia indisponibilidade do serviço (`503`, sem apagar uma sessão
-válida) de credenciais recusadas (`401`). Conexões MySQL interrompidas são
-reabertas na próxima operação; escritas e transações não são repetidas.
+válida) de credenciais recusadas (`401`). A aplicação usa um pool MySQL
+(`DB_POOL_LIMIT`, padrão 5): cada transação reserva uma conexão exclusiva até
+o commit ou rollback, conexões interrompidas são substituídas e escritas não
+são repetidas automaticamente.
 
 Para verificar a execução, confirme que `/health` responde `200` com
 `database: "ok"` e que as migrações concluíram sem erros. Os testes em
