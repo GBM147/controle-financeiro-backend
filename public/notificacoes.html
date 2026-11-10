@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8">
+    <script src="gbm-tema.js?v=69a291f638"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Notificações | GBM</title>
-    <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
-    <link rel="stylesheet" href="paginas/notificacoes.css?v=6037050ec8">
-    <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
-    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
-    <script src="gbm-motion.js?v=88bf99267f" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
-    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
     <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="estilo/tokens.css?v=88606937b0">
+    <link rel="stylesheet" href="estilo/base.css?v=3532b91c9f">
+    <link rel="stylesheet" href="estilo/componentes.css?v=beae3d383c">
+    <link rel="stylesheet" href="estilo/app.css?v=79f9015933">
+    <link rel="stylesheet" href="gbm-tutorial.css">
+    <link rel="stylesheet" href="paginas/notificacoes.css?v=40f1ef1737">
+    <script src="gbm-movimento.js?v=4b7404e164"></script>
 </head>
-<body class="gbm-interna gbm-polished">
+<body class="gbm-interna">
     <header class="topbar">
         <a class="brand" href="dashboard.html"><img src="logo-transparente.jpg" alt="GBM"><span>Guardian of Budget & Money</span></a>
         <a class="btn-voltar" href="dashboard.html" aria-label="Voltar ao Dashboard">Voltar</a>
@@ -27,15 +27,15 @@
             <p>Consulte alertas anteriores e escolha como deseja receber os próximos avisos.</p>
         </div>
         <div class="grid grid-3">
-            <section class="card" style="grid-column:span 2">
-                <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+            <section class="card notificacoes-lista">
+                <div class="notificacoes-filtros">
                     <div class="actions">
-                        <select id="filtro-status" aria-label="Status das notificações" style="width:auto">
+                        <select id="filtro-status" aria-label="Status das notificações">
                             <option value="todas">Todas</option>
                             <option value="nao_lidas">Não lidas</option>
                             <option value="lidas">Lidas</option>
                         </select>
-                        <select id="filtro-tipo" aria-label="Tipo de notificação" style="width:auto">
+                        <select id="filtro-tipo" aria-label="Tipo de notificação">
                             <option value="todos">Todos os tipos</option>
                             <option value="limite">Limites</option>
                             <option value="sistema">Sistema</option>
@@ -52,14 +52,14 @@
                 <label class="switch-row"><span>Avisos por e-mail</span><input id="pref-email" type="checkbox"></label>
                 <div class="divider"></div>
                 <div class="field"><label for="pref-inicio">Silenciar a partir de</label><input id="pref-inicio" type="time"></div>
-                <div class="field" style="margin-top:10px"><label for="pref-fim">Até</label><input id="pref-fim" type="time"></div>
-                <button id="salvar-preferencias" class="btn btn-primary" style="width:100%;margin-top:16px">Salvar preferências</button>
+                <div class="field"><label for="pref-fim">Até</label><input id="pref-fim" type="time"></div>
+                <button id="salvar-preferencias" class="btn btn-primary btn-bloco">Salvar preferências</button>
             </aside>
         </div>
     </main>
-    <script src="auth.js?v=6f32663332"></script><script src="gbm-pages.js?v=b53b3cd6b3"></script>
-    <script src="paginas/notificacoes.js?v=42277d320c"></script>
+    <script src="auth.js?v=89cc681816"></script><script src="gbm-pages.js?v=50214434c6"></script>
+    <script src="paginas/notificacoes.js?v=136ebfd566"></script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js?v=56467e5b3d"></script>
+    <script src="gbm-menu.js?v=4701e41f46"></script>
 </body>
 </html>

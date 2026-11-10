@@ -101,19 +101,20 @@
                     if (m.saidas > piorMes.saidas) piorMes = m;
                 });
 
+                const moeda = (valor) => Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 let html = `
                     <div class="resumo-ano">
                         <div class="resumo-item">Total de entradas
-                            <strong style="color: var(--cor-receita);">R$ ${totalEntradas.toFixed(2)}</strong>
+                            <strong class="positivo">${moeda(totalEntradas)}</strong>
                         </div>
                         <div class="resumo-item">Total de saídas
-                            <strong style="color: var(--cor-despesa);">R$ ${totalSaidas.toFixed(2)}</strong>
+                            <strong class="negativo">${moeda(totalSaidas)}</strong>
                         </div>
                         <div class="resumo-item">Média de gasto mensal
-                            <strong>R$ ${mediaGastoMensal.toFixed(2)}</strong>
+                            <strong>${moeda(mediaGastoMensal)}</strong>
                         </div>
                         <div class="resumo-item">Mês mais econômico
-                            <strong style="color: var(--cor-receita);">${NOMES_MESES[melhorMes.mes]}</strong>
+                            <strong>${NOMES_MESES[melhorMes.mes]}</strong>
                         </div>
                     </div>
 
@@ -121,13 +122,13 @@
                         <canvas id="graficoComparativo"></canvas>
                     </div>
 
-                    <table style="margin-top: 25px;">
+                    <div class="tabela-rolagem tabela-comparativo"><table>
                         <thead>
                             <tr>
                                 <th>Mês</th>
-                                <th style="text-align: right;">Entradas</th>
-                                <th style="text-align: right;">Saídas</th>
-                                <th style="text-align: right;">Resultado</th>
+                                <th class="num">Entradas</th>
+                                <th class="num">Saídas</th>
+                                <th class="num">Resultado</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -135,22 +136,22 @@
                 mesesCompletos.forEach(m => {
                     if (!m.temDados) return;
                     const resultado = m.entradas - m.saidas;
-                    const corResultado = resultado >= 0 ? 'var(--cor-receita)' : 'var(--cor-despesa)';
+                    const classeResultado = resultado >= 0 ? 'positivo' : 'negativo';
                     let classeLinha = '';
                     let badge = '';
-                    if (m.mes === melhorMes.mes) { classeLinha = 'linha-melhor-mes'; badge = '<span class="badge-mini badge-melhor">MENOR GASTO</span>'; }
-                    if (m.mes === piorMes.mes && piorMes.mes !== melhorMes.mes) { classeLinha = 'linha-pior-mes'; badge = '<span class="badge-mini badge-pior">MAIOR GASTO</span>'; }
+                    if (m.mes === melhorMes.mes) { classeLinha = 'linha-melhor-mes'; badge = '<span class="badge-mini badge-melhor">Menor gasto</span>'; }
+                    if (m.mes === piorMes.mes && piorMes.mes !== melhorMes.mes) { classeLinha = 'linha-pior-mes'; badge = '<span class="badge-mini badge-pior">Maior gasto</span>'; }
 
                     html += `
                         <tr class="${classeLinha}">
-                            <td style="font-weight: 600;">${NOMES_MESES[m.mes]}${badge}</td>
-                            <td style="text-align: right; color: var(--cor-receita);">R$ ${m.entradas.toFixed(2)}</td>
-                            <td style="text-align: right; color: var(--cor-despesa);">R$ ${m.saidas.toFixed(2)}</td>
-                            <td style="text-align: right; font-weight: 700; color: ${corResultado};">R$ ${resultado.toFixed(2)}</td>
+                            <td class="mes-nome">${NOMES_MESES[m.mes]}${badge}</td>
+                            <td class="num">${moeda(m.entradas)}</td>
+                            <td class="num">${moeda(m.saidas)}</td>
+                            <td class="num ${classeResultado}">${moeda(resultado)}</td>
                         </tr>`;
                 });
 
-                html += '</tbody></table>';
+                html += '</tbody></table></div>';
                 container.innerHTML = html;
 
                 dadosGraficoComparativo = mesesCompletos;
@@ -178,44 +179,33 @@
                 data: {
                     labels: mesesCompletos.map(m => NOMES_MESES_ABREV[m.mes]),
                     datasets: [
-                        {
-                            label: 'Entradas',
-                            data: mesesCompletos.map(m => m.entradas),
-                            backgroundColor: radar ? 'rgba(57,217,138,.18)' : (linha ? 'rgba(57,217,138,.08)' : 'rgba(57,217,138,.72)'),
-                            borderColor: '#39d98a',
-                            borderWidth: linha || radar ? 2.5 : 1.5,
-                            borderRadius: tipo === 'bar' ? 6 : 0,
+                        ...[['Entradas', 'entradas', 'pos'], ['Saídas', 'saidas', 'neg']].map(([rotulo, campo, tom]) => GBMGraficos.tingir({
+                            label: rotulo,
+                            data: mesesCompletos.map(m => m[campo]),
+                            gbmTokens: {
+                                backgroundColor: radar ? [tom, 0.14] : (linha ? [tom, 0.06] : tom),
+                                borderColor: tom,
+                                pointBackgroundColor: tom
+                            },
+                            borderWidth: linha || radar ? 2 : 0,
+                            borderRadius: tipo === 'bar' ? 4 : 0,
                             fill: radar,
-                            tension: linha ? .35 : 0,
-                            pointBackgroundColor: '#39d98a',
-                            pointRadius: linha || radar ? 3 : 0
-                        },
-                        {
-                            label: 'Saídas',
-                            data: mesesCompletos.map(m => m.saidas),
-                            backgroundColor: radar ? 'rgba(85,167,255,.18)' : (linha ? 'rgba(85,167,255,.08)' : 'rgba(85,167,255,.72)'),
-                            borderColor: '#55a7ff',
-                            borderWidth: linha || radar ? 2.5 : 1.5,
-                            borderRadius: tipo === 'bar' ? 6 : 0,
-                            fill: radar,
-                            tension: linha ? .35 : 0,
-                            pointBackgroundColor: '#55a7ff',
-                            pointRadius: linha || radar ? 3 : 0
-                        }
+                            pointRadius: linha || radar ? 2.5 : 0
+                        }))
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: radar ? {
-                        r: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.09)' }, angleLines: { color: 'rgba(255,255,255,.09)' }, pointLabels: { color: '#b0bec5' }, ticks: { display: false } }
+                        r: { beginAtZero: true, ticks: { display: false } }
                     } : {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff' } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff' }, beginAtZero: true }
+                        x: { grid: { display: false }, border: { display: false } },
+                        y: { border: { display: false }, beginAtZero: true }
                     },
                     plugins: {
-                        legend: { position: 'bottom', labels: { color: '#ffffff', boxWidth: 12, padding: 18 } },
-                        tooltip: { callbacks: { label: (context) => `${context.dataset.label}: R$ ${Number(context.raw || 0).toFixed(2)}` } }
+                        legend: { position: 'bottom', labels: { padding: 14 } },
+                        tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${Number(context.raw || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` } }
                     }
                 }
             });
@@ -225,51 +215,6 @@
             if (dadosGraficoComparativo.length) desenharGrafico(dadosGraficoComparativo);
         }
 
-        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES (padronizado em todas as páginas) ---
-        let _resolveConfirm = null;
-
-        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[caractere]);
-
-        function gbmAlerta(mensagem, tipo = 'info') {
-            const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
-                        : tipo === 'aviso' ? 'rgba(85,167,255,0.3)'
-                        :                    'rgba(95,255,168,0.3)';
-
-            document.getElementById('lista-notificacoes-modal').innerHTML = `
-                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                    ${escaparMensagemModal(mensagem)}
-                </div>`;
-
-            document.getElementById('btn-confirmar-modal').style.display = 'none';
-            document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
-            document.getElementById('modal-notificacoes').style.display = 'flex';
-            _resolveConfirm = null;
-        }
-
-        function gbmConfirmar(mensagem) {
-            return new Promise(resolve => {
-                _resolveConfirm = resolve;
-
-                document.getElementById('lista-notificacoes-modal').innerHTML = `
-                    <div style="background:rgba(85,167,255,0.1); border:1px solid rgba(85,167,255,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:0.95rem; line-height:1.6; text-align:center;">
-                        ${escaparMensagemModal(mensagem)}
-                    </div>`;
-
-                document.getElementById('btn-confirmar-modal').style.display = 'block';
-                document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
-                document.getElementById('modal-notificacoes').style.display = 'flex';
-            });
-        }
-
-        function fecharModalNotificacoes(confirmado = false) {
-            document.getElementById('modal-notificacoes').style.display = 'none';
-            if (_resolveConfirm) {
-                _resolveConfirm(confirmado);
-                _resolveConfirm = null;
-            }
-        }
 
         // --- INICIALIZAÇÃO ---
         (async function iniciar() {

@@ -1,0 +1,463 @@
+/* Componentes compartilhados. Os nomes de classe são os que as páginas já usam. */
+
+/* ---------- Botões ---------- */
+.btn,
+.btn-acao,
+.gbm-botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform var(--dur-rapida) var(--ease), background-color var(--dur-rapida) ease, border-color var(--dur-rapida) ease, color var(--dur-rapida) ease;
+}
+.btn:active,
+.btn-acao:active,
+.gbm-botao:active { transform: scale(.97); }
+.btn:disabled,
+.btn-acao:disabled { opacity: .55; transform: none; }
+
+.btn-primary,
+.btn-purple,
+.btn-primario {
+    border-color: transparent;
+    background: var(--accent);
+    color: var(--on-accent);
+}
+.btn-danger {
+    border-color: transparent;
+    background: var(--neg-soft);
+    color: var(--neg);
+}
+.btn-small { min-height: 32px; padding: 0 10px; font-size: 13px; border-radius: 8px; }
+.btn-voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 14px;
+    text-decoration: none;
+}
+.btn-voltar::before { content: "←"; }
+
+@media (hover: hover) and (pointer: fine) {
+    .btn:hover,
+    .btn-acao:hover,
+    .btn-voltar:hover,
+    .gbm-botao:hover { background: var(--surface-2); color: var(--text); }
+    .btn-primary:hover,
+    .btn-purple:hover,
+    .btn-primario:hover { background: var(--accent-hover); color: var(--on-accent); }
+    .btn-danger:hover { background: var(--neg); color: #FFFFFF; }
+}
+
+/* ---------- Campos ---------- */
+/* :where() mantém a especificidade baixa: cada tela ajusta seus campos sem !important. */
+:where(.gbm-interna, .gbm-public) :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea) {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    transition: border-color var(--dur-rapida) ease, box-shadow var(--dur-rapida) ease;
+}
+:where(.gbm-interna, .gbm-public) :where(textarea) { min-height: 96px; resize: vertical; }
+:where(.gbm-interna, .gbm-public) :where(input, select, textarea):focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+:where(.gbm-interna, .gbm-public) ::placeholder { color: var(--text-3); opacity: 1; }
+:where(.gbm-interna, .gbm-public) :where(input[type="checkbox"], input[type="radio"]) { width: 16px; height: 16px; accent-color: var(--accent); }
+.gbm-interna input[type="file"] { font-size: 14px; color: var(--text-2); }
+.gbm-interna input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field > label,
+.field-label { color: var(--text-2); font-size: 13px; font-weight: 500; }
+.field small,
+.field .ajuda { color: var(--text-3); font-size: 12px; }
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px 16px;
+    align-items: end;
+}
+.form-grid .full,
+.field.full { grid-column: 1 / -1; }
+
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.actions.end { justify-content: flex-end; }
+
+/* ---------- Superfícies ---------- */
+.card,
+.cartao,
+.perfil-card,
+.contato-card,
+.form-card,
+.panel,
+.painel {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    transition: background-color var(--dur) ease, border-color var(--dur) ease;
+}
+.card > h2,
+.cartao > h2,
+.card > h3 { font-size: 16px; margin-bottom: 12px; }
+.zona-perigo {
+    padding: 20px;
+    border: 1px solid color-mix(in srgb, var(--neg) 35%, var(--border));
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+.zona-perigo h2,
+.zona-perigo h3 { color: var(--neg); }
+
+.divider { height: 1px; margin: 24px 0; background: var(--border); }
+
+.grid { display: grid; gap: 14px; }
+.grid-2 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.grid-3 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.grid-4 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.grid-cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+
+/* ---------- Números de destaque ---------- */
+.stat,
+.stat-card,
+.resumo-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 13px;
+}
+.stat strong,
+.stat-card strong,
+.resumo-card strong {
+    color: var(--text);
+    font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+    font-weight: 600;
+    letter-spacing: -.025em;
+    line-height: 1.15;
+}
+.stat small,
+.stat-card small { color: var(--text-3); font-size: 12px; }
+
+/* ---------- Etiquetas ---------- */
+.pill,
+.badge,
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 22px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+.pill.green,
+.badge.green,
+.pill.sucesso { background: var(--pos-soft); color: var(--pos); }
+.pill.red,
+.badge.red,
+.pill.erro { background: var(--neg-soft); color: var(--neg); }
+.pill.amber,
+.badge.amber,
+.pill.aviso { background: var(--warn-soft); color: var(--warn); }
+.pill.blue,
+.badge.blue { background: var(--info-soft); color: var(--info); }
+
+.cadeado-premium {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 7px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.positivo,
+.valor-positivo,
+.receita { color: var(--pos); }
+.negativo,
+.valor-negativo,
+.despesa { color: var(--neg); }
+.erro { color: var(--neg); }
+.sucesso { color: var(--pos); }
+
+/* ---------- Estado vazio e carregamento ---------- */
+.empty {
+    padding: 28px 16px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-lg);
+    color: var(--text-3);
+    font-size: 14px;
+    text-align: center;
+}
+.gbm-esqueleto {
+    display: block;
+    min-height: 14px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    animation: gbm-pulso 1.1s ease-in-out infinite alternate;
+}
+@keyframes gbm-pulso { from { opacity: .55; } to { opacity: 1; } }
+
+/* ---------- Tabelas ---------- */
+.table-wrap,
+.container-tabela,
+.tabela-rolagem { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.gbm-interna table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.gbm-interna th {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+}
+.gbm-interna td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+.gbm-interna tbody tr:last-child td { border-bottom: 0; }
+.gbm-interna :is(th, td).num,
+.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.texto-suave { color: var(--text-3); font-size: 13px; }
+.card-descricao { margin: -4px 0 16px; color: var(--text-2); font-size: 14px; }
+/* Banco da movimentação: a cor da marca do banco aparece só no ponto. */
+.etiqueta-banco {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 8px;
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+}
+.etiqueta-banco i { width: 8px; height: 8px; flex: none; border-radius: 50%; }
+@media (hover: hover) and (pointer: fine) {
+    .gbm-interna tbody tr:hover td { background: var(--surface-2); }
+}
+
+/* ---------- Barras de progresso ---------- */
+.progress,
+.barra {
+    position: relative;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--surface-2);
+}
+.progress > span,
+.barra > div {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+    transform-origin: left center;
+}
+.gbm-preenche { animation: gbm-preenche 650ms var(--ease) both; }
+@keyframes gbm-preenche { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---------- Aviso (toast) ---------- */
+.gbm-avisos {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: min(460px, calc(100% - 32px));
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    background: var(--text);
+    color: var(--bg);
+    box-shadow: var(--shadow-lg);
+    font-size: 14px;
+    line-height: 1.45;
+    pointer-events: auto;
+    animation: gbm-toast-entra 240ms var(--ease) both;
+}
+.toast.saindo { animation: gbm-toast-sai 160ms ease-in both; }
+.toast .toast-icone { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+.toast .toast-texto { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.toast .toast-fechar {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    margin: -2px -4px 0 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    opacity: .7;
+    font-size: 18px;
+    line-height: 1;
+}
+.toast.erro .toast-icone { color: var(--neg); }
+.toast.aviso .toast-icone { color: var(--warn); }
+.toast.sucesso .toast-icone,
+.toast.info .toast-icone { color: var(--accent); }
+@keyframes gbm-toast-entra { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes gbm-toast-sai { to { opacity: 0; transform: translateY(4px); } }
+
+/* ---------- Diálogos ---------- */
+.gbm-dialogo {
+    width: min(440px, calc(100% - 32px));
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+}
+.gbm-dialogo[open] { animation: gbm-dialogo-entra 220ms var(--ease) both; }
+.gbm-dialogo::backdrop { background: var(--overlay); animation: gbm-aparece 200ms ease both; }
+.gbm-dialogo-corpo { display: flex; flex-direction: column; gap: 14px; padding: 22px; }
+.gbm-dialogo-titulo { margin: 0; font-size: 17px; font-weight: 600; }
+.gbm-dialogo-mensagem { margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.55; }
+.gbm-dialogo-mensagem strong { color: var(--text); }
+.gbm-dialogo-acoes { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+@keyframes gbm-dialogo-entra { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes gbm-aparece { from { opacity: 0; } to { opacity: 1; } }
+
+/* <dialog> próprio de uma tela (ex.: contribuição em objetivos). */
+.gbm-interna dialog:not(.gbm-dialogo) {
+    width: min(520px, calc(100% - 28px));
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+}
+.gbm-interna dialog:not(.gbm-dialogo)[open] { animation: gbm-dialogo-entra 220ms var(--ease) both; }
+.gbm-interna dialog:not(.gbm-dialogo)::backdrop { background: var(--overlay); }
+
+/* Modais existentes nas páginas. Começam fechados; o script da tela abre com
+   style.display = 'flex' (.modal-gbm) ou com a classe .ativo (.modal-overlay). */
+.modal-gbm,
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: var(--overlay);
+    animation: gbm-aparece 200ms ease both;
+}
+.modal-overlay.ativo { display: flex; }
+.modal-gbm-dialogo,
+.modal-box {
+    width: min(720px, 100%);
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+    animation: gbm-dialogo-entra 220ms var(--ease) both;
+}
+.modal-gbm-dialogo-pequeno,
+.modal-box { width: min(460px, 100%); }
+.modal-gbm-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.modal-gbm-topo h2,
+.modal-gbm-topo h3 { margin: 0; font-size: 17px; }
+.modal-gbm-fechar {
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 20px;
+    line-height: 1;
+}
+.modal-gbm-fechar:hover { background: var(--surface-2); color: var(--text); }
+.modal-desc { color: var(--text-2); }
+.modal-acoes { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* ---------- Movimento (gbm-movimento.js) ---------- */
+.gbm-numero-a { animation: gbm-numero-a 240ms var(--ease) both; }
+.gbm-numero-b { animation: gbm-numero-b 240ms var(--ease) both; }
+@keyframes gbm-numero-a { from { opacity: 0; filter: blur(2px); transform: translateY(3px); } to { opacity: 1; filter: none; transform: none; } }
+@keyframes gbm-numero-b { from { opacity: 0; filter: blur(2px); transform: translateY(3px); } to { opacity: 1; filter: none; transform: none; } }
+.gbm-carregando {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border-style: solid;
+    border-color: transparent;
+    text-align: left;
+}
+.gbm-revela-pendente { opacity: 0; }
+.gbm-revela { animation: gbm-revela 420ms var(--ease) both; }
+@keyframes gbm-revela { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }

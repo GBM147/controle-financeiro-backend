@@ -18,7 +18,7 @@
         { grupo:'Movimentações', itens:[{href:'contas.html',pagina:'contas.html',texto:'Minhas contas',icone:'wallet'},{href:'importacoes.html',pagina:'importacoes.html',texto:'Importações',icone:'upload'}] },
         { grupo:'Planejamento', itens:[{href:'calendario.html',pagina:'calendario.html',texto:'Calendário',icone:'calendar'},{href:'limite-de-gastos.html',pagina:'limite-de-gastos.html',texto:'Limite de gastos',icone:'limit'},{href:'metas.html',pagina:'metas.html',texto:'Objetivos de poupança',icone:'goal'}] },
         { grupo:'Análises', itens:[{href:'relatorio.html',pagina:'relatorio.html',texto:'Relatórios',icone:'report'},{href:'relatorio-avancado.html',pagina:'relatorio-avancado.html',texto:'Relatório avançado',icone:'advanced',premium:true},{href:'comparativo.html',pagina:'comparativo.html',texto:'Comparativo mensal',icone:'compare',premium:true}] },
-        { grupo:'Conta', classe:'menu-grupo-conta', itens:[{href:'notificacoes.html',pagina:'notificacoes.html',texto:'Notificações',icone:'bell'},{href:'configuracoes.html',pagina:'configuracoes.html',texto:'Configurações',icone:'settings'},{href:'perfil.html',pagina:'perfil.html',texto:'Meu perfil',icone:'profile'},{href:'privacidade.html',pagina:'privacidade.html',texto:'Privacidade e dados',icone:'settings'},{href:'assinatura.html',pagina:'assinatura.html',texto:'Minha assinatura',icone:'advanced'},{href:'educacao-financeira.html',pagina:'educacao-financeira.html',texto:'Educação financeira',icone:'book'},{href:'#sair',pagina:'#sair',texto:'Sair',icone:'logout',sair:true}] }
+        { grupo:'Conta', classe:'menu-grupo-conta', itens:[{href:'notificacoes.html',pagina:'notificacoes.html',texto:'Notificações',icone:'bell'},{href:'configuracoes.html',pagina:'configuracoes.html',texto:'Configurações',icone:'settings'},{href:'perfil.html',pagina:'perfil.html',texto:'Meu perfil',icone:'profile'},{href:'privacidade.html',pagina:'privacidade.html',texto:'Privacidade e dados',icone:'shield'},{href:'assinatura.html',pagina:'assinatura.html',texto:'Minha assinatura',icone:'card'},{href:'educacao-financeira.html',pagina:'educacao-financeira.html',texto:'Educação financeira',icone:'book'},{href:'#sair',pagina:'#sair',texto:'Sair',icone:'logout',sair:true}] }
     ];
 
     const paths = {
@@ -34,6 +34,10 @@
         bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path>',
         settings:'<circle cx="12" cy="12" r="3.5"></circle><path d="m19.4 15-.1.1a1.8 1.8 0 0 0 .3 1.9l.1.1-1.4 1.4-.1-.1a1.8 1.8 0 0 0-1.9-.3l-.1.1A1.8 1.8 0 0 0 15.1 20h-2v-.2A1.8 1.8 0 0 0 12 18.2a1.8 1.8 0 0 0-1.9.3l-.1.1-1.4-1.4.1-.1a1.8 1.8 0 0 0 .3-1.9l-.1-.1A1.8 1.8 0 0 0 7.2 14H7v-2h.2A1.8 1.8 0 0 0 8.8 11l.1-.1a1.8 1.8 0 0 0-.3-1.9l-.1-.1 1.4-1.4.1.1a1.8 1.8 0 0 0 1.9.3l.1-.1A1.8 1.8 0 0 0 13.1 6v-.2h2V6a1.8 1.8 0 0 0 1.1 1.8 1.8 1.8 0 0 0 1.9-.3l.1-.1 1.4 1.4-.1.1a1.8 1.8 0 0 0-.3 1.9l.1.1A1.8 1.8 0 0 0 20.8 12h.2v2h-.2A1.8 1.8 0 0 0 19.4 15Z"></path>',
         profile:'<circle cx="12" cy="8" r="3.5"></circle><path d="M5 20a7 7 0 0 1 14 0"></path>',
+        shield:'<path d="M12 3 5 6v5.5c0 4.2 2.9 7.9 7 9.5 4.1-1.6 7-5.3 7-9.5V6z"></path><path d="m9 12 2 2 4-4"></path>',
+        card:'<rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h4"></path>',
+        sol:'<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>',
+        lua:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path>',
         book:'<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5z"></path><path d="M8 7h8M8 11h8"></path>',
         logout:'<path d="M10 5H5v14h5"></path><path d="M14 8l4 4-4 4M9 12h9"></path>'
     };
@@ -46,15 +50,6 @@
     let focoAnterior = null;
     let elementosInertes = [];
     let overflowAnterior = null;
-
-    function css() {
-        if (document.getElementById('gbm-shell-style')) return;
-        const estilo = document.createElement('link');
-        estilo.id = 'gbm-shell-style';
-        estilo.rel = 'stylesheet';
-        estilo.href = 'gbm-shell.css?v=9948129792';
-        document.head.appendChild(estilo);
-    }
 
     function prepararConteudo() {
         const conteudo = document.querySelector('body > main, body > .page-wrapper, body > .container');
@@ -96,7 +91,7 @@
         const busca = ehDashboard
             ? '<div class="dashboard-header-search" role="search"><span class="dashboard-search-icon" aria-hidden="true"></span><input type="search" placeholder="Buscar movimentações, categorias..." aria-label="Buscar movimentações e categorias"></div>'
             : '<span class="gbm-shell-page-name"></span>';
-        header.innerHTML = '<div class="gbm-logo-container"><a href="dashboard.html" aria-label="Ir para o Dashboard"><img src="logo-transparente.jpg" alt="" class="gbm-logo-img"><span>GBM</span></a></div>' + busca + '<div class="gbm-header-actions"><a href="notificacoes.html" class="dashboard-notification-link" aria-label="Abrir notificações">' + svg('bell') + '<span id="dot-alertas" class="dashboard-notification-dot" aria-hidden="true" style="display:none"></span></a><a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil"><img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="" class="avatar-perfil-cabecalho"><span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span></a><button id="menu-btn" class="gbm-menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar-menu"><span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span></button></div>';
+        header.innerHTML = '<div class="gbm-logo-container"><a href="dashboard.html" aria-label="Ir para a visão geral"><span class="gbm-marca" aria-hidden="true">G</span></a></div>' + busca + '<div class="gbm-header-actions"><button type="button" class="gbm-tema-btn" id="gbm-tema-btn"></button><a href="notificacoes.html" class="dashboard-notification-link" aria-label="Abrir notificações">' + svg('bell') + '<span id="dot-alertas" class="dashboard-notification-dot" aria-hidden="true" style="display:none"></span></a><a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil"><span class="avatar-perfil"><span class="avatar-iniciais" id="avatar-iniciais-cabecalho" aria-hidden="true"></span><img id="foto-perfil-cabecalho" alt="" class="avatar-perfil-cabecalho" hidden></span><span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span></a><button id="menu-btn" class="gbm-menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar-menu"><span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span></button></div>';
         const titulo = header.querySelector('.gbm-shell-page-name');
         if (titulo) titulo.textContent = nomePagina;
         document.body.prepend(header);
@@ -109,7 +104,7 @@
         sidebar.id = 'sidebar-menu';
         sidebar.className = 'sidebar-menu gbm-shell-sidebar';
         sidebar.setAttribute('aria-label', 'Menu da conta');
-        sidebar.innerHTML = '<div class="sidebar-header"><a class="sidebar-brand" href="dashboard.html" aria-label="Ir para o Dashboard"><img class="sidebar-logo" src="logo-transparente.jpg" alt=""><span class="sidebar-brand-text"><strong>GBM Finance</strong><span>Meu Controle Financeiro</span></span></a><button class="fechar-btn" type="button" aria-label="Fechar menu">&times;</button></div><nav class="sidebar-content" aria-label="Navegação interna">' + itens() + '</nav>';
+        sidebar.innerHTML = '<div class="sidebar-header"><a class="sidebar-brand" href="dashboard.html" aria-label="GBM Finance, ir para a visão geral"><span class="gbm-marca" aria-hidden="true">G</span><span class="sidebar-brand-text"><strong>GBM Finance</strong><span>Controle financeiro</span></span></a><button class="fechar-btn" type="button" aria-label="Fechar menu">&times;</button></div><nav class="sidebar-content" aria-label="Navegação interna">' + itens() + '</nav>';
         document.body.appendChild(sidebar);
     }
 
@@ -208,15 +203,45 @@
         fechar(false);
     }
 
+    function atualizarBotaoTema() {
+        const botao = document.getElementById('gbm-tema-btn');
+        if (!botao || !window.GBMTema) { botao?.remove(); return; }
+        const escuro = window.GBMTema.atual() === 'escuro';
+        const rotulo = escuro ? 'Usar tema claro' : 'Usar tema escuro';
+        botao.innerHTML = svg(escuro ? 'sol' : 'lua');
+        botao.setAttribute('aria-label', rotulo);
+        botao.title = rotulo;
+    }
+
+    function ligarAvatar() {
+        const foto = document.getElementById('foto-perfil-cabecalho');
+        const nome = document.getElementById('nome-perfil-cabecalho');
+        const iniciais = document.getElementById('avatar-iniciais-cabecalho');
+        if (!foto || !nome || !iniciais) return;
+        const atualizarIniciais = () => {
+            const partes = (nome.textContent || '').trim().split(/\s+/).filter((parte) => parte && parte !== 'Meu' && parte !== 'perfil');
+            iniciais.textContent = partes.length
+                ? (partes[0][0] + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase()
+                : '';
+        };
+        foto.addEventListener('load', () => { foto.hidden = false; iniciais.hidden = true; });
+        foto.addEventListener('error', () => { foto.hidden = true; iniciais.hidden = false; });
+        new MutationObserver(atualizarIniciais).observe(nome, { childList: true, characterData: true, subtree: true });
+        atualizarIniciais();
+    }
+
     async function atualizarPerfil(){const foto=document.getElementById('foto-perfil-cabecalho');const nome=document.getElementById('nome-perfil-cabecalho');if(!foto||!nome)return;try{const r=typeof window.fetchApi==='function'?await window.fetchApi('/perfil'):await fetch('/perfil',{credentials:'include'});if(!r.ok)return;const d=await r.json();const p=d?.perfil;if(!p)return;nome.textContent=p.nome_exibicao||p.nome||'Meu perfil';if(p.foto_perfil_url)foto.src=p.foto_perfil_url;}catch(e){}}
     function iniciar() {
         if (iniciado || !document.body || !paginasDaConta.has(paginaAtual())) return;
         iniciado = true;
         document.body.classList.add('gbm-interna', 'gbm-app-shell');
-        css();
         montar();
         aplicarEstadoAtivo();
         ligar();
+        ligarAvatar();
+        atualizarBotaoTema();
+        document.getElementById('gbm-tema-btn')?.addEventListener('click', () => window.GBMTema?.alternar());
+        window.addEventListener('gbm:tema', atualizarBotaoTema);
         atualizarPerfil();
     }
 

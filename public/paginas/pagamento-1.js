@@ -10,7 +10,7 @@
             const data = await res.json();
             if (data.statusPagamento === 'trial') {
                 document.getElementById('banner-trial').style.display = 'block';
-                document.querySelector('.titulo-pagina').innerText = 'Ative agora — 1º mês grátis!';
+                document.querySelector('.titulo-pagina').innerText = 'Ative o Premium com o 1º mês grátis';
             }
         } catch(e) {}
     }
@@ -33,12 +33,12 @@
                 window.location.href = data.url; // Leva o usuário para o checkout seguro do Mercado Pago
             } else {
                 alert('Erro ao chamar o checkout. Tente novamente.');
-                btn.innerText = 'Ativar Premium (1º Mês Grátis)';
+                btn.innerText = 'Ativar Premium com 1º mês grátis';
                 btn.disabled = false;
             }
         } catch (err) {
             alert('Erro na comunicação com o gateway.');
-            btn.innerText = 'Ativar Premium (1º Mês Grátis)';
+            btn.innerText = 'Ativar Premium com 1º mês grátis';
             btn.disabled = false;
         }
     }

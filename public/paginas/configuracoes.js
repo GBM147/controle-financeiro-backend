@@ -59,3 +59,18 @@
         }
 
         botaoExcluir.addEventListener('click', excluirConta);
+
+        // Aparência: claro, escuro ou seguir o sistema (gbm-tema.js guarda a escolha).
+        (() => {
+            const opcoes = [...document.querySelectorAll('input[name="tema"]')];
+            if (!opcoes.length || !window.GBMTema) return;
+            const marcar = () => {
+                const atual = window.GBMTema.preferencia();
+                opcoes.forEach((opcao) => { opcao.checked = opcao.value === atual; });
+            };
+            opcoes.forEach((opcao) => opcao.addEventListener('change', () => {
+                if (opcao.checked) window.GBMTema.escolher(opcao.value);
+            }));
+            window.addEventListener('gbm:tema', marcar);
+            marcar();
+        })();

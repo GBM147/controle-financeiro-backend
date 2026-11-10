@@ -1,0 +1,44 @@
+/* Comparativo mensal (comparativo.html). */
+.filtros { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.campo-filtro { display: flex; flex-direction: column; gap: 6px; min-width: 170px; }
+.campo-filtro label { color: var(--text-2); font-size: 13px; font-weight: 500; }
+#card-resultado { margin-top: 16px; }
+.texto-vazio { margin: 0; padding: 20px 0; color: var(--text-3); text-align: center; }
+.resumo-ano {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.resumo-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text-2);
+    font-size: 12.5px;
+}
+.resumo-item strong { color: var(--text); font-size: 17px; font-weight: 600; }
+.resumo-item strong.positivo { color: var(--pos); }
+.resumo-item strong.negativo { color: var(--neg); }
+.grafico-wrapper { position: relative; height: 320px; }
+.tabela-comparativo { margin-top: 20px; border: 1px solid var(--border); border-radius: var(--radius); }
+.mes-nome { font-weight: 500; }
+.badge-mini {
+    display: inline-flex;
+    margin-left: 8px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 500;
+    vertical-align: 1px;
+}
+.badge-melhor { background: var(--pos-soft); color: var(--pos); }
+.badge-pior { background: var(--neg-soft); color: var(--neg); }
+@media (max-width: 760px) {
+    .resumo-ano { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grafico-wrapper { height: 260px; }
+}

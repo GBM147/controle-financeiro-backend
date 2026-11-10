@@ -38,11 +38,11 @@
             document.getElementById('total-receitas').textContent=gbmMoeda(r.receitas);
             document.getElementById('total-despesas').textContent=gbmMoeda(r.despesas);
             document.getElementById('total-resultado').textContent=gbmMoeda(r.resultado);
-            document.getElementById('total-resultado').style.color=Number(r.resultado)>=0?'var(--green)':'var(--red)';
+            document.getElementById('total-resultado').className=Number(r.resultado)>=0?'positivo':'negativo';
             const categorias=Object.entries(r.por_categoria).sort((a,b)=>b[1]-a[1]);
             categoriasGraficoRelatorio=categorias.slice(0,10);
             renderizarGraficoCategorias();
-            document.getElementById('tabela-transacoes').innerHTML=relatorioAtual.transacoes.length?`<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Valor</th></tr></thead><tbody>${relatorioAtual.transacoes.map(t=>`<tr><td>${gbmData(t.data_transacao)}</td><td>${gbmEscapar(t.descricao)}</td><td>${gbmEscapar(t.categoria)}</td><td>${gbmEscapar(t.conta)}</td><td>${gbmMoeda(t.valor)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhuma transação encontrada.</div>';
+            document.getElementById('tabela-transacoes').innerHTML=relatorioAtual.transacoes.length?`<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Valor</th></tr></thead><tbody>${relatorioAtual.transacoes.map(t=>`<tr><td>${gbmData(t.data_transacao)}</td><td>${gbmEscapar(t.descricao)}</td><td>${gbmEscapar(t.categoria)}</td><td>${gbmEscapar(t.conta)}</td><td class="${(t.tipo ? t.tipo !== 'Receita' : Number(t.valor) < 0) ? 'negativo' : 'positivo'}">${gbmMoeda(t.valor)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhuma transação encontrada.</div>';
         }
 
         function renderizarGraficoCategorias(){
@@ -57,32 +57,32 @@
             if(!temDados)return;
 
             const tipo=document.getElementById('tipo-grafico-relatorio')?.value||'bar';
-            const cores=['rgba(57,217,138,.76)','rgba(85,167,255,.76)','rgba(37,140,91,.76)','rgba(61,88,255,.72)'];
-            const bordas=['#39d98a','#55a7ff','#258c5b','#3d58ff'];
             const circular=tipo==='doughnut'||tipo==='polarArea';
             graficoRelatorio=new Chart(canvas.getContext('2d'),{
                 type:tipo,
                 data:{
                     labels:categoriasGraficoRelatorio.map(([nome])=>nome),
-                    datasets:[{
+                    datasets:[GBMGraficos.tingir({
                         label:'Despesas',
                         data:categoriasGraficoRelatorio.map(([,valor])=>Number(valor)||0),
-                        backgroundColor:categoriasGraficoRelatorio.map((_,indice)=>cores[indice%cores.length]),
-                        borderColor:categoriasGraficoRelatorio.map((_,indice)=>bordas[indice%bordas.length]),
-                        borderWidth:1.5,
-                        borderRadius:tipo==='bar'?7:0,
+                        // Barras numa cor só (a categoria já está no eixo); rosca e área polar usam a paleta.
+                        gbmTokens:circular
+                            ?{backgroundColor:categoriasGraficoRelatorio.map((_,indice)=>`grafico-${(indice%6)+1}`),borderColor:'surface'}
+                            :{backgroundColor:'accent'},
+                        borderWidth:circular?2:0,
+                        borderRadius:tipo==='bar'?4:0,
                         borderSkipped:false
-                    }]
+                    })]
                 },
                 options:{
                     responsive:true,
                     maintainAspectRatio:false,
                     scales:circular?undefined:{
-                        x:{grid:{display:false},ticks:{color:'#b0bec5'}},
-                        y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#b0bec5'}}
+                        x:{grid:{display:false},border:{display:false}},
+                        y:{beginAtZero:true,border:{display:false}}
                     },
                     plugins:{
-                        legend:{display:circular,position:'bottom',labels:{color:'#eef6ff',boxWidth:12,padding:16}},
+                        legend:{display:circular,position:'bottom',labels:{padding:12}},
                         tooltip:{callbacks:{label:(context)=>`${context.label}: ${gbmMoeda(context.raw)}`}}
                     }
                 }
@@ -439,7 +439,7 @@
             const margem=12;
             const larguraPagina=doc.internal.pageSize.getWidth();
 
-            doc.setFillColor(15,26,43);
+            doc.setFillColor(15,123,95);
             doc.rect(0,0,larguraPagina,29,'F');
             doc.setTextColor(255,255,255);
             doc.setFont('helvetica','bold');
@@ -447,7 +447,7 @@
             doc.text('GUARDIAN OF BUDGET & MONEY',margem,12);
             doc.setFont('helvetica','normal');
             doc.setFontSize(11);
-            doc.setTextColor(176,190,197);
+            doc.setTextColor(231,243,239);
             doc.text(`Relatório financeiro - ${periodo.rotulo}`,margem,21);
 
             const filtros=filtrosDoRelatorio();
@@ -459,8 +459,8 @@
             const espacamentoCaixas=7;
             const larguraCaixa=(larguraPagina-(margem*2)-(espacamentoCaixas*2))/3;
             const caixas=[
-                {x:margem,titulo:'RECEITAS',valor:resumo.receitas,cor:[16,185,129]},
-                {x:margem+larguraCaixa+espacamentoCaixas,titulo:'DESPESAS',valor:resumo.despesas,cor:[239,68,68]},
+                {x:margem,titulo:'RECEITAS',valor:resumo.receitas,cor:[21,128,61]},
+                {x:margem+larguraCaixa+espacamentoCaixas,titulo:'DESPESAS',valor:resumo.despesas,cor:[180,35,24]},
                 {x:margem+(larguraCaixa+espacamentoCaixas)*2,titulo:'RESULTADO',valor:resumo.resultado,cor:Number(resumo.resultado)>=0?[16,185,129]:[239,68,68]}
             ];
             caixas.forEach(caixa=>{
@@ -488,13 +488,13 @@
                     margin:{left:margem,right:larguraPagina-margem-138},
                     theme:'grid',
                     styles:{fontSize:8,cellPadding:2.2},
-                    headStyles:{fillColor:[46,139,87],textColor:[255,255,255],fontStyle:'bold'},
+                    headStyles:{fillColor:[15,123,95],textColor:[255,255,255],fontStyle:'bold'},
                     columnStyles:{1:{halign:'right',fontStyle:'bold'}}
                 });
                 inicioTransacoes=doc.lastAutoTable.finalY+8;
             }
 
-            doc.setTextColor(15,26,43);
+            doc.setTextColor(28,28,26);
             doc.setFont('helvetica','bold');
             doc.setFontSize(12);
             doc.text('Transações',margem,inicioTransacoes-3);
@@ -516,8 +516,8 @@
                 theme:'striped',
                 showHead:'everyPage',
                 styles:{fontSize:8.8,cellPadding:2.6,overflow:'linebreak',valign:'middle'},
-                headStyles:{fillColor:[15,26,43],textColor:[255,255,255],fontStyle:'bold',fontSize:9},
-                alternateRowStyles:{fillColor:[245,247,250]},
+                headStyles:{fillColor:[15,123,95],textColor:[255,255,255],fontStyle:'bold',fontSize:9},
+                alternateRowStyles:{fillColor:[250,250,248]},
                 columnStyles:{
                     0:{cellWidth:23},
                     1:{cellWidth:120},
@@ -528,7 +528,7 @@
                 didParseCell(dado){
                     if(dado.section!=='body')return;
                     if(dado.column.index===4){
-                        dado.cell.styles.textColor=String(dado.cell.raw).startsWith('+')?[16,135,86]:[210,55,55];
+                        dado.cell.styles.textColor=String(dado.cell.raw).startsWith('+')?[21,128,61]:[180,35,24];
                     }
                 }
             });

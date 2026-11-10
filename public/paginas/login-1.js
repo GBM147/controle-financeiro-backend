@@ -1,56 +1,3 @@
-        // --- 1. SCRIPT DAS PARTÍCULAS DOURADAS ---
-        const canvas = document.getElementById('particles-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = canvas.height + Math.random() * 100;
-                this.size = Math.random() * 2.5 + 0.8;
-                this.speedY = Math.random() * 1.2 + 0.3;
-                this.opacity = Math.random() * 0.4 + 0.2;
-            }
-            update() {
-                this.y -= this.speedY;
-                if (this.y < -10) {
-                    this.y = canvas.height + 10;
-                    this.x = Math.random() * canvas.width;
-                    this.opacity = Math.random() * 0.4 + 0.2;
-                }
-            }
-            draw() {
-                ctx.fillStyle = `rgba(200, 159, 83, ${this.opacity})`; 
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function initParticles() {
-            particles = [];
-            const numberOfParticles = Math.floor((canvas.width * canvas.height) / 15000);
-            for (let i = 0; i < Math.min(numberOfParticles, 65); i++) {
-                particles.push(new Particle());
-            }
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animate);
-        }
-        initParticles();
-        animate();
-
         // --- 2. SCRIPT ORIGINAL DO SEU BACKEND ---
 
         function limparIdentidadeLocal() {
@@ -133,15 +80,17 @@
             let camposVazios = false;
 
             for (const key in inputs) {
-                inputs[key].style.border = "1px solid #1f3047"; 
+                inputs[key].classList.remove('campo-invalido');
+                inputs[key].removeAttribute('aria-invalid');
                 if (!inputs[key].value.trim()) {
-                    inputs[key].style.border = "1px solid red";
+                    inputs[key].classList.add('campo-invalido');
+                    inputs[key].setAttribute('aria-invalid', 'true');
                     camposVazios = true;
                 }
             }
 
             if (camposVazios) {
-                return gbmAlerta("Todos os campos devem ser preenchidos. Por favor, verifique os campos destacados em vermelho.", 'aviso');
+                return gbmAlerta("Todos os campos devem ser preenchidos. Confira os campos destacados.", 'aviso');
             }
 
             const nome = inputs.nome.value.trim();
@@ -152,7 +101,8 @@
 
             const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
             if (!regexSenha.test(senha)) {
-                inputs.senha.style.border = "1px solid red";
+                inputs.senha.classList.add('campo-invalido');
+                inputs.senha.setAttribute('aria-invalid', 'true');
                 return gbmAlerta("A senha deve conter letras maiúsculas, minúsculas, números e ter no mínimo 8 caracteres.", 'aviso');
             }
 
@@ -389,48 +339,3 @@
             }
         });
 
-        // --- SISTEMA GBM DE NOTIFICAÇÕES/CONFIRMAÇÕES ---
-        let _resolveConfirm = null;
-
-        const escaparMensagemModal = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caractere) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[caractere]);
-
-        function gbmAlerta(mensagem, tipo = 'info') {
-            const cor   = tipo === 'erro'  ? 'rgba(239,68,68,0.3)'
-                        : tipo === 'aviso' ? 'rgba(245,158,11,0.3)'
-                        :                    'rgba(95,255,168,0.3)';
-
-            document.getElementById('lista-notificacoes-modal').innerHTML = `
-                <div style="background:rgba(15,23,42,0.8); border:1px solid ${cor}; border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:1rem; line-height:1.6; text-align:center; color: #fff;">
-                    ${escaparMensagemModal(mensagem)}
-                </div>`;
-
-            document.getElementById('btn-confirmar-modal').style.display = 'none';
-            document.getElementById('btn-fechar-modal').innerText = 'FECHAR';
-            document.getElementById('modal-notificacoes').style.display = 'flex';
-            _resolveConfirm = null;
-        }
-
-        function gbmConfirmar(mensagem) {
-            return new Promise(resolve => {
-                _resolveConfirm = resolve;
-
-                document.getElementById('lista-notificacoes-modal').innerHTML = `
-                    <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:20px; font-family:'Inter',sans-serif; font-size:1rem; line-height:1.6; text-align:center; color: #fff;">
-                        ${escaparMensagemModal(mensagem)}
-                    </div>`;
-
-                document.getElementById('btn-confirmar-modal').style.display = 'block';
-                document.getElementById('btn-fechar-modal').innerText = 'CANCELAR';
-                document.getElementById('modal-notificacoes').style.display = 'flex';
-            });
-        }
-
-        function fecharModalNotificacoes(confirmado = false) {
-            document.getElementById('modal-notificacoes').style.display = 'none';
-            if (_resolveConfirm) {
-                _resolveConfirm(confirmado);
-                _resolveConfirm = null;
-            }
-        }

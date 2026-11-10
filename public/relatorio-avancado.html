@@ -1,125 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
+    <script src="gbm-tema.js?v=69a291f638"></script>
     <script src="gbm-session.js?v=94c6656885"></script>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Relatório Avançado | GBM</title><link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="estilo/tokens.css?v=88606937b0">
+    <link rel="stylesheet" href="estilo/base.css?v=3532b91c9f">
+    <link rel="stylesheet" href="estilo/componentes.css?v=beae3d383c">
+    <link rel="stylesheet" href="estilo/app.css?v=79f9015933">
+    <link rel="stylesheet" href="gbm-tutorial.css">
+    <link rel="stylesheet" href="paginas/relatorio-avancado.css?v=55ea1b81bf">
+    <title>Relatório avançado | GBM Finance</title>
     <script src="vendor/chart-4.5.1.umd.min.js?v=48444a82d4"></script>
-    <script src="gbm-chart-depth.js?v=446dce1de1"></script>
     <script src="vendor/jspdf-2.5.1.umd.min.js?v=98ccf17aa1"></script>
     <script src="vendor/jspdf-autotable-3.5.25.min.js?v=0216761340"></script>
     <script src="vendor/exceljs-4.4.0.min.js?v=7e49da6858"></script>
-    <link rel="stylesheet" href="paginas/relatorio-avancado.css?v=66071ea82b">
-    <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
-    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
-    <script src="gbm-motion.js?v=88bf99267f" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
-    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
     <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <script src="gbm-movimento.js?v=4b7404e164"></script>
     <script src="gbm-acoes.js?v=b9030c8ef0"></script>
 </head>
-<body class="gbm-interna gbm-polished">
-<header class="gbm-header">
-    <div class="gbm-logo-container">
-        <img src="logo-transparente.jpg" alt="Logo GBM" class="gbm-logo-img">
-        <h1 class="gbm-title">Guardian Of Budget & Money</h1>
-    </div>
-    <div class="gbm-header-actions">
-        <a href="perfil.html" class="atalho-perfil" aria-label="Abrir meu perfil">
-            <img id="foto-perfil-cabecalho" src="logo-transparente.jpg" alt="Minha foto de perfil" class="avatar-perfil-cabecalho">
-            <span id="nome-perfil-cabecalho" class="nome-perfil-cabecalho">Meu perfil</span>
-        </a>
-        <div class="gbm-menu-container">
-            <button id="menu-btn" class="gbm-menu-btn" data-acao="abrirMenuLateral" data-com-evento style="position:relative;" aria-label="Abrir menu">
-                <span class="hamburger-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-            </button>
-        </div>
-    </div>
-</header>
-<div id="menu-overlay" class="menu-overlay" data-acao="fecharMenuLateral"></div>
+<body class="gbm-interna">
 
-<div id="sidebar-menu" class="sidebar-menu">
-    <div class="sidebar-header">
-        <div class="sidebar-brand">
-            <img src="logo-transparente.jpg" alt="Logo GBM" class="sidebar-logo">
-            <div class="sidebar-brand-text">
-                <strong>GBM Finance</strong>
-                <span>Proteção financeira para você</span>
-            </div>
-        </div>
-        <button class="fechar-btn" data-acao="fecharMenuLateral" aria-label="Fechar menu">&times;</button>
-    </div>
-    <nav class="sidebar-content" aria-label="Menu principal">
-        <div class="menu-grupo">
-            <p class="menu-grupo-titulo">Resumo</p>
-            <a href="dashboard.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">⌂</span>
-                <span class="menu-item-conteudo">Visão geral</span>
-            </a>
-        </div>
-        <div class="menu-grupo">
-            <p class="menu-grupo-titulo">Movimentações</p>
-            <a href="contas.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">▣</span>
-                <span class="menu-item-conteudo">Minhas contas</span>
-            </a>
-            <a href="importacoes.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">↥</span>
-                <span class="menu-item-conteudo">Importações</span>
-                <span class="menu-item-ativo-indicador" aria-hidden="true"></span>
-            </a>
-        </div>
-        <div class="menu-grupo">
-            <p class="menu-grupo-titulo">Planejamento</p>
-            <a href="calendario.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">□</span>
-                <span class="menu-item-conteudo">Calendário</span>
-            </a>
-            <a href="limite-de-gastos.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">◒</span>
-                <span class="menu-item-conteudo">Limite de gastos</span>
-            </a>
-            <a href="metas.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">◎</span>
-                <span class="menu-item-conteudo">Objetivos de poupança</span>
-            </a>
-        </div>
-        <div class="menu-grupo menu-grupo-premium">
-            <p class="menu-grupo-titulo">Análises</p>
-            <a href="#" id="item-relatorio-mensal" class="menu-item menu-item-premium menu-item-com-indicador menu-item-ativo" data-acao="acessarRotaPremium" data-args="[&quot;relatorio-avancado.html&quot;, &quot;Relatório mensal&quot;]" data-prevenir>
-                <span class="menu-item-icone" aria-hidden="true">▥</span>
-                <span class="menu-item-conteudo">Relatório mensal</span>
-                <span id="cadeado-relatorio" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
-            </a>
-            <a href="#" id="item-comparativo-mensal" class="menu-item menu-item-premium menu-item-com-indicador" data-acao="acessarRotaPremium" data-args="[&quot;comparativo.html&quot;, &quot;Comparativo mensal&quot;]" data-prevenir>
-                <span class="menu-item-icone" aria-hidden="true">⇄</span>
-                <span class="menu-item-conteudo">Comparativo mensal</span>
-                <span id="cadeado-comparativo" class="cadeado-premium" aria-label="Recurso premium" title="Recurso premium">Premium</span>
-            </a>
-        </div>
-        <div class="menu-grupo menu-grupo-conta">
-            <p class="menu-grupo-titulo">Conta</p>
-            <a href="notificacoes.html" class="menu-item menu-item-com-indicador">
-                <span class="menu-item-icone" aria-hidden="true">♧</span>
-                <span class="menu-item-conteudo">Notificações</span>
-            </a>
-            <a href="configuracoes.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">⚙</span>
-                <span class="menu-item-conteudo">Configurações</span>
-            </a>
-            <a href="perfil.html" class="menu-item">
-                <span class="menu-item-icone" aria-hidden="true">♙</span>
-                <span class="menu-item-conteudo">Perfil</span>
-            </a>
-            <a href="#" class="menu-item texto-vermelho menu-item-sair" data-acao="fazerLogout" data-prevenir>
-                <span class="menu-item-icone" aria-hidden="true">↪</span>
-                <span class="menu-item-conteudo">Sair</span>
-            </a>
-        </div>
-    </nav>
-</div>
 
 <main class="container">
         <div class="page-title"><h1>Relatório avançado</h1><p>Escolha qualquer período, conta, categoria ou tipo e exporte o resultado.</p></div>
@@ -130,19 +33,19 @@
                 <div class="field"><label for="filtro-conta">Conta</label><select id="filtro-conta"><option value="todas">Todas as contas</option></select></div>
                 <div class="field"><label for="filtro-categoria">Categoria</label><select id="filtro-categoria"><option value="todas">Todas as categorias</option></select></div>
                 <div class="field"><label for="filtro-tipo">Tipo</label><select id="filtro-tipo"><option value="todos">Receitas e despesas</option><option>Receita</option><option>Despesa</option></select></div>
-                <div class="field" style="justify-content:end"><div class="actions end"><button class="btn btn-primary">Gerar relatório</button></div></div>
+                <div class="field field-acoes"><div class="actions end"><button class="btn btn-primary">Gerar relatório</button></div></div>
             </form>
         </section>
-        <section id="resultado" style="margin-top:18px" hidden>
+        <section id="resultado" hidden>
             <div class="resumo-grid">
-                <div class="card stat">Receitas<br><strong id="total-receitas" style="color:var(--green)">R$ 0,00</strong></div>
-                <div class="card stat">Despesas<br><strong id="total-despesas" style="color:var(--red)">R$ 0,00</strong></div>
+                <div class="card stat">Receitas<br><strong id="total-receitas" class="positivo">R$ 0,00</strong></div>
+                <div class="card stat">Despesas<br><strong id="total-despesas" class="negativo">R$ 0,00</strong></div>
                 <div class="card stat">Resultado<br><strong id="total-resultado">R$ 0,00</strong></div>
             </div>
-            <div class="grid grid-2" style="margin-top:18px">
+            <div class="grid grid-2 relatorio-graficos">
                 <section class="card">
                     <div class="grafico-cabecalho">
-                        <div><h2>Despesas por categoria</h2><p style="color:var(--muted);margin:5px 0 0">Escolha a visualização mais útil para a análise.</p></div>
+                        <div><h2>Despesas por categoria</h2><p class="texto-suave">Escolha a visualização mais útil para a análise.</p></div>
                         <div class="field">
                             <label for="tipo-grafico-relatorio">Tipo de gráfico</label>
                             <select id="tipo-grafico-relatorio" data-acao-change="renderizarGraficoCategorias">
@@ -157,14 +60,14 @@
                         <div id="grafico-categorias-vazio" class="empty" hidden>Sem despesas no período.</div>
                     </div>
                 </section>
-                <section class="card exportar-card"><h2>Exportar</h2><p style="color:var(--muted)">O Excel preserva o relatório formatado; use o CSV quando precisar apenas dos dados simples.</p><div class="actions"><button id="baixar-excel" class="btn btn-primary" type="button">Baixar Excel</button><button id="baixar-csv" class="btn" type="button">Baixar CSV</button><button id="baixar-pdf" class="btn" type="button">Baixar PDF</button></div></section>
+                <section class="card exportar-card"><h2>Exportar</h2><p class="card-descricao">O Excel preserva o relatório formatado; use o CSV quando precisar apenas dos dados simples.</p><div class="actions"><button id="baixar-excel" class="btn btn-primary" type="button">Baixar Excel</button><button id="baixar-csv" class="btn" type="button">Baixar CSV</button><button id="baixar-pdf" class="btn" type="button">Baixar PDF</button></div></section>
             </div>
-            <section class="card" style="margin-top:18px"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap" tabindex="0" role="region" aria-label="Transações do relatório avançado"></div></section>
+            <section class="card relatorio-transacoes"><h2>Transações</h2><div id="tabela-transacoes" class="table-wrap" tabindex="0" role="region" aria-label="Transações do relatório avançado"></div></section>
         </section>
     </main>
-    <script src="auth.js?v=6f32663332"></script><script src="gbm-pages.js?v=b53b3cd6b3"></script>
-    <script src="paginas/relatorio-avancado.js?v=ec3caa9c80"></script>
+    <script src="auth.js?v=89cc681816"></script><script src="gbm-pages.js?v=50214434c6"></script>
+    <script src="paginas/relatorio-avancado.js?v=a68f22a619"></script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js?v=56467e5b3d"></script>
+    <script src="gbm-menu.js?v=4701e41f46"></script>
 </body>
 </html>

@@ -1,5 +1,37 @@
-        .notificacao { padding:15px; border:1px solid rgba(255,255,255,.09); border-radius:11px; background:rgba(255,255,255,.025); }
-        .notificacao.nao-lida { border-color:rgba(57,217,138,.34); background:rgba(57,217,138,.05); }
-        .notificacao + .notificacao { margin-top:10px; }
-        .switch-row { display:flex;justify-content:space-between;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08); }
-        .switch-row input { width:20px;height:20px;min-height:auto; }
+/* Central de notificações (notificacoes.html). */
+.notificacoes-lista { grid-column: span 2; }
+.notificacoes-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.notificacoes-filtros select { width: auto; min-width: 150px; }
+.notificacao {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+.notificacao.nao-lida { border-color: var(--accent); background: var(--accent-soft); }
+.notificacao + .notificacao { margin-top: 10px; }
+.notificacao-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.notificacao-topo small { color: var(--text-3); font-size: 12px; }
+.notificacao p { margin: 10px 0 8px; font-size: 14px; }
+.switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    cursor: pointer;
+}
+.switch-row input { width: 18px; height: 18px; }
+aside.card .field + .field { margin-top: 10px; }
+.btn-bloco { width: 100%; margin-top: 16px; }
+@media (max-width: 900px) {
+    .notificacoes-lista { grid-column: auto; }
+}

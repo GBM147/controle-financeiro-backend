@@ -1,0 +1,166 @@
+/* Tokens do GBM Finance: única fonte de cores, tipografia, raios e movimento.
+   Tema claro por padrão; escuro pelo sistema ou pela escolha salva (data-tema). */
+
+/* Fontes servidas pelo próprio site (SIL OFL 1.1; ver fonts/*-LICENSE.txt). */
+@font-face {
+    font-family: "Geist";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("../fonts/geist-latin-ext.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: "Geist";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("../fonts/geist-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: "Instrument Serif";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/instrument-serif-latin-ext.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: "Instrument Serif";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/instrument-serif-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: "Instrument Serif";
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/instrument-serif-latin-ext-italic.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: "Instrument Serif";
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/instrument-serif-latin-italic.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+    color-scheme: light;
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --surface-2: #F3F2EE;
+    --surface-3: #ECEAE4;
+    --border: #E7E5E0;
+    --border-strong: #D6D3CC;
+    --text: #1C1C1A;
+    --text-2: #55554F;
+    --text-3: #6B6B66;
+    --accent: #0F7B5F;
+    --accent-hover: #0B6A51;
+    --on-accent: #FFFFFF;
+    --accent-soft: #E7F3EF;
+    --pos: #15803D;
+    --pos-soft: #EDF7F0;
+    --neg: #B42318;
+    --neg-soft: #FBEAE8;
+    --warn: #B54708;
+    --warn-soft: #FDF0E3;
+    --info: #2E5AAC;
+    --info-soft: #EAF0FA;
+    --overlay: rgba(14, 14, 16, .42);
+    --shadow-sm: 0 1px 2px rgba(28, 28, 26, .05);
+    --shadow-lg: 0 18px 44px rgba(28, 28, 26, .16);
+    --grafico-1: #0F7B5F;
+    --grafico-2: #2E5AAC;
+    --grafico-3: #B54708;
+    --grafico-4: #7A4FB5;
+    --grafico-5: #6B6B66;
+    --grafico-6: #B42318;
+
+    --font-ui: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-editorial: "Instrument Serif", Georgia, "Times New Roman", serif;
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --ease: cubic-bezier(.23, 1, .32, 1);
+    --ease-gaveta: cubic-bezier(.32, .72, 0, 1);
+    --dur-rapida: 150ms;
+    --dur: 220ms;
+}
+
+:root[data-tema="escuro"] {
+    color-scheme: dark;
+    --bg: #0E0E10;
+    --surface: #161618;
+    --surface-2: #1F1F22;
+    --surface-3: #27272B;
+    --border: #2A2A2E;
+    --border-strong: #3A3A40;
+    --text: #EDEDEF;
+    --text-2: #B4B4BA;
+    --text-3: #909098;
+    --accent: #34B88F;
+    --accent-hover: #4CC9A1;
+    --on-accent: #08201A;
+    --accent-soft: rgba(52, 184, 143, .14);
+    --pos: #4CC38A;
+    --pos-soft: rgba(76, 195, 138, .14);
+    --neg: #F97066;
+    --neg-soft: rgba(249, 112, 102, .14);
+    --warn: #F5A524;
+    --warn-soft: rgba(245, 165, 36, .14);
+    --info: #7FA6F5;
+    --info-soft: rgba(127, 166, 245, .14);
+    --overlay: rgba(0, 0, 0, .6);
+    --shadow-sm: none;
+    --shadow-lg: 0 18px 44px rgba(0, 0, 0, .5);
+    --grafico-1: #34B88F;
+    --grafico-2: #7FA6F5;
+    --grafico-3: #F5A524;
+    --grafico-4: #B794F6;
+    --grafico-5: #909098;
+    --grafico-6: #F97066;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-tema="claro"]) {
+        color-scheme: dark;
+        --bg: #0E0E10;
+        --surface: #161618;
+        --surface-2: #1F1F22;
+        --surface-3: #27272B;
+        --border: #2A2A2E;
+        --border-strong: #3A3A40;
+        --text: #EDEDEF;
+        --text-2: #B4B4BA;
+        --text-3: #909098;
+        --accent: #34B88F;
+        --accent-hover: #4CC9A1;
+        --on-accent: #08201A;
+        --accent-soft: rgba(52, 184, 143, .14);
+        --pos: #4CC38A;
+        --pos-soft: rgba(76, 195, 138, .14);
+        --neg: #F97066;
+        --neg-soft: rgba(249, 112, 102, .14);
+        --warn: #F5A524;
+        --warn-soft: rgba(245, 165, 36, .14);
+        --info: #7FA6F5;
+        --info-soft: rgba(127, 166, 245, .14);
+        --overlay: rgba(0, 0, 0, .6);
+        --shadow-sm: none;
+        --shadow-lg: 0 18px 44px rgba(0, 0, 0, .5);
+        --grafico-1: #34B88F;
+        --grafico-2: #7FA6F5;
+        --grafico-3: #F5A524;
+        --grafico-4: #B794F6;
+        --grafico-5: #909098;
+        --grafico-6: #F97066;
+    }
+}

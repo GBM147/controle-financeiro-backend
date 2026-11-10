@@ -1,94 +1,61 @@
-        :root {
-            --fundo: #07111f;
-            --painel: #0f1a2b;
-            --borda: rgba(95,255,168,.22);
-            --destaque: #5fffa8;
-            --texto: #fff;
-            --mutado: #b0bec5;
-            --erro: #ff6b6b;
-        }
-
-        * { box-sizing: border-box; }
-        body {
-            min-height: 100vh;
-            margin: 0;
-            color: var(--texto);
-            font-family: Inter, sans-serif;
-        }
-
-        main { max-width: 860px; margin: 36px auto; padding: 0 20px 48px; }
-        body.gbm-interna .perfil-card {
-            overflow: hidden;
-            padding: 0;
-            border: 1px solid var(--borda);
-            border-radius: 18px;
-            background: #0f1a2b;
-            box-shadow: 0 2px 12px rgba(0,0,0,.45), 0 0 0 1px rgba(95,255,168,.05) inset;
-        }
-
-        .capa {
-            height: 220px;
-            background: linear-gradient(120deg, #203a5f, #173c3a 50%, #101b2c);
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-        .trocar-capa { position: absolute; right: 18px; bottom: 16px; }
-        .btn, .input-file-label {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            min-height: 42px;
-            padding: 0 16px;
-            border: 1px solid var(--borda);
-            border-radius: 9px;
-            color: var(--texto);
-            background: rgba(9,16,26,.78);
-            font: inherit;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .btn-principal { background: #267b4d; border-color: #3fb875; }
-        .btn:hover, .input-file-label:hover { filter: brightness(1.12); }
-
-        .conteudo { padding: 0 32px 34px; }
-        .avatar-area { display: flex; align-items: end; gap: 18px; margin-top: -58px; position: relative; }
-        .avatar {
-            width: 124px;
-            height: 124px;
-            border: 4px solid var(--painel);
-            border-radius: 50%;
-            object-fit: cover;
-            background: #0b1422;
-        }
-        .avatar-acoes { padding-bottom: 8px; }
-        h1 { margin: 28px 0 6px; font-family: 'Sora', sans-serif; font-size: 2rem; }
-        .subtitulo { margin: 0 0 26px; color: var(--mutado); }
-        label { display: block; margin: 18px 0 8px; font-size: .9rem; font-weight: 700; color: var(--mutado); }
-        input[type="text"] {
-            width: 100%;
-            height: 46px;
-            padding: 0 13px;
-            border: 1px solid rgba(255,255,255,.15);
-            border-radius: 9px;
-            outline: none;
-            background: rgba(9,16,26,.7);
-            color: var(--texto);
-            font: inherit;
-        }
-        input[type="text"]:focus { border-color: var(--destaque); box-shadow: 0 0 0 3px rgba(95,255,168,.11); }
-        input[type="file"] { display: none; }
-        .acoes { display: flex; justify-content: flex-end; margin-top: 24px; }
-        #mensagem { min-height: 24px; margin: 16px 0 0; font-size: .9rem; color: var(--mutado); }
-        #mensagem.erro { color: var(--erro); }
-        #mensagem.sucesso { color: var(--destaque); }
-
-        @media (max-width: 600px) {
-            main { margin-top: 20px; padding: 0 12px 30px; }
-            .conteudo { padding: 0 20px 24px; }
-            .capa { height: 170px; }
-            .avatar { width: 104px; height: 104px; }
-            .avatar-area { align-items: center; }
-        }
+/* Meu perfil (perfil.html). */
+body.gbm-interna > main { max-width: 860px; }
+.perfil-card { padding: 0; overflow: hidden; }
+.capa {
+    position: relative;
+    height: 200px;
+    background-color: var(--surface-2);
+    background-position: center;
+    background-size: cover;
+}
+.trocar-capa { position: absolute; right: 16px; bottom: 14px; }
+.input-file-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--dur-rapida) ease;
+}
+.input-file-label:hover { background: var(--surface-2); }
+.input-file-label:has(+ input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.perfil-card input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+.conteudo { padding: 0 28px 28px; }
+.avatar-area { position: relative; display: flex; align-items: flex-end; gap: 16px; margin-top: -52px; }
+.avatar {
+    width: 112px;
+    height: 112px;
+    border: 4px solid var(--surface);
+    border-radius: 50%;
+    background: var(--surface-2);
+    object-fit: cover;
+}
+.avatar-acoes { padding-bottom: 8px; }
+.conteudo h1 { margin: 22px 0 4px; }
+.subtitulo { margin: 0 0 20px; color: var(--text-2); }
+.conteudo > label { display: block; margin-bottom: 6px; color: var(--text-2); font-size: 13px; font-weight: 500; }
+.acoes { display: flex; justify-content: flex-end; margin-top: 20px; }
+.btn-principal { border-color: transparent; background: var(--accent); color: var(--on-accent); }
+.btn-principal:hover { background: var(--accent-hover); color: var(--on-accent); }
+#mensagem { min-height: 22px; margin: 14px 0 0; color: var(--text-2); font-size: 14px; }
+#mensagem.erro { color: var(--neg); }
+#mensagem.sucesso { color: var(--pos); }
+@media (max-width: 600px) {
+    .conteudo { padding: 0 18px 22px; }
+    .capa { height: 150px; }
+    .avatar { width: 96px; height: 96px; }
+    .avatar-area { align-items: center; }
+}

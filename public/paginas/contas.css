@@ -1,5 +1,12 @@
-        .conta-card { display:flex; flex-direction:column; gap:13px; }
-        .conta-topo { display:flex; justify-content:space-between; gap:12px; }
-        .conta-saldo { font-size:1.7rem; font-weight:850; }
-        .conta-detalhes { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-        .conta-detalhes div { padding:10px; border-radius:9px; background:rgba(255,255,255,.04); }
+/* Minhas contas (contas.html). */
+.conta-card { display: flex; flex-direction: column; gap: 14px; }
+.conta-card.arquivada { background: var(--surface-2); }
+.conta-card.arquivada .conta-saldo { color: var(--text-2); }
+.conta-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.conta-topo h3 { margin: 0 0 6px; font-size: 16px; }
+.conta-topo .pill + .pill { margin-left: 4px; }
+.conta-saldo { font-size: 1.75rem; font-weight: 600; letter-spacing: -.025em; line-height: 1.15; }
+.conta-detalhes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.conta-detalhes .stat { padding: 10px 12px; border-radius: var(--radius); background: var(--bg); }
+.conta-detalhes .stat strong { font-size: 15px; }
+.conta-detalhes .stat strong.conta-data { font-size: 14px; font-weight: 500; }

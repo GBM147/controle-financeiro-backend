@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="gbm-session.js?v=94c6656885"></script>
     <meta charset="UTF-8">
+    <script src="gbm-tema.js?v=69a291f638"></script>
+    <script src="gbm-session.js?v=94c6656885"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Objetivos de Poupança | GBM</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="gbm-pages.css?v=453f9c0c23">
-    <link rel="stylesheet" href="paginas/metas.css?v=a9ea163a13">
-    <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="gbm-typography.css?v=4d6364e02a">
-    <link rel="stylesheet" href="gbm-app-polish.css?v=9b9b068195">
-    <link rel="stylesheet" href="gbm-motion.css?v=1d84d137ee">
-    <script src="gbm-motion.js?v=88bf99267f" defer></script>
-    <link rel="stylesheet" href="gbm-interactions.css?v=39f271d94c">
-    <script src="gbm-interactions.js?v=63cc46c496" defer></script>
     <link rel="icon" href="/logo-transparente.png" type="image/png">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="estilo/tokens.css?v=88606937b0">
+    <link rel="stylesheet" href="estilo/base.css?v=3532b91c9f">
+    <link rel="stylesheet" href="estilo/componentes.css?v=beae3d383c">
+    <link rel="stylesheet" href="estilo/app.css?v=79f9015933">
+    <link rel="stylesheet" href="gbm-tutorial.css">
+    <link rel="stylesheet" href="paginas/metas.css?v=5ad73f5c86">
+    <script src="gbm-movimento.js?v=4b7404e164"></script>
     <script src="gbm-acoes.js?v=b9030c8ef0"></script>
 </head>
-<body class="gbm-interna gbm-polished">
+<body class="gbm-interna">
     <header class="topbar">
         <a class="brand" href="dashboard.html">
             <img src="logo-transparente.jpg" alt="GBM">
@@ -35,10 +35,10 @@
             <h1>Objetivos de poupança</h1>
             <p>Planeje valores que deseja guardar e acompanhe quanto falta para chegar lá.</p>
         </div>
-        <section class="card" style="border-color:rgba(85,167,255,.35);margin-bottom:18px">
-            <p style="margin:0;color:var(--muted);line-height:1.65">
-                <strong style="color:var(--text)">Categorias</strong> classificam suas movimentações.
-                <strong style="color:var(--text)">Objetivos de poupança</strong> só avançam quando você registra
+        <section class="card aviso-explicativo">
+            <p>
+                <strong>Categorias</strong> classificam suas movimentações.
+                <strong>Objetivos de poupança</strong> só avançam quando você registra
                 uma contribuição manual ou destina explicitamente uma transação pelo dashboard. Nada é vinculado automaticamente por nome ou categoria.
             </p>
         </section>
@@ -65,9 +65,9 @@
                 </div>
                 <div class="field">
                     <label for="objetivo-cor">Cor</label>
-                    <input id="objetivo-cor" type="color" value="#55a7ff">
+                    <input id="objetivo-cor" type="color" value="#0F7B5F">
                 </div>
-                <div class="field" style="justify-content:end">
+                <div class="field field-acoes">
                     <div class="actions end">
                         <button type="button" id="cancelar-edicao" class="btn" hidden>Cancelar</button>
                         <button class="btn btn-primary" type="submit">Salvar objetivo</button>
@@ -84,7 +84,7 @@
 
     <dialog id="dialog-contribuicao">
         <h2>Adicionar contribuição</h2>
-        <p id="contribuicao-titulo" style="color:var(--muted)"></p>
+        <p id="contribuicao-titulo" class="modal-desc"></p>
         <form id="form-contribuicao" class="form-grid">
             <input type="hidden" id="contribuicao-objetivo-id">
             <div class="field">
@@ -108,10 +108,10 @@
         </form>
     </dialog>
 
-    <script src="auth.js?v=6f32663332"></script>
-    <script src="gbm-pages.js?v=b53b3cd6b3"></script>
-    <script src="paginas/metas.js?v=8b3e1a3073"></script>
+    <script src="auth.js?v=89cc681816"></script>
+    <script src="gbm-pages.js?v=50214434c6"></script>
+    <script src="paginas/metas.js?v=ee5f5b414d"></script>
     <script src="gbm-tutorial.js"></script>
-    <script src="gbm-menu.js?v=56467e5b3d"></script>
+    <script src="gbm-menu.js?v=4701e41f46"></script>
 </body>
 </html>
