@@ -1,5 +1,5 @@
 const VERSAO_TUTORIAL = '1.1.48';
-const CACHE_GBM = 'gbm-estatico-e69fc43e';
+const CACHE_GBM = 'gbm-estatico-3a93d150';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -14,7 +14,7 @@ const ARQUIVOS_ESTATICOS = [
     '/public-site.css?v=05fae4f17f',
     '/gbm-typography.css?v=4d6364e02a',
     '/gbm-app-polish.css?v=9b9b068195',
-    '/gbm-motion.css?v=c80e92e4b3',
+    '/gbm-motion.css?v=1d84d137ee',
     '/gbm-motion.js?v=88bf99267f',
     '/gbm-interactions.css?v=39f271d94c',
     '/gbm-interactions.js?v=63cc46c496',
