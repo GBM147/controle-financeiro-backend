@@ -41,7 +41,7 @@ function gbmGarantirMenuInterno() {
 
     const script = document.createElement('script');
     script.id = 'gbm-menu-bootstrap';
-    script.src = 'gbm-menu.js?v=4701e41f46';
+    script.src = 'gbm-menu.js?v=f9b5ac2353';
     script.async = false;
     (document.head || document.documentElement).appendChild(script);
 }

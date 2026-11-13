@@ -309,7 +309,7 @@
     background: var(--accent);
     transform-origin: left center;
 }
-.gbm-preenche { animation: gbm-preenche 650ms var(--ease) both; }
+.gbm-preenche { animation: gbm-preenche 1200ms var(--ease) both; }
 @keyframes gbm-preenche { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 /* ---------- Aviso (toast) ---------- */
@@ -445,10 +445,6 @@
 .modal-acoes { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 
 /* ---------- Movimento (gbm-movimento.js) ---------- */
-.gbm-numero-a { animation: gbm-numero-a 240ms var(--ease) both; }
-.gbm-numero-b { animation: gbm-numero-b 240ms var(--ease) both; }
-@keyframes gbm-numero-a { from { opacity: 0; filter: blur(2px); transform: translateY(3px); } to { opacity: 1; filter: none; transform: none; } }
-@keyframes gbm-numero-b { from { opacity: 0; filter: blur(2px); transform: translateY(3px); } to { opacity: 1; filter: none; transform: none; } }
 .gbm-carregando {
     display: flex;
     flex-direction: column;

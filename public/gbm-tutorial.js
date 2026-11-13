@@ -1,72 +1,92 @@
 (function () {
     'use strict';
 
-    const VERSAO_TUTORIAL = '1.2.0';
+    const VERSAO_TUTORIAL = '1.3.0';
 
     const PAGINAS = {
         'dashboard.html': {
-            titulo: 'Dashboard',
+            titulo: 'Visão geral',
             mostrarBotao: true,
             passos: [
                 {
                     alvo: null,
-                    titulo: 'Bem-vindo ao seu dashboard',
-                    texto: 'Aqui você acompanha sua vida financeira, registra movimentações e acessa todas as ferramentas do GBM.'
+                    titulo: 'Bem-vindo à sua visão geral',
+                    texto: 'Aqui você acompanha o mês, registra movimentações e chega a todas as ferramentas do GBM.'
                 },
                 {
-                    alvo: '#filtro-conta-dashboard',
-                    titulo: 'Filtrar por conta',
-                    texto: 'Escolha uma conta bancária específica ou mantenha “Todas” para visualizar o resultado consolidado.'
+                    alvo: '.dashboard-filtros',
+                    titulo: 'Conta e período',
+                    texto: 'Escolha uma conta específica ou “Todas as contas”, e o dia em que o seu mês financeiro vira.'
                 },
                 {
                     alvo: '.dashboard-v3-metrics',
-                    titulo: 'Resumo financeiro',
-                    texto: 'Os cartões mostram entradas, saídas, resultado do período e comparação com o mês anterior.'
+                    titulo: 'Resumo do período',
+                    texto: 'Saldo total das contas, receitas, despesas e o resultado. O que você destinou a objetivos de poupança aparece como guardado, não como gasto.'
+                },
+                {
+                    alvo: '.dashboard-v3-chart',
+                    titulo: 'Evolução no período',
+                    texto: 'A linha mostra o resultado acumulado dia a dia: sobe com as receitas e desce com as despesas.'
+                },
+                {
+                    alvo: '.dashboard-v3-transactions',
+                    titulo: 'Últimas movimentações',
+                    texto: 'Em “Ver todas”, corrija categorias, exclua lançamentos e destine uma transferência ao seu objetivo de poupança.'
+                },
+                {
+                    alvo: '.dashboard-v3-categories',
+                    titulo: 'Gastos por categoria',
+                    texto: 'Veja quais categorias mais pesaram nas despesas do período.'
+                },
+                {
+                    alvo: '.dashboard-v3-pulse',
+                    titulo: 'Quanto da renda foi gasto',
+                    texto: 'A barra compara o que foi gasto, o que foi guardado em objetivos e a sua meta de poupança.'
                 },
                 {
                     alvo: '.dashboard-v3-insights',
-                    titulo: 'Pontos de atenção',
-                    texto: 'O GBM analisa os dados atuais e destaca informações que merecem sua atenção.'
+                    titulo: 'O que merece atenção',
+                    texto: 'O GBM lê o período e destaca aumentos de gasto, bons resultados e dicas, como destinar à poupança uma transferência.'
                 },
                 {
                     alvo: '.lancamento-rapido-form',
                     titulo: 'Lançamento rápido',
-                    texto: 'Registre manualmente uma receita ou despesa, escolhendo conta, descrição, categoria, valor e data.'
+                    texto: 'Registre uma receita ou despesa escolhendo conta, descrição, valor, tipo, categoria e data.'
                 },
                 {
                     alvo: '#painel-limite',
-                    titulo: 'Limites de gastos',
-                    texto: 'Defina quanto pretende gastar em cada categoria. Na página completa, você também escolhe vários percentuais de aviso.'
+                    titulo: 'Limite de gastos',
+                    texto: 'Defina quanto pretende gastar em cada categoria. Na tela Limite de gastos você escolhe os avisos e pode excluir um limite.'
                 },
                 {
                     alvo: '#painel-categoria',
                     titulo: 'Categorias personalizadas',
-                    texto: 'Crie categorias próprias para organizar as movimentações de acordo com sua realidade.'
+                    texto: 'Crie categorias próprias para organizar as movimentações do seu jeito.'
                 },
                 {
                     alvo: '#painel-meta',
                     titulo: 'Objetivos de poupança',
-                    texto: 'Crie um objetivo de poupança. Ele só avança com contribuições manuais ou transações que você destinar explicitamente.'
+                    texto: 'Crie um objetivo. Ele avança com contribuições manuais ou com transações que você destinar a ele.'
                 },
                 {
                     alvo: '.dashboard-v3-analysis',
-                    titulo: 'Exibição dos dados',
-                    texto: 'Alterne entre tabela e gráfico para analisar as transações da forma que preferir.'
+                    titulo: 'Análise detalhada',
+                    texto: 'Alterne entre tabela e gráfico e escolha o tipo de gráfico que preferir.'
                 },
                 {
                     alvo: '#card-ofx',
                     titulo: 'Importar extratos',
-                    texto: 'Use a Central de Importações para revisar arquivos OFX ou PDF antes de confirmar os lançamentos.'
+                    texto: 'Revise arquivos OFX ou PDF antes de confirmar os lançamentos.'
                 },
                 {
-                    alvo: '#menu-btn',
-                    titulo: 'Menu principal',
-                    texto: 'Abra o menu para acessar contas, importações, calendário, limites, relatórios, objetivos de poupança, notificações e configurações.'
+                    alvo: ['#menu-btn', '#sidebar-menu .sidebar-content'],
+                    titulo: 'Menu',
+                    texto: 'Pelo menu você chega a contas, importações, calendário, limites, objetivos, relatórios, notificações e configurações.'
                 },
                 {
                     alvo: null,
-                    titulo: 'Dashboard apresentado',
-                    texto: 'Para rever este passo a passo, abra o menu e escolha “Como usar o site”.'
+                    titulo: 'Tudo pronto',
+                    texto: 'Para rever este passo a passo, use o botão “Como usar esta página”, no canto da tela.'
                 }
             ]
         },
@@ -206,7 +226,7 @@
                 {
                     alvo: '#editor-container',
                     titulo: 'Limites existentes',
-                    texto: 'Acompanhe o consumo de cada categoria e altere configurações quando necessário.'
+                    texto: 'Acompanhe o consumo de cada categoria. Use “Editar” para mudar valor e avisos ou “Excluir” para remover o limite.'
                 }
             ]
         },
@@ -324,12 +344,12 @@
                     texto: 'Veja receitas, despesas e resultado calculados para os filtros escolhidos.'
                 },
                 {
-                    alvo: ['#grafico-categorias:not(:empty)', '.resumo-grid', '#form-filtros'],
+                    alvo: ['#resultado:not([hidden]) .relatorio-grafico-wrapper', '#form-filtros'],
                     titulo: 'Despesas por categoria',
                     texto: 'Compare visualmente quais categorias mais pesaram no período.'
                 },
                 {
-                    alvo: ['#baixar-excel:not([hidden])', '#form-filtros'],
+                    alvo: ['#resultado:not([hidden]) .exportar-card', '#form-filtros'],
                     titulo: 'Exportar dados',
                     texto: 'Baixe o Excel para manter o relatório formatado. O CSV continua disponível para dados simples.'
                 },
@@ -401,7 +421,7 @@
                 {
                     alvo: null,
                     titulo: 'Personalize seu perfil',
-                    texto: 'Altere como sua conta aparece sem remover a marca GBM do cabeçalho.'
+                    texto: 'Escolha a foto, a capa e o nome que aparecem na sua conta.'
                 },
                 {
                     alvo: '#capa-perfil',
@@ -411,7 +431,7 @@
                 {
                     alvo: '#foto-perfil',
                     titulo: 'Foto do usuário',
-                    texto: 'A foto escolhida aparecerá separada do botão de menu e servirá como atalho para o perfil.'
+                    texto: 'A foto aparece no topo da tela, ao lado do seu nome, e leva de volta a esta página.'
                 },
                 {
                     alvo: '#nome-exibicao',
@@ -421,7 +441,7 @@
                 {
                     alvo: '#btn-salvar',
                     titulo: 'Salvar alterações',
-                    texto: 'Depois de revisar a prévia, grave as alterações para aplicá-las no site.'
+                    texto: 'Grave para aplicar as mudanças em todas as telas.'
                 }
             ]
         },
@@ -449,9 +469,34 @@
                     texto: 'Registre sua escolha sobre o tratamento necessário para o funcionamento do serviço.'
                 },
                 {
-                    alvo: 'a[href="configuracoes.html"]',
+                    alvo: 'main a[href="configuracoes.html"]',
                     titulo: 'Exclusão definitiva',
                     texto: 'A exclusão é realizada na Zona de exclusão das Configurações e não pode ser desfeita.'
+                }
+            ]
+        },
+        'configuracoes.html': {
+            titulo: 'Configurações',
+            passos: [
+                {
+                    alvo: null,
+                    titulo: 'Configurações da conta',
+                    texto: 'Aparência, assinatura, perfil, contas, privacidade e exclusão da conta ficam aqui.'
+                },
+                {
+                    alvo: '.seletor-tema',
+                    titulo: 'Tema claro ou escuro',
+                    texto: 'Escolha Claro, Escuro ou deixe o GBM seguir a configuração do seu aparelho.'
+                },
+                {
+                    alvo: '.grade',
+                    titulo: 'Atalhos da conta',
+                    texto: 'Cada cartão leva à tela correspondente: assinatura, atendimento, perfil, contas, privacidade e termos.'
+                },
+                {
+                    alvo: '.zona-perigo',
+                    titulo: 'Zona de exclusão',
+                    texto: 'Para apagar a conta e todos os dados. Se houver assinatura ativa, cancele-a antes. Não pode ser desfeito.'
                 }
             ]
         },

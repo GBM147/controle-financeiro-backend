@@ -173,7 +173,7 @@
 .categoria-participacao-nome { overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
 .categoria-participacao-pct { color: var(--text-2); font-weight: 500; }
 .categoria-participacao-barra-fundo { height: 6px; overflow: hidden; border-radius: 999px; background: var(--surface-2); }
-.categoria-participacao-barra-preenchimento { height: 100%; border-radius: inherit; transition: width 600ms var(--ease); }
+.categoria-participacao-barra-preenchimento { height: 100%; border-radius: inherit; transition: width 1200ms var(--ease); }
 .categoria-participacao-vazio { color: var(--text-3); font-size: 13px; }
 
 /* O doughnut já é a legenda visual; a legenda do Chart.js fica para a análise detalhada. */
@@ -204,7 +204,7 @@
 .dashboard-v3-goal-main strong { overflow: hidden; font-size: 14px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
 .dashboard-v3-goal-main > span { color: var(--text-3); font-size: 12.5px; }
 .dashboard-v3-goal-bar { height: 6px; margin-top: 2px; overflow: hidden; border-radius: 999px; background: var(--surface-2); }
-.dashboard-v3-goal-bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 600ms var(--ease); }
+.dashboard-v3-goal-bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 1200ms var(--ease); }
 .dashboard-v3-goal-pct { color: var(--text-2); font-size: 13px; font-weight: 600; }
 
 .pulso-barra {
@@ -219,11 +219,29 @@
     height: 100%;
     border-radius: inherit;
     background: var(--accent);
-    transition: width 600ms var(--ease), background-color var(--dur) ease;
+    transition: width 1200ms var(--ease), background-color var(--dur) ease;
 }
 .pulso-barra-preenchimento[data-estado="atencao"] { background: var(--warn); }
 .pulso-barra-preenchimento[data-estado="estourou"] { background: var(--neg); }
 .pulso-barra-preenchimento[data-estado="neutro"] { background: var(--text-3); }
+.pulso-barra-guardado {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    border-radius: 999px;
+    background: var(--accent);
+    opacity: .45;
+    transition: left 1200ms var(--ease), width 1200ms var(--ease);
+}
+.ponto-gasto { background: var(--accent); }
+[data-estado="atencao"] .ponto-gasto { background: var(--warn); }
+[data-estado="estourou"] .ponto-gasto { background: var(--neg); }
+.ponto-guardado { background: var(--accent); opacity: .45; }
+.pulso-legenda span { display: inline-flex; align-items: center; gap: 5px; }
+.pulso-meta-texto { margin: -6px 0 12px; color: var(--text-3); font-size: 12px; }
+.pulso-meta-texto strong { color: var(--text-2); font-weight: 500; }
 .pulso-marcador-meta {
     position: absolute;
     top: -4px;

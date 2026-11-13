@@ -9,13 +9,41 @@ const {
 const { exigirLogin, exigirPremium } = require('../web/autorizacao');
 const { registrarErro } = require('../servicos/log');
 
+// Uma despesa destinada a um objetivo de poupança (vínculo em objetivo_contribuicoes)
+// é dinheiro guardado: não entra nas despesas nem derruba o resultado do período.
+const SQL_NAO_GUARDADA = `NOT EXISTS (
+    SELECT 1 FROM objetivo_contribuicoes oc
+    WHERE oc.usuario_id = cb.usuario_id AND oc.transacao_id = t.id
+)`;
+const SQL_GUARDADA = `EXISTS (
+    SELECT 1 FROM objetivo_contribuicoes oc
+    WHERE oc.usuario_id = cb.usuario_id AND oc.transacao_id = t.id
+)`;
+const moedaBr = (valor) => Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
 function registrar(app) {
     // --- LÓGICA DE NEGÓCIO EVOLUÍDA: RECEITAS, DESPESAS E METAS ---
     app.get('/resumo-financeiro', exigirLogin, async (req, res) => {
         try {
+            await garantirEstruturaProduto();
             const { mes, ano, conta_id } = req.query;
             const userId = req.session.userId;
             const diaFechamento = await obterDiaFechamento(userId);
+            let filtros = '';
+            const parametrosFiltro = [];
+            if (conta_id && Number(conta_id) > 0) {
+                filtros += ' AND t.conta_id = ?';
+                parametrosFiltro.push(Number(conta_id));
+            }
+            if (mes && mes !== 'todos') {
+                const mesesArray = mes.split(',');
+                filtros += ` AND ${sqlMesCiclo('t.data_transacao', diaFechamento)} IN (${mesesArray.map(() => '?').join(',')})`;
+                parametrosFiltro.push(...mesesArray);
+            }
+            if (ano && ano !== 'todos') {
+                filtros += ` AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ?`;
+                parametrosFiltro.push(ano);
+            }
             let sql = `
             SELECT 
                 t.categoria, 
@@ -28,27 +56,56 @@ function registrar(app) {
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
             LEFT JOIN metas m ON t.categoria = m.categoria AND m.usuario_id = cb.usuario_id
-            WHERE cb.usuario_id = ?
-        `;
-            const params = [userId];
-            if (conta_id && Number(conta_id) > 0) {
-                sql += ' AND t.conta_id = ?';
-                params.push(Number(conta_id));
-            }
-            if (mes && mes !== 'todos') {
-                const mesesArray = mes.split(',');
-                const placeholders = mesesArray.map(() => '?').join(',');
-                sql += ` AND ${sqlMesCiclo('t.data_transacao', diaFechamento)} IN (${placeholders})`;
-                params.push(...mesesArray);
-            }
-            if (ano && ano !== 'todos') {
-                sql += ` AND ${sqlAnoCiclo('t.data_transacao', diaFechamento)} = ?`;
-                params.push(ano);
-            }
-            sql += ` GROUP BY t.categoria, t.tipo, t.banco ORDER BY total_movimentado ASC;`;
-            const [rows] = await db.promise().query(sql, params);
+            WHERE cb.usuario_id = ? AND ${SQL_NAO_GUARDADA}${filtros}
+            GROUP BY t.categoria, t.tipo, t.banco ORDER BY total_movimentado ASC;`;
+            const [rows] = await db.promise().query(sql, [userId, ...parametrosFiltro]);
 
-            res.json({ status: 'success', data: rows });
+            // Guardado no período: despesas destinadas a objetivos e contribuições
+            // manuais (estas não pertencem a uma conta; ficam fora do filtro por conta).
+            const [[vinculado]] = await db.promise().query(`
+                SELECT COALESCE(SUM(ABS(t.valor)), 0) AS total
+                FROM transacoes t
+                JOIN contas_bancarias cb ON t.conta_id = cb.id
+                WHERE cb.usuario_id = ? AND t.tipo = 'Despesa' AND ${SQL_GUARDADA}${filtros}
+            `, [userId, ...parametrosFiltro]);
+            let manual = 0;
+            if (!(conta_id && Number(conta_id) > 0)) {
+                let sqlManual = `
+                    SELECT COALESCE(SUM(c.valor), 0) AS total
+                    FROM objetivo_contribuicoes c
+                    WHERE c.usuario_id = ? AND c.transacao_id IS NULL
+                      AND (c.observacao IS NULL OR c.observacao <> 'Valor inicial')`;
+                const parametrosManual = [userId];
+                if (mes && mes !== 'todos') {
+                    const mesesArray = mes.split(',');
+                    sqlManual += ` AND ${sqlMesCiclo('c.data_contribuicao', diaFechamento)} IN (${mesesArray.map(() => '?').join(',')})`;
+                    parametrosManual.push(...mesesArray);
+                }
+                if (ano && ano !== 'todos') {
+                    sqlManual += ` AND ${sqlAnoCiclo('c.data_contribuicao', diaFechamento)} = ?`;
+                    parametrosManual.push(ano);
+                }
+                const [[linhaManual]] = await db.promise().query(sqlManual, parametrosManual);
+                manual = Number(linhaManual.total) || 0;
+            }
+            const totalVinculado = Number(vinculado.total) || 0;
+            const filtroConta = conta_id && Number(conta_id) > 0;
+            const [[saldo]] = await db.promise().query(
+                `SELECT COALESCE(SUM(saldo), 0) AS total FROM contas_bancarias
+                 WHERE usuario_id = ? AND (ativa = 1 OR ativa IS NULL)${filtroConta ? ' AND id = ?' : ''}`,
+                filtroConta ? [userId, Number(conta_id)] : [userId]
+            );
+
+            res.json({
+                status: 'success',
+                data: rows,
+                saldo_banco: Number(saldo.total) || 0,
+                poupanca: {
+                    vinculado: totalVinculado,
+                    manual,
+                    total: Number((totalVinculado + manual).toFixed(2))
+                }
+            });
         } catch (error) {
             registrarErro("Erro na lógica de resumo com balanço:", error);
             res.status(500).json({ status: 'error', message: 'Falha ao processar resumo financeiro' });
@@ -57,6 +114,7 @@ function registrar(app) {
     // --- NOVA ROTA: ECONOMIA DO MÊS COMPARADA AO MÊS ANTERIOR ---
     app.get('/economia-mensal', exigirLogin, async (req, res) => {
         try {
+            await garantirEstruturaProduto();
             const { mes, ano, conta_id } = req.query;
             const userId = req.session.userId;
             const diaFechamento = await obterDiaFechamento(userId);
@@ -77,7 +135,7 @@ function registrar(app) {
                    SUM(CASE WHEN t.tipo = 'Receita' THEN t.valor ELSE 0 END) as receitas
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
-            WHERE cb.usuario_id = ?
+            WHERE cb.usuario_id = ? AND ${SQL_NAO_GUARDADA}
         `;
             const parametros = [userId];
             if (conta_id && Number(conta_id) > 0) {
@@ -125,6 +183,7 @@ function registrar(app) {
     // --- NOVA ROTA: SÉRIE DIÁRIA ACUMULADA DO CICLO (alimenta o mini-gráfico do dashboard) ---
     app.get('/resumo-diario', exigirLogin, async (req, res) => {
         try {
+            await garantirEstruturaProduto();
             const { mes, ano, conta_id } = req.query;
             const userId = req.session.userId;
             const diaFechamento = await obterDiaFechamento(userId);
@@ -138,6 +197,7 @@ function registrar(app) {
             FROM transacoes t
             JOIN contas_bancarias cb ON t.conta_id = cb.id
             WHERE cb.usuario_id = ?
+              AND ${SQL_NAO_GUARDADA}
               AND t.data_transacao >= ?
               AND t.data_transacao < ?
         `;
@@ -349,6 +409,7 @@ function registrar(app) {
     // =======================================================
     app.get('/insights', exigirLogin, async (req, res) => {
         try {
+            await garantirEstruturaProduto();
             const usuarioId = req.session.userId;
             const contaId = Number(req.query.conta_id || 0);
             const [categorias] = await db.promise().query(`
@@ -363,6 +424,7 @@ function registrar(app) {
                 WHERE cb.usuario_id = ?
                   AND (? = 0 OR t.conta_id = ?)
                   AND t.tipo = 'Despesa'
+                  AND ${SQL_NAO_GUARDADA}
                   AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE())
                   AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
                 GROUP BY t.categoria
@@ -374,6 +436,7 @@ function registrar(app) {
                 WHERE cb.usuario_id = ?
                   AND (? = 0 OR t.conta_id = ?)
                   AND t.tipo = 'Despesa'
+                  AND ${SQL_NAO_GUARDADA}
                   AND t.data_transacao >= DATE_FORMAT(CURRENT_DATE() - INTERVAL 1 MONTH, '%Y-%m-01')
                   AND t.data_transacao < DATE_FORMAT(CURRENT_DATE(), '%Y-%m-01')
                 GROUP BY t.categoria
@@ -391,7 +454,7 @@ function registrar(app) {
                         insights.push({
                             tipo: 'aumento',
                             titulo: `${item.categoria} subiu ${variacao.toFixed(0)}%`,
-                            texto: `R$ ${atual.toFixed(2)} neste mês contra R$ ${anterior.toFixed(2)} no mês anterior.`
+                            texto: `${moedaBr(atual)} neste mês contra ${moedaBr(anterior)} no mês anterior.`
                         });
                     }
                 }
@@ -404,6 +467,7 @@ function registrar(app) {
             JOIN contas_bancarias cb ON cb.id = t.conta_id
             WHERE cb.usuario_id = ?
               AND (? = 0 OR t.conta_id = ?)
+              AND ${SQL_NAO_GUARDADA}
               AND MONTH(t.data_transacao) = MONTH(CURRENT_DATE())
               AND YEAR(t.data_transacao) = YEAR(CURRENT_DATE())
         `, [usuarioId, contaId, contaId]);
@@ -411,7 +475,7 @@ function registrar(app) {
             insights.unshift({
                 tipo: resultado >= 0 ? 'positivo' : 'atencao',
                 titulo: resultado >= 0 ? 'Mês no positivo' : 'Despesas acima das receitas',
-                texto: `Resultado atual de R$ ${resultado.toFixed(2)}.`
+                texto: `Resultado atual de ${moedaBr(resultado)}, sem contar o que foi guardado em objetivos.`
             });
             res.json(insights.slice(0, 4));
         } catch (erro) {

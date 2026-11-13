@@ -59,7 +59,10 @@
         conteudo.setAttribute('tabindex', '-1');
 
         // Move os controles em vez de copiá-los: preserva os eventos já ligados.
-        const acoes = document.querySelectorAll('body > .topbar .top-actions > *, body > .gbm-header > .btn-voltar');
+        // Links para telas que já estão no menu lateral não são repetidos no topo.
+        const paginasDoMenu = new Set(itensMenu.flatMap((grupo) => grupo.itens).map((item) => item.href));
+        const acoes = [...document.querySelectorAll('body > .topbar .top-actions > *, body > .gbm-header > .btn-voltar')]
+            .filter((acao) => !(acao.matches('a[href]:not(.btn-voltar)') && paginasDoMenu.has(acao.getAttribute('href'))));
         if (acoes.length) {
             const grupo = document.createElement('div');
             grupo.className = 'gbm-shell-page-actions';
@@ -213,6 +216,22 @@
         botao.title = rotulo;
     }
 
+    // O nome da tela aparece no cabeçalho só quando o título da página sai de
+    // vista; com o título visível, ele não fica repetido.
+    function ligarTituloDoCabecalho() {
+        const header = document.querySelector('.gbm-shell-header');
+        const nome = header?.querySelector('.gbm-shell-page-name');
+        const titulo = document.querySelector('.gbm-shell-content h1, body > main h1');
+        if (!header || !nome) return;
+        if (!titulo || !('IntersectionObserver' in window)) {
+            header.classList.add('gbm-titulo-visivel');
+            return;
+        }
+        new IntersectionObserver(([entrada]) => {
+            header.classList.toggle('gbm-titulo-visivel', !entrada.isIntersecting && entrada.boundingClientRect.top < 0);
+        }, { rootMargin: '-64px 0px 0px 0px' }).observe(titulo);
+    }
+
     function ligarAvatar() {
         const foto = document.getElementById('foto-perfil-cabecalho');
         const nome = document.getElementById('nome-perfil-cabecalho');
@@ -239,6 +258,7 @@
         aplicarEstadoAtivo();
         ligar();
         ligarAvatar();
+        ligarTituloDoCabecalho();
         atualizarBotaoTema();
         document.getElementById('gbm-tema-btn')?.addEventListener('click', () => window.GBMTema?.alternar());
         window.addEventListener('gbm:tema', atualizarBotaoTema);

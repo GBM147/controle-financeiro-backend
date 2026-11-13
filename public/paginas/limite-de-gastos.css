@@ -85,6 +85,7 @@
     border-top: 1px solid var(--border);
 }
 .alertas-rotulo { color: var(--text-3); font-size: 12px; }
+.limite-acoes { display: flex; gap: 6px; }
 .alertas .chips { margin-top: 4px; }
 @media (max-width: 760px) {
     .form-limite,

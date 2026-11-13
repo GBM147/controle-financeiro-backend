@@ -51,7 +51,11 @@ body.gbm-app-shell {
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
+.gbm-titulo-visivel .gbm-shell-page-name { opacity: 1; transform: none; }
 .dashboard-header-search {
     display: flex;
     flex: 0 1 380px;

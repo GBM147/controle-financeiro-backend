@@ -1,5 +1,5 @@
-const VERSAO_TUTORIAL = '1.2.0';
-const CACHE_GBM = 'gbm-estatico-1c69b285';
+const VERSAO_TUTORIAL = '1.3.0';
+const CACHE_GBM = 'gbm-estatico-71350217';
 const PREFIXO_CACHE_GBM = 'gbm-estatico-';
 const ARQUIVOS_ESTATICOS = [
     '/index.html',
@@ -12,11 +12,11 @@ const ARQUIVOS_ESTATICOS = [
     '/paginas/offline.css?v=4af02402ce',
     '/gbm-acoes.js?v=b9030c8ef0',
     '/gbm-tema.js?v=69a291f638',
-    '/gbm-movimento.js?v=4b7404e164',
+    '/gbm-movimento.js?v=35d40620e7',
     '/estilo/tokens.css?v=88606937b0',
     '/estilo/base.css?v=3532b91c9f',
-    '/estilo/componentes.css?v=beae3d383c',
-    '/estilo/app.css?v=79f9015933',
+    '/estilo/componentes.css?v=9de4968b17',
+    '/estilo/app.css?v=34eeeb0506',
     '/estilo/site.css?v=1aead9d790',
     '/fonts/geist-latin.woff2',
     '/fonts/geist-latin-ext.woff2',
@@ -26,8 +26,8 @@ const ARQUIVOS_ESTATICOS = [
     '/ferramentas.html',
     '/gbm-session.js?v=94c6656885',
     '/auth.js?v=89cc681816',
-    '/gbm-pages.js?v=50214434c6',
-    '/gbm-menu.js?v=4701e41f46',
+    '/gbm-pages.js?v=90bf95391f',
+    '/gbm-menu.js?v=f9b5ac2353',
     `/gbm-tutorial.css?v=${VERSAO_TUTORIAL}`,
     `/gbm-tutorial.js?v=${VERSAO_TUTORIAL}`,
     '/logo-transparente.png',

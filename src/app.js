@@ -19,6 +19,20 @@ const { registrarErro } = require('./servicos/log');
 
 // 1. Inicializamos o servidor Express
 const app = express();
+const middlewareSessao = session({
+    // "name" é a opção reconhecida pelo express-session para o nome do cookie.
+    // Antes estava como "key", que era ignorado e deixava o cookie com o nome padrão.
+    name: 'gbm_sid',
+    secret: process.env.SESSION_SECRET,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+    }
+});
 app.disable('x-powered-by');
 app.set('trust proxy', 1); // Render encerra o TLS antes de encaminhar a requisição ao Node.
 // 2. Middlewares essenciais (precisam vir ANTES de qualquer rota, incluindo o webhook,
@@ -77,6 +91,27 @@ app.get('/health', async (req, res) => {
     }
 });
 app.use('/assistente-ajuda', limitarAssistente);
+// Quem já está logado vai direto ao painel, decidido no servidor: a página
+// inicial e o login não chegam a aparecer por um instante antes do redirecionamento.
+// Visitantes sem cookie (inclusive robôs do Google) não consultam a sessão.
+const PAGINAS_DESTINO_APOS_LOGIN = new Set([...PAGINAS_PRIVADAS_OU_DE_ACAO].filter((pagina) => pagina !== 'login.html'));
+app.get(['/', '/index.html', '/login.html'], middlewareSessao, async (req, res, next) => {
+    if (!req.session?.userId) return next();
+    const ehLogin = req.path === '/login.html';
+    if (!ehLogin && Object.prototype.hasOwnProperty.call(req.query, 'inicio')) return next();
+    try {
+        const [[usuario]] = await db.promise().query('SELECT verificado FROM usuarios WHERE id = ? LIMIT 1', [req.session.userId]);
+        if (!usuario || !(usuario.verificado == 1 || usuario.verificado === true)) return next();
+    } catch (erro) {
+        return next();
+    }
+    let destino = '/dashboard.html';
+    const proxima = ehLogin && typeof req.query.next === 'string' ? req.query.next : '';
+    const pagina = /^\/([a-z0-9-]+\.html)(?:[?#].*)?$/.exec(proxima)?.[1];
+    if (pagina && PAGINAS_DESTINO_APOS_LOGIN.has(pagina)) destino = proxima;
+    res.setHeader('Cache-Control', 'private, no-store');
+    return res.redirect(302, destino);
+});
 app.use(async (req, res, next) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') return next();
     const pagina = paginaEditorialComAnuncios(req.path);
@@ -157,20 +192,7 @@ app.use(['/login', '/login-status', '/logout', '/verificar-conta', '/validar-cod
     res.setHeader('Pragma', 'no-cache');
     next();
 });
-app.use(session({
-    // "name" é a opção reconhecida pelo express-session para o nome do cookie.
-    // Antes estava como "key", que era ignorado e deixava o cookie com o nome padrão.
-    name: 'gbm_sid',
-    secret: process.env.SESSION_SECRET,
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
-    }
-}));
+app.use(middlewareSessao);
 
 // Rotas registradas na mesma ordem do arquivo original.
 for (const modulo of [
