@@ -253,6 +253,7 @@
                 const res = await fetchApi(`/resumo-financeiro?mes=${mes}&ano=${ano}&userId=${userId}${contaQuery}`);
                 const json = await res.json();
                 dadosAPI = json.data ? json.data : (Array.isArray(json) ? json : []);
+                window._poupancaAtual = json.poupanca || { total: 0, vinculado: 0, manual: 0 };
                 const saldoBanco = parseFloat(json.saldo_banco) || 0;
 
                 atualizarResumoFinanceiro(saldoBanco);
@@ -265,6 +266,7 @@
                 carregarUltimasMovimentacoes();
                 carregarObjetivosDashboard();
                 atualizarIdentidadeDashboard();
+                atualizarDicaPoupanca();
             } catch (err) { 
                 console.error("Erro ao carregar dados:", err); 
             }
@@ -304,6 +306,8 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        // A linha se desenha da esquerda para a direita.
+                        animation: GBMGraficos.linhaProgressiva(valores.length),
                         interaction: { mode: 'index', intersect: false },
                         plugins: {
                             legend: { display: false },
@@ -394,6 +398,8 @@
                 const dados = await resposta.json();
                 if (!resposta.ok) throw new Error(dados.error || 'Não foi possível carregar os objetivos.');
                 const objetivos = (Array.isArray(dados) ? dados : []).filter((objetivo) => objetivo.status === 'ativo').slice(0, 4);
+                window._objetivosAtivosDashboard = objetivos.length;
+                atualizarDicaPoupanca();
                 if (!objetivos.length) {
                     lista.innerHTML = '<div class="dashboard-v3-empty">Você ainda não tem metas ativas.</div>';
                     return;
@@ -458,6 +464,13 @@
     const elPeriodo = document.getElementById('saldo-liquido');
     elPeriodo.innerText = formatarMoedaDashboard(periodo);
     elPeriodo.classList.toggle('negativo', periodo < 0);
+    const guardado = Number(window._poupancaAtual?.total) || 0;
+    const detalheResultado = document.getElementById('detalhe-resultado');
+    if (detalheResultado) {
+        detalheResultado.textContent = guardado > 0
+            ? `${formatarMoedaDashboard(guardado)} guardados em objetivos`
+            : 'Receitas menos despesas';
+    }
 
     const badgeTaxa = document.getElementById('taxa-poupada-badge');
     if (badgeTaxa) {
@@ -485,6 +498,26 @@
     window._resumoFluxoAtual = { ent, sai, periodo };
 }
 
+        // --- DICA: transferência que provavelmente foi para a poupança ---
+        // Transferências e aplicações contam como despesa até serem destinadas a um
+        // objetivo; a dica leva direto à lista para fazer isso.
+        function atualizarDicaPoupanca() {
+            const lista = document.getElementById('insights-lista');
+            if (!lista) return;
+            lista.querySelector('.insight-dica-poupanca')?.remove();
+            const candidata = dadosAPI.find((item) => item.tipo === 'Despesa'
+                && /transfer|poupan|invest|aplica|reserva|cofrinho|caixinha/i.test(String(item.categoria || ''))
+                && Math.abs(parseFloat(item.total_movimentado) || 0) > 0);
+            if (!candidata || !window._objetivosAtivosDashboard) return;
+            const valor = Math.abs(parseFloat(candidata.total_movimentado) || 0);
+            const dica = document.createElement('div');
+            dica.className = 'insight-item insight-atencao insight-dica-poupanca';
+            dica.innerHTML = '<span class="insight-rotulo">Poupança</span><strong>Guardou dinheiro por transferência?</strong>'
+                + `<span>Há ${formatarMoedaDashboard(valor)} em “${escaparHtmlDashboard(candidata.categoria)}” contando como gasto. Destine ao seu objetivo o que foi para a poupança e esse valor passa a contar como guardado.</span>`
+                + '<a href="#" class="insight-link" data-acao="abrirModalTransacoes" data-prevenir>Destinar ao objetivo</a>';
+            lista.prepend(dica);
+        }
+
         // --- CARD: PULSO FINANCEIRO (barra de gasto/preservado/meta) ---
         const META_TAXA_POUPADA = 15; // meta padrão de % preservado da renda
         function atualizarPulsoFinanceiro() {
@@ -493,14 +526,25 @@
             const marcador = document.getElementById('pulso-marcador-meta');
             const elGasto = document.getElementById('pulso-gasto');
             const elPreservado = document.getElementById('pulso-preservado');
+            const elGuardado = document.getElementById('pulso-guardado');
+            const barraGuardado = document.getElementById('pulso-barra-guardado');
             const elMeta = document.getElementById('pulso-meta');
             const elStatus = document.getElementById('pulso-status-texto');
             const elStatusTitulo = document.getElementById('pulso-status-titulo');
             if (!barra || !elGasto || !elPreservado) return;
 
             const ent = resumo.ent || 0;
+            const guardado = Number(window._poupancaAtual?.total) || 0;
             const gastoPct = ent > 0 ? Math.min(100, (resumo.sai / ent) * 100) : 0;
             const preservadoPct = ent > 0 ? Math.max(0, 100 - gastoPct) : 0;
+            // O que foi destinado a objetivos já está fora do "gasto"; aparece como
+            // um trecho próprio da barra, dentro do que foi preservado.
+            const guardadoPct = ent > 0 ? Math.min(preservadoPct, (guardado / ent) * 100) : 0;
+            if (barraGuardado) {
+                barraGuardado.style.left = `${gastoPct.toFixed(1)}%`;
+                barraGuardado.style.width = `${guardadoPct.toFixed(1)}%`;
+            }
+            if (elGuardado) elGuardado.innerText = formatarMoedaDashboard(guardado);
 
             // A barra mostra o quanto da renda foi gasto; o marcador fica no limite
             // que ainda preserva a meta (100% - meta).
@@ -516,14 +560,15 @@
             if (elMeta) elMeta.innerText = `${META_TAXA_POUPADA}%`;
 
             if (elStatusTitulo && elStatus) {
+                const textoGuardado = guardado > 0 ? ` Inclui ${formatarMoedaDashboard(guardado)} guardados em objetivos.` : '';
                 if (preservadoPct >= META_TAXA_POUPADA) {
                     elStatusTitulo.innerText = 'Seu mês permanece positivo';
-                    elStatus.innerText = `Você já preservou ${formatarPercentualDashboard(preservadoPct)}% da renda, acima da meta de ${META_TAXA_POUPADA}%.`;
+                    elStatus.innerText = `Você preservou ${formatarPercentualDashboard(preservadoPct)}% da renda, acima da meta de ${META_TAXA_POUPADA}%.${textoGuardado}`;
                 } else {
                     const faltam = Math.max(0, META_TAXA_POUPADA - preservadoPct);
                     elStatusTitulo.innerText = ent > 0 ? 'Faltam pontos para a meta' : 'Sem entradas no período';
                     elStatus.innerText = ent > 0
-                        ? `Faltam ${formatarPercentualDashboard(faltam)} pontos para alcançar a meta.`
+                        ? `Faltam ${formatarPercentualDashboard(faltam)} pontos para alcançar a meta.${textoGuardado}`
                         : 'Registre entradas para calcular sua taxa poupada.';
                 }
             }
@@ -1506,6 +1551,7 @@ async function carregarInsights() {
     } catch (erro) {
         container.innerHTML = '<div class="insight-item"><span>Os insights estarão disponíveis quando houver dados suficientes.</span></div>';
     }
+    atualizarDicaPoupanca();
 }
 async function carregarAlertas() {
     try {

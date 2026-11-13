@@ -19,6 +19,28 @@
             percentuaisSelecionados = percentuaisSelecionados.filter(v => v !== p);
             renderChips();
         }
+        async function excluirLimite(i) {
+            const m = metasCarregadas[i];
+            if (!m) return;
+            const confirmado = await gbmConfirmar(`O limite de <strong>${m.categoria}</strong> e os avisos dele serão removidos. Os gastos já registrados continuam como estão.`, {
+                titulo: 'Excluir limite?',
+                confirmar: 'Excluir limite',
+                perigo: true
+            });
+            if (!confirmado) return;
+            try {
+                const resposta = await fetchApi('/metas', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categoria: m.categoria })
+                });
+                if (!resposta.ok) throw new Error('Não foi possível excluir o limite.');
+                gbmToast(`Limite de ${m.categoria} excluído.`);
+                carregarEditor();
+            } catch (erro) {
+                gbmToast(erro.message, 'erro');
+            }
+        }
         function editarLimite(i) {
             const m = metasCarregadas[i];
             if (!m) return;
@@ -52,7 +74,10 @@
                         </div>
                         <div class="alertas">
                             <div><span class="alertas-rotulo">Avisos configurados</span><div class="chips">${ps.map(x => `<span class="chip">${x}%</span>`).join('')}</div></div>
-                            <button class="btn btn-small" data-acao="editarLimite" data-args="[${i}]">Editar</button>
+                            <div class="limite-acoes">
+                                <button type="button" class="btn btn-small" data-acao="editarLimite" data-args="[${i}]">Editar</button>
+                                <button type="button" class="btn btn-small btn-danger" data-acao="excluirLimite" data-args="[${i}]">Excluir</button>
+                            </div>
                         </div>
                     </article>`;
                 }).join('');

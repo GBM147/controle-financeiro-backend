@@ -184,6 +184,36 @@ test('fluxos principais com MySQL real', { timeout: 60000 }, async (t) => {
         await cliente.delete('/objetivos/999999').expect(404);
     });
 
+    await t.test('dinheiro destinado a um objetivo conta como guardado, não como gasto', async () => {
+        const objetivo = await cliente.post('/objetivos').send({ nome: 'Casa', valor_meta: 10000 }).expect(201);
+        await cliente.post('/transacao-manual').send({
+            descricao: 'Aplicação na poupança', valor: 500, tipo: 'Despesa', categoria: 'Transferência',
+            data_transacao: '2026-11-06', conta_id: contaId
+        }).expect(200);
+        const [[aplicacao]] = await db.promise().query(
+            "SELECT id FROM transacoes WHERE descricao = 'Aplicação na poupança' AND conta_id = ?", [contaId]
+        );
+        const antes = await cliente.get('/resumo-financeiro?mes=11&ano=2026').expect(200);
+        assert.ok(antes.body.data.some((linha) => linha.categoria === 'Transferência'));
+        assert.equal(antes.body.poupanca.total, 0);
+
+        await cliente.put(`/transacoes/${aplicacao.id}/objetivo`).send({ objetivo_id: objetivo.body.id }).expect(201);
+        const depois = await cliente.get('/resumo-financeiro?mes=11&ano=2026').expect(200);
+        assert.ok(!depois.body.data.some((linha) => linha.categoria === 'Transferência'), 'a transferência guardada não é despesa');
+        assert.equal(depois.body.poupanca.vinculado, 500);
+        assert.equal(depois.body.poupanca.total, 500);
+        assert.equal(typeof depois.body.saldo_banco, 'number');
+        const diario = await cliente.get('/resumo-diario?mes=11&ano=2026').expect(200);
+        assert.ok(Array.isArray(diario.body.serie));
+
+        const exportacao = await cliente.get('/minha-conta/exportar').expect(200);
+        const dados = JSON.parse(exportacao.text);
+        assert.ok(dados.transacoes.length >= 2);
+        assert.ok(dados.contribuicoes_objetivos.some((c) => Number(c.transacao_id) === Number(aplicacao.id)));
+        assert.ok(!Object.keys(dados.usuario).some((campo) => /senha|token|hash/i.test(campo)), 'sem credenciais na exportação');
+        await cliente.delete(`/objetivos/${objetivo.body.id}`).expect(200);
+    });
+
     await t.test('importação OFX com prévia assinada, confirmação e desfazer', async () => {
         const previa = await cliente.post('/ofx-extrato/preview')
             .attach('arquivo', Buffer.from(OFX), { filename: 'extrato.ofx', contentType: 'application/x-ofx' })

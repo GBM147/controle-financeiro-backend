@@ -11,12 +11,12 @@
     <link rel="icon" href="/logo-transparente.png" type="image/png">
     <link rel="stylesheet" href="estilo/tokens.css?v=88606937b0">
     <link rel="stylesheet" href="estilo/base.css?v=3532b91c9f">
-    <link rel="stylesheet" href="estilo/componentes.css?v=beae3d383c">
-    <link rel="stylesheet" href="estilo/app.css?v=79f9015933">
+    <link rel="stylesheet" href="estilo/componentes.css?v=9de4968b17">
+    <link rel="stylesheet" href="estilo/app.css?v=34eeeb0506">
     <link rel="stylesheet" href="gbm-tutorial.css">
-    <link rel="stylesheet" href="paginas/dashboard.css?v=f70cf3a145">
+    <link rel="stylesheet" href="paginas/dashboard.css?v=f8187fc457">
     <script src="vendor/chart-4.5.1.umd.min.js?v=48444a82d4"></script>
-    <script src="gbm-movimento.js?v=4b7404e164"></script>
+    <script src="gbm-movimento.js?v=35d40620e7"></script>
     <script src="gbm-acoes.js?v=b9030c8ef0"></script>
 </head>
 <body class="gbm-interna gbm-dashboard">
@@ -54,7 +54,7 @@
         <article class="v3-metric v3-metric-available">
             <span class="v3-metric-rotulo">Resultado do período</span>
             <strong id="saldo-liquido">R$ 0,00</strong>
-            <small>Receitas menos despesas</small>
+            <small id="detalhe-resultado">Receitas menos despesas</small>
             <span id="taxa-poupada-badge" class="metric-meta" style="display:none"></span>
         </article>
     </section>
@@ -97,12 +97,13 @@
 
         <article class="dashboard-v3-surface dashboard-v3-pulse">
             <div class="dashboard-v3-card-head"><h2>Quanto da renda foi gasto</h2></div>
-            <div class="pulso-barra" aria-hidden="true"><div id="pulso-barra-preenchimento" class="pulso-barra-preenchimento"></div><span id="pulso-marcador-meta" class="pulso-marcador-meta"></span></div>
+            <div class="pulso-barra" aria-hidden="true"><div id="pulso-barra-preenchimento" class="pulso-barra-preenchimento"></div><div id="pulso-barra-guardado" class="pulso-barra-guardado"></div><span id="pulso-marcador-meta" class="pulso-marcador-meta" title="Meta de poupança"></span></div>
             <div class="pulso-legenda">
-                <div><span>Gasto</span><strong id="pulso-gasto">0,0%</strong></div>
+                <div><span><i class="ponto ponto-gasto" aria-hidden="true"></i>Gasto</span><strong id="pulso-gasto">0,0%</strong></div>
+                <div><span><i class="ponto ponto-guardado" aria-hidden="true"></i>Guardado</span><strong id="pulso-guardado">R$ 0,00</strong></div>
                 <div><span>Preservado</span><strong id="pulso-preservado">0,0%</strong></div>
-                <div><span>Meta de poupança</span><strong id="pulso-meta">15%</strong></div>
             </div>
+            <p class="pulso-meta-texto">Meta de poupança: <strong id="pulso-meta">15%</strong> da renda</p>
             <div class="pulso-status"><span class="pulso-status-icone" aria-hidden="true"></span><div><strong id="pulso-status-titulo">Calculando o período</strong><span id="pulso-status-texto">Registre dados para calcular sua taxa poupada.</span></div></div>
         </article>
     </section>
@@ -272,9 +273,9 @@
     </div>
 </main>
 <script src="auth.js?v=89cc681816"></script>
-<script src="paginas/dashboard-1.js?v=bf7b0e0085"></script>
+<script src="paginas/dashboard-1.js?v=a4e2dfee9b"></script>
 <script src="gbm-tutorial.js"></script>
 <script src="gbm-ai-ajuda.js?v=c879ffdc23"></script>
-<script src="gbm-pages.js?v=50214434c6"></script>
+<script src="gbm-pages.js?v=90bf95391f"></script>
 </body>
 </html>

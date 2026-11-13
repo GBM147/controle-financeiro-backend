@@ -25,7 +25,10 @@
         document.getElementById('exportar').addEventListener('click',async()=>{
             try{
                 const resposta=await fetchApi('/minha-conta/exportar');
-                if(!resposta.ok) throw new Error('Falha ao exportar.');
+                if(!resposta.ok){
+                    const detalhe=await resposta.json().catch(()=>({}));
+                    throw new Error(`${detalhe.error||'Não foi possível exportar seus dados.'} (erro ${resposta.status})`);
+                }
                 const blob=await resposta.blob();const url=URL.createObjectURL(blob);
                 const link=document.createElement('a');link.href=url;link.download='meus-dados-gbm.json';link.click();
                 setTimeout(()=>URL.revokeObjectURL(url),1000);

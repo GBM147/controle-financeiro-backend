@@ -471,51 +471,63 @@ function registrar(app) {
         }
     });
     app.get('/minha-conta/exportar', exigirLogin, async (req, res) => {
+        const usuarioId = req.session.userId;
+        // Cada parte é lida isoladamente: uma tabela ausente ou antiga no banco de
+        // produção não pode impedir a pessoa de baixar o restante dos seus dados.
+        const avisos = [];
+        const lerParte = async (nome, sql) => {
+            try {
+                const [linhas] = await db.promise().query(sql, [usuarioId]);
+                return linhas;
+            } catch (erro) {
+                registrarErro(`Exportação: não foi possível ler ${nome}:`, erro);
+                avisos.push(nome);
+                return [];
+            }
+        };
         try {
-            await garantirEstruturaProduto();
-            const usuarioId = req.session.userId;
-            const [[usuarioBanco]] = await db.promise().query(
-                `SELECT id, nome, sobrenome, email, telefone,
-                    nome_criptografado, sobrenome_criptografado, email_criptografado,
-                    telefone_criptografado,
-                    status_pagamento, trial_expira, criado_em, consentimento_privacidade_em,
-                    termos_aceitos_em, termos_versao
-             FROM usuarios WHERE id = ?`,
-                [usuarioId]
-            );
-            const consultas = await Promise.all([
-                db.promise().query('SELECT * FROM contas_bancarias WHERE usuario_id = ?', [usuarioId]),
-                db.promise().query(`
-                SELECT t.*
-                FROM transacoes t
-                JOIN contas_bancarias cb ON cb.id = t.conta_id
-                WHERE cb.usuario_id = ?
-                ORDER BY t.data_transacao, t.id
-            `, [usuarioId]),
-                db.promise().query('SELECT * FROM objetivos_financeiros WHERE usuario_id = ?', [usuarioId]),
-                db.promise().query('SELECT * FROM objetivo_contribuicoes WHERE usuario_id = ?', [usuarioId]),
-                db.promise().query('SELECT * FROM transacoes_recorrentes WHERE usuario_id = ?', [usuarioId]),
-                db.promise().query('SELECT * FROM alertas WHERE usuario_id = ?', [usuarioId]),
-                db.promise().query('SELECT * FROM importacoes_extratos WHERE usuario_id = ?', [usuarioId]),
-                db.promise().query('SELECT * FROM categorias_personalizadas WHERE usuario_id = ?', [usuarioId])
-            ]);
-            const usuario = revelarIdentidade(usuarioBanco);
+            try {
+                await garantirEstruturaProduto();
+            } catch (erro) {
+                registrarErro('Exportação: estrutura do banco incompleta:', erro);
+            }
+            const [usuarioBanco] = await lerParte('usuario', `SELECT * FROM usuarios WHERE id = ?`);
+            // SELECT * evita depender de colunas que bancos antigos não têm;
+            // credenciais, códigos e índices internos nunca saem na exportação.
+            if (usuarioBanco) {
+                for (const campo of Object.keys(usuarioBanco)) {
+                    if (/senha|token|codigo|hash|segredo|secret/i.test(campo)) delete usuarioBanco[campo];
+                }
+            }
             const exportacao = {
                 exportado_em: new Date().toISOString(),
-                usuario,
-                contas: consultas[0][0],
-                transacoes: consultas[1][0],
-                objetivos: consultas[2][0],
-                contribuicoes_objetivos: consultas[3][0],
-                recorrencias: consultas[4][0],
-                notificacoes: consultas[5][0],
-                importacoes: consultas[6][0],
-                categorias_personalizadas: consultas[7][0]
+                usuario: revelarIdentidade(usuarioBanco) || null,
+                contas: await lerParte('contas', 'SELECT * FROM contas_bancarias WHERE usuario_id = ?'),
+                transacoes: await lerParte('transacoes', `
+                    SELECT t.*
+                    FROM transacoes t
+                    JOIN contas_bancarias cb ON cb.id = t.conta_id
+                    WHERE cb.usuario_id = ?
+                    ORDER BY t.data_transacao, t.id`),
+                objetivos: await lerParte('objetivos', 'SELECT * FROM objetivos_financeiros WHERE usuario_id = ?'),
+                contribuicoes_objetivos: await lerParte('contribuicoes_objetivos', 'SELECT * FROM objetivo_contribuicoes WHERE usuario_id = ?'),
+                limites: await lerParte('limites', 'SELECT * FROM metas WHERE usuario_id = ?'),
+                recorrencias: await lerParte('recorrencias', 'SELECT * FROM transacoes_recorrentes WHERE usuario_id = ?'),
+                notificacoes: await lerParte('notificacoes', 'SELECT * FROM alertas WHERE usuario_id = ?'),
+                importacoes: await lerParte('importacoes', 'SELECT * FROM importacoes_extratos WHERE usuario_id = ?'),
+                categorias_personalizadas: await lerParte('categorias_personalizadas', 'SELECT * FROM categorias_personalizadas WHERE usuario_id = ?')
             };
+            if (avisos.length) exportacao.partes_indisponiveis = avisos;
             await registrarAuditoria(req, 'DADOS_EXPORTADOS');
+            const conteudo = JSON.stringify(exportacao, (chave, valor) => {
+                if (typeof valor === 'bigint') return valor.toString();
+                if (valor && valor.type === 'Buffer' && Array.isArray(valor.data)) return Buffer.from(valor.data).toString('base64');
+                return valor;
+            }, 2);
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.setHeader('Content-Disposition', 'attachment; filename="meus-dados-gbm.json"');
-            res.send(JSON.stringify(exportacao, null, 2));
+            res.setHeader('Cache-Control', 'no-store');
+            res.send(conteudo);
         } catch (erro) {
             registrarErro('Erro ao exportar dados:', erro);
             res.status(500).json({ success: false, error: 'Falha ao exportar seus dados.' });

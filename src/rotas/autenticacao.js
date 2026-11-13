@@ -235,6 +235,13 @@ function registrar(app) {
             res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
         }
     });
+    // --- ROTA: AS PÁGINAS PÚBLICAS SABEM SE HÁ ALGUÉM LOGADO ---
+    // Responde 200 também para visitantes, sem dados pessoais, para o site
+    // público trocar "Entrar" por "Meu painel" sem gerar erros no console.
+    app.get('/sessao-publica', (req, res) => {
+        res.setHeader('Cache-Control', 'private, no-store');
+        res.json({ logado: Boolean(req.session?.userId) });
+    });
     // --- ROTA: VERIFICAR STATUS DO USUÁRIO PARA PAGAMENTO ---
     app.get('/login-status', exigirLogin, async (req, res) => {
         const userId = req.session.userId;
