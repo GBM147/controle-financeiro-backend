@@ -17,11 +17,22 @@ function listar(diretorio) {
     });
 }
 
+// Edge functions da Netlify são módulos ES (rodam no Deno); conferidas como .mjs.
+const PASTA_EDGE = path.join(raiz, 'netlify', 'edge-functions') + path.sep;
+const temporarios = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'gbm-sintaxe-'));
+
 const falhas = listar(raiz).filter((arquivo) => {
-    const resultado = spawnSync(process.execPath, ['--check', arquivo], { encoding: 'utf8' });
+    let alvo = arquivo;
+    if (arquivo.startsWith(PASTA_EDGE)) {
+        alvo = path.join(temporarios, `${path.basename(arquivo, '.js')}.mjs`);
+        fs.copyFileSync(arquivo, alvo);
+    }
+    const resultado = spawnSync(process.execPath, ['--check', alvo], { encoding: 'utf8' });
     if (resultado.status !== 0) process.stderr.write(resultado.stderr);
     return resultado.status !== 0;
 });
+
+fs.rmSync(temporarios, { recursive: true, force: true });
 
 if (falhas.length) {
     console.error(`${falhas.length} arquivo(s) com erro de sintaxe.`);

@@ -3,7 +3,9 @@ const path = require('path');
 const cloudinary = require('cloudinary').v2;
 const { validarAssinaturaImagem, validarAssinaturaPdf, validarEstruturaOfx } = require('../../file-signatures');
 
-const LIMITE_EXTRATO_BYTES = 10 * 1024 * 1024;
+// A função da Netlify aceita até ~6 MB por requisição (com a codificação em base64);
+// 4 MB por arquivo cabe com folga.
+const LIMITE_EXTRATO_BYTES = 4 * 1024 * 1024;
 const LIMITE_TEXTO_PDF_CARACTERES = 500000;
 function criarUploadExtrato({ extensoes, tiposMime, mensagem }) {
     return multer({
@@ -33,7 +35,7 @@ const uploadOfx = criarUploadExtrato({
 });
 const uploadImagem = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 }, // máximo: 5 MB
+    limits: { fileSize: 4 * 1024 * 1024 }, // máximo: 4 MB
     fileFilter: (req, file, cb) => {
         const tiposAceitos = ['image/jpeg', 'image/png', 'image/webp'];
 

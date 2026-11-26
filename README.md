@@ -137,6 +137,31 @@ No painel do Mercado Pago, em **Suas integrações → Webhooks**, ative os even
 
 O workflow em `.github/workflows/ci.yml` valida Node.js 20 e 22, sintaxe, testes de integração e vulnerabilidades de severidade alta em cada push e pull request.
 
+## Deploy na Netlify
+
+O site e a API podem ser publicados juntos na Netlify (configuração em `netlify.toml`):
+
+- **páginas e arquivos** de `public/` saem direto do CDN, então o site público continua no ar mesmo quando a API está fria;
+- **API**: o mesmo app Express roda na função `netlify/functions/api.js`. O arquivo `public/_redirects` encaminha cada rota da API para essa função. Ele é gerado com `npm run rotas:netlify` a partir das rotas do Express, e o CI falha se estiver desatualizado;
+- **edge function** `netlify/edge-functions/paginas.js`: aplica o nonce da CSP nas páginas com AdSense e manda quem já está logado direto para o painel;
+- **tarefas diárias**: as funções agendadas `tarefas-diarias` (08:00 de Brasília) e `reconciliar-assinaturas` (04:10) substituem o `node-cron`.
+
+Passo a passo:
+
+1. Na Netlify, **Add new project → Import an existing project → GitHub**, escolher este repositório e a branch `main`. Os campos de build ficam como estão: o `netlify.toml` já define tudo.
+2. Em **Project configuration → Environment variables**, cadastrar as variáveis do `.env.example` com os valores de produção, mais:
+   - `NODE_ENV=production`;
+   - `APP_URL=https://gbm-finance.com`;
+   - `ALLOWED_ORIGINS=https://gbm-finance.com,https://www.gbm-finance.com`. Inclua também o endereço `*.netlify.app` do projeto, se for testar por ele.
+3. **Deploy** e conferir `https://<projeto>.netlify.app/health` → `200` com `database: "ok"`.
+4. Em **Domain management**, adicionar `gbm-finance.com` e `www.gbm-finance.com` e apontar o DNS do domínio para a Netlify, como ela indicar.
+5. No Mercado Pago, manter o webhook em `https://gbm-finance.com/webhook-mercadopago`.
+
+Limites das funções da Netlify:
+
+- cada requisição pode ter até cerca de 6 MB, por isso extratos e imagens aceitam até 4 MB;
+- uma chamada pode levar até 10 s no plano gratuito.
+
 ## Deploy no Render
 
 O serviço publicado em `gbm-finance.com` é uma aplicação Web Node.js no Render. Use esta configuração no painel:

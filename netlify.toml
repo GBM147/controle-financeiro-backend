@@ -1,0 +1,67 @@
+# Publicação do GBM Finance na Netlify.
+# - Páginas e arquivos de public/ saem direto do CDN.
+# - A API (Express) roda como função: netlify/functions/api.js.
+#   public/_redirects (npm run rotas:netlify) encaminha cada rota da API para ela.
+# - Edge function netlify/edge-functions/paginas.js: nonce da CSP do AdSense e
+#   redirecionamento de quem já está logado.
+# - Tarefas diárias que o servidor rodava com node-cron viram funções agendadas.
+
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  edge_functions = "netlify/edge-functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+  AWS_LAMBDA_JS_RUNTIME = "nodejs22.x"
+
+[functions]
+  # nft mantém a estrutura de pastas do projeto (__dirname continua válido).
+  node_bundler = "nft"
+  included_files = [
+    "certificados/**",
+    "public/404.html",
+    "node_modules/pdf-parse/lib/pdf.js/v1.10.100/**",
+    "node_modules/bcrypt/prebuilds/linux-x64/**"
+  ]
+
+# Horários em UTC: 11:00 UTC = 08:00 em Brasília; 07:10 UTC = 04:10 em Brasília.
+[functions."tarefas-diarias"]
+  schedule = "0 11 * * *"
+
+[functions."reconciliar-assinaturas"]
+  schedule = "10 7 * * *"
+
+# Os mesmos cabeçalhos de segurança que o helmet aplica no servidor Node.
+# As páginas editoriais recebem outra CSP (com nonce) na edge function.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob: https://res.cloudinary.com; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; worker-src 'self' blob:; upgrade-insecure-requests"
+
+# Tutorial e service worker nunca podem ficar presos no cache após uma atualização.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+[[headers]]
+  for = "/gbm-tutorial.js"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+[[headers]]
+  for = "/gbm-tutorial.css"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+# Fontes não mudam de conteúdo sem mudar de nome.
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

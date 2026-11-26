@@ -45,8 +45,8 @@
             const arquivo = input.files[0];
             if (!arquivo) return;
 
-            if (arquivo.size > 5 * 1024 * 1024) {
-                informar('A imagem deve ter no máximo 5 MB.', 'erro');
+            if (arquivo.size > 4 * 1024 * 1024) {
+                informar('A imagem deve ter no máximo 4 MB.', 'erro');
                 input.value = '';
                 return;
             }
