@@ -15,6 +15,7 @@
         if (!document.getElementById('conta-importacao').value) return gbmToast('Crie e selecione uma conta.', 'erro');
         const extensao = arquivo.name.split('.').pop().toLowerCase();
         if (!['ofx', 'pdf'].includes(extensao)) return gbmToast('Formato não aceito.', 'erro');
+        if (arquivo.size > 4 * 1024 * 1024) return gbmToast('O arquivo tem mais de 4 MB. Exporte um período menor no banco e tente de novo.', 'erro');
         const formData = new FormData();
         formData.append('arquivo', arquivo);
         const botao = document.getElementById('btn-analisar');
